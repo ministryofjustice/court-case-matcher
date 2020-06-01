@@ -13,3 +13,19 @@ spring:
     user: ${jms.username:jmsuser}
     password: ${jms.password:jmsuser}
     port: 5445
+
+#  # Spring JMS Settings
+#  jms:
+#    listener:
+#      acknowledge-mode: auto
+#      auto-startup: false
+#      concurrency: 5
+#      max-concurrency: 10
+#    pub-sub-domain: false
+#    template:
+#      default-destination:
+#      delivery-mode: non_persistent
+#      priority: 100
+#      qos-enabled: true
+#      receive-timeout: 1000
+#      time-to-live: 36000

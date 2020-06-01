@@ -78,6 +78,7 @@ dependencies {
     testCompile "com.github.tomakehurst:wiremock:2.25.0"
     testCompile 'org.mockito:mockito-core:3.3.3'
     testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
+    testCompile 'org.apache.activemq:activemq-broker:5.15.3'
 
     // Added temporarily for message processing from gateway
     implementation 'org.springframework.boot:spring-boot-starter-artemis'

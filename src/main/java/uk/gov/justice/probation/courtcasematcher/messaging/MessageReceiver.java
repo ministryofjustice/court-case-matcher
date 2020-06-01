@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MessageReceiver {
 
+    private static final String CP_QUEUE = "CP_OutboundQueue";
     private final MessageProcessor messageProcessor;
 
     public MessageReceiver (MessageProcessor processor) {
@@ -15,7 +16,7 @@ public class MessageReceiver {
         this.messageProcessor = processor;
     }
 
-    @JmsListener(destination = "CP_OutboundQueue")
+    @JmsListener(destination = CP_QUEUE)
     public void receive(String message) {
         log.info("Received message");
         messageProcessor.process(message);
