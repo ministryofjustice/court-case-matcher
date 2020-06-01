@@ -72,7 +72,7 @@ jobs:
           keys:
             - gradle-{{ checksum "build.gradle" }}
             - gradle-
-      - run: ./gradlew build
+      - run: SPRING_PROFILES_ACTIVE=dev ./gradlew build
       - run:
           name: Record the Application Version
           command: |
