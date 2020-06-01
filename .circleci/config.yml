@@ -53,6 +53,8 @@ executors:
   builder:
     docker:
       - image: circleci/openjdk:11-jdk-browsers
+        environment:
+          SPRING_PROFILES_ACTIVE: dev
     working_directory: ~/app
 
 orbs:
