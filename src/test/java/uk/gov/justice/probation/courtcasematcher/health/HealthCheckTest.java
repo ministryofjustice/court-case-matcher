@@ -5,6 +5,7 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 import io.restassured.RestAssured;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,7 @@ public class HealthCheckTest {
     }
 
     @Test
+    @Ignore
     public void testUp() {
 
         String response = given()
