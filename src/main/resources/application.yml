@@ -9,7 +9,7 @@ cgi:
 spring:
   artemis:
     mode: native
-    host: ${jms.host}
-    user: ${jms.username}
-    password: ${jms.password}
+    host: ${jms.host:localhost}
+    user: ${jms.username:jmsuser}
+    password: ${jms.password:jmsuser}
     port: 5445
