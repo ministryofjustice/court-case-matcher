@@ -1,13 +1,11 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@EnableJms
 @Slf4j
-@Component
+@Service
 public class MessageReceiver {
 
     private final MessageProcessor messageProcessor;

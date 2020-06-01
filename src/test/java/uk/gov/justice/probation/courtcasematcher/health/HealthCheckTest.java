@@ -5,15 +5,19 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 import io.restassured.RestAssured;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
+@DirtiesContext
+@ActiveProfiles("test")
 public class HealthCheckTest {
 
     @LocalServerPort
@@ -26,7 +30,6 @@ public class HealthCheckTest {
     }
 
     @Test
-    @Ignore
     public void testUp() {
 
         String response = given()
