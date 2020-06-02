@@ -6,7 +6,6 @@ cgi:
   jms:
     destination.name: CP_OutboundQueue
 
-#spring.activemq.broker-url=tcp://localhost:5445?ssl-enabled=true
 spring:
   artemis:
     mode: native
