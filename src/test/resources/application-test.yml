@@ -15,13 +15,13 @@ spring:
     port: 5445
 
   # Embedded ActiveMQ Configuration Example
-#  activemq:
-#    broker-url: vm://embedded?broker.persistent=false,useShutdownHook=false
-#    in-memory: true
-#    non-blocking-redelivery: true
-#    packages:
-#      trust-all: false
-#      trusted: uk.gov.justice.probation
+  activemq:
+    broker-url: vm://embedded?broker.persistent=false,useShutdownHook=false
+    in-memory: true
+    non-blocking-redelivery: true
+    packages:
+      trust-all: false
+      trusted: uk.gov.justice.probation
 #    pool:
 #      block-if-full: true
 #      block-if-full-timeout: -1
@@ -33,13 +33,13 @@ spring:
 #      use-anonymous-producers: true
 #
 #  # Spring JMS Settings
-#  jms:
-#    listener:
-#      acknowledge-mode: auto
-#      auto-startup: false
-#      concurrency: 5
-#      max-concurrency: 10
-#    pub-sub-domain: false
+  jms:
+    listener:
+      acknowledge-mode: auto
+      auto-startup: false
+      concurrency: 5
+      max-concurrency: 10
+    pub-sub-domain: false
 #    template:
 #      default-destination:
 #      delivery-mode: non_persistent

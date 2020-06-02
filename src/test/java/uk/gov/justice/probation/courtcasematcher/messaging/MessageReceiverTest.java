@@ -20,7 +20,7 @@ class MessageReceiverTest {
     private MessageReceiver messageReceiver;
 
     @Test
-    void whenMessageReceived() {
+    void whenMessageReceived_ThenProcess() {
         String msg = "message";
 
         messageReceiver.receive(msg);

@@ -36,8 +36,8 @@ public class Case {
     private Address def_addr;
     private String def_age;
 
-    private String pg_type; // >P</pg_type>
-    private String pg_name; // >Tog TEYOUTHBAILTWOGUARDIAN</pg_name>
+    private String pg_type;
+    private String pg_name;
     private Address pg_addr;
 
     @JacksonXmlProperty(localName = "listno")

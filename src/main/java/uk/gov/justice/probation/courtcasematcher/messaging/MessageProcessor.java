@@ -16,7 +16,7 @@ import uk.gov.justice.probation.courtcasematcher.model.generic.csci_header.Messa
 @Slf4j
 public class MessageProcessor {
 
-    @SuppressWarnings("UnstableApiUsage") // Not part of the final solution
+    @SuppressWarnings("UnstableApiUsage") // Not part of the final product
     private final EventBus eventBus;
 
     private final GatewayMessageParser parser;
@@ -73,6 +73,6 @@ public class MessageProcessor {
 
     private void logMessageReceipt(MessageHeader messageHeader) {
         log.info("Received message UUID {}, from {}, original timestamp {}",
-            messageHeader.getMessageID().getUUID(), messageHeader.getFrom(), messageHeader.getTimeStamp());
+            messageHeader.getMessageID().getUuid(), messageHeader.getFrom(), messageHeader.getTimeStamp());
     }
 }

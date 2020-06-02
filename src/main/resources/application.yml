@@ -22,10 +22,4 @@ spring:
 #      concurrency: 5
 #      max-concurrency: 10
 #    pub-sub-domain: false
-#    template:
-#      default-destination:
-#      delivery-mode: non_persistent
-#      priority: 100
-#      qos-enabled: true
-#      receive-timeout: 1000
-#      time-to-live: 36000
+
