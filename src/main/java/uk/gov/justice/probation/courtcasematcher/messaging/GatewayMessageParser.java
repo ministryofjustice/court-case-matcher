@@ -13,16 +13,16 @@ public class GatewayMessageParser {
 
     private final XmlMapper xmlMapper;
 
-    public GatewayMessageParser(@Qualifier("gatewayMassageXmlMapper") XmlMapper xmlMapper) {
-        super();
-        this.xmlMapper = xmlMapper;
-    }
-
     public static final String EXT_DOC_NS = "http://www.justice.gov.uk/magistrates/external/ExternalDocumentRequest";
     public static final String CSCI_HDR_NS = "http://www.justice.gov.uk/magistrates/generic/CSCI_Header";
     public static final String CSCI_BODY_NS = "http://www.justice.gov.uk/magistrates/cp/CSCI_Body";
     public static final String CSC_STATUS_NS = "http://www.justice.gov.uk/magistrates/generic/CSCI_Status";
     public static final String GW_MSG_SCHEMA = "http://www.justice.gov.uk/magistrates/cp/GatewayMessageSchema";
+
+    public GatewayMessageParser(@Qualifier("gatewayMassageXmlMapper") XmlMapper xmlMapper) {
+        super();
+        this.xmlMapper = xmlMapper;
+    }
 
     public CSCIMessageType parseMessage (String xml) throws JsonProcessingException {
         return xmlMapper.readValue(xml, CSCIMessageType.class);
