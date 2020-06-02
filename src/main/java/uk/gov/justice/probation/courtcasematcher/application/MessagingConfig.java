@@ -18,7 +18,7 @@ public class MessagingConfig {
         return new ObjectMapper();
     }
 
-    @Bean(name = "gatewayMassageXmlMapper")
+    @Bean(name = "gatewayMessageXmlMapper")
     public XmlMapper xmlMapper() {
         JacksonXmlModule xmlModule = new JacksonXmlModule();
         xmlModule.setDefaultUseWrapper(false);

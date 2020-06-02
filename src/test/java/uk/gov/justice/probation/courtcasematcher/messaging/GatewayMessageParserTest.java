@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.probation.courtcasematcher.model.cp.csci.CSCIMessageType;
+import uk.gov.justice.probation.courtcasematcher.model.MessageType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Address;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Block;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
@@ -18,8 +18,8 @@ import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.D
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
-import uk.gov.justice.probation.courtcasematcher.model.generic.csci_header.MessageHeader;
-import uk.gov.justice.probation.courtcasematcher.model.generic.csci_header.MessageHeader.MessageID;
+import uk.gov.justice.probation.courtcasematcher.model.MessageHeader;
+import uk.gov.justice.probation.courtcasematcher.model.MessageHeader.MessageID;
 
 @DisplayName("Gateway Message Parser Test")
 public class GatewayMessageParserTest {
@@ -39,7 +39,7 @@ public class GatewayMessageParserTest {
         String path = "src/test/resources/messages/externDoc.xml";
         String content = Files.readString(Paths.get(path));
 
-        CSCIMessageType message = parser.parseMessage(content);
+        MessageType message = parser.parseMessage(content);
 
         MessageHeader expectedHeader = MessageHeader.builder().from("CP_NPS_ML")
             .to("CP_NPS")

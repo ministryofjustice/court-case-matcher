@@ -7,10 +7,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.justice.probation.courtcasematcher.model.cp.csci.CSCIMessageType;
+import uk.gov.justice.probation.courtcasematcher.model.MessageType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
-import uk.gov.justice.probation.courtcasematcher.model.generic.csci_header.MessageHeader;
+import uk.gov.justice.probation.courtcasematcher.model.MessageHeader;
 
 @Service
 @Slf4j
@@ -32,17 +32,17 @@ public class MessageProcessor {
 
     private Optional<List<Session>> parse(String message) {
 
-        CSCIMessageType csciMessageType;
+        MessageType messageType;
         try {
-            csciMessageType = parser.parseMessage(message);
+            messageType = parser.parseMessage(message);
         } catch (JsonProcessingException e) {
             log.error("Failed to parse message", e);
             return Optional.empty();
         }
 
-        logMessageReceipt(csciMessageType.getMessageHeader());
+        logMessageReceipt(messageType.getMessageHeader());
 
-        List<Session> sessions = csciMessageType.getMessageBody()
+        List<Session> sessions = messageType.getMessageBody()
             .getGatewayOperationType()
             .getExternalDocumentRequest()
             .getDocumentWrapper()

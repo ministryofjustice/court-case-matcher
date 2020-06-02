@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.generic.csci_status;
+package uk.gov.justice.probation.courtcasematcher.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

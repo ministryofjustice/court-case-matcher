@@ -1,5 +1,5 @@
 
-package uk.gov.justice.probation.courtcasematcher.model.generic.csci_header;
+package uk.gov.justice.probation.courtcasematcher.model;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.GatewayMessageParser.CSCI_HDR_NS;
 

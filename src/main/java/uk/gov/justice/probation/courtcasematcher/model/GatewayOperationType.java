@@ -1,5 +1,5 @@
 
-package uk.gov.justice.probation.courtcasematcher.model.cp.gatewaymessageschema;
+package uk.gov.justice.probation.courtcasematcher.model;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.GatewayMessageParser.EXT_DOC_NS;
 

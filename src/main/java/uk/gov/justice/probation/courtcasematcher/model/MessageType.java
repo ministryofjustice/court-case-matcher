@@ -1,5 +1,5 @@
 
-package uk.gov.justice.probation.courtcasematcher.model.cp.csci;
+package uk.gov.justice.probation.courtcasematcher.model;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.GatewayMessageParser.CSCI_BODY_NS;
 import static uk.gov.justice.probation.courtcasematcher.messaging.GatewayMessageParser.CSCI_HDR_NS;
@@ -11,9 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.model.cp.csci_body.MessageBodyType;
-import uk.gov.justice.probation.courtcasematcher.model.generic.csci_header.MessageHeader;
-import uk.gov.justice.probation.courtcasematcher.model.generic.csci_status.MessageStatus;
 
 
 @AllArgsConstructor
@@ -21,7 +18,7 @@ import uk.gov.justice.probation.courtcasematcher.model.generic.csci_status.Messa
 @Builder
 @Getter
 @JacksonXmlRootElement(localName = "CSCI_Message_Type")
-public class CSCIMessageType {
+public class MessageType {
 
     @JacksonXmlProperty(namespace = CSCI_HDR_NS, localName = "MessageHeader")
     private MessageHeader messageHeader;
