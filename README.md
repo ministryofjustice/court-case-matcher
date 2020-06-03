@@ -9,43 +9,41 @@ The service uses Lombok and so annotation processors must be [turned on within t
 
 In order to run the matcher and achieve messages incoming on a developer's system, we need the crime portal mirror gateway (CPMG) running. This component is able to receive SOAP messages, decodes them and places them on an Active MQ queue. 
 
-1. Run Crime Portal Mirror Gateway (https://github.com/ministryofjustice/crime-portal-mirror-gateway)
+1. Run Crime Portal Mirror Gateway (https://github.com/ministryofjustice/crime-portal-mirror-gateway). 
+We need a version of this where messages are not encrypted and which creates a WildFly instance configured for JMS. This has been altered on a branch named local-dev-run. The project contains a docker-compose configuration which will build and run the WildFly and postgres containers. The steps below show how the container is built, started and finally the application of one modification to WildFly.
 
-We need a version of this where messages are not encrypted and which creates a WildFly instance configured for JMS. This has been altered on a branch named local-dev-run. The project contains a docker-compose configuration which will build and run the WildFly and postgres containers.
 
-The steps below show how the container is built, started and finally the application of one modification to WildFly.
+        
+        git clone git@github.com:ministryofjustice/crime-portal-mirror-gateway.git
+        cd crime-portal-mirror-gateway
+        git checkout local-dev-run
+        
+        # Builds the non-encrypted version of the WAR (you need JDK 8 to build)
+        gw clean build
+        
+        # Builds the docker images (change the passwords and usernames if required)
+        docker-compose build --build-arg APP_USERNAME="appuser" --build-arg APP_PASSWORD="appuser" --build-arg JMS_USERNAME="jmsuser" --build-arg JMS_PASSWORD="jmsuser"
+        
+        # Starts as daemon
+        docker-compose up -d
+        
+        # Connect to wildfly container
+        docker exec -it mgw-wildfly bash
+        
+        # From within the container, enter the jboss CLI shell
+        /opt/jboss/wildfly/bin/jboss-cli.sh --timeout=40000
+        
+        # These commands are executed in the JBOSS CLI
+        connect
+        /subsystem=messaging-activemq/server=default/remote-acceptor=netty:add(socket-binding=messaging)
+        reload
+        quit
+        
+        # Leave the docker container
+        exit
+        
 
-```
-git clone git@github.com:ministryofjustice/crime-portal-mirror-gateway.git
-cd crime-portal-mirror-gateway
-git checkout local-dev-run
-
-# Builds the non-encrypted version of the WAR (you need JDK 8 to build)
-gw clean build
-
-# Builds the docker images (change the passwords and usernames if required)
-docker-compose build --build-arg APP_USERNAME="appuser" --build-arg APP_PASSWORD="appuser" --build-arg JMS_USERNAME="jmsuser" --build-arg JMS_PASSWORD="jmsuser"
-
-# Starts as daemon
-docker-compose up -d
-
-# Connect to wildfly container
-docker exec -it mgw-wildfly bash
-
-# From within the container, enter the jboss CLI shell
-/opt/jboss/wildfly/bin/jboss-cli.sh --timeout=40000
-
-# These commands are executed in the JBOSS CLI
-connect
-/subsystem=messaging-activemq/server=default/remote-acceptor=netty:add(socket-binding=messaging)
-reload
-quit
-
-# Leave the docker container
-exit
-```
-
-2. SOAP UI. (https://www.soapui.org/downloads/soapui/)
+2.SOAP UI. (https://www.soapui.org/downloads/soapui/)
 
 CGI have provided a project file which can be used with this software to send SOAP messages. However, the message payloads are not signed which is why we need a special version of CPMG. Download the software (community edition). Open the project XML file found in the "soap-ui-project" folder of the crime portal mirror gateway. This is configured to send the SOAP request to a running CPMG container at port 8080 on "localhost".
 
