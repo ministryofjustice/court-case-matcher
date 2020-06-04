@@ -19,7 +19,7 @@ We need a version of this where messages are not encrypted and which creates a W
         git checkout local-dev-run
         
         # Builds the non-encrypted version of the WAR (you need JDK 8 to build)
-        gw clean build
+        ./gradlew clean build
         
         # Builds the docker images (change the passwords and usernames if required)
         docker-compose build --build-arg APP_USERNAME="appuser" --build-arg APP_PASSWORD="appuser" --build-arg JMS_USERNAME="jmsuser" --build-arg JMS_PASSWORD="jmsuser"
@@ -50,6 +50,8 @@ CGI have provided a project file which can be used with this software to send SO
 If you connect to the postgres database running in the local container, you will see records of the message receipt in the message tables. SOAP UI will also show a successful acknowledgement of the SOAP receipt.
 
 Run court case matcher, but alter the server port because wildfly is also serving on port 8080. Make sure that the jmsuser and jmspassword values in your chosen spring profile match those that you built the wildfly container with.
+
+```env SPRING_PROFILES_ACTIVE=dev SERVER_PORT=8081 ./gradlew bootRun```
 
 The court case matcher will now receive the messages and will output messages like this to the console 
 
