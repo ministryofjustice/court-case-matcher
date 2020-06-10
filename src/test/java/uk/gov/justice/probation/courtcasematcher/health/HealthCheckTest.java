@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.justice.probation.courtcasematcher.TestConfig;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -23,7 +24,7 @@ public class HealthCheckTest {
 
     @Before
     public void before() {
-        RestAssured.port = port;
+        TestConfig.configureRestAssuredForIntTest(port);
         RestAssured.basePath = "/actuator";
     }
 
