@@ -78,10 +78,11 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.16.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 
-    testCompile 'io.rest-assured:rest-assured:3.0.3'
-    testCompile "com.github.tomakehurst:wiremock-jre8:2.26.2"
+    testCompile 'io.rest-assured:rest-assured:3.3.0'
+    testCompile "com.github.tomakehurst:wiremock-jre8:2.26.3"
     testCompile 'org.mockito:mockito-core:3.3.3'
     testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
+    testRuntimeOnly 'org.apache.activemq:activemq-broker:5.15.3'
 
     // Added temporarily for message processing from gateway
     implementation 'org.springframework.boot:spring-boot-starter-artemis'

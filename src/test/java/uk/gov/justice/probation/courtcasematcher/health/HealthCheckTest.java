@@ -3,7 +3,6 @@ package uk.gov.justice.probation.courtcasematcher.health;
 import static io.restassured.RestAssured.given;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
-import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +24,7 @@ public class HealthCheckTest {
     @Before
     public void before() {
         TestConfig.configureRestAssuredForIntTest(port);
-        RestAssured.basePath = "/actuator";
+//        RestAssured.basePath = "/actuator";
     }
 
     @Test
@@ -33,7 +32,7 @@ public class HealthCheckTest {
 
         String response = given()
                 .when()
-                .get("health")
+                .get("/actuator/health")
                 .then()
                 .statusCode(200)
                 .extract().response().asString();
