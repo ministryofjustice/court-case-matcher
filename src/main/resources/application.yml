@@ -15,7 +15,6 @@ spring:
     port: ${jms.port:5445}
 
 court-case-service:
-  base-url: http://court-case-service-prod.apps.live-1.cloud-platform.service.justice.gov.uk
   case-put-url-template: /court/%s/case/%s
 
 web:

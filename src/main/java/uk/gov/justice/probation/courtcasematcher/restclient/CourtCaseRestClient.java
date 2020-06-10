@@ -64,7 +64,7 @@ public class CourtCaseRestClient {
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handlePutError(clientResponse, courtCode, caseNo))
             .bodyToMono(CourtCaseApi.class)
-            .doOnError(e -> postError(String.format(ERROR_MSG_FORMAT, caseNo, courtCode) + ".Exception : " + e))
+            .doOnError(e -> postErrorToBus(String.format(ERROR_MSG_FORMAT, caseNo, courtCode) + ".Exception : " + e))
             .subscribe(courtCaseApi -> {
                 eventBus.post(CourtCaseSuccessEvent.builder().courtCaseApi(courtCaseApi).build());
             });
@@ -111,7 +111,7 @@ public class CourtCaseRestClient {
             StandardCharsets.UTF_8);
     }
 
-    private void postError(String failureMessage) {
+    private void postErrorToBus(String failureMessage) {
         eventBus.post(CourtCaseFailureEvent.builder().failureMessage(failureMessage).build());
     }
 }
