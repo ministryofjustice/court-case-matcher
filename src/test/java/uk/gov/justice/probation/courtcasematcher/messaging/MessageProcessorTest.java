@@ -40,7 +40,7 @@ class MessageProcessorTest {
 
     private static GatewayMessageParser parser;
 
-    private static CaseMapperReference caseMapperReference = new CaseMapperReference();
+    private static final CaseMapperReference caseMapperReference = new CaseMapperReference();
 
     @Mock
     private EventBus eventBus;

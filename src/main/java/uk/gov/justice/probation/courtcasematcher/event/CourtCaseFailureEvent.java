@@ -9,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 @Builder
 public class CourtCaseFailureEvent {
 
-    private String incomingMessage;
+    private final String incomingMessage;
 
-    private String failureMessage;
+    private final String failureMessage;
 
 }

@@ -10,6 +10,6 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.Court
 @Builder
 public class CourtCaseSuccessEvent {
 
-    private CourtCaseApi courtCaseApi;
+    private final CourtCaseApi courtCaseApi;
 
 }

@@ -37,7 +37,7 @@ public class CourtCaseRestClientIntTest {
     private static final String NEW_CASE_NO = "999999";
     private static final int WEB_CLIENT_TIMEOUT_MS = 2000;
 
-    CourtCaseApi aCase = CourtCaseApi.builder()
+    private static final CourtCaseApi A_CASE = CourtCaseApi.builder()
         .caseId("1246257")
         .caseNo(CASE_NO)
         .courtCode(COURT_CODE)
@@ -108,7 +108,7 @@ public class CourtCaseRestClientIntTest {
     @Test
     public void whenPutCourtCase_thenMakeRestCallToCourtCaseService() {
 
-        restClient.putCourtCase(COURT_CODE, CASE_NO, aCase);
+        restClient.putCourtCase(COURT_CODE, CASE_NO, A_CASE);
 
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(any(CourtCaseSuccessEvent.class));
     }
@@ -129,7 +129,7 @@ public class CourtCaseRestClientIntTest {
 
     @Test
     public void whenRestClientThrows500OnPut_ThenFailureEvent() {
-        restClient.putCourtCase("X500", CASE_NO, aCase);
+        restClient.putCourtCase("X500", CASE_NO, A_CASE);
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(any(CourtCaseFailureEvent.class));
     }
 

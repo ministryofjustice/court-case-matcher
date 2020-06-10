@@ -33,37 +33,4 @@ public class MessagingConfig {
         return new EventBus();
     }
 
-//    @Bean
-//    public ActiveMQConnectionFactory connectionFactory(@Value("${spring.activemq.brokerUrl}") String brokerUrl) {
-//        return new ActiveMQConnectionFactory(brokerUrl, "jmsuser", "jmsuser");
-//    }
-
-//    @Bean
-//    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(
-//                                                DefaultJmsListenerContainerFactoryConfigurer configurer,
-//        ActiveMQConnectionFactory connectionFactory,
-//                                                JmsGlobalErrorHandler myErrorHandler) {
-//
-//        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-//        configurer.configure(factory, connectionFactory);
-//        factory.setErrorHandler(myErrorHandler);
-//        return factory;
-//    }
-
-//    @Bean
-//    public JmsListenerContainerFactory<?> myFactory(
-////        ConnectionFactory connectionFactory,
-//        DefaultJmsListenerContainerFactoryConfigurer configurer,
-//        JmsGlobalErrorHandler errorHandler) {
-//        ActiveMQConnectionFactory activeMQConnectionFactory = (ActiveMQConnectionFactory)connectionFactory;
-////        RedeliveryPolicy redeliveryPolicy = new RedeliveryPolicy();
-////        redeliveryPolicy.setMaximumRedeliveries(1);
-////        activeMQConnectionFactory.set
-////        activeMQConnectionFactory.setRedeliveryPolicy(redeliveryPolicy);
-//
-//        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-//        factory.setErrorHandler(errorHandler);
-//        configurer.configure(factory, activeMQConnectionFactory);
-//        return factory;
-//    }
 }

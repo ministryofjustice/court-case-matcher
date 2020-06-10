@@ -36,7 +36,7 @@ public class GatewayMessageParserTest {
     private static final LocalTime SESSION_START_TIME = LocalTime.of(9, 1);
     private static final LocalDateTime SESSION_START = LocalDateTime.of(HEARING_DATE, SESSION_START_TIME);
     private static GatewayMessageParser parser;
-    private static CaseMapperReference caseMapperReference = new CaseMapperReference();
+    private static final CaseMapperReference caseMapperReference = new CaseMapperReference();
 
     @BeforeAll
     static void beforeAll() {
