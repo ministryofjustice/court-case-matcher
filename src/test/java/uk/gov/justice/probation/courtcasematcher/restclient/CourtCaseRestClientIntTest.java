@@ -23,9 +23,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.AddressApi;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.CourtCaseApi;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.OffenceApi;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -37,7 +37,7 @@ public class CourtCaseRestClientIntTest {
     private static final String NEW_CASE_NO = "999999";
     private static final int WEB_CLIENT_TIMEOUT_MS = 2000;
 
-    private static final CourtCaseApi A_CASE = CourtCaseApi.builder()
+    private static final CourtCase A_CASE = CourtCase.builder()
         .caseId("1246257")
         .caseNo(CASE_NO)
         .courtCode(COURT_CODE)
@@ -58,20 +58,20 @@ public class CourtCaseRestClientIntTest {
     public void whenGetCourtCase_thenMakeRestCallToCourtCaseService() {
 
         LocalDateTime startTime = LocalDateTime.of(2020, Month.JANUARY, 13, 9, 0, 0);
-        AddressApi addressApi = AddressApi.builder()
+        Address address = Address.builder()
             .line1("27")
             .line2("Elm Place")
             .line3("Bangor")
             .postcode("ad21 5dr")
             .build();
 
-        OffenceApi offenceApi = OffenceApi.builder()
+        Offence offenceApi = Offence.builder()
             .offenceSummary("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Person.")
             .offenceTitle("Theft from a shop")
             .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
             .build();
 
-        CourtCaseApi expected = CourtCaseApi.builder()
+        CourtCase expected = CourtCase.builder()
             .caseId("1246257")
             .crn("X320741")
             .pnc("D/1234560BC")
@@ -83,7 +83,7 @@ public class CourtCaseRestClientIntTest {
             .breach(Boolean.TRUE)
             .suspendedSentenceOrder(Boolean.FALSE)
             .caseNo("12345")
-            .defendantAddress(addressApi)
+            .defendantAddress(address)
             .defendantDob(LocalDate.of(1977, Month.DECEMBER, 11))
             .defendantName("Mr Dylan Adam Armstrong")
             .defendantSex("M")
@@ -92,7 +92,7 @@ public class CourtCaseRestClientIntTest {
             .offences(Collections.singletonList(offenceApi))
             .build();
 
-        Optional<CourtCaseApi> optional = restClient.getCourtCase(COURT_CODE, "123456").blockOptional();
+        Optional<CourtCase> optional = restClient.getCourtCase(COURT_CODE, "123456").blockOptional();
 
         assertThat(optional.get()).isEqualToComparingFieldByField(expected);
     }
@@ -100,7 +100,7 @@ public class CourtCaseRestClientIntTest {
     @Test
     public void givenUnknownCaseNo_whenGetCourtCase_thenReturnEmptyOptional() {
 
-        Optional<CourtCaseApi> optional = restClient.getCourtCase(COURT_CODE, NEW_CASE_NO).blockOptional();
+        Optional<CourtCase> optional = restClient.getCourtCase(COURT_CODE, NEW_CASE_NO).blockOptional();
 
         assertThat(optional.isPresent()).isFalse();
     }
@@ -117,7 +117,7 @@ public class CourtCaseRestClientIntTest {
     public void givenUnknownCourt_whenPutCourtCase_thenFailureEvent() {
 
         String unknownCourtCode = "XXX";
-        CourtCaseApi courtCaseApi = CourtCaseApi.builder()
+        CourtCase courtCaseApi = CourtCase.builder()
             .caseNo("12345")
             .courtCode(unknownCourtCode)
             .build();

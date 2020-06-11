@@ -13,6 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -33,8 +35,8 @@ import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.S
 public class GatewayMessageParserTest {
 
     private static final LocalDate HEARING_DATE = LocalDate.of(2020, Month.FEBRUARY, 19);
-    private static final LocalTime SESSION_START_TIME = LocalTime.of(9, 1);
-    private static final LocalDateTime SESSION_START = LocalDateTime.of(HEARING_DATE, SESSION_START_TIME);
+    private static final LocalTime START_TIME = LocalTime.of(9, 1);
+    private static final LocalDateTime SESSION_START_TIME = LocalDateTime.of(HEARING_DATE, START_TIME);
     private static GatewayMessageParser parser;
     private static final CaseMapperReference caseMapperReference = new CaseMapperReference();
 
@@ -47,7 +49,8 @@ public class GatewayMessageParserTest {
         final XmlMapper xmlMapper = new XmlMapper(xmlModule);
         xmlMapper.registerModule(new JavaTimeModule());
         xmlMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        parser = new GatewayMessageParser(xmlMapper, caseMapperReference);
+
+        parser = new GatewayMessageParser(xmlMapper);
     }
 
     @DisplayName("Parse a valid message")
@@ -78,10 +81,15 @@ public class GatewayMessageParserTest {
             .courtHouse("Sheffield Magistrates Court")
             .dateOfHearing("27/02/2020")
             .build();
-        Document document = message.getMessageBody().getGatewayOperationType().getExternalDocumentRequest().getDocumentWrapper().getDocument().stream().filter(document1 -> document1.getInfo().getSourceFileName().startsWith("5_")).findFirst().orElseThrow();
+        List<Document> documents = new ArrayList<>(message.getMessageBody().getGatewayOperationType().getExternalDocumentRequest()
+            .getDocumentWrapper().getDocument());
+
+        assertThat(documents).hasSize(2);
+        Document document = documents.stream()
+            .filter(doc -> doc.getInfo().getSourceFileName().startsWith("5_"))
+            .findFirst().orElseThrow();
 
         assertThat(document.getInfo()).isEqualToComparingFieldByField(expectedInfo);
-
         assertThat(document.getData().getJob().getSessions()).hasSize(1);
         checkSession(document.getData().getJob().getSessions().get(0));
     }
@@ -92,9 +100,11 @@ public class GatewayMessageParserTest {
         assertThat(session.getLja()).isEqualTo("South West London Magistrates; Court");
         assertThat(session.getCmu()).isEqualTo("Gl Management Unit 1");
         assertThat(session.getPanel()).isEqualTo("Adult Panel");
-        assertThat(session.getCourt()).isEqualTo("Sheffield Magistrates Court");
-        assertThat(session.getRoom()).isEqualTo("00");
-        assertThat(session.getStart()).isEqualTo(SESSION_START_TIME);
+//        assertThat(session.getCourtName()).isEqualTo("Sheffield Magistrates Court");
+        assertThat(session.getCourtCode()).isEqualTo("SHF");
+        assertThat(session.getCourtRoom()).isEqualTo("00");
+        assertThat(session.getStart()).isEqualTo(START_TIME);
+        assertThat(session.getSessionStartTime()).isEqualTo(SESSION_START_TIME);
         assertThat(session.getEnd()).isEqualTo(LocalTime.of(13, 5));
         assertThat(session.getBlocks()).hasSize(1);
         checkBlock(session.getBlocks().get(0));
@@ -111,9 +121,7 @@ public class GatewayMessageParserTest {
 
     private void checkCase(Case aCase) {
         // Fields populated from the session
-        assertThat(aCase.getCourtRoom()).isEqualTo("00");
-        assertThat(aCase.getCourtCode()).isEqualTo("SHF");
-        assertThat(aCase.getSessionStartTime()).isEqualTo(SESSION_START);
+//        assertThat(aCase.getBlock().getSession().getCourtName()).isEqualTo("Sheffield Magistrates Court");
 
         assertThat(aCase.getDef_age()).isEqualTo("14");
         assertThat(aCase.getId()).isEqualTo(1215460);

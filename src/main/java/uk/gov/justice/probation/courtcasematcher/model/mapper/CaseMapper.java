@@ -9,12 +9,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.application.CaseMapperReference;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.AddressApi;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.CourtCaseApi;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.OffenceApi;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Address;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence;
 
 @Component
 public class CaseMapper {
@@ -26,12 +24,12 @@ public class CaseMapper {
         this.caseMapperReference = caseMapperReference;
     }
 
-    public CourtCaseApi newFromCase(Case aCase) {
-        return CourtCaseApi.builder()
+    public CourtCase newFromCase(Case aCase) {
+        return CourtCase.builder()
             .caseNo(aCase.getCaseNo())
-            .courtCode(aCase.getCourtCode())
+            .courtCode(aCase.getBlock().getSession().getCourtCode())
             .caseId(String.valueOf(aCase.getId()))
-            .courtRoom(aCase.getCourtRoom())
+            .courtRoom(aCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(Optional.ofNullable(aCase.getDef_addr()).map(CaseMapper::fromAddress).orElse(null))
             .defendantName(aCase.getDef_name())
             .defendantDob(aCase.getDef_dob())
@@ -39,16 +37,16 @@ public class CaseMapper {
             .listNo(aCase.getListNo())
             .nationality1(aCase.getNationality1())
             .nationality2(aCase.getNationality2())
-            .sessionStartTime(aCase.getSessionStartTime())
+            .sessionStartTime(aCase.getBlock().getSession().getSessionStartTime())
             .probationStatus(caseMapperReference.getDefaultProbationStatus())
             .offences(Optional.ofNullable(aCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()))
             .build();
     }
 
-    private static List<OffenceApi> fromOffences(List<Offence> offences) {
+    private static List<Offence> fromOffences(List<uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence> offences) {
         return offences.stream()
-            .sorted(comparing(Offence::getSeq))
-            .map(offence -> OffenceApi.builder()
+            .sorted(comparing(uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence::getSeq))
+            .map(offence -> Offence.builder()
                                 .offenceTitle(offence.getTitle())
                                 .offenceSummary(offence.getSum())
                                 .sequenceNumber(offence.getSeq())
@@ -57,8 +55,8 @@ public class CaseMapper {
             .collect(Collectors.toList());
     }
 
-    public static AddressApi fromAddress(Address def_addr) {
-        return AddressApi.builder()
+    public static Address fromAddress(uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Address def_addr) {
+        return Address.builder()
             .line1(def_addr.getLine1())
             .line2(def_addr.getLine2())
             .line3(def_addr.getLine3())
@@ -68,19 +66,31 @@ public class CaseMapper {
             .build();
     }
 
-    public CourtCaseApi merge(Case aCase, CourtCaseApi courtCaseApi) {
-        courtCaseApi.setCourtRoom(aCase.getCourtRoom());
-        courtCaseApi.setDefendantAddress(fromAddress(aCase.getDef_addr()));
-        courtCaseApi.setDefendantName(aCase.getDef_name());
-        courtCaseApi.setDefendantSex(aCase.getDef_sex());
-        courtCaseApi.setDefendantDob(aCase.getDef_dob());
-        courtCaseApi.setListNo(aCase.getListNo());
-        courtCaseApi.setNationality1(aCase.getNationality1());
-        courtCaseApi.setNationality2(aCase.getNationality2());
-        courtCaseApi.setSessionStartTime(aCase.getSessionStartTime());
-        courtCaseApi.setOffences(fromOffences(aCase.getOffences()));
+    public CourtCase merge(Case incomingCase, CourtCase existingCourtCase) {
+        return CourtCase.builder()
+            // PK fields
+            .courtCode(incomingCase.getBlock().getSession().getCourtCode())
+            .caseNo(existingCourtCase.getCaseNo())
+            // Fields to be updated from incoming
+            .caseId(String.valueOf(incomingCase.getId()))
+            .courtRoom(incomingCase.getBlock().getSession().getCourtRoom())
+            .defendantAddress(fromAddress(incomingCase.getDef_addr()))
+            .defendantName(incomingCase.getDef_name())
+            .defendantSex(incomingCase.getDef_sex())
+            .defendantDob(incomingCase.getDef_dob())
+            .listNo(incomingCase.getListNo())
+            .nationality1(incomingCase.getNationality1())
+            .nationality2(incomingCase.getNationality2())
+            .sessionStartTime(incomingCase.getBlock().getSession().getSessionStartTime())
+            .offences(fromOffences(incomingCase.getOffences()))
+            // Fields to be retained from existing court case
+            .breach(existingCourtCase.getBreach())
+            .crn(existingCourtCase.getCrn())
+            .probationStatus(existingCourtCase.getProbationStatus())
+            .suspendedSentenceOrder(existingCourtCase.getSuspendedSentenceOrder())
+            .pnc(existingCourtCase.getPnc())
 
-        return courtCaseApi;
+            .build();
     }
 
 }

@@ -28,6 +28,12 @@ class CaseMapperReferenceTest {
     @DisplayName("Get court code for name")
     @Test
     void getCourtCodeForName() {
-        assertThat(caseMapperReference.getCourtCodeFromName("Sheffield Magistrates Court")).isEqualTo("SHF");
+        assertThat(caseMapperReference.getCourtCodeFromName("Sheffield Magistrates Court")).get().isEqualTo("SHF");
+    }
+
+    @DisplayName("Get court code for unknown name")
+    @Test
+    void getCourtCodeForUnknownName() {
+        assertThat(caseMapperReference.getCourtCodeFromName("Transylvania")).isEmpty();
     }
 }

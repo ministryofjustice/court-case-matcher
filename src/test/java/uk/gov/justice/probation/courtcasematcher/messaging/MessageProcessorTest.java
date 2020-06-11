@@ -26,7 +26,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.CaseMapperReference;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.CourtCaseApi;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
@@ -59,7 +59,7 @@ class MessageProcessorTest {
         xmlModule.setDefaultUseWrapper(false);
         caseMapperReference.setDefaultProbationStatus("No record");
         caseMapperReference.setCourtNameToCodes(Map.of("SheffieldMagistratesCourt", COURT_CODE));
-        parser = new GatewayMessageParser(new XmlMapper(xmlModule), caseMapperReference);
+        parser = new GatewayMessageParser(new XmlMapper(xmlModule));
     }
 
     @BeforeEach
@@ -74,7 +74,7 @@ class MessageProcessorTest {
         Disposable disposable = Mockito.mock(Disposable.class);
         String path = "src/test/resources/messages/gateway-message-single-case.xml";
 
-        CourtCaseApi existingCourtCaseApi = Mockito.mock(CourtCaseApi.class);
+        CourtCase existingCourtCaseApi = Mockito.mock(CourtCase.class);
 
         when(restClient.getCourtCase(COURT_CODE, "1600032952")).thenReturn(Mono.just(existingCourtCaseApi));
         when(caseMapper.merge(any(Case.class), eq(existingCourtCaseApi))).thenReturn(existingCourtCaseApi);
@@ -93,7 +93,7 @@ class MessageProcessorTest {
         Disposable disposable = Mockito.mock(Disposable.class);
         String path = "src/test/resources/messages/gateway-message-single-case.xml";
 
-        CourtCaseApi newCourtCaseApi = Mockito.mock(CourtCaseApi.class);
+        CourtCase newCourtCaseApi = Mockito.mock(CourtCase.class);
 
         when(restClient.getCourtCase(COURT_CODE, "1600032952")).thenReturn(Mono.empty());
         when(caseMapper.newFromCase(any(Case.class))).thenReturn(newCourtCaseApi);

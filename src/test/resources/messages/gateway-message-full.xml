@@ -351,7 +351,7 @@
                         <ns38:info>
                             <contentType>StandardCourtList</contentType>
                             <dateOfHearing>27/02/2020</dateOfHearing>
-                            <courtHouse>West London</courtHouse>
+                            <courtHouse>SHF</courtHouse>
                             <area>13</area>
                             <source_file_name>7_27022020_2992_B13HT00_ADULT_COURT_LIST_DAILY</source_file_name>
                         </ns38:info>
@@ -369,7 +369,7 @@
                                         <lja>South West London Magistrates; Court</lja>
                                         <cmu>Gl Management Unit 1</cmu>
                                         <panel>Adult Panel</panel>
-                                        <court>West London</court>
+                                        <court>Sheffield Magistrates Court</court>
                                         <room>00</room>
                                         <sstart>09:00</sstart>
                                         <send>12:00</send>

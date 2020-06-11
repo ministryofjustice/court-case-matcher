@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.eventbus.EventBus;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.MessageHeader;
 import uk.gov.justice.probation.courtcasematcher.model.MessageType;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.CourtCaseApi;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
@@ -46,7 +46,7 @@ public class MessageProcessor {
         MessageType messageType;
         try {
             messageType = parser.parseMessage(message);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             log.error("Failed to parse message", e);
             eventBus.post(CourtCaseFailureEvent.builder().failureMessage(e.getMessage()).incomingMessage(message).build());
             return Optional.empty();
@@ -79,11 +79,11 @@ public class MessageProcessor {
 
     private void store(Case incomingCase) {
 
-        Optional<CourtCaseApi> existingCase = restClient.getCourtCase(incomingCase.getCourtCode(), incomingCase.getCaseNo()).blockOptional();
-        CourtCaseApi courtCaseApi = existingCase
+        Optional<CourtCase> existingCase = restClient.getCourtCase(incomingCase.getBlock().getSession().getCourtCode(), incomingCase.getCaseNo()).blockOptional();
+        CourtCase courtCaseApi = existingCase
                                             .map(courtCaseApi1 -> {return caseMapper.merge(incomingCase, courtCaseApi1);})
                                             .orElse(caseMapper.newFromCase(incomingCase));
-        restClient.putCourtCase(incomingCase.getCourtCode(), incomingCase.getCaseNo(), courtCaseApi);
+        restClient.putCourtCase(incomingCase.getBlock().getSession().getCourtCode(), incomingCase.getCaseNo(), courtCaseApi);
     }
 
     private void logMessageReceipt(MessageHeader messageHeader) {

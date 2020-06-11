@@ -19,7 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseserviceapi.CourtCaseApi;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 
 class EventListenerTest {
 
@@ -48,7 +48,7 @@ class EventListenerTest {
     @DisplayName("Ensure that successful events are logged and counted")
     @Test
     void testSuccessEvent() {
-        CourtCaseApi courtCaseApi = CourtCaseApi.builder().caseNo("123").courtCode("SHF").build();
+        CourtCase courtCaseApi = CourtCase.builder().caseNo("123").courtCode("SHF").build();
 
         eventListener.courtCaseEvent(CourtCaseSuccessEvent.builder().courtCaseApi(courtCaseApi).build());
 
