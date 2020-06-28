@@ -37,7 +37,7 @@ public class CaseMapper {
             .caseNo(aCase.getCaseNo())
             .courtCode(aCase.getBlock().getSession().getCourtCode())
             .caseId(String.valueOf(aCase.getId()))
-            .courtRoom(String.valueOf(aCase.getBlock().getSession().getCourtRoom()))
+            .courtRoom(aCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(Optional.ofNullable(aCase.getDef_addr()).map(CaseMapper::fromAddress).orElse(null))
             .defendantName(aCase.getDef_name())
             .defendantDob(aCase.getDef_dob())
@@ -80,7 +80,7 @@ public class CaseMapper {
             .caseNo(existingCourtCase.getCaseNo())
             // Fields to be updated from incoming
             .caseId(String.valueOf(incomingCase.getId()))
-            .courtRoom(String.valueOf(incomingCase.getBlock().getSession().getCourtRoom()))
+            .courtRoom(incomingCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(fromAddress(incomingCase.getDef_addr()))
             .defendantName(incomingCase.getDef_name())
             .defendantSex(incomingCase.getDef_sex())
