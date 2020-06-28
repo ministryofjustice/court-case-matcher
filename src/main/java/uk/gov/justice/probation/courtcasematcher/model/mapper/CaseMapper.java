@@ -37,7 +37,7 @@ public class CaseMapper {
             .caseNo(aCase.getCaseNo())
             .courtCode(aCase.getBlock().getSession().getCourtCode())
             .caseId(String.valueOf(aCase.getId()))
-            .courtRoom(aCase.getBlock().getSession().getCourtRoom())
+            .courtRoom(String.valueOf(aCase.getBlock().getSession().getCourtRoom()))
             .defendantAddress(Optional.ofNullable(aCase.getDef_addr()).map(CaseMapper::fromAddress).orElse(null))
             .defendantName(aCase.getDef_name())
             .defendantDob(aCase.getDef_dob())
@@ -45,8 +45,6 @@ public class CaseMapper {
             .cro(aCase.getCro())
             .pnc(aCase.getPnc())
             .listNo(aCase.getListNo())
-            .nationality1(aCase.getNationality1())
-            .nationality2(aCase.getNationality2())
             .sessionStartTime(aCase.getBlock().getSession().getSessionStartTime())
             .probationStatus(caseMapperReference.getDefaultProbationStatus())
             .offences(Optional.ofNullable(aCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()));
@@ -82,14 +80,12 @@ public class CaseMapper {
             .caseNo(existingCourtCase.getCaseNo())
             // Fields to be updated from incoming
             .caseId(String.valueOf(incomingCase.getId()))
-            .courtRoom(incomingCase.getBlock().getSession().getCourtRoom())
+            .courtRoom(String.valueOf(incomingCase.getBlock().getSession().getCourtRoom()))
             .defendantAddress(fromAddress(incomingCase.getDef_addr()))
             .defendantName(incomingCase.getDef_name())
             .defendantSex(incomingCase.getDef_sex())
             .defendantDob(incomingCase.getDef_dob())
             .listNo(incomingCase.getListNo())
-            .nationality1(incomingCase.getNationality1())
-            .nationality2(incomingCase.getNationality2())
             .sessionStartTime(incomingCase.getBlock().getSession().getSessionStartTime())
             .offences(fromOffences(incomingCase.getOffences()))
             // Fields to be retained from existing court case
