@@ -64,6 +64,13 @@ offender-search-client-id=probation-in-court
 curl -X GET http://localhost:8080/actuator/health
 ```
 
+Spring Boot exposes liveness and readiness probes at the following endpoints
+
+```
+curl http://localhost:8080/actuator/health/liveness
+curl http://localhost:8080/actuator/health/readiness
+```
+
 ### Application Ping
 ```
 curl -X GET http://localhost:8080/ping
