@@ -35,7 +35,7 @@ env:
     valueFrom:
       secretKeyRef:
         name: pict-cpmg-wildfly-credentials
-        key: nomis-oauth-client-secret
+        key: user-password
 
   - name: GATEWAY_WILDFLY_ADMIN_USERNAME
     valueFrom:
