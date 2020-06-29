@@ -9,10 +9,10 @@ cgi:
 spring:
   artemis:
     mode: native
-    host: "localhost"
-    user: "jmsuser"
-    password: "jmsuser"
-    port: 5445
+    host: "dev.crime-portal-mirror-gateway.service.justice.gov.uk"
+    user: ${GATEWAY_JMS_USERNAME:jmsuser}
+    password: ${GATEWAY_JMS_PASSWORD:jmsuser}
+    port: ${GATEWAY_JMS_PORT:5445}
 
 court-case-service:
   base-url: https://court-case-service-dev.apps.live-1.cloud-platform.service.justice.gov.uk
