@@ -3,6 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -54,10 +55,22 @@ public class CourtCaseRestClientIntTest {
     private static final String NEW_CASE_NO = "999999";
     private static final int WEB_CLIENT_TIMEOUT_MS = 2000;
 
+    private static final GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
+        .matches(Collections.singletonList(OffenderMatch.builder()
+            .matchType(MatchType.NAME_DOB)
+            .matchIdentifiers(MatchIdentifiers.builder()
+                .crn("X123456")
+                .cro("E1324/11")
+                .pnc("PNC")
+                .build())
+            .build()))
+        .build();
+
     private static final CourtCase A_CASE = CourtCase.builder()
         .caseId("1246257")
         .caseNo(CASE_NO)
         .courtCode(COURT_CODE)
+        .groupedOffenderMatches(matches)
         .build();
 
     @Mock
@@ -142,6 +155,13 @@ public class CourtCaseRestClientIntTest {
         restClient.putCourtCase(COURT_CODE, CASE_NO, A_CASE);
 
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(any(CourtCaseSuccessEvent.class));
+
+        verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
+        List<LoggingEvent> events = captorLoggingEvent.getAllValues();
+        LoggingEvent loggingEvent = events.get(0);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.INFO);
+        assertThat(loggingEvent.getFormattedMessage().trim())
+            .contains("/court/SHF/case/1600028974/grouped-offender-matches/4");
     }
 
     @Test
@@ -166,17 +186,6 @@ public class CourtCaseRestClientIntTest {
 
     @Test
     public void whenPostOffenderMatches_thenMakeRestCallToCourtCaseService() {
-
-        GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
-            .matches(Collections.singletonList(OffenderMatch.builder()
-                                                .matchType(MatchType.ALL_SUPPLIED)
-                                                .matchIdentifiers(MatchIdentifiers.builder()
-                                                    .crn("X123456")
-                                                    .cro("E1324/11")
-                                                    .pnc("PNC")
-                                                    .build())
-                                                .build()))
-            .build();
 
         restClient.postMatches(COURT_CODE, CASE_NO, matches);
 
@@ -217,17 +226,6 @@ public class CourtCaseRestClientIntTest {
     @Test
     public void whenRestClientThrows500OnPostMatches_ThenFailureEvent() {
 
-        GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
-            .matches(Collections.singletonList(OffenderMatch.builder()
-                .matchType(MatchType.ALL_SUPPLIED)
-                .matchIdentifiers(MatchIdentifiers.builder()
-                    .crn("X99999")
-                    .cro("E1324/11")
-                    .pnc("PNC")
-                    .build())
-                .build()))
-            .build();
-
         restClient.postMatches("X500", CASE_NO, matches);
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
@@ -237,6 +235,13 @@ public class CourtCaseRestClientIntTest {
         assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
         assertThat(loggingEvent.getFormattedMessage().trim())
             .startsWith("Unexpected exception when POST matches for case number '12345' for court 'X500'");
+    }
 
+    @Test
+    public void whenRestClientCalledWithEmptyOptional_ThenFailureEvent() {
+
+        restClient.postMatches(COURT_CODE, CASE_NO, null);
+
+        verify(mockAppender, never()).doAppend(captorLoggingEvent.capture());
     }
 }

@@ -65,27 +65,34 @@ public class CourtCaseRestClient {
 
     public Disposable putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
+        final GroupedOffenderMatches offenderMatches = courtCase.getGroupedOffenderMatches();
 
         return put(path, courtCase)
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleError(clientResponse, courtCode, caseNo))
             .bodyToMono(CourtCase.class)
             .doOnError(e -> postErrorToBus(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode) + ".Exception : " + e))
-            .subscribe(courtCaseApi -> eventBus.post(CourtCaseSuccessEvent.builder().courtCaseApi(courtCaseApi).build()));
+            .subscribe(courtCaseApi -> {
+                eventBus.post(CourtCaseSuccessEvent.builder().courtCaseApi(courtCaseApi).build());
+                postMatches(courtCaseApi.getCourtCode(), courtCaseApi.getCaseNo(), offenderMatches);
+            });
     }
 
-    public Disposable postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
-        final String path = String.format(matchesPostTemplate, courtCode, caseNo);
+    public void postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
 
-        return post(path, offenderMatches)
-            .retrieve()
-            .onStatus(HttpStatus::isError, (clientResponse) -> handleError(clientResponse, courtCode, caseNo))
-            .toBodilessEntity()
-            .doOnError(e -> log.error(String.format(ERR_MSG_FORMAT_POST_MATCH, caseNo, courtCode) + ".Exception : " + e))
-            .subscribe(responseEntity -> {
-                log.info("Successful POST of offender matches. Response location: {} ",
-                    Optional.ofNullable(responseEntity.getHeaders().getFirst(HttpHeaders.LOCATION)).orElse("[NOT FOUND]"));
-            });
+        if (offenderMatches != null) {
+            final String path = String.format(matchesPostTemplate, courtCode, caseNo);
+            post(path, offenderMatches)
+                .retrieve()
+                .onStatus(HttpStatus::isError, (clientResponse) -> handleError(clientResponse, courtCode, caseNo))
+                .toBodilessEntity()
+                .doOnError(e -> log.error(String.format(ERR_MSG_FORMAT_POST_MATCH, caseNo, courtCode) + ".Exception : " + e))
+                .subscribe(responseEntity -> {
+                    log.info("Successful POST of offender matches. Response location: {} ",
+                        Optional.ofNullable(responseEntity.getHeaders().getFirst(HttpHeaders.LOCATION))
+                            .orElse("[NOT FOUND]"));
+                });
+        }
     }
 
     private WebClient.RequestHeadersSpec<?> get(String path) {

@@ -152,7 +152,7 @@ class MatcherServiceTest {
         matcherService.match(incomingCase);
 
         verify(caseMapper).merge(incomingCase, courtCase);
-        verify(caseMapper, never()).newFromCaseAndOffender(incomingCase, offender);
+        verify(caseMapper, never()).newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class));
         verify(caseMapper, never()).newFromCase(incomingCase);
         verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(COURT_CODE, CASE_NO, courtCase);
         verify(courtCaseRestClient, never()).postMatches(COURT_CODE, CASE_NO, groupedOffenderMatches);
@@ -169,7 +169,7 @@ class MatcherServiceTest {
 
         verify(caseMapper).newFromCase(incomingCase);
         verify(caseMapper, never()).merge(any(Case.class), eq(courtCase));
-        verify(caseMapper, never()).newFromCaseAndOffender(incomingCase, offender);
+        verify(caseMapper, never()).newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class));
         verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(COURT_CODE, CASE_NO, courtCase);
         verify(courtCaseRestClient, never()).postMatches(COURT_CODE, CASE_NO, groupedOffenderMatches);
     }
@@ -178,17 +178,16 @@ class MatcherServiceTest {
     void givenIncomingCaseDoesNotMatchExistingCase_andItExactlyMatchesASingleOffender_whenMatchCalled_thenCreateANewRecordWithOffenderData(){
         when(courtCaseRestClient.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
         when(offenderSearchRestClient.search(DEF_NAME, DEF_DOB)).thenReturn(Mono.just(singleExactMatch));
-        when(caseMapper.newFromCaseAndOffender(incomingCase, offender)).thenReturn(courtCase);
+        when(caseMapper.newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class))).thenReturn(courtCase);
         when(courtCaseRestClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(mock(Disposable.class));
 
         matcherService.match(incomingCase);
 
-        verify(caseMapper).newFromCaseAndOffender(incomingCase, offender);
+        verify(caseMapper).newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class));
         verify(caseMapper, never()).merge(any(Case.class), eq(courtCase));
         verify(caseMapper, never()).newFromCase(incomingCase);
         verify(courtCaseRestClient).getCourtCase(COURT_CODE, CASE_NO);
         verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(COURT_CODE, CASE_NO, courtCase);
-        verify(courtCaseRestClient).postMatches(COURT_CODE, CASE_NO, groupedOffenderMatches);
         verifyNoMoreInteractions(courtCaseRestClient);
     }
 
@@ -203,12 +202,9 @@ class MatcherServiceTest {
 
         verify(caseMapper).newFromCase(incomingCase);
         verify(caseMapper, never()).merge(any(Case.class), eq(courtCase));
-        verify(caseMapper, never()).newFromCaseAndOffender(incomingCase, offender);
+        verify(caseMapper, never()).newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class));
         verify(courtCaseRestClient).getCourtCase(COURT_CODE, CASE_NO);
         verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(COURT_CODE, CASE_NO, courtCase);
-        verify(courtCaseRestClient).postMatches(COURT_CODE, CASE_NO, GroupedOffenderMatches.builder()
-                                                                                            .matches(Arrays.asList(offenderMatch, offenderMatch))
-                                                                                            .build());
         verifyNoMoreInteractions(courtCaseRestClient);
     }
 
@@ -217,14 +213,14 @@ class MatcherServiceTest {
         when(courtCaseRestClient.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
         when(offenderSearchRestClient.search(DEF_NAME, DEF_DOB)).thenReturn(Mono.just(noMatches));
         when(caseMapper.newFromCase(incomingCase)).thenReturn(courtCase);
-        when(courtCaseRestClient.putCourtCase(eq(COURT_CODE), eq(CASE_NO), eq(courtCase))).thenReturn(mock(Disposable.class));
+        when(courtCaseRestClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(mock(Disposable.class));
 
         matcherService.match(incomingCase);
 
         verify(caseMapper).newFromCase(incomingCase);
         verify(caseMapper, never()).merge(any(Case.class), eq(courtCase));
-        verify(caseMapper, never()).newFromCaseAndOffender(incomingCase, offender);
-        verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(eq(COURT_CODE), eq(CASE_NO), eq(courtCase));
+        verify(caseMapper, never()).newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class));
+        verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(COURT_CODE, CASE_NO, courtCase);
         verifyNoMoreInteractions(courtCaseRestClient);
     }
 
@@ -239,8 +235,8 @@ class MatcherServiceTest {
 
         verify(caseMapper).newFromCase(incomingCase);
         verify(caseMapper, never()).merge(any(Case.class), eq(courtCase));
-        verify(caseMapper, never()).newFromCaseAndOffender(incomingCase, offender);
-        verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(eq(COURT_CODE), eq(CASE_NO), eq(courtCase));
+        verify(caseMapper, never()).newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class));
+        verify(courtCaseRestClient, timeout(REST_CLIENT_WAIT_MS)).putCourtCase(COURT_CODE, CASE_NO, courtCase);
         verifyNoMoreInteractions(courtCaseRestClient);
     }
 
@@ -248,7 +244,7 @@ class MatcherServiceTest {
     public void whenMatchesReturned_thenPostMatchesAndLogTheDetails() {
         when(courtCaseRestClient.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
         when(offenderSearchRestClient.search(DEF_NAME, DEF_DOB)).thenReturn(Mono.just(singleExactMatch));
-        when(caseMapper.newFromCaseAndOffender(incomingCase, offender)).thenReturn(courtCase);
+        when(caseMapper.newFromCaseAndOffender(eq(incomingCase), eq(offender), any(GroupedOffenderMatches.class))).thenReturn(courtCase);
         when(courtCaseRestClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(mock(Disposable.class));
 
         matcherService.match(incomingCase);
@@ -260,7 +256,6 @@ class MatcherServiceTest {
 
         verify(courtCaseRestClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
         verify(courtCaseRestClient).getCourtCase(COURT_CODE, CASE_NO);
-        verify(courtCaseRestClient).postMatches(COURT_CODE, CASE_NO, groupedOffenderMatches);
         verifyNoMoreInteractions(courtCaseRestClient);
     }
 

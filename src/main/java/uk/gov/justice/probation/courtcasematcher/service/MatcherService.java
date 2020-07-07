@@ -1,14 +1,12 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collections;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
@@ -44,7 +42,6 @@ public class MatcherService {
                 .switchIfEmpty(Mono.defer(() -> Mono.just(caseMapper.newFromCase(incomingCase))))
                 .map(courtCase -> restClient.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase))
                 .block();
-
     }
 
     private Mono<CourtCase> newMatchedCaseOf(Case incomingCase) {
@@ -52,36 +49,32 @@ public class MatcherService {
         final String caseNo = incomingCase.getCaseNo();
         return offenderSearchRestClient.search(incomingCase.getDef_name(), incomingCase.getDef_dob())
                 .map(searchResponse -> {
-                    log.info(String.format("Match results for caseNo: %s, courtCode: %s - matchedBy: %s, matchCount: %s", caseNo, courtCode, searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));
+                    log.info(String.format("Match results for caseNo: %s, courtCode: %s - matchedBy: %s, matchCount: %s",
+                        caseNo, courtCode, searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));
                     return searchResponse;
                 })
                 .filter(searchResponse -> searchResponse.getMatchedBy() == MatchType.ALL_SUPPLIED)
                 .map(SearchResponse::getMatches)
                 .flatMap(matches -> {
-                    postMatches(courtCode, caseNo, matches, MatchType.ALL_SUPPLIED);
                     if (matches != null && matches.size() == 1)
                         return Mono.just(matches.get(0));
                     else
                         return Mono.empty();
                 })
-                .map( match -> caseMapper.newFromCaseAndOffender(incomingCase, match.getOffender()))
+                .map( match -> caseMapper.newFromCaseAndOffender(incomingCase, match.getOffender(), buildGroupedOffenderMatch(match, MatchType.NAME_DOB)))
                 // Ideally we would avoid blocking at this point and continue with Mono processing
                 .doOnSuccess((data) -> {
                     if (data == null) {
-                        log.error(String.format("Match results for caseNo: %s, courtCode: %s - Empty response from OffenderSearchRestClient", incomingCase.getCaseNo(), incomingCase.getBlock().getSession().getCourtCode()));
+                        log.error(String.format("Match results for caseNo: %s, courtCode: %s - Empty response from OffenderSearchRestClient",
+                            incomingCase.getCaseNo(), incomingCase.getBlock().getSession().getCourtCode()));
                     }
                 });
     }
 
-    private void postMatches(String courtCode, String caseNo, List<Match> offenderMatches, MatchType matchType) {
+    private GroupedOffenderMatches buildGroupedOffenderMatch (Match offenderMatch, MatchType matchType) {
 
-        if (CollectionUtils.isEmpty(offenderMatches)) {
-            return;
-        }
-
-        GroupedOffenderMatches groupedOffenderMatches = GroupedOffenderMatches.builder()
-            .matches(offenderMatches.stream()
-                    .map(offenderMatch -> OffenderMatch.builder()
+        return GroupedOffenderMatches.builder()
+            .matches(Collections.singletonList(OffenderMatch.builder()
                         .confirmed(false)
                         .matchType(matchType)
                         .matchIdentifiers(MatchIdentifiers.builder()
@@ -89,10 +82,11 @@ public class MatcherService {
                             .cro(offenderMatch.getOffender().getOtherIds().getCro())
                             .crn(offenderMatch.getOffender().getOtherIds().getCrn())
                             .build())
-                        .build())
-                    .collect(Collectors.toList()))
+                        .build()))
             .build();
-
-        restClient.postMatches(courtCode, caseNo, groupedOffenderMatches);
     }
+
+//    public void saveOffenderMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
+//        restClient.postMatches(courtCode, caseNo, offenderMatches);
+//    }
 }
