@@ -203,7 +203,7 @@ public class CourtCaseRestClientIntTest {
 
         GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
             .matches(Collections.singletonList(OffenderMatch.builder()
-                .matchType(MatchType.ALL_SUPPLIED)
+                .matchType(MatchType.NAME_DOB)
                 .matchIdentifiers(MatchIdentifiers.builder()
                     .crn("X99999")
                     .cro("E1324/11")

@@ -1,5 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
+import static uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType.ALL_SUPPLIED;
+
 import java.util.Collections;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -53,7 +55,7 @@ public class MatcherService {
                         caseNo, courtCode, searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));
                     return searchResponse;
                 })
-                .filter(searchResponse -> searchResponse.getMatchedBy() == MatchType.ALL_SUPPLIED)
+                .filter(searchResponse -> searchResponse.getMatchedBy() == ALL_SUPPLIED)
                 .map(SearchResponse::getMatches)
                 .flatMap(matches -> {
                     if (matches != null && matches.size() == 1)
@@ -61,7 +63,7 @@ public class MatcherService {
                     else
                         return Mono.empty();
                 })
-                .map( match -> caseMapper.newFromCaseAndOffender(incomingCase, match.getOffender(), buildGroupedOffenderMatch(match, MatchType.NAME_DOB)))
+                .map( match -> caseMapper.newFromCaseAndOffender(incomingCase, match.getOffender(), buildGroupedOffenderMatch(match, MatchType.of(ALL_SUPPLIED))))
                 // Ideally we would avoid blocking at this point and continue with Mono processing
                 .doOnSuccess((data) -> {
                     if (data == null) {

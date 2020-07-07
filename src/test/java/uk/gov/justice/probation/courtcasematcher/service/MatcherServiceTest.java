@@ -43,6 +43,7 @@ import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
@@ -83,7 +84,7 @@ class MatcherServiceTest {
             .matches(singletonList(Match.builder()
                     .offender(offender)
                     .build()))
-            .matchedBy(MatchType.ALL_SUPPLIED)
+            .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
     private final SearchResponse multipleExactMatches = SearchResponse.builder()
             .matches(Arrays.asList(
@@ -93,21 +94,21 @@ class MatcherServiceTest {
                     Match.builder()
                     .offender(offender)
                     .build()))
-            .matchedBy(MatchType.ALL_SUPPLIED)
+            .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
     private final SearchResponse noMatches = SearchResponse.builder()
-            .matchedBy(MatchType.NOTHING)
+            .matchedBy(OffenderSearchMatchType.NOTHING)
             .matches(Collections.emptyList())
             .build();
     private final SearchResponse singleFuzzyMatch = SearchResponse.builder()
             .matches(singletonList(Match.builder()
                     .offender(offender)
                     .build()))
-            .matchedBy(MatchType.PARTIAL_NAME_DOB_LENIENT)
+            .matchedBy(OffenderSearchMatchType.PARTIAL_NAME_DOB_LENIENT)
             .build();
 
     private final OffenderMatch offenderMatch = OffenderMatch.builder()
-        .matchType(MatchType.ALL_SUPPLIED)
+        .matchType(MatchType.NAME_DOB)
         .confirmed(false)
         .matchIdentifiers(MatchIdentifiers.builder()
             .crn(CRN)
