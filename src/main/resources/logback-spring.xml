@@ -35,21 +35,6 @@
         <appender-ref ref="aiAppender"/>
     </logger>
 
-    <logger name="org.springframework" additivity="false" level="INFO" >
-        <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
-    </logger>
-
-    <logger name="springfox.documentation.spring" additivity="false" level="INFO" >
-        <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
-    </logger>
-
-    <logger name="com.zaxxer.hikari" additivity="false" level="WARN" >
-        <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
-    </logger>
-
     <root level="INFO">
         <appender-ref ref="consoleAppender"/>
         <appender-ref ref="aiAppender"/>
