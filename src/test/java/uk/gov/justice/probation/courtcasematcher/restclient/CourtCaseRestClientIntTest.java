@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.Before;
 import org.junit.Rule;
@@ -243,5 +244,44 @@ public class CourtCaseRestClientIntTest {
         restClient.postMatches(COURT_CODE, CASE_NO, null);
 
         verify(mockAppender, never()).doAppend(captorLoggingEvent.capture());
+    }
+
+    @Test
+    public void whenPurgeAbsent_ThenPutAndLog() {
+
+        Map<LocalDate, List<String>> casesByDate = Map.of(LocalDate.of(2020, Month.JANUARY, 1), Collections.emptyList());
+        restClient.purgeAbsent(COURT_CODE, casesByDate);
+
+        verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
+        List<LoggingEvent> events = captorLoggingEvent.getAllValues();
+        LoggingEvent loggingEvent = events.get(0);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.INFO);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo("Successful PUT of all cases for purge in court case service for court SHF");
+    }
+
+    @Test
+    public void givenUnknownCourt_whenPurgeAbsent_ThenReturn404() {
+
+        Map<LocalDate, List<String>> casesByDate = Map.of(LocalDate.of(2020, Month.JANUARY, 1), Collections.emptyList());
+        restClient.purgeAbsent("XXX", casesByDate);
+
+        verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
+        List<LoggingEvent> events = captorLoggingEvent.getAllValues();
+        LoggingEvent loggingEvent = events.get(0);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getFormattedMessage()).contains("Unexpected exception when applying PUT to purge absent cases for court 'XXX'");
+    }
+
+    @Test
+    public void whenRestClientThrows500OnPurgeAbsent_ThenFailureEvent() {
+
+        Map<LocalDate, List<String>> casesByDate = Map.of(LocalDate.of(2020, Month.JANUARY, 1), Collections.emptyList());
+        restClient.purgeAbsent("X500", casesByDate);
+
+        verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
+        List<LoggingEvent> events = captorLoggingEvent.getAllValues();
+        LoggingEvent loggingEvent = events.get(0);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getFormattedMessage()).contains("Unexpected exception when applying PUT to purge absent cases for court 'X500'");
     }
 }

@@ -2,7 +2,10 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +15,7 @@ import com.google.common.eventbus.EventBus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -22,14 +26,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.application.CaseMapperReference;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.MessageType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 
 @DisplayName("Message Processor")
@@ -41,12 +46,16 @@ class MessageProcessorTest {
 
     private static final CaseMapperReference caseMapperReference = new CaseMapperReference();
     private static String singleCaseXml;
+    private static String multipleSessionXml;
 
     @Mock
     private EventBus eventBus;
 
     @Mock
     private MatcherService matcherService;
+
+    @Mock
+    private CourtCaseService courtCaseService;
 
     @Mock
     private Validator validator;
@@ -56,8 +65,14 @@ class MessageProcessorTest {
     @Captor
     private ArgumentCaptor<Case> captor;
 
+    @Captor
+    private ArgumentCaptor<List<Case>> captorCases;
+
     @BeforeAll
     static void beforeAll() throws IOException {
+
+        String multipleSessionPath = "src/test/resources/messages/gateway-message-full.xml";
+        multipleSessionXml = Files.readString(Paths.get(multipleSessionPath));
 
         String path = "src/test/resources/messages/gateway-message-single-case.xml";
         singleCaseXml = Files.readString(Paths.get(path));
@@ -70,7 +85,7 @@ class MessageProcessorTest {
         JacksonXmlModule xmlModule = new JacksonXmlModule();
         xmlModule.setDefaultUseWrapper(false);
         GatewayMessageParser parser = new GatewayMessageParser(new XmlMapper(xmlModule), validator);
-        messageProcessor = new MessageProcessor(parser, eventBus, matcherService);
+        messageProcessor = new MessageProcessor(parser, eventBus, matcherService, courtCaseService);
     }
 
     @DisplayName("Receive a valid case then attempt to match")
@@ -82,6 +97,19 @@ class MessageProcessorTest {
         verify(matcherService).match(captor.capture());
         assertThat(captor.getValue().getCaseNo()).isEqualTo(CASE_NO);
         assertThat(captor.getValue().getBlock().getSession().getCourtCode()).isEqualTo(COURT_CODE);
+    }
+
+    @DisplayName("Receive multiple valid cases then attempt to match")
+    @Test
+    void whenValidMessageReceivedWithMultipleSessions_ThenAttemptMatch() {
+
+        messageProcessor.process(multipleSessionXml);
+
+        InOrder inOrder = inOrder(matcherService, courtCaseService);
+        inOrder.verify(matcherService, timeout(500).times(18)).match(any(Case.class));
+        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), captorCases.capture());
+
+        assertThat(captorCases.getValue().size()).isEqualTo(18);
     }
 
     @DisplayName("An XML message which is invalid")
@@ -115,18 +143,5 @@ class MessageProcessorTest {
         verify(eventBus).post(any(CourtCaseFailureEvent.class));
     }
 
-    private static class CaseMatcher implements ArgumentMatcher<Case> {
-
-        private final Long id;
-
-        public CaseMatcher(Long id) {
-            this.id = id;
-        }
-
-        @Override
-        public boolean matches(Case aCase) {
-            return id.equals(aCase.getId());
-        }
-    }
 
 }

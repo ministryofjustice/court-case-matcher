@@ -2,7 +2,11 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 
 import com.google.common.eventbus.EventBus;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,11 +25,13 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
+import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtNotFoundException;
 
 @Component
 @Slf4j
 public class CourtCaseRestClient {
 
+    private static final String ERR_MSG_FORMAT_PUT_ABSENT = "Unexpected exception when applying PUT to purge absent cases for court '%s'";
     private static final String ERR_MSG_FORMAT_PUT_CASE = "Unexpected exception when applying PUT to update case number '%s' for court '%s'";
     private static final String ERR_MSG_FORMAT_POST_MATCH = "Unexpected exception when POST matches for case number '%s' for court '%s'";
 
@@ -33,6 +39,8 @@ public class CourtCaseRestClient {
     private String courtCasePutTemplate;
     @Value("${court-case-service.matches-post-url-template}")
     private String matchesPostTemplate;
+    @Value("${court-case-service.purge-absent-put-url-template}")
+    private String purgeAbsentPutTemplate;
 
     private final EventBus eventBus;
 
@@ -95,6 +103,19 @@ public class CourtCaseRestClient {
         }
     }
 
+    public void purgeAbsent(String courtCode, Map<LocalDate, List<String>> cases) {
+
+        final String path = String.format(purgeAbsentPutTemplate, courtCode);
+        put(path, cases)
+            .retrieve()
+            .onStatus(HttpStatus::isError, (clientResponse) -> handleError(clientResponse, () -> new CourtNotFoundException(courtCode)))
+            .toBodilessEntity()
+            .doOnError(e -> log.error(String.format(ERR_MSG_FORMAT_PUT_ABSENT, courtCode) + ".Exception : " + e))
+            .subscribe(responseEntity -> {
+                log.info("Successful PUT of all cases for purge in court case service for court {}", courtCode);
+            });
+    }
+
     private WebClient.RequestHeadersSpec<?> get(String path) {
         return webClient
             .get()
@@ -107,6 +128,14 @@ public class CourtCaseRestClient {
             .put()
             .uri(uriBuilder -> uriBuilder.path(path).build())
             .body(Mono.just(courtCase), CourtCase.class)
+            .accept(MediaType.APPLICATION_JSON);
+    }
+
+    private WebClient.RequestHeadersSpec<?> put(String path, Map<LocalDate, List<String>> casesByDate) {
+        return webClient
+            .put()
+            .uri(uriBuilder -> uriBuilder.path(path).build())
+            .body(Mono.just(casesByDate), Map.class)
             .accept(MediaType.APPLICATION_JSON);
     }
 
@@ -136,6 +165,18 @@ public class CourtCaseRestClient {
         final HttpStatus httpStatus = clientResponse.statusCode();
         if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
             return Mono.error(new CourtCaseNotFoundException(courtCode, caseNo));
+        }
+        throw WebClientResponseException.create(httpStatus.value(),
+            httpStatus.name(),
+            clientResponse.headers().asHttpHeaders(),
+            clientResponse.toString().getBytes(),
+            StandardCharsets.UTF_8);
+    }
+
+    private Mono<? extends Throwable> handleError(ClientResponse clientResponse, Supplier<Throwable> notFoundError) {
+        final HttpStatus httpStatus = clientResponse.statusCode();
+        if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
+            return Mono.error(notFoundError.get());
         }
         throw WebClientResponseException.create(httpStatus.value(),
             httpStatus.name(),
