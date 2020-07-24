@@ -52,8 +52,8 @@ The court case matcher will now receive the messages and will output messages li
 The following environment variables should be set when running the spring boot application, so as to enable communications with offender-search.
 
 ```
-offender-search-client-secret=[insert secret string here]
-offender-search-client-id=probation-in-court
+OFFENDER_SEARCH_CLIENT_SECRET=[insert secret string here]
+OFFENDER_SEARCH_CLIENT_ID=court-case-matcher
 ```
 
 ### Application health
