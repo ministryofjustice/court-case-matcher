@@ -209,11 +209,6 @@ public class CourtCaseRestClientIntTest {
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
         assertThat(events).hasSizeGreaterThanOrEqualTo(1);
-
-//        LoggingEvent loggingEvent = events.get(0);
-//        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-//        assertThat(loggingEvent.getFormattedMessage().trim())
-//            .startsWith("Unexpected exception when POST matches for case number '12345' for court 'XXX'");
     }
 
     @Test
@@ -225,10 +220,6 @@ public class CourtCaseRestClientIntTest {
 
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
         assertThat(events).hasSizeGreaterThanOrEqualTo(1);
-//        LoggingEvent loggingEvent = events.get(0);
-//        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-//        assertThat(loggingEvent.getFormattedMessage().trim())
-//            .startsWith("Unexpected exception when POST matches for case number '12345' for court 'X500'");
     }
 
     @Test
