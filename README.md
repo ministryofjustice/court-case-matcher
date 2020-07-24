@@ -49,7 +49,7 @@ The court case matcher will now receive the messages and will output messages li
 ```
 ### Environment 
 
-The following environment variables should be set when running the spring boot application, so as to enable communications with offender-search.
+The following environment variables should be set when running the spring boot application, so as to enable communications with offender-search. The secrets are available in the namespace, with the name "court-case-matcher-secrets".
 
 ```
 OFFENDER_SEARCH_CLIENT_SECRET=[insert secret string here]
