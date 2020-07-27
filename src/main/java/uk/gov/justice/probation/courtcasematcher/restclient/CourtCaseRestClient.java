@@ -161,7 +161,7 @@ public class CourtCaseRestClient {
 
     private RequestHeadersSpec<?> addSpecAuthAttribute(RequestHeadersSpec<?> spec, String path) {
         if (disableAuthentication) {
-            log.info(String.format("Skipping authentication with community api for call to %s", path));
+            log.info(String.format("Skipping authentication with court case service for call to %s", path));
             return spec;
         }
 
