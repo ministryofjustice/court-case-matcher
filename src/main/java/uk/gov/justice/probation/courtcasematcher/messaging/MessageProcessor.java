@@ -2,15 +2,18 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import com.google.common.eventbus.EventBus;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.MessageHeader;
@@ -25,6 +28,9 @@ import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 @Slf4j
 public class MessageProcessor {
 
+    @Value("${case-feed-future-date-offset}")
+    private int caseFeedFutureDateOffset;
+
     @SuppressWarnings("UnstableApiUsage") // Not part of the final product
     private final EventBus eventBus;
 
@@ -35,7 +41,10 @@ public class MessageProcessor {
     private final CourtCaseService courtCaseService;
 
     @Autowired
-    public MessageProcessor(GatewayMessageParser gatewayMessageParser, EventBus eventBus, MatcherService matcherService, CourtCaseService courtCaseService) {
+    public MessageProcessor(GatewayMessageParser gatewayMessageParser,
+                            EventBus eventBus,
+                            MatcherService matcherService,
+                            CourtCaseService courtCaseService) {
         super();
         this.parser = gatewayMessageParser;
         this.eventBus = eventBus;
@@ -71,6 +80,7 @@ public class MessageProcessor {
 
     private void process(MessageType messageType) {
         DocumentWrapper documentWrapper = messageType.getMessageBody().getGatewayOperationType().getExternalDocumentRequest().getDocumentWrapper();
+
         List<Session> sessions = documentWrapper
             .getDocument()
             .stream()
@@ -80,10 +90,13 @@ public class MessageProcessor {
         List<CompletableFuture<Long>> futures = matchCases(sessions);
 
         // This is a temporary measure to get the court code until we have proper court reference data
-        String courtCode = getCourtCode(sessions);
+        Set<String> courtCodes = getCourtCodes(sessions);
+        Set<LocalDate> hearingDates = getHearingDates(sessions);
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenRun(() -> {
-            log.debug("Purging cases for court {}", courtCode);
-            courtCaseService.purgeAbsent(courtCode, getAllCases(sessions));
+            courtCodes.forEach(courtCode ->  {
+                log.debug("Purging cases for court {}", courtCode);
+                courtCaseService.purgeAbsent(courtCode, hearingDates, getAllCases(sessions));
+            });
         });
     }
 
@@ -105,14 +118,31 @@ public class MessageProcessor {
         return session.getId();
     }
 
-    private String getCourtCode(List<Session> sessions) {
+    private Set<String> getCourtCodes(List<Session> sessions) {
         Set<String> courtCodes = sessions.stream()
             .map(Session::getCourtCode)
             .collect(Collectors.toSet());
         if (courtCodes.size() > 1) {
-            log.warn("Unexpected multiple court codes. Count was {}, elements {}", courtCodes.size(), courtCodes);
+            log.warn("Multiple court codes. Count was {}, elements {}", courtCodes.size(), courtCodes);
         }
-        return courtCodes.iterator().next();
+        return courtCodes;
+    }
+
+    private Set<LocalDate> getHearingDates(List<Session> sessions) {
+        Set<LocalDate> hearingDates = sessions.stream().map(Session::getDateOfHearing).collect(Collectors.toCollection(TreeSet::new));
+        // This has to be here because instead of sending us a date / court with no cases, if there are no cases on a date, we need to purge
+        // for that date
+        if (hearingDates.size() == 1){
+            LocalDate today = LocalDate.now();
+            LocalDate hearingDate = hearingDates.iterator().next();
+            if (hearingDate.equals(LocalDate.now())) {
+                hearingDates.add(LocalDate.now().plusDays(caseFeedFutureDateOffset));
+            }
+            else if (hearingDate.isAfter(today)) {
+                hearingDates.add(hearingDate.minusDays(caseFeedFutureDateOffset));
+            }
+        }
+        return hearingDates;
     }
 
     private List<Case> getAllCases(List<Session> sessions) {
@@ -125,5 +155,9 @@ public class MessageProcessor {
     private void logMessageReceipt(MessageHeader messageHeader) {
         log.info("Received message UUID {}, from {}, original timestamp {}",
             messageHeader.getMessageID().getUuid(), messageHeader.getFrom(), messageHeader.getTimeStamp());
+    }
+
+    public void setCaseFeedFutureDateOffset(int caseFeedFutureDateOffset) {
+        this.caseFeedFutureDateOffset = caseFeedFutureDateOffset;
     }
 }

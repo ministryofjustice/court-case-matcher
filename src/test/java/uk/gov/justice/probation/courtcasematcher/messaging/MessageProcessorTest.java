@@ -15,6 +15,9 @@ import com.google.common.eventbus.EventBus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,9 +47,13 @@ class MessageProcessorTest {
     private static final String COURT_CODE = "SHF";
     public static final String CASE_NO = "1600032952";
 
+    private static final long MATCHER_THREAD_TIMEOUT = 2000;
     private static final CaseMapperReference caseMapperReference = new CaseMapperReference();
     private static String singleCaseXml;
-    private static String multipleSessionXml;
+    private static String multiSessionXml;
+    private static String multiDayXml;
+    private static String singleDayXml;
+    private static String singleDayFutureXml;
 
     @Mock
     private EventBus eventBus;
@@ -71,11 +78,23 @@ class MessageProcessorTest {
     @BeforeAll
     static void beforeAll() throws IOException {
 
-        String multipleSessionPath = "src/test/resources/messages/gateway-message-full.xml";
-        multipleSessionXml = Files.readString(Paths.get(multipleSessionPath));
+        String multipleSessionPath = "src/test/resources/messages/gateway-message-multi-session.xml";
+        multiSessionXml = Files.readString(Paths.get(multipleSessionPath));
 
         String path = "src/test/resources/messages/gateway-message-single-case.xml";
         singleCaseXml = Files.readString(Paths.get(path));
+
+        String multiDayPath = "src/test/resources/messages/gateway-message-multi-day.xml";
+        multiDayXml = Files.readString(Paths.get(multiDayPath));
+
+        String singleDayPath = "src/test/resources/messages/gateway-message-single-day.xml";
+        singleDayXml = Files.readString(Paths.get(singleDayPath));
+        singleDayXml = singleDayXml.replace("[TODAY]", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        String singleDayFuturePath = "src/test/resources/messages/gateway-message-single-day-future.xml";
+        singleDayFutureXml = Files.readString(Paths.get(singleDayFuturePath));
+        singleDayFutureXml = singleDayFutureXml.replace("[FUTURE]", LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
         caseMapperReference.setDefaultProbationStatus("No record");
         caseMapperReference.setCourtNameToCodes(Map.of("SheffieldMagistratesCourt", COURT_CODE));
     }
@@ -86,6 +105,7 @@ class MessageProcessorTest {
         xmlModule.setDefaultUseWrapper(false);
         GatewayMessageParser parser = new GatewayMessageParser(new XmlMapper(xmlModule), validator);
         messageProcessor = new MessageProcessor(parser, eventBus, matcherService, courtCaseService);
+        messageProcessor.setCaseFeedFutureDateOffset(3);
     }
 
     @DisplayName("Receive a valid case then attempt to match")
@@ -103,13 +123,63 @@ class MessageProcessorTest {
     @Test
     void whenValidMessageReceivedWithMultipleSessions_ThenAttemptMatch() {
 
-        messageProcessor.process(multipleSessionXml);
+        LocalDate expectedDate1 = LocalDate.of(2020, Month.FEBRUARY, 20);
+        LocalDate expectedDate2 = LocalDate.of(2020, Month.FEBRUARY, 23);
+
+        messageProcessor.process(multiSessionXml);
+
+        verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(3)).match(any(Case.class));
+        verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(expectedDate1, expectedDate2)), captorCases.capture());
+
+        assertThat(captorCases.getValue().size()).isEqualTo(3);
+    }
+
+    @DisplayName("Receive multiple valid cases then attempt to match")
+    @Test
+    void whenValidMessageReceivedWithMultipleDays_ThenAttemptMatch() {
+
+        LocalDate date1 = LocalDate.of(2020, Month.JULY, 25);
+        LocalDate date2 = LocalDate.of(2020, Month.JULY, 28);
+
+        messageProcessor.process(multiDayXml);
 
         InOrder inOrder = inOrder(matcherService, courtCaseService);
-        inOrder.verify(matcherService, timeout(500).times(18)).match(any(Case.class));
-        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), captorCases.capture());
+        inOrder.verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(6)).match(any(Case.class));
+        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
 
-        assertThat(captorCases.getValue().size()).isEqualTo(18);
+        assertThat(captorCases.getValue().size()).isEqualTo(6);
+    }
+
+    @DisplayName("Receive only a single day (document) for cases today. Need to purge for the second date.")
+    @Test
+    void whenValidMessageReceivedWithSingleDay_ThenPurgeForSecondExpected() {
+
+        LocalDate date1 = LocalDate.now();
+        LocalDate date2 = date1.plusDays(3);
+
+        messageProcessor.process(singleDayXml);
+
+        InOrder inOrder = inOrder(matcherService, courtCaseService);
+        inOrder.verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(2)).match(any(Case.class));
+        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
+
+        assertThat(captorCases.getValue().size()).isEqualTo(2);
+    }
+
+    @DisplayName("Receive only a single day (document) for cases in 3 days time. None for today. We need to purge for today's cases.")
+    @Test
+    void whenValidMessageReceivedWithSingleDayNoCasesToday_ThenPurgeForTodayExpected() {
+
+        LocalDate date1 = LocalDate.now();
+        LocalDate date2 = date1.plusDays(3);
+
+        messageProcessor.process(singleDayFutureXml);
+
+        InOrder inOrder = inOrder(matcherService, courtCaseService);
+        inOrder.verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(1)).match(any(Case.class));
+        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
+
+        assertThat(captorCases.getValue().size()).isEqualTo(1);
     }
 
     @DisplayName("An XML message which is invalid")
