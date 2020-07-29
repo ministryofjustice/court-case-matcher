@@ -54,6 +54,7 @@ class MessageProcessorTest {
     private static String multiDayXml;
     private static String singleDayXml;
     private static String singleDayFutureXml;
+    private static String multiCourtXml;
 
     @Mock
     private EventBus eventBus;
@@ -95,8 +96,12 @@ class MessageProcessorTest {
         singleDayFutureXml = Files.readString(Paths.get(singleDayFuturePath));
         singleDayFutureXml = singleDayFutureXml.replace("[FUTURE]", LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
+        String multiCourtPath = "src/test/resources/messages/gateway-message-multi-court.xml";
+        multiCourtXml = Files.readString(Paths.get(multiCourtPath));
+        multiCourtXml = multiCourtXml.replace("[TODAY]", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
         caseMapperReference.setDefaultProbationStatus("No record");
-        caseMapperReference.setCourtNameToCodes(Map.of("SheffieldMagistratesCourt", COURT_CODE));
+        caseMapperReference.setCourtNameToCodes(Map.of("SheffieldMagistratesCourt", COURT_CODE, "Beverley", "BEV"));
     }
 
     @BeforeEach
@@ -181,6 +186,29 @@ class MessageProcessorTest {
 
         assertThat(captorCases.getValue().size()).isEqualTo(1);
     }
+
+    @DisplayName("")
+    @Test
+    void whenValidMessageReceivedWithMultipleCourts_ThenPurgeForBoth() {
+
+        LocalDate date1 = LocalDate.now();
+        LocalDate date2 = date1.plusDays(3);
+
+        messageProcessor.process(multiCourtXml);
+
+        verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(2)).match(any(Case.class));
+        verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
+        List<Case> shfCases = captorCases.getValue();
+        assertThat(shfCases.size()).isEqualTo(1);
+        assertThat(shfCases.get(0).getCaseNo()).isEqualTo("1000000005");
+
+        verify(courtCaseService, timeout(2000)).purgeAbsent(eq("BEV"), eq(Set.of(date1, date2)), captorCases.capture());
+        assertThat(captorCases.getValue().size()).isEqualTo(1);
+        List<Case> bevCases = captorCases.getValue();
+        assertThat(bevCases.size()).isEqualTo(1);
+        assertThat(bevCases.get(0).getCaseNo()).isEqualTo("1000000001");
+    }
+
 
     @DisplayName("An XML message which is invalid")
     @Test

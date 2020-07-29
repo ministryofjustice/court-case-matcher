@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolationException;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +24,7 @@ import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.S
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 
+@Setter
 @Service
 @Slf4j
 public class MessageProcessor {
@@ -89,13 +90,11 @@ public class MessageProcessor {
 
         List<CompletableFuture<Long>> futures = matchCases(sessions);
 
-        // This is a temporary measure to get the court code until we have proper court reference data
-        Set<String> courtCodes = getCourtCodes(sessions);
-        Set<LocalDate> hearingDates = getHearingDates(sessions);
+        Set<LocalDate> hearingDates = MessageProcessorUtils.getHearingDates(sessions, caseFeedFutureDateOffset);
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenRun(() -> {
-            courtCodes.forEach(courtCode ->  {
+            MessageProcessorUtils.getCourtCodes(sessions).forEach(courtCode ->  {
                 log.debug("Purging cases for court {}", courtCode);
-                courtCaseService.purgeAbsent(courtCode, hearingDates, getAllCases(sessions));
+                courtCaseService.purgeAbsent(courtCode, hearingDates, MessageProcessorUtils.getCases(courtCode, sessions));
             });
         });
     }
@@ -118,46 +117,11 @@ public class MessageProcessor {
         return session.getId();
     }
 
-    private Set<String> getCourtCodes(List<Session> sessions) {
-        Set<String> courtCodes = sessions.stream()
-            .map(Session::getCourtCode)
-            .collect(Collectors.toSet());
-        if (courtCodes.size() > 1) {
-            log.warn("Multiple court codes. Count was {}, elements {}", courtCodes.size(), courtCodes);
-        }
-        return courtCodes;
-    }
 
-    private Set<LocalDate> getHearingDates(List<Session> sessions) {
-        Set<LocalDate> hearingDates = sessions.stream().map(Session::getDateOfHearing).collect(Collectors.toCollection(TreeSet::new));
-        // This has to be here because instead of sending us a date / court with no cases, if there are no cases on a date, we need to purge
-        // for that date
-        if (hearingDates.size() == 1){
-            LocalDate today = LocalDate.now();
-            LocalDate hearingDate = hearingDates.iterator().next();
-            if (hearingDate.equals(LocalDate.now())) {
-                hearingDates.add(LocalDate.now().plusDays(caseFeedFutureDateOffset));
-            }
-            else if (hearingDate.isAfter(today)) {
-                hearingDates.add(hearingDate.minusDays(caseFeedFutureDateOffset));
-            }
-        }
-        return hearingDates;
-    }
-
-    private List<Case> getAllCases(List<Session> sessions) {
-        return sessions.stream()
-            .flatMap(session -> session.getBlocks().stream())
-            .flatMap(block -> block.getCases().stream())
-            .collect(Collectors.toList());
-    }
 
     private void logMessageReceipt(MessageHeader messageHeader) {
         log.info("Received message UUID {}, from {}, original timestamp {}",
             messageHeader.getMessageID().getUuid(), messageHeader.getFrom(), messageHeader.getTimeStamp());
     }
 
-    public void setCaseFeedFutureDateOffset(int caseFeedFutureDateOffset) {
-        this.caseFeedFutureDateOffset = caseFeedFutureDateOffset;
-    }
 }
