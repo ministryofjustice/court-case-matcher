@@ -20,13 +20,9 @@ import uk.gov.justice.probation.courtcasematcher.messaging.SourceFileNameToOuCod
 @JsonIgnoreProperties(value = {"contentType", "dateOfHearing", "courtHouse", "area"})
 public class Info
 {
-//    @JacksonXmlProperty(localName = "source_file_name")
-//    private final String sourceFileName;
 
     @JsonDeserialize(using = SourceFileNameToOuCodeDeserializer.class)
     @JacksonXmlProperty(localName = "source_file_name")
     private final String ouCode;
-
-
 
 }
