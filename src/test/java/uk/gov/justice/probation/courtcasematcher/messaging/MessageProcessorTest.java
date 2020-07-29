@@ -47,7 +47,7 @@ class MessageProcessorTest {
     private static final String COURT_CODE = "SHF";
     public static final String CASE_NO = "1600032952";
 
-    private static final long MATCHER_THREAD_TIMEOUT = 2000;
+    private static final long MATCHER_THREAD_TIMEOUT = 4000;
     private static final CaseMapperReference caseMapperReference = new CaseMapperReference();
     private static String singleCaseXml;
     private static String multiSessionXml;
@@ -134,7 +134,7 @@ class MessageProcessorTest {
         messageProcessor.process(multiSessionXml);
 
         verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(3)).match(any(Case.class));
-        verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(expectedDate1, expectedDate2)), captorCases.capture());
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).purgeAbsent(eq(COURT_CODE), eq(Set.of(expectedDate1, expectedDate2)), captorCases.capture());
 
         assertThat(captorCases.getValue().size()).isEqualTo(3);
     }
@@ -150,7 +150,7 @@ class MessageProcessorTest {
 
         InOrder inOrder = inOrder(matcherService, courtCaseService);
         inOrder.verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(6)).match(any(Case.class));
-        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
+        inOrder.verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
 
         assertThat(captorCases.getValue().size()).isEqualTo(6);
     }
@@ -166,7 +166,7 @@ class MessageProcessorTest {
 
         InOrder inOrder = inOrder(matcherService, courtCaseService);
         inOrder.verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(2)).match(any(Case.class));
-        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
+        inOrder.verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
 
         assertThat(captorCases.getValue().size()).isEqualTo(2);
     }
@@ -182,7 +182,7 @@ class MessageProcessorTest {
 
         InOrder inOrder = inOrder(matcherService, courtCaseService);
         inOrder.verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(1)).match(any(Case.class));
-        inOrder.verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
+        inOrder.verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
 
         assertThat(captorCases.getValue().size()).isEqualTo(1);
     }
@@ -197,12 +197,12 @@ class MessageProcessorTest {
         messageProcessor.process(multiCourtXml);
 
         verify(matcherService, timeout(MATCHER_THREAD_TIMEOUT).times(2)).match(any(Case.class));
-        verify(courtCaseService, timeout(2000)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).purgeAbsent(eq(COURT_CODE), eq(Set.of(date1, date2)), captorCases.capture());
         List<Case> shfCases = captorCases.getValue();
         assertThat(shfCases.size()).isEqualTo(1);
         assertThat(shfCases.get(0).getCaseNo()).isEqualTo("1000000005");
 
-        verify(courtCaseService, timeout(2000)).purgeAbsent(eq("BEV"), eq(Set.of(date1, date2)), captorCases.capture());
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).purgeAbsent(eq("BEV"), eq(Set.of(date1, date2)), captorCases.capture());
         assertThat(captorCases.getValue().size()).isEqualTo(1);
         List<Case> bevCases = captorCases.getValue();
         assertThat(bevCases.size()).isEqualTo(1);
@@ -240,6 +240,5 @@ class MessageProcessorTest {
 
         verify(eventBus).post(any(CourtCaseFailureEvent.class));
     }
-
 
 }
