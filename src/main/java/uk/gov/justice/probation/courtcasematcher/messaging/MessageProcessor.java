@@ -117,8 +117,6 @@ public class MessageProcessor {
         return session.getId();
     }
 
-
-
     private void logMessageReceipt(MessageHeader messageHeader) {
         log.info("Received message UUID {}, from {}, original timestamp {}",
             messageHeader.getMessageID().getUuid(), messageHeader.getFrom(), messageHeader.getTimeStamp());
