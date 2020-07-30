@@ -171,7 +171,7 @@ class MessageProcessorUtilsTest {
         assertThat(findDocumentSequenceNumber(documents, "B01CX00", july31)).isEqualTo(180);
     }
 
-    @DisplayName("Filters a list of ")
+    @DisplayName("Filters a list of documents where there are no duplicates")
     @Test
     void givenNoDuplicateDocuments_ThenReturnSame() throws IOException {
 
