@@ -93,10 +93,12 @@ public final class MessageProcessorUtils {
     }
 
     private static void logDocuments(List<Document> documents) {
-        try {
-            log.debug("After de-duplication, documents :{}", OBJECT_MAPPER.writeValueAsString(documents));
-        } catch (JsonProcessingException e) {
-            log.debug("Unable to serialise de-duplicated documents to JSON. Documents :{}", documents);
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("After de-duplication, documents :{}", OBJECT_MAPPER.writeValueAsString(documents));
+            } catch (JsonProcessingException e) {
+                log.debug("Unable to serialise de-duplicated documents to JSON. Documents :{}", documents);
+            }
         }
     }
 
