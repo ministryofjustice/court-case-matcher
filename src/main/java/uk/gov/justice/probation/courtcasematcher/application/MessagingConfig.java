@@ -7,12 +7,25 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.eventbus.EventBus;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import uk.gov.justice.probation.courtcasematcher.messaging.JmsErrorHandler;
+
 
 @Configuration
+@EnableJms
 public class MessagingConfig {
+
+    @Autowired
+    private JmsErrorHandler jmsErrorHandler;
+
+    @Autowired
+    private ActiveMQConnectionFactory jmsConnectionFactory;
 
     // Without this, Spring uses the XmlMapper bean as the ObjectMapper for the whole app and we get actuator response as XML
     @Bean
@@ -38,6 +51,15 @@ public class MessagingConfig {
     @Bean
     public EventBus eventBus() {
         return new EventBus();
+    }
+
+    @Bean("customContainerFactory")
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory () {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setConnectionFactory(jmsConnectionFactory);
+        factory.setSessionTransacted(Boolean.TRUE);
+        factory.setErrorHandler(jmsErrorHandler);
+        return factory;
     }
 
 }
