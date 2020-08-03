@@ -8,9 +8,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.justice.probation.courtcasematcher.TestConfig;
+import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.restassured.RestAssured.given;
@@ -19,6 +21,7 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
+@Import(TestMessagingConfig.class)
 public class HealthCheckTest {
 
     @LocalServerPort
@@ -51,5 +54,6 @@ public class HealthCheckTest {
         assertThatJson(response).node("components.courtCaseService.status").isEqualTo("UP");
         assertThatJson(response).node("components.nomisAuth.status").isEqualTo("UP");
     }
+
 }
 
