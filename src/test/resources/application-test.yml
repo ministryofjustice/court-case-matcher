@@ -7,12 +7,6 @@ cgi:
     destination.name: CP_OutboundQueue
 
 spring:
-  jms:
-    cache:
-      enabled: false
-    listener:
-      concurrency: 1
-      max-concurrency: 1
   artemis:
     mode: native
     host: "localhost"
