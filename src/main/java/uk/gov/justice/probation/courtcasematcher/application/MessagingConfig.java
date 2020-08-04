@@ -16,14 +16,15 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import uk.gov.justice.probation.courtcasematcher.messaging.JmsErrorHandler;
 
-@EnableJms
+
 @Configuration
+@EnableJms
 public class MessagingConfig {
 
     @Autowired
     private JmsErrorHandler jmsErrorHandler;
 
-    @Autowired(required = false)
+    @Autowired
     private ActiveMQConnectionFactory jmsConnectionFactory;
 
     // Without this, Spring uses the XmlMapper bean as the ObjectMapper for the whole app and we get actuator response as XML
