@@ -17,7 +17,7 @@ public class MessageReceiver {
         this.messageProcessor = processor;
     }
 
-    @JmsListener(destination = CP_QUEUE, containerFactory = "customContainerFactory")
+    @JmsListener(destination = CP_QUEUE)
     public void receive(String message) {
         log.info("Received message");
         try {

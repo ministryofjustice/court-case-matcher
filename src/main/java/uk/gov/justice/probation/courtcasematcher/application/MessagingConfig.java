@@ -12,20 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import uk.gov.justice.probation.courtcasematcher.messaging.JmsErrorHandler;
 
 
 @Configuration
-@EnableJms
 public class MessagingConfig {
 
     @Autowired
     private JmsErrorHandler jmsErrorHandler;
-
-    @Autowired
-    private ActiveMQConnectionFactory jmsConnectionFactory;
 
     // Without this, Spring uses the XmlMapper bean as the ObjectMapper for the whole app and we get actuator response as XML
     @Bean
@@ -53,8 +48,8 @@ public class MessagingConfig {
         return new EventBus();
     }
 
-    @Bean("customContainerFactory")
-    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory () {
+    @Bean
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory (@Autowired ActiveMQConnectionFactory jmsConnectionFactory) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(jmsConnectionFactory);
         factory.setSessionTransacted(Boolean.TRUE);
