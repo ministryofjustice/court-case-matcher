@@ -67,7 +67,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     compile group: 'com.google.guava', name: 'guava', version: '29.0-jre'
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.0.1'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.3'
     compile 'org.glassfish.jaxb:jaxb-runtime:2.3.0'
     implementation 'org.springframework.boot:spring-boot-starter-artemis'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.0'
