@@ -50,6 +50,7 @@ court-case-service:
   case-put-url-template: /court/%s/case/%s
   matches-post-url-template: /court/%s/case/%s/grouped-offender-matches
   purge-absent-put-url-template: /court/%s/cases/purgeAbsent
+  offender-detail-get-url-template: /offender/%s/detail
 
 
 offender-search:

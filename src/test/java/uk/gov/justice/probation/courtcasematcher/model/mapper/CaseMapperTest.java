@@ -126,7 +126,9 @@ class CaseMapperTest {
                         .cro(CRO)
                         .pnc(PNC)
                         .build())
-                .build(), matches);
+                .build(),
+                DEFAULT_PROBATION_STATUS,
+                matches);
 
         assertThat(courtCase.getCrn()).isEqualTo(CRN);
         assertThat(courtCase.getCro()).isEqualTo(CRO);

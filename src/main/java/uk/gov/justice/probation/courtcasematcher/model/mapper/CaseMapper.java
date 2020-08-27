@@ -100,9 +100,9 @@ public class CaseMapper {
             .build();
     }
 
-    public CourtCase newFromCaseAndOffender(Case incomingCase, Offender offender, GroupedOffenderMatches groupedOffenderMatches) {
+    public CourtCase newFromCaseAndOffender(Case incomingCase, Offender offender, String probationStatus, GroupedOffenderMatches groupedOffenderMatches) {
         return getCourtCaseBuilderFromCase(incomingCase)
-                .probationStatus(defaultProbationStatus)
+                .probationStatus(probationStatus != null ? probationStatus : defaultProbationStatus)
                 .crn(offender.getOtherIds().getCrn())
                 .cro(offender.getOtherIds().getCro())
                 .pnc(offender.getOtherIds().getPnc())
