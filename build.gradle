@@ -30,7 +30,6 @@ configurations {
 }
 
 configurations.all {
-    resolutionStrategy.cacheDynamicVersionsFor 10, "minutes"
     resolutionStrategy.eachDependency {
         DependencyResolveDetails details ->
             if (details.requested.group == 'org.codehaus.groovy') {
