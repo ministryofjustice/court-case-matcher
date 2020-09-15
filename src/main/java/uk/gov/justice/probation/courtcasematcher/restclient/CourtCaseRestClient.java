@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
+import uk.gov.justice.probation.courtcasematcher.event.OffenderSearchFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderDetail;
@@ -133,13 +135,13 @@ public class CourtCaseRestClient {
         return get(path)
             .retrieve()
             .bodyToMono(OffenderDetail.class)
-            .onErrorResume((e) -> {
-                log.info("GET failed for retrieving the offender probation status for path {}", path, e);
-                return Mono.empty();
-            })
             .map(offenderDetail -> {
                 log.info("GET succeeded for retrieving the offender probation status for path {}", path);
                 return offenderDetail.getProbationStatus();
+            })
+            .onErrorResume((e) -> {
+                log.info("GET failed for retrieving the offender probation status for path {}. Will return empty status", path, e);
+                return Mono.just("");
             });
     }
 

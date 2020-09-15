@@ -284,6 +284,6 @@ public class CourtCaseRestClientIntTest {
 
         String optional = restClient.getProbationStatus("X500").block();
 
-        assertThat(optional).isNull();
+        assertThat(optional).isEmpty();
     }
 }
