@@ -3,12 +3,16 @@ package uk.gov.justice.probation.courtcasematcher.event;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 
@@ -73,6 +77,10 @@ public class EventListener {
             courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getDefendantName());
 
         matcherService.getSearchResponse(courtCase.getDefendantName(), courtCase.getDefendantDob(), courtCase.getCourtCode(), courtCase.getCaseNo())
+            .switchIfEmpty(Mono.defer(() -> Mono.just(SearchResponse.builder()
+                                                            .matchedBy(OffenderSearchMatchType.NOTHING)
+                                                            .matches(Collections.emptyList())
+                                                            .build())))
             .subscribe(searchResponse -> {
                 courtCaseService.createCase(courtCase, searchResponse);
             });

@@ -4,8 +4,8 @@ import lombok.*;
 
 import java.util.List;
 
-@Getter
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @ToString

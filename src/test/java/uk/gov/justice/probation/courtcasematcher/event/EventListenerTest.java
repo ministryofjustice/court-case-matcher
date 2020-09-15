@@ -15,6 +15,7 @@ import ch.qos.logback.core.Appender;
 import com.google.common.eventbus.EventBus;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -30,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
@@ -160,8 +162,7 @@ class EventListenerTest {
         verify(courtCaseService).createCase(courtCase, searchResponse);
     }
 
-    @Disabled
-    @DisplayName("Check the match event when the call to the matcher service fails")
+    @DisplayName("Check the match event when the call to the matcher service returns an empty response")
     @Test
     void givenSearchWhichFails_whenCourtCaseMatched_thenSave() {
         when(matcherService.getSearchResponse(DEFENDANT_NAME, DEFENDANT_DOB, COURT_CODE, CASE)).thenReturn(Mono.empty());
@@ -169,7 +170,10 @@ class EventListenerTest {
         eventListener.courtCaseMatchEvent(CourtCaseMatchEvent.builder().courtCase(courtCase).build());
 
         verify(matcherService).getSearchResponse(DEFENDANT_NAME, DEFENDANT_DOB, COURT_CODE, CASE);
-        verify(courtCaseService).createCase(courtCase, null);
+        verify(courtCaseService).createCase(courtCase, SearchResponse.builder()
+                                                                        .matches(Collections.emptyList())
+                                                                        .matchedBy(OffenderSearchMatchType.NOTHING)
+                                                                        .build());
     }
 
 }
