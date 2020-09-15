@@ -116,20 +116,10 @@ class CaseMapperTest {
     @DisplayName("Map a court case to a new court case when search response has yielded no matches")
     @Test
     void givenNoMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
-        final String crn2 = "X340987";
-
-        Match match1 = Match.builder().offender(Offender.builder()
-                                                    .otherIds(OtherIds.builder()
-                                                                        .crn(CRN)
-                                                                        .build())
-                                                    .build())
-                                                .build();
-        Match match2 = Match.builder().offender(Offender.builder().otherIds(OtherIds.builder().crn(crn2).build()).build()).build();
 
         CourtCase courtCase = caseMapper.newFromCase(aCase);
         SearchResponse searchResponse = SearchResponse.builder()
-            .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
-            .probationStatus("Current")
+            .matchedBy(OffenderSearchMatchType.NOTHING)
             .build();
 
         CourtCase courtCaseNew = caseMapper.newFromCourtCaseAndSearchResponse(courtCase, searchResponse);
@@ -141,7 +131,7 @@ class CaseMapperTest {
 
     @DisplayName("Map a court case to a new court case when search response has yielded a single match")
     @Test
-    void givenSingleMatch_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
+    void givenSingleMatch_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatch() {
         Match match = Match.builder().offender(Offender.builder()
             .otherIds(OtherIds.builder().crn(CRN).cro(CRO).pnc(PNC).build())
             .build())
@@ -158,6 +148,31 @@ class CaseMapperTest {
 
         assertThat(courtCaseNew).isNotSameAs(courtCase);
         assertThat(courtCaseNew.getCrn()).isEqualTo(CRN);
+        assertThat(courtCaseNew.getProbationStatus()).isEqualTo("Current");
+        assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
+        OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
+        assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
+    }
+
+    @DisplayName("Map a court case to a new court case when search response has yielded a single match but null probation status")
+    @Test
+    void givenSingleMatchWithNoProbationStatus_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatch() {
+        Match match = Match.builder().offender(Offender.builder()
+            .otherIds(OtherIds.builder().crn(CRN).cro(CRO).pnc(PNC).build())
+            .build())
+            .build();
+
+        CourtCase courtCase = caseMapper.newFromCase(aCase);
+        SearchResponse searchResponse = SearchResponse.builder()
+            .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
+            .matches(List.of(match))
+            .build();
+
+        CourtCase courtCaseNew = caseMapper.newFromCourtCaseAndSearchResponse(courtCase, searchResponse);
+
+        assertThat(courtCaseNew).isNotSameAs(courtCase);
+        assertThat(courtCaseNew.getCrn()).isEqualTo(CRN);
+        assertThat(courtCaseNew.getProbationStatus()).isEqualTo(DEFAULT_PROBATION_STATUS);
         assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
         OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
         assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
@@ -165,7 +180,7 @@ class CaseMapperTest {
 
     @DisplayName("Map a court case to a new court case when search response has yielded multiple matches")
     @Test
-    void givenMultipleMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
+    void givenMultipleMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithListOfMatches() {
         Match match1 = Match.builder().offender(Offender.builder()
             .otherIds(OtherIds.builder().crn(CRN).cro(CRO).pnc(PNC).build())
             .build())

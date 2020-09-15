@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
@@ -134,32 +135,22 @@ public class CaseMapper {
         List<Match> matches = searchResponse.getMatches() != null ? searchResponse.getMatches() : Collections.emptyList();
         MatchType matchType = MatchType.of(searchResponse.getMatchedBy());
 
-        CourtCase courtCase;
+        CourtCaseBuilder courtCaseBuilder;
+
+        courtCaseBuilder = getCourtCaseBuilderFromCase(incomingCase)
+            .groupedOffenderMatches(buildGroupedOffenderMatch(searchResponse.getMatches(), matchType));
+
         if (matches.size() == 1) {
             Match match = searchResponse.getMatches().get(0);
-
-            courtCase = getCourtCaseBuilderFromCase(incomingCase)
+            courtCaseBuilder
                 .probationStatus(Optional.ofNullable(searchResponse.getProbationStatus()).orElse(defaultProbationStatus))
                 .crn(match.getOffender().getOtherIds().getCrn())
                 .cro(match.getOffender().getOtherIds().getCro())
                 .pnc(match.getOffender().getOtherIds().getPnc())
-                .groupedOffenderMatches(buildGroupedOffenderMatch(match, matchType))
-                .build();
-        }
-        else {
-            courtCase = getCourtCaseBuilderFromCase(incomingCase)
-                .groupedOffenderMatches(buildGroupedOffenderMatch(searchResponse.getMatches(), matchType))
                 .build();
         }
 
-        return courtCase;
-    }
-
-    private GroupedOffenderMatches buildGroupedOffenderMatch (Match offenderMatch, MatchType matchType) {
-
-        return GroupedOffenderMatches.builder()
-            .matches(Collections.singletonList(buildOffenderMatch(matchType, offenderMatch)))
-            .build();
+        return courtCaseBuilder.build();
     }
 
     private GroupedOffenderMatches buildGroupedOffenderMatch (List<Match> matches, MatchType matchType) {

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
@@ -45,7 +46,7 @@ public class MatcherService {
                         return Mono.zip(Mono.just(searchResponse), Mono.just(""));
                     }
                 })
-                .map(tuple2 -> combine(tuple2.getT1(), tuple2.getT2()))
+                .map(this::combine)
                 .doOnSuccess((data) -> {
                     if (data == null) {
                         log.error(String.format("Match results for caseNo: %s, courtCode: %s - Empty response from OffenderSearchRestClient",
@@ -54,8 +55,10 @@ public class MatcherService {
                 });
     }
 
-    public SearchResponse combine(SearchResponse searchResponse, String probationStatus) {
-        return SearchResponse.builder().matchedBy(searchResponse.getMatchedBy())
+    private SearchResponse combine(Tuple2<SearchResponse, String> tuple2) {
+        SearchResponse searchResponse = tuple2.getT1();
+        String probationStatus = tuple2.getT2();
+        return SearchResponse.builder().matchedBy(tuple2.getT1().getMatchedBy())
             .probationStatus(StringUtils.isEmpty(probationStatus) ? null : probationStatus)
             .matches(searchResponse.getMatches())
             .build();

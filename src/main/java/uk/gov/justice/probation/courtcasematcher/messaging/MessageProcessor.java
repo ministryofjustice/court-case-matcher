@@ -107,10 +107,10 @@ public class MessageProcessor {
 
     void postCaseEvent(CourtCase courtCase) {
         if (courtCase.isNew()) {
-            eventBus.post(CourtCaseMatchEvent.builder().courtCase(courtCase).build());
+            eventBus.post(new CourtCaseMatchEvent(courtCase));
         }
         else {
-            eventBus.post(CourtCaseUpdateEvent.builder().courtCase(courtCase).build());
+            eventBus.post(new CourtCaseUpdateEvent(courtCase));
         }
     }
 

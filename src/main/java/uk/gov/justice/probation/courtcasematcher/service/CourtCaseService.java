@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import lombok.AllArgsConstructor;
@@ -41,14 +42,13 @@ public class CourtCaseService {
 
     public void createCase(CourtCase courtCase, SearchResponse searchResponse) {
 
-        if (searchResponse == null) {
-            log.debug("Save court case with no search response for case {}, court {}", courtCase.getCaseNo(), courtCase.getCourtCode());
-            saveCourtCase(courtCase);
-        }
-        else {
-            log.debug("Save court case with search response for case {}, court {}", courtCase.getCaseNo(), courtCase.getCourtCode());
-            saveCourtCase(caseMapper.newFromCourtCaseAndSearchResponse(courtCase, searchResponse));
-        }
+        Optional.ofNullable(searchResponse)
+            .ifPresentOrElse(response -> {
+                    log.debug("Save court case with search response for case {}, court {}",
+                        courtCase.getCaseNo(), courtCase.getCourtCode());
+                    saveCourtCase(caseMapper.newFromCourtCaseAndSearchResponse(courtCase, response));
+                },
+                () -> saveCourtCase(courtCase));
     }
 
     public void saveCourtCase(CourtCase courtCase) {

@@ -38,7 +38,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestCl
 class MatcherServiceTest {
     private static final String COURT_CODE = "SHF";
     private static final String CASE_NO = "1600032952";
-    private static final long REST_CLIENT_WAIT_MS = 2000;
     private static final String CRN = "X123456";
     private static final String PROBATION_STATUS = "Current";
 
@@ -144,7 +143,6 @@ class MatcherServiceTest {
         assertThat(searchResponse.getMatches()).hasSize(0);
         assertThat(searchResponse.getMatchedBy()).isSameAs(OffenderSearchMatchType.NOTHING);
         assertThat(searchResponse.getProbationStatus()).isNull();
-
     }
 
     private LoggingEvent captureFirstLogEvent() {
