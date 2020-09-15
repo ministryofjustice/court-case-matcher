@@ -40,7 +40,8 @@ public class MatcherService {
                         return Mono.zip(Mono.just(searchResponse), restClient.getProbationStatus(matches.get(0).getOffender().getOtherIds().getCrn()));
                     }
                     else {
-                        log.info("RETURN NOT 1 {}, {}", searchResponse.getMatchedBy(), searchResponse.getMatches().size());
+                        log.debug("Got {} matches for defendant name {}, dob {}, match type {}",
+                            searchResponse.getMatches().size(), defendantName, dateOfBirth, searchResponse.getMatchedBy());
                         return Mono.zip(Mono.just(searchResponse), Mono.just(""));
                     }
                 })
