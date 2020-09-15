@@ -91,7 +91,7 @@ public class CourtCaseRestClient {
             .bodyToMono(CourtCase.class)
             .doOnError(e -> postErrorToBus(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode) + ".Exception : " + e))
             .subscribe(courtCaseApi -> {
-                eventBus.post(CourtCaseSuccessEvent.builder().courtCaseApi(courtCaseApi).build());
+                eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build());
                 postMatches(courtCaseApi.getCourtCode(), courtCaseApi.getCaseNo(), offenderMatches);
             });
     }
@@ -126,7 +126,7 @@ public class CourtCaseRestClient {
             });
     }
 
-    public Mono<String> getOffenderProbationStatus(String crn) {
+    public Mono<String> getProbationStatus(String crn) {
         final String path = String.format(offenderDetailGetTemplate, crn);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not

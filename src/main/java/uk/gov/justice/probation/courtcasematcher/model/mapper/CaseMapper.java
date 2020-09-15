@@ -6,9 +6,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +35,28 @@ public class CaseMapper {
 
     public CourtCase newFromCase(Case aCase) {
         return getCourtCaseBuilderFromCase(aCase)
+            .isNew(true)
             .build();
+    }
+
+    private CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(CourtCase courtCase) {
+        return CourtCase.builder()
+            .caseNo(courtCase.getCaseNo())
+            .courtCode(courtCase.getCourtCode())
+            .caseId(String.valueOf(courtCase.getCaseId()))
+            .courtRoom(courtCase.getCourtRoom())
+            .defendantAddress(courtCase.getDefendantAddress())
+            .defendantName(courtCase.getDefendantName())
+            .defendantDob(courtCase.getDefendantDob())
+            .defendantSex(courtCase.getDefendantSex())
+            .cro(courtCase.getCro())
+            .pnc(courtCase.getPnc())
+            .listNo(courtCase.getListNo())
+            .sessionStartTime(courtCase.getSessionStartTime())
+            .probationStatus(defaultProbationStatus)
+            .nationality1(courtCase.getNationality1())
+            .nationality2(courtCase.getNationality2())
+            .offences(courtCase.getOffences());
     }
 
     private CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(Case aCase) {
@@ -104,14 +129,61 @@ public class CaseMapper {
             .build();
     }
 
-    public CourtCase newFromCaseAndOffender(Case incomingCase, Offender offender, String probationStatus, GroupedOffenderMatches groupedOffenderMatches) {
-        return getCourtCaseBuilderFromCase(incomingCase)
-                .probationStatus(probationStatus != null ? probationStatus : defaultProbationStatus)
-                .crn(offender.getOtherIds().getCrn())
-                .cro(offender.getOtherIds().getCro())
-                .pnc(offender.getOtherIds().getPnc())
-                .groupedOffenderMatches(groupedOffenderMatches)
+    public CourtCase newFromCourtCaseAndSearchResponse(CourtCase incomingCase, SearchResponse searchResponse) {
+
+        List<Match> matches = searchResponse.getMatches() != null ? searchResponse.getMatches() : Collections.emptyList();
+        MatchType matchType = MatchType.of(searchResponse.getMatchedBy());
+
+        CourtCase courtCase;
+        if (matches.size() == 1) {
+            Match match = searchResponse.getMatches().get(0);
+
+            courtCase = getCourtCaseBuilderFromCase(incomingCase)
+                .probationStatus(Optional.ofNullable(searchResponse.getProbationStatus()).orElse(defaultProbationStatus))
+                .crn(match.getOffender().getOtherIds().getCrn())
+                .cro(match.getOffender().getOtherIds().getCro())
+                .pnc(match.getOffender().getOtherIds().getPnc())
+                .groupedOffenderMatches(buildGroupedOffenderMatch(match, matchType))
                 .build();
+        }
+        else {
+            courtCase = getCourtCaseBuilderFromCase(incomingCase)
+                .groupedOffenderMatches(buildGroupedOffenderMatch(searchResponse.getMatches(), matchType))
+                .build();
+        }
+
+        return courtCase;
     }
 
+    private GroupedOffenderMatches buildGroupedOffenderMatch (Match offenderMatch, MatchType matchType) {
+
+        return GroupedOffenderMatches.builder()
+            .matches(Collections.singletonList(buildOffenderMatch(matchType, offenderMatch)))
+            .build();
+    }
+
+    private GroupedOffenderMatches buildGroupedOffenderMatch (List<Match> matches, MatchType matchType) {
+
+        if (matches == null || matches.isEmpty()) {
+            return GroupedOffenderMatches.builder().matches(Collections.emptyList()).build();
+        }
+        return GroupedOffenderMatches.builder()
+            .matches(matches.stream()
+                .map(match -> buildOffenderMatch(matchType, match))
+                .collect(Collectors.toList()))
+            .build();
+    }
+
+    private OffenderMatch buildOffenderMatch(MatchType matchType, Match match) {
+        return OffenderMatch.builder()
+            .rejected(false)
+            .confirmed(false)
+            .matchType(matchType)
+            .matchIdentifiers(MatchIdentifiers.builder()
+                .pnc(match.getOffender().getOtherIds().getPnc())
+                .cro(match.getOffender().getOtherIds().getCro())
+                .crn(match.getOffender().getOtherIds().getCrn())
+                .build())
+            .build();
+    }
 }
