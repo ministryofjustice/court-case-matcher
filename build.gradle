@@ -5,7 +5,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.3.3.RELEASE'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'com.github.ben-manes.versions' version '0.31.0'
+    id 'com.github.ben-manes.versions' version '0.33.0'
 }
 
 repositories {
@@ -71,7 +71,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
-    compileOnly 'org.projectlombok:lombok'
+    implementation 'org.projectlombok:lombok'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     runtimeOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
@@ -86,7 +86,7 @@ dependencies {
     implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.1'
     implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.security:spring-security-oauth2-client'
@@ -100,7 +100,7 @@ dependencies {
     testCompile "com.github.tomakehurst:wiremock-jre8:2.26.3"
     testCompile 'org.mockito:mockito-core:3.5.10'
     testCompile 'org.apache.activemq:artemis-junit:2.15.0'
-
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 test {
