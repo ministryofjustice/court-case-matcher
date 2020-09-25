@@ -86,7 +86,7 @@ public class MessageProcessor {
 
         List<Session> sessions = documentWrapper.getDocument()
             .stream()
-            .map(this::logDocInfo)
+            .map(this::trackCourtListReceipt)
             .flatMap(document -> document.getData().getJob().getSessions().stream())
             .collect(Collectors.toList());
 
@@ -127,7 +127,7 @@ public class MessageProcessor {
             messageHeader.getMessageID().getUuid(), messageHeader.getFrom(), messageHeader.getTimeStamp());
     }
 
-    private Document logDocInfo (Document document) {
+    private Document trackCourtListReceipt(Document document) {
         Info info = document.getInfo();
         log.debug("Received court list for court {} on {}", info.getInfoSourceDetail().getOuCode(), info.getDateOfHearing().toString());
         telemetryService.trackCourtListEvent(document.getInfo());
