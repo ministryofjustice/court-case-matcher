@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -45,7 +44,7 @@ public class MatcherService {
                 })
                 .flatMap(searchResponse -> {
                     List<Match> matches = searchResponse.getMatches();
-                    int matchCount = Optional.ofNullable(matches).map(List::size).orElse(0);
+                    int matchCount = searchResponse.getMatchCount();
                     if (matchCount == 1) {
                         return Mono.zip(Mono.just(searchResponse), restClient.getProbationStatus(matches.get(0).getOffender().getOtherIds().getCrn()));
                     }
