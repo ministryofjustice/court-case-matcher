@@ -121,8 +121,8 @@ class MessageProcessorTest {
         verify(eventBus, timeout(1000)).post(argThat(CourtCaseUpdateEventMatcher.builder().caseNo("1600032953").build()));
         verify(eventBus, timeout(1000)).post(argThat(CourtCaseUpdateEventMatcher.builder().caseNo("1600032979").build()));
         verify(eventBus, timeout(1000)).post(argThat(CourtCaseMatchEventMatcher.builder().caseNo("1600032952").build()));
-        verify(telemetryService).trackCourtListEvent(argThat(getInfoMatcher(LocalDate.of(2020, Month.FEBRUARY, 20))));
-        verify(telemetryService).trackCourtListEvent(argThat(getInfoMatcher(LocalDate.of(2020, Month.FEBRUARY, 23))));
+        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.FEBRUARY, 20))));
+        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.FEBRUARY, 23))));
         verify(telemetryService).trackCourtCaseEvent(argThat(case1));
         verify(telemetryService).trackCourtCaseEvent(argThat(case2));
         verify(telemetryService).trackCourtCaseEvent(argThat(case3));
@@ -141,8 +141,8 @@ class MessageProcessorTest {
 
         verify(eventBus, timeout(MATCHER_THREAD_TIMEOUT).times(6)).post(any(CourtCaseUpdateEvent.class));
 
-        verify(telemetryService).trackCourtListEvent(argThat(getInfoMatcher(LocalDate.of(2020, Month.JULY, 25))));
-        verify(telemetryService).trackCourtListEvent(argThat(getInfoMatcher(LocalDate.of(2020, Month.JULY, 28))));
+        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.JULY, 25))));
+        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.JULY, 28))));
         verify(telemetryService, times(6)).trackCourtCaseEvent(any(Case.class));
         verifyNoMoreInteractions(eventBus, telemetryService);
     }
@@ -226,7 +226,7 @@ class MessageProcessorTest {
         }
     }
 
-    private InfoMatcher getInfoMatcher(LocalDate dateOfHearing) {
+    private InfoMatcher matchesInfoWith(LocalDate dateOfHearing) {
         return InfoMatcher.builder()
             .courtCode(COURT_CODE)
             .dateOfHearing(dateOfHearing)
