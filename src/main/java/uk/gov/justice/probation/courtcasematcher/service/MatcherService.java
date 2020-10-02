@@ -1,20 +1,20 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
-import java.time.LocalDate;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
+
+import java.time.LocalDate;
 
 @Service
 @Slf4j
@@ -28,6 +28,12 @@ public class MatcherService {
     @Autowired
     private final OffenderSearchRestClient offenderSearchRestClient;
 
+    @Value("${probation-status-reference.default}")
+    private final String defaultProbationStatus;
+
+    @Value("${probation-status-reference.nonExactMatch}")
+    private final String nonExactProbationStatus;
+
     public Mono<SearchResponse> getSearchResponse(String defendantName, LocalDate dateOfBirth, String courtCode, String caseNo) {
         return offenderSearchRestClient.search(defendantName, dateOfBirth)
                 .map(searchResponse -> {
@@ -36,14 +42,18 @@ public class MatcherService {
                     return searchResponse;
                 })
                 .flatMap(searchResponse -> {
-                    List<Match> matches = searchResponse.getMatches();
-                    if (matches != null && matches.size() == 1) {
-                        return Mono.zip(Mono.just(searchResponse), restClient.getProbationStatus(matches.get(0).getOffender().getOtherIds().getCrn()));
+                    if (searchResponse.isExactMatch()) {
+                        return Mono.zip(Mono.just(searchResponse), restClient.getProbationStatus(searchResponse.getMatches()
+                                                                                                    .get(0)
+                                                                                                    .getOffender()
+                                                                                                    .getOtherIds()
+                                                                                                    .getCrn()));
                     }
                     else {
                         log.debug("Got {} matches for defendant name {}, dob {}, match type {}",
-                            searchResponse.getMatches().size(), defendantName, dateOfBirth, searchResponse.getMatchedBy());
-                        return Mono.zip(Mono.just(searchResponse), Mono.just(""));
+                                searchResponse.getMatchCount(), defendantName, dateOfBirth, searchResponse.getMatchedBy());
+                        String probationStatus = searchResponse.getMatchCount() >= 1 ? nonExactProbationStatus : defaultProbationStatus;
+                        return Mono.zip(Mono.just(searchResponse), Mono.just(probationStatus));
                     }
                 })
                 .map(this::combine)

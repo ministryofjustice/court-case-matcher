@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CaseMapperTest {
 
     private static final String DEFAULT_PROBATION_STATUS = "No record";
+    private static final String MATCHES_PROBATION_STATUS = "Possible nDelius record";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1969, Month.AUGUST, 26);
     private static final LocalDate DATE_OF_HEARING = LocalDate.of(2020, Month.FEBRUARY, 29);
     private static final LocalTime START_TIME = LocalTime.of(9, 10);
@@ -154,6 +155,31 @@ class CaseMapperTest {
         assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
     }
 
+    @DisplayName("Map a court case to a new court case when search response has yielded a single match")
+    @Test
+    void givenSingleMatchOnName_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatchButNoCrn() {
+        Match match = Match.builder().offender(Offender.builder()
+            .otherIds(OtherIds.builder().crn(CRN).cro(CRO).pnc(PNC).build())
+            .build())
+            .build();
+
+        CourtCase courtCase = caseMapper.newFromCase(aCase);
+        SearchResponse searchResponse = SearchResponse.builder()
+            .matchedBy(OffenderSearchMatchType.NAME)
+            .matches(List.of(match))
+            .probationStatus(MATCHES_PROBATION_STATUS)
+            .build();
+
+        CourtCase courtCaseNew = caseMapper.newFromCourtCaseAndSearchResponse(courtCase, searchResponse);
+
+        assertThat(courtCaseNew).isNotSameAs(courtCase);
+        assertThat(courtCaseNew.getCrn()).isNull();
+        assertThat(courtCaseNew.getProbationStatus()).isEqualTo(MATCHES_PROBATION_STATUS);
+        assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
+        OffenderMatch expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, PNC);
+        assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(expectedOffenderMatch);
+    }
+
     @DisplayName("Map a court case to a new court case when search response has yielded a single match but null probation status")
     @Test
     void givenSingleMatchWithNoProbationStatus_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatch() {
@@ -193,6 +219,7 @@ class CaseMapperTest {
         CourtCase courtCase = caseMapper.newFromCase(aCase);
         SearchResponse searchResponse = SearchResponse.builder()
             .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
+            .probationStatus(MATCHES_PROBATION_STATUS)
             .matches(List.of(match1, match2))
             .build();
 
@@ -200,7 +227,7 @@ class CaseMapperTest {
 
         assertThat(courtCaseNew).isNotSameAs(courtCase);
         assertThat(courtCaseNew.getCrn()).isNull();
-        assertThat(courtCaseNew.getProbationStatus()).isEqualTo(DEFAULT_PROBATION_STATUS);
+        assertThat(courtCaseNew.getProbationStatus()).isEqualTo(MATCHES_PROBATION_STATUS);
         assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(2);
         OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, PNC);
         OffenderMatch offenderMatch2 = buildOffenderMatch(MatchType.PARTIAL_NAME, "CRN1", null, null);

@@ -28,7 +28,7 @@ public class CaseMapper {
 
     private final String defaultProbationStatus;
 
-    public CaseMapper(@Value("${case-mapper-reference.defaultProbationStatus}") String defaultProbationStatus) {
+    public CaseMapper(@Value("${probation-status-reference.default}") String defaultProbationStatus) {
         super();
         this.defaultProbationStatus = defaultProbationStatus;
     }
@@ -40,7 +40,7 @@ public class CaseMapper {
             .build();
     }
 
-    private CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(CourtCase courtCase) {
+    private CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(CourtCase courtCase, String probationStatus) {
         return CourtCase.builder()
             .caseNo(courtCase.getCaseNo())
             .courtCode(courtCase.getCourtCode())
@@ -54,7 +54,7 @@ public class CaseMapper {
             .pnc(courtCase.getPnc())
             .listNo(courtCase.getListNo())
             .sessionStartTime(courtCase.getSessionStartTime())
-            .probationStatus(defaultProbationStatus)
+            .probationStatus(Optional.ofNullable(probationStatus).orElse(defaultProbationStatus))
             .nationality1(courtCase.getNationality1())
             .nationality2(courtCase.getNationality2())
             .offences(courtCase.getOffences());
@@ -132,15 +132,12 @@ public class CaseMapper {
 
     public CourtCase newFromCourtCaseAndSearchResponse(CourtCase incomingCase, SearchResponse searchResponse) {
 
-        List<Match> matches = searchResponse.getMatches() != null ? searchResponse.getMatches() : Collections.emptyList();
         MatchType matchType = MatchType.of(searchResponse.getMatchedBy());
 
-        CourtCaseBuilder courtCaseBuilder;
-
-        courtCaseBuilder = getCourtCaseBuilderFromCase(incomingCase)
+        CourtCaseBuilder courtCaseBuilder = getCourtCaseBuilderFromCase(incomingCase, searchResponse.getProbationStatus())
             .groupedOffenderMatches(buildGroupedOffenderMatch(searchResponse.getMatches(), matchType));
 
-        if (matches.size() == 1) {
+        if (searchResponse.isExactMatch()) {
             Match match = searchResponse.getMatches().get(0);
             courtCaseBuilder
                 .probationStatus(Optional.ofNullable(searchResponse.getProbationStatus()).orElse(defaultProbationStatus))
