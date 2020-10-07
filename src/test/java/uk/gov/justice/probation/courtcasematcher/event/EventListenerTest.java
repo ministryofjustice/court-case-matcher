@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Path;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -110,14 +111,14 @@ class EventListenerTest {
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
         assertThat(events).hasSize(1);
         LoggingEvent loggingEvent = events.get(0);
-        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-        assertThat(loggingEvent.getFormattedMessage().trim())
-            .contains("Message processing failed. Current error count: 1");
-        assertThat(eventListener.getFailureCount()).isEqualTo(1);
+        Assertions.assertAll(
+            () -> assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR),
+            () -> assertThat(loggingEvent.getFormattedMessage().trim()).contains("Message processing failed. Current error count: 1"),
+            () -> assertThat(eventListener.getFailureCount()).isEqualTo(1));
     }
 
     @DisplayName("Ensure that failure events are logged and counted")
-    @Disabled
+    @Disabled("Issue with capturing logging events")
     @Test
     void testFailureEventWithConstraintViolations() {
 
