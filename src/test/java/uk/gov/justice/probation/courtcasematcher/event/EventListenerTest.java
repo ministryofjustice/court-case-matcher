@@ -33,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
@@ -43,7 +44,7 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class EventListenerTest {
 
-    private final static String DEFENDANT_NAME = "Nic CAGE";
+    private final static Name DEFENDANT_NAME = Name.builder().forename1("Nic").surname("CAGE").build();
     private final static LocalDate DEFENDANT_DOB = LocalDate.of(1955, Month.SEPTEMBER, 25);
     private final static String CASE = "123456";
     private final static String COURT_CODE = "B10JQ00";
@@ -184,6 +185,30 @@ class EventListenerTest {
         verify(matcherService).getSearchResponse(DEFENDANT_NAME, DEFENDANT_DOB, COURT_CODE, CASE);
         verify(courtCaseService).createCase(courtCase, searchResponse);
         verify(telemetryService).trackOffenderMatchEvent(COURT_CODE, CASE, searchResponse);
+    }
+
+    @DisplayName("Check the match event when the call to the matcher service returns an empty response")
+    @Test
+    void whenOffenderSearchFails_thenLogError() {
+
+        String messageBody = "{\n"
+            + "    \"firstName\": \"David\",\n"
+            + "    \"surname\": \"JONES\",\n"
+            + "    \"dateOfBirth\": \"1990-01-01\"\n"
+            + "}";
+
+        eventListener.offenderSearchFailureEvent(OffenderSearchFailureEvent.builder()
+                                                                            .requestJson(messageBody)
+                                                                            .failureMessage("ERROR")
+                                                                            .build());
+
+        verify(mockAppender, atLeast(1)).doAppend(captorLoggingEvent.capture());
+        List<LoggingEvent> events = captorLoggingEvent.getAllValues();
+        assertThat(events.size()).isGreaterThanOrEqualTo(1);
+        LoggingEvent loggingEvent = events.get(0);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getFormattedMessage().trim())
+            .contains(messageBody);
     }
 
 }

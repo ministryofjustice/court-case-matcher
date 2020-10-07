@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
@@ -33,7 +34,6 @@ public class CaseMapper {
         this.defaultProbationStatus = defaultProbationStatus;
     }
 
-
     public CourtCase newFromCase(Case aCase) {
         return getCourtCaseBuilderFromCase(aCase)
             .isNew(true)
@@ -48,8 +48,10 @@ public class CaseMapper {
             .courtRoom(courtCase.getCourtRoom())
             .defendantAddress(courtCase.getDefendantAddress())
             .defendantName(courtCase.getDefendantName())
+            .name(courtCase.getName())
             .defendantDob(courtCase.getDefendantDob())
             .defendantSex(courtCase.getDefendantSex())
+            .defendantType(courtCase.getDefendantType())
             .cro(courtCase.getCro())
             .pnc(courtCase.getPnc())
             .listNo(courtCase.getListNo())
@@ -67,9 +69,11 @@ public class CaseMapper {
             .caseId(String.valueOf(aCase.getId()))
             .courtRoom(aCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(Optional.ofNullable(aCase.getDef_addr()).map(CaseMapper::fromAddress).orElse(null))
-            .defendantName(aCase.getDef_name())
+            .name(aCase.getDef_name())
+            .defendantName(aCase.getName())
             .defendantDob(aCase.getDef_dob())
             .defendantSex(aCase.getDef_sex())
+            .defendantType(DefendantType.of(aCase.getDef_type()))
             .cro(aCase.getCro())
             .pnc(aCase.getPnc())
             .listNo(aCase.getListNo())
@@ -112,9 +116,11 @@ public class CaseMapper {
             .caseId(String.valueOf(incomingCase.getId()))
             .courtRoom(incomingCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(fromAddress(incomingCase.getDef_addr()))
-            .defendantName(incomingCase.getDef_name())
+            .name(incomingCase.getDef_name())
+            .defendantName(incomingCase.getName())
             .defendantSex(incomingCase.getDef_sex())
             .defendantDob(incomingCase.getDef_dob())
+            .defendantType(DefendantType.of(incomingCase.getDef_type()))
             .listNo(incomingCase.getListNo())
             .sessionStartTime(incomingCase.getBlock().getSession().getSessionStartTime())
             .offences(fromOffences(incomingCase.getOffences()))
