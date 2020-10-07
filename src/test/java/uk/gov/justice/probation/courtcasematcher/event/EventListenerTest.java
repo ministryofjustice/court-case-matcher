@@ -205,11 +205,13 @@ class EventListenerTest {
 
         verify(mockAppender, atLeast(1)).doAppend(captorLoggingEvent.capture());
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
-        assertThat(events.size()).isGreaterThanOrEqualTo(1);
         LoggingEvent loggingEvent = events.get(0);
-        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-        assertThat(loggingEvent.getFormattedMessage().trim())
-            .contains(messageBody);
+
+        Assertions.assertAll(() -> assertThat(events.size()).isGreaterThanOrEqualTo(1),
+            () -> assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR),
+            () -> assertThat(loggingEvent.getFormattedMessage().trim())
+                                .contains(messageBody)
+        );
     }
 
 }
