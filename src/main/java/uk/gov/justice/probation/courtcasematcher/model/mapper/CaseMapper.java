@@ -71,10 +71,7 @@ public class CaseMapper {
             .courtRoom(aCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(Optional.ofNullable(aCase.getDef_addr()).map(CaseMapper::fromAddress).orElse(null))
             .name(aCase.getName())
-            .defendantName(Optional.ofNullable(aCase.getDef_name())
-                                    .orElse(Optional.ofNullable(aCase.getName())
-                                                    .map(Name::getFullName)
-                                                    .orElse(null)))
+            .defendantName(nameFrom(aCase.getDef_name(), aCase.getName()))
             .defendantDob(aCase.getDef_dob())
             .defendantSex(aCase.getDef_sex())
             .defendantType(DefendantType.of(aCase.getDef_type()))
@@ -111,6 +108,13 @@ public class CaseMapper {
             .build();
     }
 
+    public static String nameFrom(String defendantName, Name name) {
+        return Optional.ofNullable(defendantName)
+                        .orElse(Optional.ofNullable(name)
+                                .map(Name::getFullName)
+                                .orElse(null));
+    }
+
     public CourtCase merge(Case incomingCase, CourtCase existingCourtCase) {
         return CourtCase.builder()
             // PK fields
@@ -121,7 +125,7 @@ public class CaseMapper {
             .courtRoom(incomingCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(fromAddress(incomingCase.getDef_addr()))
             .name(incomingCase.getName())
-            .defendantName(Optional.ofNullable(incomingCase.getDef_name()).orElse(incomingCase.getName().getFullName()))
+            .defendantName(nameFrom(incomingCase.getDef_name(), incomingCase.getName()))
             .defendantSex(incomingCase.getDef_sex())
             .defendantDob(incomingCase.getDef_dob())
             .defendantType(DefendantType.of(incomingCase.getDef_type()))
