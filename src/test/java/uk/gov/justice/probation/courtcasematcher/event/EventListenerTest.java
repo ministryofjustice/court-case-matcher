@@ -50,7 +50,7 @@ class EventListenerTest {
     private final static String CASE = "123456";
     private final static String COURT_CODE = "B10JQ00";
     private final static CourtCase courtCase = CourtCase.builder()
-        .defendantName(DEFENDANT_NAME)
+        .defendantName(DEFENDANT_NAME.getFullName())
         .defendantDob(DEFENDANT_DOB)
         .courtCode(COURT_CODE)
         .caseNo(CASE)

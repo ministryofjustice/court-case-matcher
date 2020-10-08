@@ -13,8 +13,8 @@
   "suspendedSentenceOrder": true,
   "breach": true,
   "offences": [],
-  "name": "Mr Dylan Adam ARMSTRONG",
-  "defendantName": {
+  "defendantName": "Mr Dylan Adam ARMSTRONG",
+  "name": {
     "title": "Mr",
     "forename1": "Dylan",
     "forename2": "Adam",

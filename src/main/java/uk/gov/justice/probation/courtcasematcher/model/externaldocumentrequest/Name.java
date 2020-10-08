@@ -32,4 +32,11 @@ public class Name {
             .trim();
     }
 
+    public String getFullName() {
+        return Stream.of(title, forename1, forename2, forename3, surname)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "))
+            .trim();
+    }
+
 }

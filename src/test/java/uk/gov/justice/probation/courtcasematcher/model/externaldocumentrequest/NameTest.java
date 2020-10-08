@@ -49,4 +49,10 @@ class NameTest {
             .build();
         assertThat(name1.getForenames()).isEmpty();
     }
+
+    @DisplayName("When there is a name, get the full name as a string")
+    @Test
+    void whenGetFullname_thenReturn() {
+        assertThat(name.getFullName()).isEqualTo("Mr. David Robert BOWIE");
+    }
 }

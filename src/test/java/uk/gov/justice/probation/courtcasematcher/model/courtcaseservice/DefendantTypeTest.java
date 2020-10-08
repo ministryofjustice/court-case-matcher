@@ -2,29 +2,25 @@ package uk.gov.justice.probation.courtcasematcher.model.courtcaseservice;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefendantTypeTest {
 
-    @DisplayName("Unknown defendant type")
-    @Test
-    void givenUnknownDefendantType_whenMatch_ThenReturnPerson() {
-        assertThat(DefendantType.of("X")).isSameAs(DefendantType.PERSON);
-    }
-
+    @ParameterizedTest(name = "{0} is ORGANISATION TYPE")
     @DisplayName("Organisation defendant type")
-    @Test
-    void givenOrganisationDefendantType_whenMatch_ThenReturn() {
-        assertThat(DefendantType.of("O")).isSameAs(DefendantType.ORGANISATION);
-        assertThat(DefendantType.of("o")).isSameAs(DefendantType.ORGANISATION);
+    @ValueSource(strings = {"O", "o"})
+    void givenOrganisationDefendantType_whenMatch_ThenReturn(String defendantType) {
+        assertThat(DefendantType.of(defendantType)).isSameAs(DefendantType.ORGANISATION);
     }
 
+    @ParameterizedTest(name = "{0} is PERSON TYPE")
     @DisplayName("Person defendant type")
-    @Test
-    void givenPersonDefendantType_whenMatch_ThenReturnPerson() {
-        assertThat(DefendantType.of("P")).isSameAs(DefendantType.PERSON);
-        assertThat(DefendantType.of("p")).isSameAs(DefendantType.PERSON);
+    @ValueSource(strings = {"P", "p", "", "X"})
+    void givenPersonDefendantType_whenMatch_ThenReturnPerson(String defendantType) {
+        assertThat(DefendantType.of(defendantType)).isSameAs(DefendantType.PERSON);
     }
 
     @DisplayName("null defendant type passed")

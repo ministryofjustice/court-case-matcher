@@ -86,8 +86,8 @@ public class EventListener {
         log.info("Matching offender and saving case no {} for court {}, defendant name {}",
             courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getDefendantName());
 
-        Name name = Optional.ofNullable(courtCase.getDefendantName())
-                            .orElseGet(() -> NameHelper.getNameFromFields(courtCase.getName()));
+        Name name = Optional.ofNullable(courtCase.getName())
+                            .orElseGet(() -> NameHelper.getNameFromFields(courtCase.getDefendantName()));
 
         matcherService.getSearchResponse(name, courtCase.getDefendantDob(), courtCase.getCourtCode(), courtCase.getCaseNo())
             .switchIfEmpty(Mono.defer(() -> Mono.just(SearchResponse.builder()

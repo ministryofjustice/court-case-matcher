@@ -44,16 +44,14 @@ public class CourtCase implements Serializable {
 
     private final String pnc;
 
-    private final String name;
+    private final Name name;
 
-    @JsonIgnore
-    private final Name defendantName;
+    private final String defendantName;
 
     private final Address defendantAddress;
 
     private final LocalDate defendantDob;
 
-    @JsonIgnore
     private final DefendantType defendantType;
 
     private final String defendantSex;
@@ -67,8 +65,6 @@ public class CourtCase implements Serializable {
     private final Boolean breach;
 
     private final Boolean suspendedSentenceOrder;
-
-
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;

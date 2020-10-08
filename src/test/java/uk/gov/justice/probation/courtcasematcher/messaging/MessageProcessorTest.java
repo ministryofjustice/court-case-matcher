@@ -95,7 +95,7 @@ class MessageProcessorTest {
     void whenValidMessageReceived_ThenAttemptMatch() {
 
         Name name = Name.builder().forename1("Donald").surname("TRUMP").build();
-        CourtCase courtCase =  CourtCase.builder().isNew(false).defendantName(name).build();
+        CourtCase courtCase =  CourtCase.builder().isNew(false).name(name).build();
         when(courtCaseService.getCourtCase(any(Case.class))).thenReturn(Mono.just(courtCase));
 
         messageProcessor.process(singleCaseXml);

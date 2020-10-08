@@ -12,6 +12,7 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIde
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
@@ -69,8 +70,11 @@ public class CaseMapper {
             .caseId(String.valueOf(aCase.getId()))
             .courtRoom(aCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(Optional.ofNullable(aCase.getDef_addr()).map(CaseMapper::fromAddress).orElse(null))
-            .name(aCase.getDef_name())
-            .defendantName(aCase.getName())
+            .name(aCase.getName())
+            .defendantName(Optional.ofNullable(aCase.getDef_name())
+                                    .orElse(Optional.ofNullable(aCase.getName())
+                                                    .map(Name::getFullName)
+                                                    .orElse(null)))
             .defendantDob(aCase.getDef_dob())
             .defendantSex(aCase.getDef_sex())
             .defendantType(DefendantType.of(aCase.getDef_type()))
@@ -116,8 +120,8 @@ public class CaseMapper {
             .caseId(String.valueOf(incomingCase.getId()))
             .courtRoom(incomingCase.getBlock().getSession().getCourtRoom())
             .defendantAddress(fromAddress(incomingCase.getDef_addr()))
-            .name(incomingCase.getDef_name())
-            .defendantName(incomingCase.getName())
+            .name(incomingCase.getName())
+            .defendantName(Optional.ofNullable(incomingCase.getDef_name()).orElse(incomingCase.getName().getFullName()))
             .defendantSex(incomingCase.getDef_sex())
             .defendantDob(incomingCase.getDef_dob())
             .defendantType(DefendantType.of(incomingCase.getDef_type()))

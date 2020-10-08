@@ -117,8 +117,8 @@ class CaseMapperTest {
         assertThat(courtCase.getDefendantAddress().getLine3()).isEqualTo("line 3");
         assertThat(courtCase.getDefendantAddress().getPostcode()).isEqualTo("LD1 1AA");
         assertThat(courtCase.getDefendantDob()).isEqualTo(DATE_OF_BIRTH);
-        assertThat(courtCase.getDefendantName()).isEqualTo(name);
-        assertThat(courtCase.getName()).isNullOrEmpty();
+        assertThat(courtCase.getDefendantName()).isEqualTo("Mr Patrick Floyd Jarvis Garrett");
+        assertThat(courtCase.getName()).isEqualTo(name);
         assertThat(courtCase.getDefendantSex()).isEqualTo("M");
         assertThat(courtCase.getDefendantType()).isSameAs(DefendantType.PERSON);
         assertThat(courtCase.getSessionStartTime()).isEqualTo(SESSION_START_TIME);
@@ -304,7 +304,7 @@ class CaseMapperTest {
             .probationStatus("Current")
             .courtCode(COURT_CODE)
             .defendantAddress(null)
-            .name("Pat Garrett")
+            .defendantName("Pat Garrett")
             .defendantType(DefendantType.ORGANISATION)
             .defendantDob(LocalDate.of(1969, Month.JANUARY, 1))
             .nationality1("USA")
@@ -341,8 +341,8 @@ class CaseMapperTest {
         assertThat(courtCase.getDefendantAddress().getLine3()).isEqualTo("line 3");
         assertThat(courtCase.getDefendantAddress().getPostcode()).isEqualTo("LD1 1AA");
         assertThat(courtCase.getDefendantDob()).isNull();
-        assertThat(courtCase.getDefendantName()).isEqualTo(name);
-        assertThat(courtCase.getName()).isNullOrEmpty();
+        assertThat(courtCase.getDefendantName()).isEqualTo("Mr Patrick Floyd Jarvis Garrett");
+        assertThat(courtCase.getName()).isEqualTo(name);
         assertThat(courtCase.getDefendantType()).isSameAs(DefendantType.PERSON);
         assertThat(courtCase.getDefendantSex()).isEqualTo("M");
         assertThat(courtCase.getSessionStartTime()).isEqualTo(SESSION_START_TIME);
