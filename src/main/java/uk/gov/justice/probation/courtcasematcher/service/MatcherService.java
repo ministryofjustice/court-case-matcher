@@ -35,8 +35,8 @@ public class MatcherService {
     @Value("${probation-status-reference.nonExactMatch}")
     private final String nonExactProbationStatus;
 
-    public Mono<SearchResponse> getSearchResponse(Name defendantName, LocalDate dateOfBirth, String courtCode, String caseNo) {
-        return offenderSearchRestClient.search(defendantName, dateOfBirth)
+    public Mono<SearchResponse> getSearchResponse(String pnc, Name defendantName, LocalDate dateOfBirth, String courtCode, String caseNo) {
+        return offenderSearchRestClient.search(pnc, defendantName, dateOfBirth)
                 .map(searchResponse -> {
                     log.info(String.format("Match results for caseNo: %s, courtCode: %s - matchedBy: %s, matchCount: %s",
                         caseNo, courtCode, searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));

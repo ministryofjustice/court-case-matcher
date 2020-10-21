@@ -1,9 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.function.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +19,11 @@ import reactor.util.retry.Retry.RetrySignal;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.function.Predicate;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
@@ -56,11 +57,11 @@ public class OffenderSearchRestClient {
         this.webClient = webClient;
     }
 
-    public Mono<SearchResponse> search(Name name, LocalDate dateOfBirth){
+    public Mono<SearchResponse> search(String pnc, Name name, LocalDate dateOfBirth){
         if (!validate(name, dateOfBirth)) {
             return Mono.error(new IllegalArgumentException("Invalid parameters passed for offender search"));
         }
-        MatchRequest body = buildRequestBody(name, dateOfBirth);
+        MatchRequest body = buildRequestBody(pnc, name, dateOfBirth);
         return post()
                 .body(BodyInserters.fromPublisher(Mono.just(body), MatchRequest.class))
                 .accept(MediaType.APPLICATION_JSON)
@@ -108,9 +109,10 @@ public class OffenderSearchRestClient {
         return Mono.error(throwable);
     }
 
-    private MatchRequest buildRequestBody(Name fullName, LocalDate dateOfBirth) {
+    private MatchRequest buildRequestBody(String pnc, Name fullName, LocalDate dateOfBirth) {
 
         MatchRequest.MatchRequestBuilder builder = MatchRequest.builder()
+                                                    .pncNumber(pnc)
                                                     .surname(fullName.getSurname())
                                                     .dateOfBirth(dateOfBirth.format(DateTimeFormatter.ISO_DATE));
         String forenames = fullName.getForenames();

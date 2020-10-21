@@ -5,6 +5,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,9 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
+/**
+ * We intend to replace EventBus with an external message queue.
+ */
 @Component
 @Slf4j
 public class EventListener {
@@ -83,7 +87,7 @@ public class EventListener {
         Name name = Optional.ofNullable(courtCase.getName())
                             .orElseGet(() -> nameHelper.getNameFromFields(courtCase.getDefendantName()));
 
-        matcherService.getSearchResponse(name, courtCase.getDefendantDob(), courtCase.getCourtCode(), courtCase.getCaseNo())
+        matcherService.getSearchResponse(courtCase.getPnc(), name, courtCase.getDefendantDob(), courtCase.getCourtCode(), courtCase.getCaseNo())
             .doOnSuccess(searchResponse -> telemetryService.trackOffenderMatchEvent(courtCase, searchResponse))
             .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
             .onErrorResume(throwable -> Mono.just(SearchResponse.builder()

@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +15,8 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient.EXCEPTION_RETRY_FILTER;
@@ -51,7 +52,7 @@ class OffenderSearchRestClientTest {
     @Test
     void givenInvalidName_whenSearch_thenReturnError() {
         Name name = Name.builder().forename1("not").surname("").build();
-        Mono<SearchResponse> searchResponseMono = restClient.search(name, LocalDate.of(1999, 4, 5));
+        Mono<SearchResponse> searchResponseMono = restClient.search(null, name, LocalDate.of(1999, 4, 5));
 
         StepVerifier.create(searchResponseMono)
             .verifyError(IllegalArgumentException.class);
@@ -61,7 +62,7 @@ class OffenderSearchRestClientTest {
     @Test
     void givenNullDateOfBirth_whenSearch_thenReturnError() {
         Name name = Name.builder().forename1("Arthur").surname("MORGAN").build();
-        Mono<SearchResponse> searchResponseMono = restClient.search(name, null);
+        Mono<SearchResponse> searchResponseMono = restClient.search(null, name, null);
 
         StepVerifier.create(searchResponseMono)
             .verifyError(IllegalArgumentException.class);
