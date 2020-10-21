@@ -58,7 +58,7 @@ public class OffenderSearchRestClient {
 
     public Mono<SearchResponse> search(Name name, LocalDate dateOfBirth){
         if (!validate(name, dateOfBirth)) {
-            return Mono.empty();
+            return Mono.error(new IllegalArgumentException("Invalid parameters passed for offender search"));
         }
         MatchRequest body = buildRequestBody(name, dateOfBirth);
         return post()

@@ -47,24 +47,24 @@ class OffenderSearchRestClientTest {
         assertThat(EXCEPTION_RETRY_FILTER.test(exception)).isTrue();
     }
 
-    @DisplayName("The mono will be empty with invalid name")
+    @DisplayName("The mono will be an error with invalid name")
     @Test
-    void givenInvalidName_whenSearch_thenReturnEmptyMono() {
+    void givenInvalidName_whenSearch_thenReturnError() {
         Name name = Name.builder().forename1("not").surname("").build();
         Mono<SearchResponse> searchResponseMono = restClient.search(name, LocalDate.of(1999, 4, 5));
 
         StepVerifier.create(searchResponseMono)
-            .verifyComplete();
+            .verifyError(IllegalArgumentException.class);
     }
 
-    @DisplayName("The mono will be empty with null date of birth")
+    @DisplayName("The mono will be an error with null date of birth")
     @Test
-    void givenNullDateOfBirth_whenSearch_thenReturnEmptyMono() {
+    void givenNullDateOfBirth_whenSearch_thenReturnError() {
         Name name = Name.builder().forename1("Arthur").surname("MORGAN").build();
         Mono<SearchResponse> searchResponseMono = restClient.search(name, null);
 
         StepVerifier.create(searchResponseMono)
-            .verifyComplete();
+            .verifyError(IllegalArgumentException.class);
     }
 
     private static WebClientResponseException createException(HttpStatus httpStatus) {
