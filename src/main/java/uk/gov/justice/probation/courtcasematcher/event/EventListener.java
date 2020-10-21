@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
@@ -90,20 +89,18 @@ public class EventListener {
                             .orElseGet(() -> NameHelper.getNameFromFields(courtCase.getDefendantName()));
 
         matcherService.getSearchResponse(name, courtCase.getDefendantDob(), courtCase.getCourtCode(), courtCase.getCaseNo())
-            .switchIfEmpty(Mono.defer(() -> Mono.just(SearchResponse.builder()
-                                                            .matchedBy(OffenderSearchMatchType.NOTHING)
-                                                            .matches(Collections.emptyList())
-                                                            .build())))
+            .doOnError(throwable -> {
+                telemetryService.trackOffenderMatchFailureEvent(courtCase);
+                courtCaseService.createCase(courtCase, SearchResponse.builder()
+                                                                    .matchedBy(OffenderSearchMatchType.NOTHING)
+                                                                    .matches(Collections.emptyList())
+                                                                    .build());
+            })
             .subscribe(searchResponse -> {
                 telemetryService.trackOffenderMatchEvent(courtCase, searchResponse);
                 courtCaseService.createCase(courtCase, searchResponse);
-            });
-    }
-
-    @AllowConcurrentEvents
-    @Subscribe
-    public void offenderSearchFailureEvent(OffenderSearchFailureEvent event) {
-        log.error("Failed to complete a search with search body {}. Error {}", event.getRequestJson(), event.getFailureMessage());
+            })
+        ;
     }
 
     public long getSuccessCount() {

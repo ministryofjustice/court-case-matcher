@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
+import com.google.common.eventbus.EventBus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
