@@ -195,29 +195,4 @@ class EventListenerTest {
         verifyNoMoreInteractions(matcherService, courtCaseService, telemetryService);
     }
 
-//    @DisplayName("Check the match event when the call to the matcher service returns an empty response")
-//    @Test
-//    void whenOffenderSearchFails_thenLogError() {
-//
-//        String messageBody = "{\n"
-//            + "    \"firstName\": \"David\",\n"
-//            + "    \"surname\": \"JONES\",\n"
-//            + "    \"dateOfBirth\": \"1990-01-01\"\n"
-//            + "}";
-//
-//        eventListener.offenderSearchFailureEvent(OffenderSearchFailureEvent.builder()
-//                                                                            .failureMessage("ERROR")
-//                                                                            .build());
-//
-//        verify(mockAppender, atLeast(1)).doAppend(captorLoggingEvent.capture());
-//        List<LoggingEvent> events = captorLoggingEvent.getAllValues();
-//        LoggingEvent loggingEvent = events.get(0);
-//
-//        Assertions.assertAll(() -> assertThat(events.size()).isGreaterThanOrEqualTo(1),
-//            () -> assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR),
-//            () -> assertThat(loggingEvent.getFormattedMessage().trim())
-//                                .contains(messageBody)
-//        );
-//    }
-
 }
