@@ -75,7 +75,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     runtimeOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
-    implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+    implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
     implementation 'org.springframework.boot:spring-boot-starter-artemis'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.3'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.3'
@@ -101,7 +101,7 @@ dependencies {
     testImplementation 'io.rest-assured:json-path:4.3.1'
     testImplementation 'io.rest-assured:xml-path:4.3.1'
     testCompile "com.github.tomakehurst:wiremock-jre8:2.26.3"
-    testCompile 'org.mockito:mockito-core:3.5.13'
+    testCompile 'org.mockito:mockito-core:3.5.15'
     testCompile 'org.apache.activemq:artemis-junit:2.15.0'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
