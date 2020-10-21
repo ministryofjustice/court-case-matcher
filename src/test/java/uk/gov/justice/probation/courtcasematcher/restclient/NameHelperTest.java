@@ -79,7 +79,7 @@ class NameHelperTest {
                 "Dame Edna EVERAGE,EVERAGE",
                 "MasTER William BROWN,BROWN",
                 "Mrs JUDI DENCH,JUDI DENCH"})
-    void givenVariousInputsAsTitle_whenGetSurname_thenReturn(String fullName, String expectedSurname) {
+    void givenVariousTitles_whenGetSurname_thenReturn(String fullName, String expectedSurname) {
 
         Name name = nameHelper.getNameFromFields(fullName);
 
