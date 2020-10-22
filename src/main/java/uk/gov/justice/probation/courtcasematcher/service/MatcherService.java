@@ -10,13 +10,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.NameHelper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
-import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -33,19 +35,25 @@ public class MatcherService {
     @Autowired
     private final MatchRequest.Factory matchRequestFactory;
 
+    @Autowired
+    private NameHelper nameHelper;
+
     @Value("${probation-status-reference.default}")
     private final String defaultProbationStatus;
 
     @Value("${probation-status-reference.nonExactMatch}")
     private final String nonExactProbationStatus;
 
-    public Mono<SearchResponse> getSearchResponse(String pnc, Name defendantName, LocalDate dateOfBirth, String courtCode, String caseNo) {
-        return Mono.defer(() -> Mono.just(matchRequestFactory.from(pnc, defendantName, dateOfBirth)))
-                .doOnError(throwable -> log.warn(String.format("Unable to create MatchRequest for caseNo: %s, courtCode: %s", caseNo, courtCode), throwable))
+    public Mono<SearchResponse> getSearchResponse(CourtCase courtCase) {
+        Name defendantName = Optional.ofNullable(courtCase.getName())
+                .orElseGet(() -> nameHelper.getNameFromFields(courtCase.getDefendantName()));
+
+        return Mono.defer(() -> Mono.just(matchRequestFactory.from(courtCase.getPnc(), defendantName, courtCase.getDefendantDob())))
+                .doOnError(throwable -> log.warn(String.format("Unable to create MatchRequest for caseNo: %s, courtCode: %s", courtCase.getCaseNo(), courtCase.getCourtCode()), throwable))
                 .flatMap(offenderSearchRestClient::search)
                 .map(searchResponse -> {
                     log.info(String.format("Match results for caseNo: %s, courtCode: %s - matchedBy: %s, matchCount: %s",
-                        caseNo, courtCode, searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));
+                            courtCase.getCaseNo(), courtCase.getCourtCode(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));
                     return searchResponse;
                 })
                 .flatMap(searchResponse -> {
@@ -58,7 +66,7 @@ public class MatcherService {
                     }
                     else {
                         log.debug("Got {} matches for defendant name {}, dob {}, match type {}",
-                                searchResponse.getMatchCount(), defendantName, dateOfBirth, searchResponse.getMatchedBy());
+                                searchResponse.getMatchCount(), defendantName, courtCase.getDefendantDob(), searchResponse.getMatchedBy());
                         String probationStatus = searchResponse.getMatchCount() >= 1 ? nonExactProbationStatus : defaultProbationStatus;
                         return Mono.zip(Mono.just(searchResponse), Mono.just(probationStatus));
                     }
@@ -67,7 +75,7 @@ public class MatcherService {
                 .doOnSuccess((data) -> {
                     if (data == null) {
                         log.error(String.format("Match results for caseNo: %s, courtCode: %s - Empty response from OffenderSearchRestClient",
-                            caseNo, courtCode));
+                                courtCase.getCaseNo(), courtCase.getCourtCode()));
                     }
                 });
     }

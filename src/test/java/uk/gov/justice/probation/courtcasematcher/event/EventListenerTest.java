@@ -168,11 +168,11 @@ class EventListenerTest {
     @Test
     void givenSearch_whenCourtCaseMatched_thenSave() {
         SearchResponse searchResponse = SearchResponse.builder().build();
-        when(matcherService.getSearchResponse(PNC, DEFENDANT_NAME, DEFENDANT_DOB, COURT_CODE, CASE)).thenReturn(Mono.just(searchResponse));
+        when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.just(searchResponse));
 
         eventBus.post(CourtCaseMatchEvent.builder().courtCase(courtCase).build());
 
-        verify(matcherService).getSearchResponse(PNC, DEFENDANT_NAME, DEFENDANT_DOB, COURT_CODE, CASE);
+        verify(matcherService).getSearchResponse(courtCase);
         verify(courtCaseService).createCase(courtCase, searchResponse);
         verify(telemetryService).trackOffenderMatchEvent(courtCase, searchResponse);
         verifyNoMoreInteractions(matcherService, courtCaseService, telemetryService);
@@ -181,7 +181,7 @@ class EventListenerTest {
     @DisplayName("Check the match event when the call to the matcher service returns an empty response")
     @Test
     void givenSearchWhichFails_whenCourtCaseMatched_thenSave() {
-        when(matcherService.getSearchResponse(PNC, DEFENDANT_NAME, DEFENDANT_DOB, COURT_CODE, CASE)).thenReturn(Mono.error(new IllegalArgumentException()));
+        when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
 
         eventListener.courtCaseMatchEvent(CourtCaseMatchEvent.builder().courtCase(courtCase).build());
 
@@ -189,7 +189,7 @@ class EventListenerTest {
             .matches(Collections.emptyList())
             .matchedBy(OffenderSearchMatchType.NOTHING)
             .build();
-        verify(matcherService).getSearchResponse(PNC, DEFENDANT_NAME, DEFENDANT_DOB, COURT_CODE, CASE);
+        verify(matcherService).getSearchResponse(courtCase);
         verify(courtCaseService).createCase(courtCase, searchResponse);
         verify(telemetryService).trackOffenderMatchFailureEvent(courtCase);
         verifyNoMoreInteractions(matcherService, courtCaseService, telemetryService);
