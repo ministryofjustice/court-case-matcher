@@ -11,14 +11,10 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
-import uk.gov.justice.probation.courtcasematcher.restclient.NameHelper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
-
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -35,9 +31,6 @@ public class MatcherService {
     @Autowired
     private final MatchRequest.Factory matchRequestFactory;
 
-    @Autowired
-    private NameHelper nameHelper;
-
     @Value("${probation-status-reference.default}")
     private final String defaultProbationStatus;
 
@@ -45,10 +38,8 @@ public class MatcherService {
     private final String nonExactProbationStatus;
 
     public Mono<SearchResponse> getSearchResponse(CourtCase courtCase) {
-        Name defendantName = Optional.ofNullable(courtCase.getName())
-                .orElseGet(() -> nameHelper.getNameFromFields(courtCase.getDefendantName()));
 
-        return Mono.defer(() -> Mono.just(matchRequestFactory.from(courtCase.getPnc(), defendantName, courtCase.getDefendantDob())))
+        return Mono.defer(() -> Mono.just(matchRequestFactory.buildFrom(courtCase)))
                 .doOnError(throwable -> log.warn(String.format("Unable to create MatchRequest for caseNo: %s, courtCode: %s", courtCase.getCaseNo(), courtCase.getCourtCode()), throwable))
                 .flatMap(offenderSearchRestClient::search)
                 .map(searchResponse -> {
@@ -66,7 +57,7 @@ public class MatcherService {
                     }
                     else {
                         log.debug("Got {} matches for defendant name {}, dob {}, match type {}",
-                                searchResponse.getMatchCount(), defendantName, courtCase.getDefendantDob(), searchResponse.getMatchedBy());
+                                searchResponse.getMatchCount(), courtCase.getDefendantName(), courtCase.getDefendantDob(), searchResponse.getMatchedBy());
                         String probationStatus = searchResponse.getMatchCount() >= 1 ? nonExactProbationStatus : defaultProbationStatus;
                         return Mono.zip(Mono.just(searchResponse), Mono.just(probationStatus));
                     }

@@ -24,7 +24,6 @@ import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSe
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
-import uk.gov.justice.probation.courtcasematcher.restclient.NameHelper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
 import java.time.LocalDate;
@@ -35,7 +34,6 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -111,10 +109,6 @@ class MatcherServiceTest {
 
     @Mock
     private MatchRequest matchRequest;
-    @Mock
-    private NameHelper nameHelper;
-    @Mock
-    private Name fullName;
 
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
@@ -128,13 +122,13 @@ class MatcherServiceTest {
         logger.addAppender(mockAppender);
 
         matcherService =
-            new MatcherService(courtCaseRestClient, offenderSearchRestClient, matchRequestFactory, nameHelper, DEFAULT_PROBATION_STATUS, MATCHES_PROBATION_STATUS);
+            new MatcherService(courtCaseRestClient, offenderSearchRestClient, matchRequestFactory, DEFAULT_PROBATION_STATUS, MATCHES_PROBATION_STATUS);
 
     }
 
     @Test
     void givenIncomingDefendantDoesNotMatchAnOffender_whenMatchCalled_thenLog(){
-        when(matchRequestFactory.from(PNC, DEF_NAME, DEF_DOB)).thenReturn(matchRequest);
+        when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
         when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.empty());
 
         SearchResponse searchResponse = matcherService.getSearchResponse(COURT_CASE).block();
@@ -149,7 +143,7 @@ class MatcherServiceTest {
 
     @Test
     void givenException_whenBuildingMatchRequest_thenLog(){
-        when(matchRequestFactory.from(any(), any(), any())).thenThrow(new IllegalArgumentException("This is the reason"));
+        when(matchRequestFactory.buildFrom(COURT_CASE)).thenThrow(new IllegalArgumentException("This is the reason"));
 
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> matcherService.getSearchResponse(COURT_CASE).block());
@@ -165,7 +159,7 @@ class MatcherServiceTest {
 
     @Test
     void givenMatchesToMultipleOffenders_whenMatchCalled_thenReturn(){
-        when(matchRequestFactory.from(PNC, DEF_NAME, DEF_DOB)).thenReturn(matchRequest);
+        when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
         when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(multipleExactMatches));
 
         SearchResponse searchResponse = matcherService.getSearchResponse(COURT_CASE).block();
@@ -177,7 +171,7 @@ class MatcherServiceTest {
 
     @Test
     void givenMatchesToSingleOffender_whenSearchResponse_thenReturnWithProbationStatus(){
-        when(matchRequestFactory.from(PNC, DEF_NAME, DEF_DOB)).thenReturn(matchRequest);
+        when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
         when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(singleExactMatch));
         when(courtCaseRestClient.getProbationStatus(CRN)).thenReturn(Mono.just(PROBATION_STATUS));
 
@@ -190,7 +184,7 @@ class MatcherServiceTest {
 
     @Test
     void givenZeroMatches_whenSearchResponse_thenReturn(){
-        when(matchRequestFactory.from(PNC, DEF_NAME, DEF_DOB)).thenReturn(matchRequest);
+        when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
         when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(noMatches));
 
         SearchResponse searchResponse = matcherService.getSearchResponse(COURT_CASE).block();

@@ -23,7 +23,6 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCas
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.NameHelper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -64,8 +63,6 @@ class EventListenerTest {
         .sessionStartTime(DATE_OF_HEARING)
         .build();
 
-    private final NameHelper nameHelper = new NameHelper(List.of("MISS","MRS","MS","MASTER","MR","MX","DR"));
-
     @Mock
     private MatcherService matcherService;
 
@@ -91,7 +88,7 @@ class EventListenerTest {
         logger.addAppender(mockAppender);
 
         eventBus = new EventBus();
-        eventListener = new EventListener(eventBus, matcherService, courtCaseService, telemetryService, nameHelper);
+        eventListener = new EventListener(eventBus, matcherService, courtCaseService, telemetryService);
     }
 
     @DisplayName("Ensure that successful events are logged and counted")

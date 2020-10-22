@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.NameHelper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -31,19 +30,15 @@ public class EventListener {
 
     private final TelemetryService telemetryService;
 
-    private final NameHelper nameHelper;
-
     @Autowired
     public EventListener(EventBus eventBus,
-                        MatcherService matcherService,
-                        CourtCaseService courtCaseService,
-                        TelemetryService telemetryService,
-                        NameHelper nameHelper) {
+                         MatcherService matcherService,
+                         CourtCaseService courtCaseService,
+                         TelemetryService telemetryService) {
         super();
         this.matcherService = matcherService;
         this.courtCaseService = courtCaseService;
         this.telemetryService = telemetryService;
-        this.nameHelper = nameHelper;
         eventBus.register(this);
     }
 

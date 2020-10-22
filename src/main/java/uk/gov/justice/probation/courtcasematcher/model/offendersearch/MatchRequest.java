@@ -9,12 +9,15 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -31,11 +34,15 @@ public class MatchRequest {
 
     @Slf4j
     @Component
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Factory {
         private static final String ERROR_NO_DATE_OF_BIRTH = "No dateOfBirth provided";
         private static final String ERROR_NO_NAME = "No surname provided";
+        @Autowired
+        private NameHelper nameHelper;
 
-        public MatchRequest from(String pnc, Name fullName, LocalDate dateOfBirth) throws IllegalArgumentException {
+        public MatchRequest buildFrom(String pnc, Name fullName, LocalDate dateOfBirth) throws IllegalArgumentException {
             if (dateOfBirth == null) {
                 log.error(ERROR_NO_DATE_OF_BIRTH);
                 throw new IllegalArgumentException(ERROR_NO_DATE_OF_BIRTH);
@@ -55,6 +62,12 @@ public class MatchRequest {
                 builder.firstName(forenames);
             }
             return builder.build();
+        }
+
+        public MatchRequest buildFrom(CourtCase courtCase) throws IllegalArgumentException {
+            Name defendantName = Optional.ofNullable(courtCase.getName())
+                    .orElseGet(() -> nameHelper.getNameFromFields(courtCase.getDefendantName()));
+            return buildFrom(courtCase.getPnc(), defendantName, courtCase.getDefendantDob());
         }
     }
 }
