@@ -4,7 +4,7 @@ LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 ENV TZ=Europe/London
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 
-RUN addgroup --gid 2000 --system appgroup && \
+RUN groupadd --gid 2000 --system appgroup && \
     adduser --uid 2000 --system appuser --gid 2000
 
 RUN mkdir -p /app
