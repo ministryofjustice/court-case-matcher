@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
-import reactor.util.StringUtils;
 import reactor.util.retry.Retry;
 import reactor.util.retry.Retry.RetrySignal;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
@@ -22,7 +21,6 @@ import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResp
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.function.Predicate;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
@@ -30,8 +28,6 @@ import static org.springframework.security.oauth2.client.web.reactive.function.c
 @Component
 @Slf4j
 public class OffenderSearchRestClient {
-    private static final String ERROR_NO_DATE_OF_BIRTH = "No dateOfBirth provided";
-    private static final String ERROR_NO_NAME = "No surname provided";
 
     @Setter
     @Value("${offender-search.post-match-url}")
@@ -58,10 +54,13 @@ public class OffenderSearchRestClient {
     }
 
     public Mono<SearchResponse> search(String pnc, Name name, LocalDate dateOfBirth){
-        if (!validate(name, dateOfBirth)) {
-            return Mono.error(new IllegalArgumentException("Invalid parameters passed for offender search"));
+        MatchRequest body;
+        try {
+            body = MatchRequest.from(pnc, name, dateOfBirth);
+        } catch (IllegalArgumentException e) {
+            return Mono.error(e);
         }
-        MatchRequest body = buildRequestBody(pnc, name, dateOfBirth);
+
         return post()
                 .body(BodyInserters.fromPublisher(Mono.just(body), MatchRequest.class))
                 .accept(MediaType.APPLICATION_JSON)
@@ -87,19 +86,6 @@ public class OffenderSearchRestClient {
         }
     }
 
-    private boolean validate(Name name, LocalDate dateOfBirth) {
-        if (dateOfBirth == null) {
-            log.error(ERROR_NO_DATE_OF_BIRTH);
-            return false;
-        }
-
-        if (name == null || StringUtils.isEmpty(name.getSurname())) {
-            log.error(ERROR_NO_NAME);
-            return false;
-        }
-        return true;
-    }
-
     private Mono<? extends SearchResponse> handleError(Throwable throwable) {
 
         if (Exceptions.isRetryExhausted(throwable)) {
@@ -107,19 +93,6 @@ public class OffenderSearchRestClient {
             return Mono.error(throwable);
         }
         return Mono.error(throwable);
-    }
-
-    private MatchRequest buildRequestBody(String pnc, Name fullName, LocalDate dateOfBirth) {
-
-        MatchRequest.MatchRequestBuilder builder = MatchRequest.builder()
-                                                    .pncNumber(pnc)
-                                                    .surname(fullName.getSurname())
-                                                    .dateOfBirth(dateOfBirth.format(DateTimeFormatter.ISO_DATE));
-        String forenames = fullName.getForenames();
-        if (!StringUtils.isEmpty(forenames)) {
-            builder.firstName(forenames);
-        }
-        return builder.build();
     }
 
     private Mono<Void> logRetrySignal(RetrySignal retrySignal) {
@@ -131,26 +104,23 @@ public class OffenderSearchRestClient {
     /**
      * Filter which decides whether or not to retry. Return true if we do wish to retry.
      */
-    static final Predicate<? super Throwable> EXCEPTION_RETRY_FILTER = new Predicate<Throwable>() {
-        @Override
-        public boolean test(Throwable throwable) {
-            boolean retry = true;
-            if (throwable instanceof WebClientResponseException) {
-                WebClientResponseException ex = (WebClientResponseException) throwable;
-                HttpStatus status = ex.getStatusCode();
-                switch (status) {
-                    case NOT_FOUND:
-                    case FORBIDDEN:
-                    case UNAUTHORIZED:
-                    case TOO_MANY_REQUESTS:
-                        retry = false;
-                        break;
-                    default:
-                        retry = true;
-                }
+    static final Predicate<? super Throwable> EXCEPTION_RETRY_FILTER = throwable -> {
+        boolean retry = true;
+        if (throwable instanceof WebClientResponseException) {
+            WebClientResponseException ex = (WebClientResponseException) throwable;
+            HttpStatus status = ex.getStatusCode();
+            switch (status) {
+                case NOT_FOUND:
+                case FORBIDDEN:
+                case UNAUTHORIZED:
+                case TOO_MANY_REQUESTS:
+                    retry = false;
+                    break;
+                default:
+                    retry = true;
             }
-
-            return retry;
         }
+
+        return retry;
     };
 }
