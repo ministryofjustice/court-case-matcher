@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import reactor.util.StringUtils;
+import org.springframework.util.StringUtils;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 
 import java.time.LocalDate;
