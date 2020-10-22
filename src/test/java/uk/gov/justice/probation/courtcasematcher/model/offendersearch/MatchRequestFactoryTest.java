@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-class MatchRequestTest {
+class MatchRequestFactoryTest {
 
     private static final String PNC = "PNC";
     private static final String SURNAME = "SURNAME";
@@ -18,6 +18,8 @@ class MatchRequestTest {
     private static final String FORENAME_3 = "FORENAME3";
     private static final String TITLE = "MR";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1980, 1, 1);
+
+    private final MatchRequest.Factory factory = new MatchRequest.Factory();
 
     @Test
     public void givenAllValuesProvided_shouldBuildValidRequest() {
@@ -29,7 +31,7 @@ class MatchRequestTest {
                 .title(TITLE)
                 .build();
 
-        final var matchRequest = MatchRequest.from(PNC, name, DATE_OF_BIRTH);
+        final var matchRequest = factory.from(PNC, name, DATE_OF_BIRTH);
         assertThat(matchRequest.getPncNumber()).isEqualTo(PNC);
         assertThat(matchRequest.getFirstName()).isEqualTo(String.format("%s %s %s", FORENAME_1, FORENAME_2, FORENAME_3));
         assertThat(matchRequest.getSurname()).isEqualTo(SURNAME);
@@ -42,7 +44,7 @@ class MatchRequestTest {
                 .surname(SURNAME)
                 .build();
 
-        final var matchRequest = MatchRequest.from(null, name, DATE_OF_BIRTH);
+        final var matchRequest = factory.from(null, name, DATE_OF_BIRTH);
         assertThat(matchRequest.getPncNumber()).isEqualTo(null);
         assertThat(matchRequest.getFirstName()).isEqualTo(null);
         assertThat(matchRequest.getSurname()).isEqualTo(SURNAME);
@@ -55,7 +57,7 @@ class MatchRequestTest {
         final var name = Name.builder()
                 .build();
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> MatchRequest.from(null, name, DATE_OF_BIRTH));
+                .isThrownBy(() -> factory.from(null, name, DATE_OF_BIRTH));
 
     }
 
@@ -65,7 +67,7 @@ class MatchRequestTest {
                 .surname(SURNAME)
                 .build();
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> MatchRequest.from(null, name, null));
+                .isThrownBy(() -> factory.from(null, name, null));
 
     }
 }

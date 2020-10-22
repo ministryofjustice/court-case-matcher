@@ -5,7 +5,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
-import com.google.common.eventbus.EventBus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +18,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
@@ -33,6 +33,8 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -100,10 +102,13 @@ class MatcherServiceTest {
     private OffenderSearchRestClient offenderSearchRestClient;
 
     @Mock
-    private EventBus eventBus;
+    private Appender<ILoggingEvent> mockAppender;
 
     @Mock
-    private Appender<ILoggingEvent> mockAppender;
+    private MatchRequest.Factory matchRequestFactory;
+
+    @Mock
+    private MatchRequest matchRequest;
 
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
@@ -117,12 +122,14 @@ class MatcherServiceTest {
         logger.addAppender(mockAppender);
 
         matcherService =
-            new MatcherService(courtCaseRestClient, offenderSearchRestClient, DEFAULT_PROBATION_STATUS, MATCHES_PROBATION_STATUS);
+            new MatcherService(courtCaseRestClient, offenderSearchRestClient, matchRequestFactory, DEFAULT_PROBATION_STATUS, MATCHES_PROBATION_STATUS);
+
+        when(matchRequestFactory.from(any(), any(), any())).thenReturn(matchRequest);
     }
 
     @Test
     void givenIncomingDefendantDoesNotMatchAnOffender_whenMatchCalled_thenLog(){
-        when(offenderSearchRestClient.search(PNC, DEF_NAME, DEF_DOB)).thenReturn(Mono.empty());
+        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.empty());
 
         SearchResponse searchResponse = matcherService.getSearchResponse(PNC, DEF_NAME, DEF_DOB, COURT_CODE, CASE_NO).block();
 
@@ -135,8 +142,24 @@ class MatcherServiceTest {
     }
 
     @Test
+    void givenException_whenBuildingMatchRequest_thenLog(){
+        when(matchRequestFactory.from(any(), any(), any())).thenThrow(new IllegalArgumentException("This is the reason"));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> matcherService.getSearchResponse(null, null, null, COURT_CODE, CASE_NO).block());
+
+        LoggingEvent loggingEvent = captureFirstLogEvent();
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
+        assertThat(loggingEvent.getFormattedMessage().trim())
+            .contains("Unable to create MatchRequest for caseNo: 1600032952, courtCode: SHF");
+        assertThat(loggingEvent.getThrowableProxy().getClassName()).isEqualTo("java.lang.IllegalArgumentException");
+        assertThat(loggingEvent.getThrowableProxy().getMessage()).isEqualTo("This is the reason");
+        verifyNoMoreInteractions(courtCaseRestClient);
+    }
+
+    @Test
     void givenMatchesToMultipleOffenders_whenMatchCalled_thenReturn(){
-        when(offenderSearchRestClient.search(PNC, DEF_NAME, DEF_DOB)).thenReturn(Mono.just(multipleExactMatches));
+        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(multipleExactMatches));
 
         SearchResponse searchResponse = matcherService.getSearchResponse(PNC, DEF_NAME, DEF_DOB, COURT_CODE, CASE_NO).block();
 
@@ -147,8 +170,7 @@ class MatcherServiceTest {
 
     @Test
     void givenMatchesToSingleOffender_whenSearchResponse_thenReturnWithProbationStatus(){
-
-        when(offenderSearchRestClient.search(PNC, DEF_NAME, DEF_DOB)).thenReturn(Mono.just(singleExactMatch));
+        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(singleExactMatch));
         when(courtCaseRestClient.getProbationStatus(CRN)).thenReturn(Mono.just(PROBATION_STATUS));
 
         SearchResponse searchResponse = matcherService.getSearchResponse(PNC, DEF_NAME, DEF_DOB, COURT_CODE, CASE_NO).block();
@@ -160,8 +182,7 @@ class MatcherServiceTest {
 
     @Test
     void givenZeroMatches_whenSearchResponse_thenReturn(){
-
-        when(offenderSearchRestClient.search(PNC, DEF_NAME, DEF_DOB)).thenReturn(Mono.just(noMatches));
+        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(noMatches));
 
         SearchResponse searchResponse = matcherService.getSearchResponse(PNC, DEF_NAME, DEF_DOB, COURT_CODE, CASE_NO).block();
 

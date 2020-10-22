@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 
@@ -16,40 +17,44 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
-@Slf4j
 public class MatchRequest {
-    private static final String ERROR_NO_DATE_OF_BIRTH = "No dateOfBirth provided";
-    private static final String ERROR_NO_NAME = "No surname provided";
 
     private String pncNumber;
     private String firstName;
     private String surname;
     private String dateOfBirth;
 
-    public static MatchRequest from(String pnc, Name fullName, LocalDate dateOfBirth) throws IllegalArgumentException {
-        if (dateOfBirth == null) {
-            log.error(ERROR_NO_DATE_OF_BIRTH);
-            throw new IllegalArgumentException(ERROR_NO_DATE_OF_BIRTH);
-        }
+    @Slf4j
+    @Component
+    public static class Factory {
+        private static final String ERROR_NO_DATE_OF_BIRTH = "No dateOfBirth provided";
+        private static final String ERROR_NO_NAME = "No surname provided";
 
-        if (fullName == null || StringUtils.isEmpty(fullName.getSurname())) {
-            log.error(ERROR_NO_NAME);
-            throw new IllegalArgumentException(ERROR_NO_NAME);
-        }
+        public MatchRequest from(String pnc, Name fullName, LocalDate dateOfBirth) throws IllegalArgumentException {
+            if (dateOfBirth == null) {
+                log.error(ERROR_NO_DATE_OF_BIRTH);
+                throw new IllegalArgumentException(ERROR_NO_DATE_OF_BIRTH);
+            }
 
-        MatchRequestBuilder builder = builder()
-                                                    .pncNumber(pnc)
-                                                    .surname(fullName.getSurname())
-                                                    .dateOfBirth(dateOfBirth.format(DateTimeFormatter.ISO_DATE));
-        String forenames = fullName.getForenames();
-        if (!StringUtils.isEmpty(forenames)) {
-            builder.firstName(forenames);
+            if (fullName == null || StringUtils.isEmpty(fullName.getSurname())) {
+                log.error(ERROR_NO_NAME);
+                throw new IllegalArgumentException(ERROR_NO_NAME);
+            }
+
+            MatchRequestBuilder builder = builder()
+                                                        .pncNumber(pnc)
+                                                        .surname(fullName.getSurname())
+                                                        .dateOfBirth(dateOfBirth.format(DateTimeFormatter.ISO_DATE));
+            String forenames = fullName.getForenames();
+            if (!StringUtils.isEmpty(forenames)) {
+                builder.firstName(forenames);
+            }
+            return builder.build();
         }
-        return builder.build();
     }
 }

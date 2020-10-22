@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
@@ -29,6 +30,9 @@ public class MatcherService {
     @Autowired
     private final OffenderSearchRestClient offenderSearchRestClient;
 
+    @Autowired
+    private final MatchRequest.Factory matchRequestFactory;
+
     @Value("${probation-status-reference.default}")
     private final String defaultProbationStatus;
 
@@ -36,7 +40,9 @@ public class MatcherService {
     private final String nonExactProbationStatus;
 
     public Mono<SearchResponse> getSearchResponse(String pnc, Name defendantName, LocalDate dateOfBirth, String courtCode, String caseNo) {
-        return offenderSearchRestClient.search(pnc, defendantName, dateOfBirth)
+        return Mono.defer(() -> Mono.just(matchRequestFactory.from(pnc, defendantName, dateOfBirth)))
+                .doOnError(throwable -> log.warn(String.format("Unable to create MatchRequest for caseNo: %s, courtCode: %s", caseNo, courtCode), throwable))
+                .flatMap(offenderSearchRestClient::search)
                 .map(searchResponse -> {
                     log.info(String.format("Match results for caseNo: %s, courtCode: %s - matchedBy: %s, matchCount: %s",
                         caseNo, courtCode, searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));

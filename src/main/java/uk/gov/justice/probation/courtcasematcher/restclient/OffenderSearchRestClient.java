@@ -15,12 +15,10 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.Retry.RetrySignal;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.util.function.Predicate;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
@@ -53,13 +51,7 @@ public class OffenderSearchRestClient {
         this.webClient = webClient;
     }
 
-    public Mono<SearchResponse> search(String pnc, Name name, LocalDate dateOfBirth){
-        MatchRequest body;
-        try {
-            body = MatchRequest.from(pnc, name, dateOfBirth);
-        } catch (IllegalArgumentException e) {
-            return Mono.error(e);
-        }
+    public Mono<SearchResponse> search(MatchRequest body){
 
         return post()
                 .body(BodyInserters.fromPublisher(Mono.just(body), MatchRequest.class))
