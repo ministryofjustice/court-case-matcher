@@ -262,8 +262,7 @@ public class CourtCaseRestClient {
 
     private Mono<Void> logRetrySignal(RetrySignal retrySignal, String messageFormat, String initialError) {
         if (retrySignal.totalRetries() > 0 ) {
-            String message = String.format(messageFormat, retrySignal.totalRetries(), maxRetries);
-            log.error(message);
+            log.error(String.format(messageFormat, retrySignal.totalRetries(), maxRetries));
         }
         else {
             log.error(initialError);
