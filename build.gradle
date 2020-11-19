@@ -5,7 +5,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.3.5.RELEASE'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'com.github.ben-manes.versions' version '0.34.0'
+    id 'com.github.ben-manes.versions' version '0.36.0'
 }
 
 repositories {
@@ -94,11 +94,11 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
 
     testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.21.0'
-    testImplementation 'org.assertj:assertj-core:3.18.0'
+    testImplementation 'org.assertj:assertj-core:3.18.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter:5.7.0'
 
-    testCompile 'io.rest-assured:rest-assured:4.3.1'
-    testImplementation 'io.rest-assured:json-path:4.3.1'
+    testCompile 'io.rest-assured:rest-assured:4.3.2'
+    testImplementation 'io.rest-assured:json-path:4.3.2'
     testImplementation 'io.rest-assured:xml-path:4.3.2'
     testCompile "com.github.tomakehurst:wiremock-jre8:2.26.3"
     testCompile 'org.mockito:mockito-core:3.6.0'
