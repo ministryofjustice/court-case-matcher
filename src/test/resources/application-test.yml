@@ -47,7 +47,6 @@ messaging:
     enabled: false
   sqs:
     enabled: false
-    queue_ame: "crime-portal-gateway-queue"
-  sqs_queue_name: "crime-portal-gateway-queue"
+    queue_name: "crime-portal-gateway-queue"
 
 aws_sqs_queue_name: "crime-portal-gateway-queue"
