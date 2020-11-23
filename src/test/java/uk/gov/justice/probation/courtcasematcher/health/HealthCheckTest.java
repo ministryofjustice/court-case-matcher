@@ -58,7 +58,6 @@ public class HealthCheckTest {
     @Test
     public void testUp() {
         Mockito.when(jmsHealthIndicator.getHealth(any(Boolean.class))).thenReturn(Health.up().build());
-//        Mockito.when(sqsService.isQueueAvailable()).thenReturn(Boolean.TRUE);
         Mockito.when(sqsCheck.getHealth(any(Boolean.class))).thenReturn(Mono.just(Health.up().build()));
 
         String response = given()
