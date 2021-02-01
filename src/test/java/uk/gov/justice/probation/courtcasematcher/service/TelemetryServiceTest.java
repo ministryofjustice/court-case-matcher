@@ -109,7 +109,6 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent("PiCCourtListReceived");
     }
 
-
     @DisplayName("Record the event when an sqs message event happens")
     @Test
     void whenMessageReceived_thenRecord() {
@@ -122,6 +121,17 @@ class TelemetryServiceTest {
         assertThat(properties).contains(
                 entry("sqsMessageId", "messageId")
         );
+    }
+
+    @DisplayName("Record the event when an sqs message event happens and the messageId is null")
+    @Test
+    void whenMessageReceivedAndMessageIdNull_thenRecord() {
+        telemetryService.trackSQSMessageEvent(null);
+
+        verify(telemetryClient).trackEvent(eq("PiCCourtListMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+
+        Map<String, String> properties = propertiesCaptor.getValue();
+        assertThat(properties).hasSize(0);
     }
 
     @DisplayName("Record the event when an exact match happens")
