@@ -14,6 +14,7 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedO
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
@@ -148,6 +149,37 @@ public class CaseMapper {
             .suspendedSentenceOrder(existingCourtCase.getSuspendedSentenceOrder())
             .pnc(existingCourtCase.getPnc())
 
+            .build();
+    }
+
+    public CourtCase merge(ProbationStatusDetail probationStatusDetail, CourtCase existingCourtCase) {
+        return CourtCase.builder()
+            // Fields to be replaced from new probation status detail
+            .breach(probationStatusDetail.getInBreach())
+            .preSentenceActivity(probationStatusDetail.isPreSentenceActivity())
+            .previouslyKnownTerminationDate(probationStatusDetail.getPreviouslyKnownTerminationDate())
+            .probationStatus(probationStatusDetail.getProbationStatus())
+            // PK fields
+            .courtCode(existingCourtCase.getCourtCode())
+            .caseNo(existingCourtCase.getCaseNo())
+            // Fields to be retained
+            .caseId(String.valueOf(existingCourtCase.getCaseId()))
+            .crn(existingCourtCase.getCrn())
+            .cro(existingCourtCase.getCro())
+            .courtRoom(existingCourtCase.getCourtRoom())
+            .defendantAddress(existingCourtCase.getDefendantAddress())
+            .name(existingCourtCase.getName())
+            .defendantName(existingCourtCase.getDefendantName())
+            .defendantSex(existingCourtCase.getDefendantSex())
+            .defendantDob(existingCourtCase.getDefendantDob())
+            .defendantType(existingCourtCase.getDefendantType())
+            .listNo(existingCourtCase.getListNo())
+            .pnc(existingCourtCase.getPnc())
+            .sessionStartTime(existingCourtCase.getSessionStartTime())
+            .suspendedSentenceOrder(existingCourtCase.getSuspendedSentenceOrder())
+            .offences(existingCourtCase.getOffences())
+            .nationality1(existingCourtCase.getNationality1())
+            .nationality2(existingCourtCase.getNationality2())
             .build();
     }
 

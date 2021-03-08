@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseMatchEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseUpdateEvent;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Document;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.DocumentWrapper;
@@ -83,7 +82,7 @@ public class MessageProcessor {
     }
 
     void postCaseEvent(CourtCase courtCase) {
-        if (courtCase.isNew() && DefendantType.PERSON == courtCase.getDefendantType()) {
+        if (courtCase.shouldMatchToOffender()) {
             eventBus.post(new CourtCaseMatchEvent(courtCase));
         }
         else {

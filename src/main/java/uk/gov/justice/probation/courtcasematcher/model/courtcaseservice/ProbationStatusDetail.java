@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-@Deprecated(forRemoval = true)
-// TODO - this object can go when the matcher no longer needs to go to court case service for probation status detail
 public class ProbationStatusDetail {
     private final String probationStatus;
     private final LocalDate previouslyKnownTerminationDate;

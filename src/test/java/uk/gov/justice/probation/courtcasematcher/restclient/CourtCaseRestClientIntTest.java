@@ -297,9 +297,9 @@ public class CourtCaseRestClientIntTest {
     }
 
     @Test
-    public void whenGetOffenderProbationStatus_thenMakeRestCallToCourtCaseService() {
+    public void whenGetOffenderProbationStatusDetail_thenMakeRestCallToCourtCaseService() {
 
-        Optional<ProbationStatusDetail> optional = restClient.getProbationStatus("X320741").blockOptional();
+        Optional<ProbationStatusDetail> optional = restClient.getProbationStatusDetail("X320741").blockOptional();
 
         assertThat(optional).isPresent();
         ProbationStatusDetail detail = optional.get();
@@ -308,9 +308,9 @@ public class CourtCaseRestClientIntTest {
     }
 
     @Test
-    public void givenUnknownCrn_whenGetOffenderProbationStatus_thenMakeReturnEmpty() {
+    public void givenUnknownCrn_whenGetOffenderProbationStatusDetail_thenMakeReturnEmpty() {
 
-        Optional<ProbationStatusDetail> optional = restClient.getProbationStatus("X500").blockOptional();
+        Optional<ProbationStatusDetail> optional = restClient.getProbationStatusDetail("X404").blockOptional();
 
         assertThat(optional).isEmpty();
     }

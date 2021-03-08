@@ -62,6 +62,12 @@ public class CourtCaseService {
         restClient.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase);
     }
 
+    public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
+        return restClient.getProbationStatusDetail(courtCase.getCrn())
+            .map(probationStatusDetail -> caseMapper.merge(probationStatusDetail, courtCase))
+            .switchIfEmpty(Mono.just(courtCase));
+    }
+
     public void purgeAbsent(String courtCode, Set<LocalDate> hearingDates, List<Case> cases) {
 
         Map<LocalDate, List<String>> casesByDate = cases.stream()

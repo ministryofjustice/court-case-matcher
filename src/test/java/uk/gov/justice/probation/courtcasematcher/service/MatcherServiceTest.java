@@ -216,7 +216,7 @@ class MatcherServiceTest {
 
         when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
         when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(singleExactMatch));
-        when(courtCaseRestClient.getProbationStatus(CRN)).thenReturn(Mono.just(ProbationStatusDetail.builder().probationStatus("PREVIOUSLY_KNOWN").build()));
+        when(courtCaseRestClient.getProbationStatusDetail(CRN)).thenReturn(Mono.just(ProbationStatusDetail.builder().probationStatus("PREVIOUSLY_KNOWN").build()));
 
         var searchResult = matcherService.getSearchResponse(COURT_CASE).block();
 

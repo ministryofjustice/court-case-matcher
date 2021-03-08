@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Block;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +39,7 @@ class CourtCaseServiceTest {
     private static final LocalDate JAN_3 = LocalDate.of(2020, Month.JANUARY, 3);
     private static final String COURT_CODE = "B10JQ00";
     private static final String CASE_NO = "1234567890";
+    private static final String CRN = "X340741";
     private static final Long CASE_ID = 321344L;
 
     @Mock
@@ -154,6 +157,38 @@ class CourtCaseServiceTest {
         courtCaseService.createCase(courtCase, null);
 
         verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+    }
+
+    @DisplayName("Fetch and update probation status")
+    @Test
+    void whenUpdateProbationStatus_thenMergeAndReturn() {
+
+        CourtCase courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).build();
+        CourtCase courtCaseUpdated = CourtCase.builder().crn(CRN).probationStatus("CURRENT").courtCode(COURT_CODE).build();
+        ProbationStatusDetail probationStatusDetail = ProbationStatusDetail.builder().probationStatus("CURRENT").build();
+        when(restClient.getProbationStatusDetail(CRN)).thenReturn(Mono.just(probationStatusDetail));
+        when(caseMapper.merge(probationStatusDetail, courtCase)).thenReturn(courtCaseUpdated);
+
+        CourtCase courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
+
+        assertThat(courtCaseResult).isSameAs(courtCaseUpdated);
+        verify(caseMapper).merge(probationStatusDetail, courtCase);
+        verify(restClient).getProbationStatusDetail(CRN);
+        verifyNoMoreInteractions(caseMapper, restClient);
+    }
+
+    @DisplayName("When rest client fails to fetch updated probation status then return the original")
+    @Test
+    void givenFailedCallToRestClient_whenUpdateProbationStatus_thenReturnInput() {
+
+        CourtCase courtCase = CourtCase.builder().crn(CRN).build();
+        when(restClient.getProbationStatusDetail(CRN)).thenReturn(Mono.empty());
+
+        CourtCase courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
+
+        assertThat(courtCaseResult).isSameAs(courtCase);
+        verify(restClient).getProbationStatusDetail(CRN);
+        verifyNoMoreInteractions(caseMapper, restClient);
     }
 
     private Case buildCase() {

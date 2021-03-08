@@ -5,23 +5,23 @@ import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
 import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import javax.validation.constraints.NotEmpty;
 
 @Slf4j
-@Service
-@ConditionalOnProperty(value="messaging.sqs.enabled", havingValue = "true")
+@Component
+@Profile("sqs-messaging")
 public class SqsMessageReceiver implements MessageReceiver {
 
     @Autowired
-    private  MessageProcessor messageProcessor;
+    private MessageProcessor messageProcessor;
 
     @Autowired
     private TelemetryService telemetryService;

@@ -89,7 +89,7 @@ public class MatcherService {
                 .preSentenceActivity(Optional.ofNullable(probationStatus).map(ProbationStatus::isPreSentenceActivity).orElse(false))
                 .build());
         }
-        return restClient.getProbationStatus(offender.getOtherIds().getCrn());
+        return restClient.getProbationStatusDetail(offender.getOtherIds().getCrn());
     }
 
     // TODO - when offender search gives us the probation status we can remove this method
