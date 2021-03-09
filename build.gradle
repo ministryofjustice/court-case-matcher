@@ -134,6 +134,9 @@ test {
             }
         }
     }
+    filter{
+        excludeTestsMatching "*IntTest*"
+    }
 }
 
 task integrationTest(type: Test) {
