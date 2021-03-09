@@ -55,7 +55,7 @@ executors:
     working_directory: ~/app
   validator-integration:
     docker:
-      - image: circleci/openjdk:11-jdk
+      - image: circleci/openjdk:14-jdk-buster-browsers
       - image: localstack/localstack:0.11.2
         environment:
           - SERVICES=sqs
@@ -129,7 +129,7 @@ jobs:
           command: bash src/test/resources/localstack/setup-sqs.sh
       - restore_cache:
           keys:
-            - gradle-{{ checksum "build.gradle.kts" }}
+            - gradle-{{ checksum "build.gradle" }}
             - gradle-
       - run:
           environment:
@@ -138,7 +138,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.gradle
-          key: gradle-{{ checksum "build.gradle.kts" }}
+          key: gradle-{{ checksum "build.gradle" }}
       - store_test_results:
           path: build/test-results
       - store_artifacts:
