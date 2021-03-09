@@ -3,7 +3,6 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.Provider.Service;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.awaitility.Awaitility;
@@ -29,13 +28,12 @@ import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.given;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test-msg")
-@Disabled
+//@Disabled
 public class SqsMessageReceiverIntTest {
 
     private static String singleCaseXml;
