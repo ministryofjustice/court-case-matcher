@@ -3,8 +3,10 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.Provider.Service;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,7 +76,7 @@ public class SqsMessageReceiverIntTest {
 
         queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCaseXml);
 
-        given()
+        Awaitility.given()
             .await()
             .atMost(60, SECONDS)
             .untilAsserted(() -> telemetryService.trackSQSMessageEvent("sds"));

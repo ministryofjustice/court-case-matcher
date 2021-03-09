@@ -136,6 +136,14 @@ test {
     }
 }
 
+task integrationTest(type: Test) {
+    useJUnitPlatform ()
+    filter {
+        includeTestsMatching '*IntTest'
+        excludeTestsMatching '*WIP*'
+    }
+}
+
 task copyAgent(type: Copy) {
     from configurations.agentDeps
     into "$buildDir/libs"
