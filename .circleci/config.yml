@@ -1,4 +1,5 @@
 version: 2.1
+machine: true
 commands:
   setup:
     description: "Install tools and configure kubectl"
