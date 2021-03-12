@@ -14,16 +14,6 @@ spring:
     password: "jmsuser"
     port: 5445
 
-#cloud:
-#  aws:
-#    region:
-#      static: eu-west-2
-#    stack:
-#      auto: false
-#    credentials:
-#      secretKey: foobar
-#      accessKey: foobar
-
 court-case-service:
   base-url: http://localhost:8090
   disable-authentication: true
@@ -41,9 +31,6 @@ nomis-oauth:
   base-url: http://localhost:8090
   disable-authentication: true
   ping-path: /ping
-
-case-mapper-reference:
-  defaultProbationStatus: "No record"
 
 ou-code-length: 5
 

@@ -27,7 +27,7 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({"test", "test-msg"})
+@ActiveProfiles({"test"})
 public class SqsMessageReceiverIntTest {
 
     private static String singleCaseXml;
@@ -54,8 +54,8 @@ public class SqsMessageReceiverIntTest {
 
         queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCaseXml);
 
-        Mockito.verify(telemetryService, Mockito.timeout(120000)).trackSQSMessageEvent(any(String.class));
-        Mockito.verify(messageProcessor, Mockito.timeout(120000)).process(any(ExternalDocumentRequest.class), any(String.class));
+        Mockito.verify(telemetryService, Mockito.timeout(3000)).trackSQSMessageEvent(any(String.class));
+        Mockito.verify(messageProcessor, Mockito.timeout(3000)).process(any(ExternalDocumentRequest.class), any(String.class));
         Mockito.verifyNoMoreInteractions(telemetryService, messageProcessor);
     }
 
