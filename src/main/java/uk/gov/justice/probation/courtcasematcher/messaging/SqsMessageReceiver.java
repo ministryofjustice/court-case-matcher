@@ -34,10 +34,10 @@ public class SqsMessageReceiver implements MessageReceiver {
     @Autowired
     private final MessageParser<ExternalDocumentRequest> parser;
 
-    @Value("${aws_sqs_queue_name}")
+    @Value("${messaging.sqs.queue_name}")
     private String queueName;
 
-    @SqsListener(value = "${aws_sqs_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+    @SqsListener(value = "${messaging.sqs.queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(@NotEmpty String message, @Header("MessageId") String messageId) {
         log.info("Received message from SQS queue {} with messageId: {}", queueName, messageId);
         telemetryService.trackSQSMessageEvent(messageId);

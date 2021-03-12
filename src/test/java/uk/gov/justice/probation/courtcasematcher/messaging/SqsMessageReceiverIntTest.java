@@ -65,6 +65,12 @@ public class SqsMessageReceiverIntTest {
         private String sqsEndpointUrl;
         @Value("${aws.access_key_id}")
         private String accessKeyId;
+        @Value("${aws.secret_access_key}")
+        private String secretAccessKey;
+        @Value("${aws.region_name}")
+        private String regionName;
+        @Value("${messaging.sqs.queue_name}")
+        private String queueName;
 
         @MockBean
         private EventBus eventBus;
@@ -80,14 +86,14 @@ public class SqsMessageReceiverIntTest {
         public AmazonSQSAsync amazonSQSAsync() {
             return AmazonSQSAsyncClientBuilder
                 .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, "foobar")))
-                .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, "eu-west-2"))
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
+                .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
                 .build();
         }
 
         @Bean
         public SqsMessageReceiver sqsMessageReceiver() {
-            return new SqsMessageReceiver(messageProcessor, telemetryService, eventBus, messageParser, "Not set");
+            return new SqsMessageReceiver(messageProcessor, telemetryService, eventBus, messageParser, queueName);
         }
 
         @Bean
