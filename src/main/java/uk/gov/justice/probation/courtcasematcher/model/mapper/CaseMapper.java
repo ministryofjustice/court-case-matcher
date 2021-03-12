@@ -31,13 +31,13 @@ import static java.util.Comparator.comparing;
 @Slf4j
 public class CaseMapper {
 
-    public CourtCase newFromCase(Case aCase) {
+    public static CourtCase newFromCase(Case aCase) {
         return getCourtCaseBuilderFromCase(aCase)
             .isNew(true)
             .build();
     }
 
-    private CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(CourtCase courtCase) {
+    private static CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(CourtCase courtCase) {
         return CourtCase.builder()
             .caseNo(courtCase.getCaseNo())
             .courtCode(courtCase.getCourtCode())
@@ -59,7 +59,7 @@ public class CaseMapper {
             .offences(courtCase.getOffences());
     }
 
-    private CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(Case aCase) {
+    private static CourtCase.CourtCaseBuilder getCourtCaseBuilderFromCase(Case aCase) {
         return CourtCase.builder()
             .caseNo(aCase.getCaseNo())
             .courtCode(aCase.getBlock().getSession().getCourtCode())
@@ -81,26 +81,30 @@ public class CaseMapper {
     }
 
     private static List<Offence> fromOffences(List<uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence> offences) {
-        return offences.stream()
-            .sorted(comparing(uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence::getSeq))
-            .map(offence -> Offence.builder()
-                .offenceTitle(offence.getTitle())
-                .offenceSummary(offence.getSum())
-                .sequenceNumber(offence.getSeq())
-                .act(offence.getAs())
-                .build())
-            .collect(Collectors.toList());
+        return Optional.ofNullable(offences)
+                        .map(offs -> offs.stream()
+                            .sorted(comparing(uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence::getSeq))
+                            .map(offence -> Offence.builder()
+                                .offenceTitle(offence.getTitle())
+                                .offenceSummary(offence.getSum())
+                                .sequenceNumber(offence.getSeq())
+                                .act(offence.getAs())
+                                .build())
+                            .collect(Collectors.toList()))
+                        .orElse(Collections.emptyList());
     }
 
     public static Address fromAddress(uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Address def_addr) {
-        return Address.builder()
-            .line1(def_addr.getLine1())
-            .line2(def_addr.getLine2())
-            .line3(def_addr.getLine3())
-            .line4(def_addr.getLine4())
-            .line5(def_addr.getLine5())
-            .postcode(def_addr.getPcode())
-            .build();
+        return Optional.ofNullable(def_addr)
+                        .map(address -> Address.builder()
+                                        .line1(def_addr.getLine1())
+                                        .line2(def_addr.getLine2())
+                                        .line3(def_addr.getLine3())
+                                        .line4(def_addr.getLine4())
+                                        .line5(def_addr.getLine5())
+                                        .postcode(def_addr.getPcode())
+                                        .build())
+            .orElse(null);
     }
 
     public static String nameFrom(String defendantName, Name name) {
@@ -110,7 +114,7 @@ public class CaseMapper {
                 .orElse(null));
     }
 
-    public CourtCase merge(Case incomingCase, CourtCase existingCourtCase) {
+    public static CourtCase merge(Case incomingCase, CourtCase existingCourtCase) {
         return CourtCase.builder()
             // PK fields
             .courtCode(incomingCase.getBlock().getSession().getCourtCode())
@@ -140,7 +144,7 @@ public class CaseMapper {
             .build();
     }
 
-    public CourtCase merge(ProbationStatusDetail probationStatusDetail, CourtCase existingCourtCase) {
+    public static CourtCase merge(ProbationStatusDetail probationStatusDetail, CourtCase existingCourtCase) {
         return CourtCase.builder()
             // Fields to be replaced from new probation status detail
             .breach(probationStatusDetail.getInBreach())
@@ -171,7 +175,7 @@ public class CaseMapper {
             .build();
     }
 
-    public CourtCase newFromCourtCaseWithMatches(CourtCase incomingCase, MatchDetails matchDetails) {
+    public static CourtCase newFromCourtCaseWithMatches(CourtCase incomingCase, MatchDetails matchDetails) {
 
         CourtCaseBuilder courtCaseBuilder = getCourtCaseBuilderFromCase(incomingCase)
             .groupedOffenderMatches(buildGroupedOffenderMatch(matchDetails.getMatches(), matchDetails.getMatchType()));
@@ -194,7 +198,7 @@ public class CaseMapper {
         return courtCaseBuilder.build();
     }
 
-    private GroupedOffenderMatches buildGroupedOffenderMatch(List<Match> matches, MatchType matchType) {
+    private static GroupedOffenderMatches buildGroupedOffenderMatch(List<Match> matches, MatchType matchType) {
 
         if (matches == null || matches.isEmpty()) {
             return GroupedOffenderMatches.builder().matches(Collections.emptyList()).build();
@@ -206,7 +210,7 @@ public class CaseMapper {
             .build();
     }
 
-    private OffenderMatch buildOffenderMatch(MatchType matchType, Match match) {
+    private static OffenderMatch buildOffenderMatch(MatchType matchType, Match match) {
         return OffenderMatch.builder()
             .rejected(false)
             .confirmed(false)

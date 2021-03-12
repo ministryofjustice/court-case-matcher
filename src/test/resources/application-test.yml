@@ -14,15 +14,15 @@ spring:
     password: "jmsuser"
     port: 5445
 
-cloud:
-  aws:
-    region:
-      static: eu-central-1
-    stack:
-      auto: false
-    credentials:
-      secretKey: ABC
-      accessKey: XYZ
+#cloud:
+#  aws:
+#    region:
+#      static: eu-west-2
+#    stack:
+#      auto: false
+#    credentials:
+#      secretKey: foobar
+#      accessKey: foobar
 
 court-case-service:
   base-url: http://localhost:8090
@@ -44,28 +44,24 @@ nomis-oauth:
 
 case-mapper-reference:
   defaultProbationStatus: "No record"
-  courtNameToCodes:
-    Sheffield Magistrates Court: "SHF"
-    Beverley: "BEV"
 
 ou-code-length: 5
 
 # Localstack settings
 aws:
-  sqs-endpoint-url: "http://localhost:4566"
-  access_key_id: foo
-  secret_access_key: foo
+  sqs_endpoint_url: "http://localhost:4566"
+  access_key_id: foobar
+  secret_access_key: foobar
 
 messaging:
   activemq:
     enabled: false
   sqs:
-    enabled: false
     queue_name: "crime-portal-gateway-queue"
 
-aws_sqs_queue_name: "crime-portal-gateway-queue"
-aws_access_key_id: "foo"
-aws_secret_access_key: "foo"
+#aws_sqs_queue_name: "crime-portal-gateway-queue"
+#aws_access_key_id: "foobar"
+#aws_secret_access_key: "foobar"
 
 feature:
   flags:

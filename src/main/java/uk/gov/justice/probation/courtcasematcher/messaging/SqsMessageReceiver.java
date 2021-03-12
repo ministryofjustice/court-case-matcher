@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.eventbus.EventBus;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,20 +18,21 @@ import javax.validation.constraints.NotEmpty;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 @Profile("sqs-messaging")
 public class SqsMessageReceiver implements MessageReceiver {
 
     @Autowired
-    private MessageProcessor messageProcessor;
+    private final MessageProcessor messageProcessor;
 
     @Autowired
-    private TelemetryService telemetryService;
+    private final TelemetryService telemetryService;
 
     @Autowired
-    private EventBus eventBus;
+    private final EventBus eventBus;
 
     @Autowired
-    private MessageParser<ExternalDocumentRequest> parser;
+    private final MessageParser<ExternalDocumentRequest> parser;
 
     @Value("${aws_sqs_queue_name}")
     private String queueName;

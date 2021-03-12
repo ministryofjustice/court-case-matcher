@@ -3,15 +3,17 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import org.awaitility.Awaitility;
+import com.google.common.eventbus.EventBus;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,56 +21,32 @@ import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.containers.localstack.LocalStackContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
+import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
-import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
-import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+import static org.mockito.ArgumentMatchers.any;
 
-@Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test-msg")
-//@Disabled
+@ActiveProfiles({"test", "test-msg"})
 public class SqsMessageReceiverIntTest {
 
     private static String singleCaseXml;
 
-    private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
-
-    @RegisterExtension
-    static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
-
-    @MockBean
-    private TelemetryService telemetryService;
+    @Autowired
+    private MessageProcessor messageProcessor;
 
     @Autowired
-    private AmazonSQSAsync amazonSQSAsync;
-
-    @Container
-    static final LocalStackContainer localStack = new LocalStackContainer(DockerImageName.parse("localstack/localstack"))
-        .withServices(SQS)
-        .withEnv("DEFAULT_REGION", "eu-west-2")
-        .withEnv("HOSTNAME_EXTERNAL", "localhost");
+    private TelemetryService telemetryService;
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        localStack.execInContainer("awslocal", "sqs", "create-queue", "--queue-name", QUEUE_NAME);
+    static void beforeAll() throws IOException {
         final String basePath = "src/test/resources/messages";
         singleCaseXml = Files.readString(Paths.get(basePath +"/external-document-request-single-case.xml"));
     }
 
-    @BeforeEach
-    void beforeEach()  {
-        this.queueMessagingTemplate = new QueueMessagingTemplate(amazonSQSAsync);
-    }
-
     private static final String QUEUE_NAME = "crime-portal-gateway-queue";
 
+    @Autowired
     private QueueMessagingTemplate queueMessagingTemplate;
 
     @Test
@@ -76,23 +54,40 @@ public class SqsMessageReceiverIntTest {
 
         queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCaseXml);
 
-        Awaitility.given()
-            .await()
-            .atMost(60, SECONDS)
-            .untilAsserted(() -> telemetryService.trackSQSMessageEvent("sds"));
+        Mockito.verify(telemetryService, Mockito.timeout(120000)).trackSQSMessageEvent(any(String.class));
+        Mockito.verify(messageProcessor, Mockito.timeout(120000)).process(any(ExternalDocumentRequest.class), any(String.class));
+        Mockito.verifyNoMoreInteractions(telemetryService, messageProcessor);
     }
 
-    @ActiveProfiles("test-msg")
     @TestConfiguration
     public static class AwsTestConfig {
+        @Value("${aws.sqs-endpoint-url}")
+        private String sqsEndpointUrl;
+        @Value("${aws.access_key_id}")
+        private String accessKeyId;
+
+        @MockBean
+        private EventBus eventBus;
+        @MockBean
+        private TelemetryService telemetryService;
+        @Autowired
+        private MessageParser messageParser;
+        @MockBean
+        private MessageProcessor messageProcessor;
 
         @Primary
         @Bean
         public AmazonSQSAsync amazonSQSAsync() {
-            return AmazonSQSAsyncClientBuilder.standard()
-                .withCredentials(localStack.getDefaultCredentialsProvider())
-                .withEndpointConfiguration(localStack.getEndpointConfiguration(SQS))
+            return AmazonSQSAsyncClientBuilder
+                .standard()
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, "foobar")))
+                .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, "eu-west-2"))
                 .build();
+        }
+
+        @Bean
+        public SqsMessageReceiver sqsMessageReceiver() {
+            return new SqsMessageReceiver(messageProcessor, telemetryService, eventBus, messageParser, "Not set");
         }
 
         @Bean

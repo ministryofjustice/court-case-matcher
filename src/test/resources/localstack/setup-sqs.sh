@@ -6,5 +6,5 @@ export AWS_SECRET_ACCESS_KEY=foobar
 export AWS_DEFAULT_REGION=eu-west-2
 export PAGER=
 
-aws --endpoint-url http://localhost:4566 sqs create-queue --queue-name crime-portal-gateway-queue > /dev/null
+aws --endpoint-url http://localhost:4566 sqs create-queue --queue-name crime-portal-gateway-queue
 echo "SQS Configured"
