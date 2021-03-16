@@ -84,7 +84,9 @@ public class EventListener {
             courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getDefendantName(), courtCase.getPnc());
 
         matcherService.getSearchResponse(courtCase)
-            .doOnSuccess(searchResult -> telemetryService.trackOffenderMatchEvent(courtCase, searchResult.getSearchResponse()))
+            .doOnSuccess(searchResult -> {
+                telemetryService.trackOffenderMatchEvent(courtCase, searchResult.getSearchResponse());
+            })
             .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
             .onErrorResume(throwable -> Mono.just(SearchResult.builder()
                     .searchResponse(

@@ -3,15 +3,17 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.google.common.eventbus.EventBus;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,10 +23,20 @@ import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
+import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
+import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test"})
@@ -33,15 +45,23 @@ public class SqsMessageReceiverIntTest {
     private static String singleCaseXml;
 
     @Autowired
-    private MessageProcessor messageProcessor;
-
-    @Autowired
     private TelemetryService telemetryService;
+
+    private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
+
+    @RegisterExtension
+    static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
 
     @BeforeAll
     static void beforeAll() throws IOException {
         final String basePath = "src/test/resources/messages";
         singleCaseXml = Files.readString(Paths.get(basePath +"/external-document-request-single-case.xml"));
+        MOCK_SERVER.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        MOCK_SERVER.stop();
     }
 
     private static final String QUEUE_NAME = "crime-portal-gateway-queue";
@@ -54,9 +74,16 @@ public class SqsMessageReceiverIntTest {
 
         queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCaseXml);
 
-        Mockito.verify(telemetryService, Mockito.timeout(3000)).trackSQSMessageEvent(any(String.class));
-        Mockito.verify(messageProcessor, Mockito.timeout(3000)).process(any(ExternalDocumentRequest.class), any(String.class));
-        Mockito.verifyNoMoreInteractions(telemetryService, messageProcessor);
+        // TODO - matching on the body being posted rather than just the path
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/court/B10JQ/case/1600032981") == 1);
+
+        verify(telemetryService).trackSQSMessageEvent(any(String.class));
+        verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
+        verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(SearchResponse.class));
+        verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
+        verifyNoMoreInteractions(telemetryService);
     }
 
     @TestConfiguration
@@ -71,14 +98,13 @@ public class SqsMessageReceiverIntTest {
         private String regionName;
         @Value("${messaging.sqs.queue_name}")
         private String queueName;
-
-        @MockBean
+        @Autowired
         private EventBus eventBus;
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
         private MessageParser messageParser;
-        @MockBean
+        @Autowired
         private MessageProcessor messageProcessor;
 
         @Primary
@@ -101,4 +127,9 @@ public class SqsMessageReceiverIntTest {
             return new QueueMessagingTemplate(amazonSQSAsync);
         }
     }
+
+    public int countPutRequestsTo(final String url) {
+        return MOCK_SERVER.findAll(putRequestedFor(urlEqualTo(url))).size();
+    }
+
 }

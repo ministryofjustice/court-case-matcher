@@ -304,7 +304,7 @@ class MessageProcessorTest {
         }
     }
 
-    private InfoMatcher matchesInfoWith(LocalDate dateOfHearing, String courtCode) {
+    public static InfoMatcher matchesInfoWith(LocalDate dateOfHearing, String courtCode) {
         return InfoMatcher.builder()
             .courtCode(courtCode)
             .dateOfHearing(dateOfHearing)

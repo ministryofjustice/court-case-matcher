@@ -26,6 +26,7 @@ offender-search:
   ping-path: /ping
   min-backoff-seconds: 1
   max-retries: 1
+  use-dob-with-pnc: true
 
 nomis-oauth:
   base-url: http://localhost:8090
