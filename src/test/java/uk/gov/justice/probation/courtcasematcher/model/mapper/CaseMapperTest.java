@@ -431,7 +431,7 @@ class CaseMapperTest {
                     .offenceTitle("title")
                     .build()))
                 .preSentenceActivity(false)
-                .probationStatus("CURRENT")
+                .probationStatus("NOT_SENTENCED")
                 .breach(false)
                 .previouslyKnownTerminationDate(LocalDate.of(2001, Month.AUGUST, 26))
                 .build();

@@ -65,14 +65,13 @@ public class EventListener {
     public void courtCaseUpdateEvent(CourtCaseUpdateEvent courtCaseEvent) {
         final CourtCase courtCase = courtCaseEvent.getCourtCase();
         log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getCrn(), courtCase.getCourtCode());
+
         Optional.ofNullable(courtCase.getCrn())
-            .ifPresentOrElse(crn -> {
-                log.debug("refresh probation status for case no {} with crn {} for court {}", courtCase.getCaseNo(), crn, courtCase.getCourtCode());
-                courtCaseService.updateProbationStatusDetail(courtCase)
-                    .doOnError(throwable -> courtCaseService.saveCourtCase(courtCase))
-                    .subscribe(courtCaseService::saveCourtCase);
-                },
-                () -> courtCaseService.saveCourtCase(courtCase));
+            .map(crn -> courtCaseService.updateProbationStatusDetail(courtCase)
+
+                                        .onErrorReturn(courtCase))
+            .orElse(Mono.just(courtCase))
+            .subscribe(courtCaseService::saveCourtCase);
     }
 
     @AllowConcurrentEvents
@@ -84,9 +83,7 @@ public class EventListener {
             courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getDefendantName(), courtCase.getPnc());
 
         matcherService.getSearchResponse(courtCase)
-            .doOnSuccess(searchResult -> {
-                telemetryService.trackOffenderMatchEvent(courtCase, searchResult.getSearchResponse());
-            })
+            .doOnSuccess(searchResult -> telemetryService.trackOffenderMatchEvent(courtCase, searchResult.getSearchResponse()))
             .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
             .onErrorResume(throwable -> Mono.just(SearchResult.builder()
                     .searchResponse(

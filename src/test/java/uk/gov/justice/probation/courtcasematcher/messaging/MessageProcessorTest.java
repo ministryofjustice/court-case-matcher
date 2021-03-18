@@ -111,11 +111,11 @@ class MessageProcessorTest {
         verifyNoMoreInteractions(eventBus, telemetryService);
     }
 
-    @DisplayName("Receive a valid unmatched case for organisation then post update event to the event bus")
+    @DisplayName("Receive a valid case for organisation then no match event, post update event to the event bus")
     @Test
-    void whenValidMessageReceivedForOrganisation_ThenNoMatch() throws JsonProcessingException {
+    void whenValidMessageReceivedForOrganisation_ThenUpdateEvent() throws JsonProcessingException {
 
-        CourtCase courtCase =  CourtCase.builder().defendantType(ORGANISATION).build();
+        CourtCase courtCase = CourtCase.builder().defendantType(ORGANISATION).build();
         when(courtCaseService.getCourtCase(any(Case.class))).thenReturn(Mono.just(courtCase));
 
         ExternalDocumentRequest documentRequest = parser.parseMessage(singleCaseXml, ExternalDocumentRequest.class);

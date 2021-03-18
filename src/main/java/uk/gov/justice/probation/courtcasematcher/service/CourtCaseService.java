@@ -33,9 +33,6 @@ public class CourtCaseService {
     @Autowired
     private final CourtCaseRestClient restClient;
 
-    @Autowired
-    private final CaseMapper caseMapper;
-
     public Mono<CourtCase> getCourtCase(Case aCase) {
         return restClient.getCourtCase(aCase.getBlock().getSession().getCourtCode(), aCase.getCaseNo())
             .map(existing -> CaseMapper.merge(aCase, existing))
