@@ -31,6 +31,8 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.awaitility.Awaitility.await;
@@ -74,10 +76,14 @@ public class SqsMessageReceiverIntTest {
 
         queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCaseXml);
 
-        // TODO - matching on the body being posted rather than just the path
         await()
-            .atMost(10, TimeUnit.SECONDS)
+            .atMost(5, TimeUnit.SECONDS)
             .until(() -> countPutRequestsTo("/court/B10JQ/case/1600032981") == 1);
+
+        MOCK_SERVER.verify(
+            putRequestedFor(urlEqualTo("/court/B10JQ/case/1600032981"))
+                .withRequestBody(matchingJsonPath("pnc", equalTo("2004/0012345U")))
+        );
 
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
@@ -96,7 +102,7 @@ public class SqsMessageReceiverIntTest {
         private String secretAccessKey;
         @Value("${aws.region_name}")
         private String regionName;
-        @Value("${messaging.sqs.queue_name}")
+        @Value("${aws.sqs.queue_name}")
         private String queueName;
         @Autowired
         private EventBus eventBus;

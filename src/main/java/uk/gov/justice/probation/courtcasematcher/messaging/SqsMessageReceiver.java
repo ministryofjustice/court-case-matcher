@@ -2,7 +2,9 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.eventbus.EventBus;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +21,7 @@ import javax.validation.constraints.NotEmpty;
 @Slf4j
 @Component
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Profile("sqs-messaging")
 public class SqsMessageReceiver implements MessageReceiver {
 
@@ -34,10 +37,10 @@ public class SqsMessageReceiver implements MessageReceiver {
     @Autowired
     private final MessageParser<ExternalDocumentRequest> parser;
 
-    @Value("${messaging.sqs.queue_name}")
+    @Value("${aws.sqs.queue_name}")
     private String queueName;
 
-    @SqsListener(value = "${messaging.sqs.queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+    @SqsListener(value = "${aws.sqs.queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(@NotEmpty String message, @Header("MessageId") String messageId) {
         log.info("Received message from SQS queue {} with messageId: {}", queueName, messageId);
         telemetryService.trackSQSMessageEvent(messageId);

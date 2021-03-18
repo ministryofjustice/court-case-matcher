@@ -41,13 +41,10 @@ aws:
   access_key_id: foobar
   secret_access_key: foobar
   region_name: eu-west-2
+  sqs:
+    queue_name: "crime-portal-gateway-queue"
 
 messaging:
   activemq:
     enabled: false
-  sqs:
-    queue_name: "crime-portal-gateway-queue"
 
-feature:
-  flags:
-    use-offender-search-for-probation-status: true

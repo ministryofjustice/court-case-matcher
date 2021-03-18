@@ -441,7 +441,7 @@ class CaseMapperTest {
                 .preSentenceActivity(true)
                 .inBreach(Boolean.TRUE)
                 .previouslyKnownTerminationDate(nextPrevKnownTermDate)
-                .probationStatus("NEW_STATUS")
+                .status("CURRENT")
                 .build();
 
             CourtCase courtCase = CaseMapper.merge(probationStatusDetail, existingCourtCase);
@@ -449,7 +449,7 @@ class CaseMapperTest {
             assertThat(courtCase).isNotSameAs(existingCourtCase);
 
             // Fields that are updated
-            assertThat(courtCase.getProbationStatus()).isEqualTo("NEW_STATUS");
+            assertThat(courtCase.getProbationStatus()).isEqualTo("CURRENT");
             assertThat(courtCase.getPreviouslyKnownTerminationDate()).isEqualTo(nextPrevKnownTermDate);
             assertThat(courtCase.getBreach()).isTrue();
             assertThat(courtCase.isPreSentenceActivity()).isTrue();

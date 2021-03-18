@@ -161,7 +161,7 @@ class CourtCaseServiceTest {
         LocalDate localDate = LocalDate.of(2020, Month.AUGUST, 20);
         CourtCase courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO).build();
         ProbationStatusDetail probationStatusDetail = ProbationStatusDetail.builder()
-                                                                    .probationStatus("CURRENT")
+                                                                    .status("CURRENT")
                                                                     .preSentenceActivity(true)
                                                                     .previouslyKnownTerminationDate(localDate)
                                                                     .build();

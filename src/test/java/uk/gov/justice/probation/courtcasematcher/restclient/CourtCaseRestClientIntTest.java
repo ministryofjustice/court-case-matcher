@@ -303,7 +303,7 @@ public class CourtCaseRestClientIntTest {
 
         assertThat(optional).isPresent();
         ProbationStatusDetail detail = optional.get();
-        assertThat(detail.getProbationStatus()).isEqualTo("CURRENT");
+        assertThat(detail.getStatus()).isEqualTo("CURRENT");
         assertThat(detail.getInBreach()).isTrue();
     }
 

@@ -38,8 +38,8 @@ public class CourtCaseService {
 
     public Mono<CourtCase> getCourtCase(Case aCase) {
         return restClient.getCourtCase(aCase.getBlock().getSession().getCourtCode(), aCase.getCaseNo())
-            .map(existing -> caseMapper.merge(aCase, existing))
-            .switchIfEmpty(Mono.defer(() -> Mono.just(caseMapper.newFromCase(aCase))));
+            .map(existing -> CaseMapper.merge(aCase, existing))
+            .switchIfEmpty(Mono.defer(() -> Mono.just(CaseMapper.newFromCase(aCase))));
     }
 
     public void createCase(CourtCase courtCase, SearchResult searchResult) {
@@ -49,7 +49,7 @@ public class CourtCaseService {
                     var response = result.getSearchResponse();
                     log.debug("Save court case with search response for case {}, court {}",
                         courtCase.getCaseNo(), courtCase.getCourtCode());
-                    saveCourtCase(caseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
+                    saveCourtCase(CaseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
                             .matchType(MatchType.of(result))
                             .matches(response.getMatches())
                             .exactMatch(response.isExactMatch())
@@ -64,7 +64,7 @@ public class CourtCaseService {
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
         return restClient.getProbationStatusDetail(courtCase.getCrn())
-            .map(probationStatusDetail -> caseMapper.merge(probationStatusDetail, courtCase))
+            .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))
             .switchIfEmpty(Mono.just(courtCase));
     }
 

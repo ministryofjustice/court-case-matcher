@@ -150,7 +150,7 @@ public class CaseMapper {
             .breach(probationStatusDetail.getInBreach())
             .preSentenceActivity(probationStatusDetail.isPreSentenceActivity())
             .previouslyKnownTerminationDate(probationStatusDetail.getPreviouslyKnownTerminationDate())
-            .probationStatus(probationStatusDetail.getProbationStatus())
+            .probationStatus(probationStatusDetail.getStatus())
             // PK fields
             .courtCode(existingCourtCase.getCourtCode())
             .caseNo(existingCourtCase.getCaseNo())
