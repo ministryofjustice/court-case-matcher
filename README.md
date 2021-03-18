@@ -11,6 +11,12 @@ The service uses Lombok and so annotation processors must be [turned on within t
 
 court-case-matcher is capable of reading messages from a configured SQS queue. There is a docker compose config which will start SQS services with a correctly configured queue. This is required for running  integration tests which use AWS.
 
+There are integration tests which send messages to the SQS queue. If required, it is also possible to send them via a running instance of crime-portal-gateway, or using the AWS CLI
+
+```
+aws sqs send-message --region eu-west-2 --endpoint-url http://localhost:4566  --queue-url http://localhost:4566/000000000000/crime-portal-gateway-queue  --message-body $msg
+```
+
 ```
 docker-compose up localstack
 ```
