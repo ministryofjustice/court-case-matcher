@@ -72,7 +72,7 @@ public class SqsMessageReceiverIntTest {
     private QueueMessagingTemplate queueMessagingTemplate;
 
     @Test
-    public void whenReceivePayload_thenSendCase() {
+    public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() {
 
         queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCaseXml);
 
@@ -83,7 +83,8 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/court/B10JQ/case/1600032981"))
                 .withRequestBody(matchingJsonPath("pnc", equalTo("2004/0012345U")))
-//                .withRequestBody(matchingJsonPath("probationStatus", equalTo("CURRENT")))
+                .withRequestBody(matchingJsonPath("probationStatus", equalTo("CURRENT")))
+                .withRequestBody(matchingJsonPath("listNo", equalTo("2nd")))
         );
 
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
