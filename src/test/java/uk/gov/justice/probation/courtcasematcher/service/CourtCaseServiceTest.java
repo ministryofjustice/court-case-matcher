@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatus;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Block;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
@@ -159,7 +160,8 @@ class CourtCaseServiceTest {
     void whenUpdateProbationStatus_thenMergeAndReturn() {
 
         LocalDate localDate = LocalDate.of(2020, Month.AUGUST, 20);
-        CourtCase courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO).build();
+        CourtCase courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO).probationStatus("Previously known")
+            .probationStatusActual(ProbationStatus.PREVIOUSLY_KNOWN.name()).build();
         ProbationStatusDetail probationStatusDetail = ProbationStatusDetail.builder()
                                                                     .status("CURRENT")
                                                                     .preSentenceActivity(true)
