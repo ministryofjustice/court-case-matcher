@@ -66,7 +66,9 @@ class CourtCaseServiceConsumerPactTest {
             .stringType("title", "forename1", "forename2", "forename3", "surname");
 
         PactDslJsonBody body = new PactDslJsonBody()
-            .stringType("courtCode", "caseId", "caseNo", "courtRoom", "probationStatus", "defendantName", "defendantSex", "crn", "pnc", "cro", "listNo", "nationality1", "nationality2")
+            .stringValue("courtCode", "B10JQ")
+            .stringValue("caseNo", "1600028914")
+            .stringType("caseId", "courtRoom", "probationStatus", "defendantName", "defendantSex", "crn", "pnc", "cro", "listNo", "nationality1", "nationality2")
             .booleanType("suspendedSentenceOrder", "breach", "preSentenceActivity")
             .date("previouslyKnownTerminationDate","yyyy-MM-dd")
             .date("defendantDob","yyyy-MM-dd")
