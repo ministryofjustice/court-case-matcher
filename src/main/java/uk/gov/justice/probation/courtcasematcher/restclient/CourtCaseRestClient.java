@@ -172,16 +172,6 @@ public class CourtCaseRestClient {
         return addSpecAuthAttribute(spec, path);
     }
 
-//    private WebClient.RequestHeadersSpec<?> put(String path, Map<LocalDate, List<String>> casesByDate) {
-//        var spec = webClient
-//            .put()
-//            .uri(uriBuilder -> uriBuilder.path(path).build())
-//            .body(Mono.just(casesByDate), Map.class)
-//            .accept(MediaType.APPLICATION_JSON);
-//
-//        return addSpecAuthAttribute(spec, path);
-//    }
-
     private WebClient.RequestHeadersSpec<?> post(String path, GroupedOffenderMatches request) {
         WebClient.RequestHeadersSpec<?> spec = webClient
             .post()
@@ -225,18 +215,6 @@ public class CourtCaseRestClient {
             clientResponse.toString().getBytes(),
             StandardCharsets.UTF_8);
     }
-//
-//    private Mono<? extends Throwable> handleError(ClientResponse clientResponse, Supplier<Throwable> notFoundError) {
-//        final HttpStatus httpStatus = clientResponse.statusCode();
-//        if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
-//            return Mono.error(notFoundError.get());
-//        }
-//        throw WebClientResponseException.create(httpStatus.value(),
-//            httpStatus.name(),
-//            clientResponse.headers().asHttpHeaders(),
-//            clientResponse.toString().getBytes(),
-//            StandardCharsets.UTF_8);
-//    }
 
     private Mono<Void> logRetrySignal(RetrySignal retrySignal, String messageFormat, String initialError) {
         if (retrySignal.totalRetries() > 0 ) {
