@@ -250,16 +250,16 @@ workflows:
       - build_docker:
           requires:
             - build
+      - pact-publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
       - dps/helm_lint:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
-      - pact-publish:
-          requires:
-            - build_docker
-#          filters:
-#            branches:
-#              only: main
       - deploy_dev:
           requires:
             - build_docker
