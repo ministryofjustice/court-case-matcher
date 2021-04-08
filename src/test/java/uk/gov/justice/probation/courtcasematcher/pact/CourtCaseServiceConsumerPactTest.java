@@ -30,20 +30,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @PactDirectory(value = "build/pacts")
 class CourtCaseServiceConsumerPactTest {
 
-    private static final String BASE_MOCK_PATH = "src/test/resources/mocks/__files/get-court-case/";
+    private static final String BASE_MOCK_PATH = "src/test/resources/mocks/__files/";
 
-    private Map<String, String> headers = new HashMap<>(1);
+    private Map<String, String> responseHeaders = new HashMap<>(1);
 
     @BeforeEach
     void beforeAll() {
-        headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
+        responseHeaders = new HashMap<>();
+        responseHeaders.put("Content-Type", "application/json");
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
     public RequestResponsePact getCourtCasePact(PactDslWithProvider builder) throws IOException {
 
-        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "GET_court_case_response_1600028913.json"), UTF_8);
+        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
 
         return builder
             .given("a case exists for court B10JQ and case number 1600028913")
@@ -51,7 +51,7 @@ class CourtCaseServiceConsumerPactTest {
             .path("/court/B10JQ/case/1600028913")
             .method("GET")
             .willRespondWith()
-            .headers(headers)
+            .headers(responseHeaders)
             .body(body)
             .status(200)
             .toPact();
@@ -82,23 +82,26 @@ class CourtCaseServiceConsumerPactTest {
             .path("/court/B10JQ/case/1600028914")
             .method("PUT")
             .willRespondWith()
-            .headers(headers)
+            .headers(responseHeaders)
             .status(201)
             .toPact();
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public RequestResponsePact postGroupedOffenderMatchesPact(PactDslWithProvider builder) {
+    public RequestResponsePact postGroupedOffenderMatchesPact(PactDslWithProvider builder) throws IOException {
 
-        headers.put("Location", "/court/B10JQ/case/1600028913/grouped-offender-matches/1234");
+        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "/post-matches/POST_matches.json"), UTF_8);
+
+        responseHeaders.put("Location", "/court/B10JQ/case/1600028913/grouped-offender-matches/1234");
 
         return builder
             .given("a case does not exist with grouped offender matches")
             .uponReceiving("a request to create grouped offender matches")
+            .body(body)
             .path("/court/B10JQ/case/1600028913/grouped-offender-matches")
             .method("POST")
             .willRespondWith()
-            .headers(headers)
+            .headers(responseHeaders)
             .status(201)
             .toPact();
     }
@@ -120,7 +123,7 @@ class CourtCaseServiceConsumerPactTest {
         var httpResponse = Request
             .Put(mockServer.getUrl() + "/court/B10JQ/case/1600028914")
             .setHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
-            .bodyFile(new File("src/test/resources/mocks/__files/PUT_case_details_body.json"), ContentType.APPLICATION_JSON)
+            .bodyFile(new File(BASE_MOCK_PATH + "PUT_case_details_body.json"), ContentType.APPLICATION_JSON)
             .execute()
             .returnResponse();
 
@@ -132,6 +135,7 @@ class CourtCaseServiceConsumerPactTest {
     void postGroupedOffenderMatches(MockServer mockServer) throws IOException {
         var httpResponse = Request
             .Post(mockServer.getUrl() + "/court/B10JQ/case/1600028913/grouped-offender-matches")
+            .bodyFile(new File(BASE_MOCK_PATH + "/post-matches/POST_matches.json"), ContentType.APPLICATION_JSON)
             .execute()
             .returnResponse();
 
