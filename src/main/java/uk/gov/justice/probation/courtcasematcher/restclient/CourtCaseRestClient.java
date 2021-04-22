@@ -2,11 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 import com.google.common.eventbus.EventBus;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -43,10 +39,10 @@ public class CourtCaseRestClient {
     private static final String ERR_MSG_FORMAT_PUT_CASE = "Unexpected exception when applying PUT to update case number '%s' for court '%s'.";
     private static final String ERR_MSG_FORMAT_POST_MATCH = "Unexpected exception when POST matches for case number '%s' for court '%s'. Match count was %s";
 
-    private static final String ERROR_MSG_FORMAT_INITIAL_CASE = "Initial error from PUT of the court case. Will retry.";
-    private static final String ERROR_MSG_FORMAT_RETRY_PUT_CASE = "Retry error from PUT of the court case, at attempt %s of %s.";
-    private static final String ERROR_MSG_FORMAT_INITIAL_MATCHES = "Initial error from POST of the offender matches. Will retry.";
-    private static final String ERROR_MSG_FORMAT_RETRY_POST_MATCHES = "Retry error from POST of the offender matches, at attempt %s of %s.";
+    private static final String ERROR_MSG_FORMAT_INITIAL_CASE = "Initial error from PUT of the case %s for court %s. Will retry.";
+    private static final String ERROR_MSG_FORMAT_RETRY_PUT_CASE = "Retry error from PUT of the case %s for court %s, at attempt %s of %s.";
+    private static final String ERROR_MSG_FORMAT_INITIAL_MATCHES = "Initial error from POST of the offender matches for case %s in court %s, Will retry.";
+    private static final String ERROR_MSG_FORMAT_RETRY_POST_MATCHES = "Retry error from POST of the offender matches for case %s in court %s, at attempt %s of %s.";
 
     @Value("${court-case-service.case-put-url-template}")
     private String courtCasePutTemplate;
@@ -104,9 +100,9 @@ public class CourtCaseRestClient {
             .bodyToMono(CourtCase.class)
             .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
                 .jitter(0.0d)
-                .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_CASE))
+                .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_CASE, courtCode, caseNo))
                 .filter(EXCEPTION_RETRY_FILTER))
-            .onErrorResume(this::handleError)
+            .onErrorResume((throwable) -> handleError(throwable, caseNo, courtCode))
             .subscribe(courtCaseApi -> {
                 eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build());
                 postMatches(courtCase.getCourtCode(), courtCase .getCaseNo(), offenderMatches);
@@ -128,7 +124,7 @@ public class CourtCaseRestClient {
                 .toBodilessEntity()
                 .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
                     .jitter(0.0d)
-                    .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_MATCHES))
+                    .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_MATCHES, courtCode, caseNo))
                     .filter(EXCEPTION_RETRY_FILTER))
                 .subscribe(responseEntity -> {
                     log.info("Successful POST of offender matches. Response location: {} ",
@@ -191,10 +187,10 @@ public class CourtCaseRestClient {
         return spec.attributes(clientRegistrationId("offender-search-client"));
     }
 
-    private Mono<? extends CourtCase> handleError(Throwable throwable) {
+    private Mono<? extends CourtCase> handleError(Throwable throwable, String courtCode, String caseNo) {
 
         if (Exceptions.isRetryExhausted(throwable)) {
-            log.error(String.format(ERROR_MSG_FORMAT_RETRY_PUT_CASE, maxRetries, maxRetries));
+            log.error(String.format(ERROR_MSG_FORMAT_RETRY_PUT_CASE, caseNo, courtCode, maxRetries, maxRetries));
         }
         return Mono.error(throwable);
     }
@@ -216,12 +212,12 @@ public class CourtCaseRestClient {
             StandardCharsets.UTF_8);
     }
 
-    private Mono<Void> logRetrySignal(RetrySignal retrySignal, String messageFormat, String initialError) {
+    private Mono<Void> logRetrySignal(RetrySignal retrySignal, String messageFormat, String initialMessageFormat, String courtCode, String caseNo) {
         if (retrySignal.totalRetries() > 0 ) {
-            log.warn(String.format(messageFormat, retrySignal.totalRetries(), maxRetries));
+            log.warn(String.format(messageFormat, caseNo, courtCode, retrySignal.totalRetries(), maxRetries));
         }
         else {
-            log.warn(initialError);
+            log.warn(String.format(initialMessageFormat, caseNo, courtCode));
         }
         return Mono.empty();
     }
