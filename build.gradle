@@ -41,6 +41,10 @@ configurations.all {
     }
 }
 
+bootJar {
+    manifest = jar.manifest
+}
+
 jar {
     baseName = rootProject.name
     manifest {
