@@ -24,8 +24,9 @@ public class DeploymentLogger {
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent readyEvent) throws UnknownHostException {
 
-        log.info(String.format("Starting CourtCaseServiceApplication %s using Java %s on %s", buildProperties.getVersion(), System.getProperty("java.version"), Optional
-            .ofNullable(InetAddress.getLocalHost()).map(InetAddress::getHostName).orElse("unknown machine")));
+        log.info(String.format("Starting %s %s using Java %s on %s",
+            buildProperties.getName(), buildProperties.getVersion(), System.getProperty("java.version"),
+                Optional.ofNullable(InetAddress.getLocalHost()).map(InetAddress::getHostName).orElse("unknown machine")));
     }
 
 }

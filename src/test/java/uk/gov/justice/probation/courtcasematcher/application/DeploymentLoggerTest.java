@@ -19,11 +19,12 @@ class DeploymentLoggerTest {
     @Test
     public void shouldLogInfo() throws UnknownHostException {
         when(buildProperties.getVersion()).thenReturn("expected_version");
+        when(buildProperties.getName()).thenReturn("court-case-matcher");
         final var logger = new DeploymentLogger(buildProperties);
 
         TestAppender.events.clear();
         logger.onApplicationEvent(null);
         assertThat(TestAppender.events.size()).isEqualTo(1);
-        assertThat(TestAppender.events.get(0).toString()).startsWith("[INFO] Starting CourtCaseServiceApplication expected_version using Java ");
+        assertThat(TestAppender.events.get(0).toString()).startsWith("[INFO] Starting court-case-matcher expected_version using Java ");
     }
 }
