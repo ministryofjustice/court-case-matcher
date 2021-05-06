@@ -5,9 +5,9 @@
     "bodyPatterns" : [
       {
         "equalToJson" : {
-          "firstName": "Juan",
-          "surname": "MARSTONEZ",
-          "dateOfBirth": "1982-04-05"
+          "firstName": "Arthur",
+          "surname": "MORGAN",
+          "dateOfBirth": "1975-01-01"
         }
       }
     ]
@@ -17,6 +17,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "bodyFileName": "offender-search/POST_search_no_match_response.json"
+    "bodyFileName": "offender-match/POST_match_single_exact_response.json"
   }
 }

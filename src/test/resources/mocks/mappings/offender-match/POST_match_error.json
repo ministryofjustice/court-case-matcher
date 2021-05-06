@@ -1,11 +1,13 @@
 {
   "request": {
     "method": "POST",
-    "url": "/search",
+    "url": "/match",
     "bodyPatterns" : [
       {
         "equalToJson" : {
-          "crn": "CRN500"
+          "firstName": "error",
+          "surname": "error",
+          "dateOfBirth": "1982-04-05"
         }
       }
     ]

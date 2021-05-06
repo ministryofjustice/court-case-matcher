@@ -24,11 +24,10 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Probatio
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
 import static java.util.Collections.singletonList;
@@ -71,13 +70,13 @@ class MatcherServiceTest {
                 .status(PROBATION_STATUS)
                 .build())
             .build();
-    private final SearchResponse singleExactMatch = SearchResponse.builder()
+    private final MatchResponse singleExactMatch = MatchResponse.builder()
             .matches(singletonList(Match.builder()
                     .offender(offender)
                     .build()))
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
-    private final SearchResponse multipleExactMatches = SearchResponse.builder()
+    private final MatchResponse multipleExactMatches = MatchResponse.builder()
             .matches(Arrays.asList(
                     Match.builder()
                     .offender(offender)
@@ -87,13 +86,10 @@ class MatcherServiceTest {
                     .build()))
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
-    private final SearchResponse noMatches = SearchResponse.builder()
+    private final MatchResponse noMatches = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.NOTHING)
             .matches(Collections.emptyList())
             .build();
-
-    @Mock
-    private CourtCaseRestClient courtCaseRestClient;
 
     @Mock
     private OffenderSearchRestClient offenderSearchRestClient;
@@ -125,7 +121,7 @@ class MatcherServiceTest {
     @Test
     void givenIncomingDefendantDoesNotMatchAnOffender_whenMatchCalled_thenLog(){
         when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
-        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.empty());
+        when(offenderSearchRestClient.match(matchRequest)).thenReturn(Mono.empty());
 
         var searchResult = matcherService.getSearchResponse(COURT_CASE).block();
 
@@ -154,10 +150,10 @@ class MatcherServiceTest {
     @Test
     void givenMatchesToMultipleOffenders_whenMatchCalled_thenReturn(){
         when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
-        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(multipleExactMatches));
+        when(offenderSearchRestClient.match(matchRequest)).thenReturn(Mono.just(multipleExactMatches));
 
         var searchResult = matcherService.getSearchResponse(COURT_CASE).block();
-        var searchResponse = searchResult.getSearchResponse();
+        var searchResponse = searchResult.getMatchResponse();
 
         assertThat(searchResult.getMatchRequest()).isEqualTo(matchRequest);
         assertThat(searchResponse.getMatches()).hasSize(2);
@@ -167,10 +163,10 @@ class MatcherServiceTest {
     @Test
     void givenMatchesToSingleOffender_whenSearchResponse_thenReturnWithProbationStatus(){
         when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
-        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(singleExactMatch));
+        when(offenderSearchRestClient.match(matchRequest)).thenReturn(Mono.just(singleExactMatch));
 
         var searchResult = matcherService.getSearchResponse(COURT_CASE).block();
-        var searchResponse = searchResult.getSearchResponse();
+        var searchResponse = searchResult.getMatchResponse();
 
         assertThat(searchResult.getMatchRequest()).isEqualTo(matchRequest);
         assertThat(searchResponse.getMatchedBy()).isSameAs(OffenderSearchMatchType.ALL_SUPPLIED);
@@ -181,10 +177,10 @@ class MatcherServiceTest {
     @Test
     void givenZeroMatches_whenSearchResponse_thenReturn(){
         when(matchRequestFactory.buildFrom(COURT_CASE)).thenReturn(matchRequest);
-        when(offenderSearchRestClient.search(matchRequest)).thenReturn(Mono.just(noMatches));
+        when(offenderSearchRestClient.match(matchRequest)).thenReturn(Mono.just(noMatches));
 
         var searchResult = matcherService.getSearchResponse(COURT_CASE).block();
-        var searchResponse = searchResult.getSearchResponse();
+        var searchResponse = searchResult.getMatchResponse();
 
         assertThat(searchResult.getMatchRequest()).isEqualTo(matchRequest);
         assertThat(searchResponse.getMatches()).hasSize(0);

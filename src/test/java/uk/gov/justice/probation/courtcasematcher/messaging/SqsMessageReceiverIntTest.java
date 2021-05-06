@@ -21,12 +21,14 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
+import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
@@ -42,6 +44,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test"})
+@Import(TestMessagingConfig.class)
 public class SqsMessageReceiverIntTest {
 
     private static final String BASE_PATH = "src/test/resources/messages";
@@ -89,7 +92,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
-        verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(SearchResponse.class));
+        verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
         verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }

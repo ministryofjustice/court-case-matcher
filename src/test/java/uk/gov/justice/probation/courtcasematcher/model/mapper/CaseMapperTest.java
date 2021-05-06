@@ -21,11 +21,11 @@ import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.J
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
 
 import java.time.LocalDate;
@@ -106,11 +106,11 @@ class CaseMapperTest {
         void givenNoMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
 
             CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            SearchResponse searchResponse = SearchResponse.builder()
+            MatchResponse matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NOTHING)
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(searchResponse));
+            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
@@ -128,12 +128,12 @@ class CaseMapperTest {
                 .build();
 
             CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            SearchResponse searchResponse = SearchResponse.builder()
+            MatchResponse matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(searchResponse));
+            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isEqualTo(CRN);
@@ -156,12 +156,12 @@ class CaseMapperTest {
                 .build();
 
             CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            SearchResponse searchResponse = SearchResponse.builder()
+            MatchResponse matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NAME)
                 .matches(List.of(match))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(searchResponse));
+            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
@@ -182,12 +182,12 @@ class CaseMapperTest {
                 .build();
 
             CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            SearchResponse searchResponse = SearchResponse.builder()
+            MatchResponse matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(searchResponse));
+            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isEqualTo(CRN);
@@ -212,12 +212,12 @@ class CaseMapperTest {
                 .build();
 
             CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            SearchResponse searchResponse = SearchResponse.builder()
+            MatchResponse matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
                 .matches(List.of(match1, match2))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(searchResponse));
+            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
@@ -230,13 +230,13 @@ class CaseMapperTest {
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactlyInAnyOrder(offenderMatch1, offenderMatch2);
         }
 
-        private MatchDetails buildMatchDetails(SearchResponse searchResponse) {
+        private MatchDetails buildMatchDetails(MatchResponse matchResponse) {
             return MatchDetails.builder()
                 .matchType(MatchType.of(SearchResult.builder()
-                    .searchResponse(searchResponse)
+                    .matchResponse(matchResponse)
                     .build()))
-                .matches(searchResponse.getMatches())
-                .exactMatch(searchResponse.isExactMatch())
+                .matches(matchResponse.getMatches())
+                .exactMatch(matchResponse.isExactMatch())
                 .build();
         }
 

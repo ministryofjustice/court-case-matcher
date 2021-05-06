@@ -11,6 +11,7 @@ import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.MatchDetails;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
 import java.util.Optional;
 
@@ -22,6 +23,9 @@ public class CourtCaseService {
     @Autowired
     private final CourtCaseRestClient restClient;
 
+    @Autowired
+    private final OffenderSearchRestClient offenderSearchRestClient;
+
     public Mono<CourtCase> getCourtCase(Case aCase) {
         return restClient.getCourtCase(aCase.getBlock().getSession().getCourtCode(), aCase.getCaseNo())
             .map(existing -> CaseMapper.merge(aCase, existing))
@@ -32,7 +36,7 @@ public class CourtCaseService {
 
         Optional.ofNullable(searchResult)
             .ifPresentOrElse(result -> {
-                    var response = result.getSearchResponse();
+                    var response = result.getMatchResponse();
                     log.debug("Save court case with search response for case {}, court {}",
                         courtCase.getCaseNo(), courtCase.getCourtCode());
                     saveCourtCase(CaseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
@@ -49,7 +53,9 @@ public class CourtCaseService {
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
-        return restClient.getProbationStatusDetail(courtCase.getCrn())
+        return offenderSearchRestClient.search(courtCase.getCrn())
+            .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
+            .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
             .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))
             .switchIfEmpty(Mono.just(courtCase));
     }

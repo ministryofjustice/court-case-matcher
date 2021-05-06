@@ -26,7 +26,6 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
@@ -48,8 +47,6 @@ public class CourtCaseRestClient {
     private String courtCasePutTemplate;
     @Value("${court-case-service.matches-post-url-template}")
     private String matchesPostTemplate;
-    @Value("${court-case-service.probation-status-detail-get-url-template}")
-    private String probationStatusDetailGetTemplate;
 
     @Value("${court-case-service.disable-authentication:false}")
     private Boolean disableAuthentication;
@@ -135,18 +132,6 @@ public class CourtCaseRestClient {
                     log.error(error, throwable);
                 });
         });
-    }
-
-    public Mono<ProbationStatusDetail> getProbationStatusDetail(String crn) {
-        final String path = String.format(probationStatusDetailGetTemplate, crn);
-
-        return get(path)
-            .retrieve()
-            .bodyToMono(ProbationStatusDetail.class)
-            .onErrorResume((e) -> {
-                log.info("GET failed for retrieving the offender probation status detail for path {}. Will return empty status", path, e);
-                return Mono.empty();
-            });
     }
 
     private WebClient.RequestHeadersSpec<?> get(String path) {

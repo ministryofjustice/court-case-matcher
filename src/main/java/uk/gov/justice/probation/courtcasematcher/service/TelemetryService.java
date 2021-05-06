@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -41,18 +41,18 @@ public class TelemetryService {
         telemetryClient.trackEvent(TelemetryEventType.OFFENDER_MATCH_ERROR.eventName, getCourtCaseProperties(courtCase), Collections.emptyMap());
     }
 
-    public void trackOffenderMatchEvent(CourtCase courtCase, SearchResponse searchResponse) {
-        if (searchResponse == null) {
+    public void trackOffenderMatchEvent(CourtCase courtCase, MatchResponse matchResponse) {
+        if (matchResponse == null) {
             return;
         }
 
         Map<String, String> properties = getCourtCaseProperties(courtCase);
 
-        int matchCount = searchResponse.getMatchCount();
-        ofNullable(searchResponse.getMatchedBy())
+        int matchCount = matchResponse.getMatchCount();
+        ofNullable(matchResponse.getMatchedBy())
                 .filter((matchedBy) -> matchCount >= 1)
                 .ifPresent((matchedBy) -> properties.put(MATCHED_BY_KEY, matchedBy.name()));
-        ofNullable(searchResponse.getMatches())
+        ofNullable(matchResponse.getMatches())
             .ifPresent((matches -> {
                 String allCrns = matches.stream()
                     .map(match -> match.getOffender().getOtherIds().getCrn())
@@ -62,7 +62,7 @@ public class TelemetryService {
             }));
 
         TelemetryEventType eventType = TelemetryEventType.OFFENDER_PARTIAL_MATCH;
-        if (searchResponse.isExactMatch()) {
+        if (matchResponse.isExactMatch()) {
             eventType = TelemetryEventType.OFFENDER_EXACT_MATCH;
         }
         else if (matchCount == 0){

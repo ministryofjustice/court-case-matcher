@@ -7,8 +7,7 @@
         "equalToJson" : {
           "firstName": "Arthur",
           "surname": "MORGAN",
-          "pncNumber": "2004/0012345U",
-          "dateOfBirth": "1975-01-01"
+          "pncNumber": "2004/0012345U"
         }
       }
     ]
@@ -18,6 +17,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "bodyFileName": "offender-search/POST_search_single_exact_response_by_pnc.json"
+    "bodyFileName": "offender-match/POST_match_single_exact_response_by_pnc.json"
   }
 }

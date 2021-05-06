@@ -7,31 +7,31 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@DisplayName("SearchResponse is component to receive")
-class SearchResponseTest {
+@DisplayName("MatchResponse is component to receive")
+class MatchResponseTest {
 
     private final Match match = Match.builder().offender(Offender.builder().build()).build();
 
     @DisplayName("Search with one match for ALL_SUPPLIED is exact")
     @Test
     void givenSingleMatchAllSupplied_whenIsExact_thenReturnTrue() {
-        SearchResponse searchResponse = SearchResponse.builder()
+        MatchResponse matchResponse = MatchResponse.builder()
             .matches(List.of(match))
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
 
-        assertThat(searchResponse.isExactMatch()).isTrue();
+        assertThat(matchResponse.isExactMatch()).isTrue();
     }
 
     @DisplayName("Search with one match for anything but ALL_SUPPLIED is NOT exact")
     @Test
     void givenSingleMatchPartialOrName_whenIsExact_thenReturnFalse() {
-        SearchResponse searchResponse = SearchResponse.builder()
+        MatchResponse matchResponse = MatchResponse.builder()
             .matches(List.of(match))
             .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
             .build();
 
-        assertThat(searchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactMatch()).isFalse();
     }
 
     @DisplayName("Search with multiple matches is always NOT exact")
@@ -39,27 +39,27 @@ class SearchResponseTest {
     void givenMultipleMatches_whenIsExact_thenAlwaysReturnFalse() {
         Match match2 = Match.builder().offender(Offender.builder().build()).build();
 
-        SearchResponse searchResponse = SearchResponse.builder()
+        MatchResponse matchResponse = MatchResponse.builder()
             .matches(List.of(match, match2))
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
 
-        assertThat(searchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactMatch()).isFalse();
     }
 
     @DisplayName("Search with no matches is always NOT exact")
     @Test
     void givenZeroMatches_whenIsExact_thenAlwaysReturnFalse() {
-        SearchResponse searchResponse = SearchResponse.builder()
+        MatchResponse matchResponse = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.NOTHING)
             .build();
 
-        assertThat(searchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactMatch()).isFalse();
 
-        searchResponse = SearchResponse.builder()
+        matchResponse = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
 
-        assertThat(searchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactMatch()).isFalse();
     }
 }

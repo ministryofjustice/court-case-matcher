@@ -1,31 +1,26 @@
 package uk.gov.justice.probation.courtcasematcher.model.offendersearch;
 
-import java.util.List;
-import java.util.Optional;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
 
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-@ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SearchResponse {
-    private final List<Match> matches;
-    private final OffenderSearchMatchType matchedBy;
 
-    @JsonIgnore
-    public boolean isExactMatch() {
-        return getMatchCount() == 1 && matchedBy == OffenderSearchMatchType.ALL_SUPPLIED;
-    }
+    private final Long offenderId;
 
-    @JsonIgnore
-    public int getMatchCount() {
-        return Optional.ofNullable(matches).map(List::size).orElse(0);
-    }
+    private final OtherIds otherIds;
+
+    @JsonProperty(value = "probationStatus")
+    private final ProbationStatusDetail probationStatusDetail;
+
 }

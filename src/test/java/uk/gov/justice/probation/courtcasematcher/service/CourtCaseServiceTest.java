@@ -13,13 +13,17 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Probatio
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Block;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponses;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -28,8 +32,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CourtCaseServiceTest {
 
-    private static final LocalDate JAN_1 = LocalDate.of(2020, Month.JANUARY, 1);
-    private static final LocalDate JAN_3 = LocalDate.of(2020, Month.JANUARY, 3);
     private static final String COURT_CODE = "B10JQ00";
     private static final String COURT_ROOM = "1";
     private static final String CASE_NO = "1234567890";
@@ -38,6 +40,9 @@ class CourtCaseServiceTest {
 
     @Mock
     private CourtCaseRestClient restClient;
+
+    @Mock
+    private OffenderSearchRestClient offenderSearchRestClient;
 
     @InjectMocks
     private CourtCaseService courtCaseService;
@@ -86,7 +91,7 @@ class CourtCaseServiceTest {
     @Test
     void givenSearchResponse_whenCreateCourtCase_thenPutCase() {
 
-        SearchResponse searchResponse = SearchResponse.builder().build();
+        MatchResponse matchResponse = MatchResponse.builder().build();
         CourtCase courtCase = CourtCase.builder()
                             .caseId(Long.toString(CASE_ID))
                             .caseNo(CASE_NO)
@@ -94,7 +99,7 @@ class CourtCaseServiceTest {
                             .groupedOffenderMatches(GroupedOffenderMatches.builder().matches(Collections.emptyList()).build())
                             .build();
 
-        courtCaseService.createCase(courtCase, SearchResult.builder().searchResponse(searchResponse).build());
+        courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build());
 
         verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
     }
@@ -114,23 +119,55 @@ class CourtCaseServiceTest {
     @Test
     void whenUpdateProbationStatus_thenMergeAndReturn() {
 
-        LocalDate localDate = LocalDate.of(2020, Month.AUGUST, 20);
-        CourtCase courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO).probationStatus("Previously known")
+        var localDate = LocalDate.of(2020, Month.AUGUST, 20);
+        var courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO).probationStatus("Previously known")
             .probationStatusActual("PREVIOUSLY_KNOWN").build();
-        ProbationStatusDetail probationStatusDetail = ProbationStatusDetail.builder()
+        var probationStatusDetail = ProbationStatusDetail.builder()
                                                                     .status("CURRENT")
                                                                     .preSentenceActivity(true)
                                                                     .previouslyKnownTerminationDate(localDate)
                                                                     .build();
-        when(restClient.getProbationStatusDetail(CRN)).thenReturn(Mono.just(probationStatusDetail));
+        var searchResponse = SearchResponse.builder().probationStatusDetail(probationStatusDetail).build();
 
-        CourtCase courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
+        when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.just(new SearchResponses(List.of(searchResponse))));
+
+        var courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
         assertThat(courtCaseResult.getProbationStatus()).isEqualTo("CURRENT");
         assertThat(courtCaseResult.getPreviouslyKnownTerminationDate()).isEqualTo(localDate);
         assertThat(courtCaseResult.getBreach()).isNull();
         assertThat(courtCaseResult.isPreSentenceActivity()).isTrue();
-        verify(restClient).getProbationStatusDetail(CRN);
+        verify(offenderSearchRestClient).search(CRN);
+    }
+
+    @DisplayName("Given more than one SearchResponse from offender search, ignore and keep probation status as-is")
+    @Test
+    void givenMultipleSearchResponses_whenUpdateProbationStatus_thenIgnore() {
+
+        var localDate = LocalDate.of(2020, Month.AUGUST, 20);
+        var courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO)
+            .probationStatus("Previously known")
+            .probationStatusActual("PREVIOUSLY_KNOWN")
+            .build();
+        var probationStatusDetail = ProbationStatusDetail.builder()
+            .status("CURRENT")
+            .preSentenceActivity(true)
+            .previouslyKnownTerminationDate(localDate)
+            .inBreach(Boolean.TRUE)
+            .build();
+        var searchResponse1 = SearchResponse.builder().probationStatusDetail(probationStatusDetail).build();
+        var searchResponse2 = SearchResponse.builder().probationStatusDetail(probationStatusDetail).build();
+
+        when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.just(new SearchResponses(List.of(searchResponse1, searchResponse2))));
+
+        var courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
+
+        assertThat(courtCaseResult.getProbationStatus()).isEqualTo("Previously known");
+        assertThat(courtCaseResult.getProbationStatusActual()).isEqualTo("PREVIOUSLY_KNOWN");
+        assertThat(courtCaseResult.getPreviouslyKnownTerminationDate()).isNull();
+        assertThat(courtCaseResult.getBreach()).isNull();
+        assertThat(courtCaseResult.isPreSentenceActivity()).isFalse();
+        verify(offenderSearchRestClient).search(CRN);
     }
 
     @DisplayName("When rest client fails to fetch updated probation status then return the original")
@@ -138,12 +175,12 @@ class CourtCaseServiceTest {
     void givenFailedCallToRestClient_whenUpdateProbationStatus_thenReturnInput() {
 
         CourtCase courtCase = CourtCase.builder().crn(CRN).build();
-        when(restClient.getProbationStatusDetail(CRN)).thenReturn(Mono.empty());
+        when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.empty());
 
         CourtCase courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
         assertThat(courtCaseResult).isSameAs(courtCase);
-        verify(restClient).getProbationStatusDetail(CRN);
+        verify(offenderSearchRestClient).search(CRN);
     }
 
     private Case buildCase() {

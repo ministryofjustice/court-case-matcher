@@ -19,10 +19,10 @@ import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.I
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Job;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -139,7 +139,7 @@ class TelemetryServiceTest {
     @Test
     void whenExactMatch_thenRecord() {
         Match match = buildMatch(CRN);
-        SearchResponse response = SearchResponse.builder()
+        MatchResponse response = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .matches(List.of(match))
             .build();
@@ -165,7 +165,7 @@ class TelemetryServiceTest {
     @Test
     void whenPartialMatchEvent_thenRecord() {
         List<Match> matches = buildMatches(List.of(CRN, "X123454"));
-        SearchResponse response = SearchResponse.builder()
+        MatchResponse response = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
             .matches(matches)
             .build();
@@ -190,7 +190,7 @@ class TelemetryServiceTest {
     @DisplayName("Record the event when a partial match happens with a single offender")
     @Test
     void whenPartialToSingleOffenderMatchEvent_thenRecord() {
-        SearchResponse response = SearchResponse.builder()
+        MatchResponse response = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
             .matches(List.of(buildMatch(CRN)))
             .build();
@@ -215,7 +215,7 @@ class TelemetryServiceTest {
     @DisplayName("Record the event when there is no match")
     @Test
     void whenNoMatchEvent_thenRecord() {
-        SearchResponse response = SearchResponse.builder()
+        MatchResponse response = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.NOTHING)
             .build();
 

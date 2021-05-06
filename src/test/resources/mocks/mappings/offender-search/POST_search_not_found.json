@@ -5,13 +5,13 @@
     "bodyPatterns" : [
       {
         "equalToJson" : {
-          "crn": "CRN500"
+          "crn": "CRN404"
         }
       }
     ]
   },
   "response": {
-    "status": 500,
+    "status": 404,
     "headers": {
       "Content-Type": "application/json"
     }

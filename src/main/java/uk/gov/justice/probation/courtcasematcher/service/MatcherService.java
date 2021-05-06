@@ -32,7 +32,7 @@ public class MatcherService {
             throw e;
         }
         return Mono.defer(() -> Mono.just(matchRequest))
-                .flatMap(offenderSearchRestClient::search)
+                .flatMap(offenderSearchRestClient::match)
                 .map(searchResponse -> {
                     log.info(String.format("Match results for caseNo: %s, courtCode: %s - matchedBy: %s, matchCount: %s",
                             courtCase.getCaseNo(), courtCase.getCourtCode(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));
@@ -45,7 +45,7 @@ public class MatcherService {
                     }
                 })
                 .map(searchResponse -> SearchResult.builder()
-                        .searchResponse(searchResponse)
+                        .matchResponse(searchResponse)
                         .matchRequest(matchRequest)
                         .build());
     }
