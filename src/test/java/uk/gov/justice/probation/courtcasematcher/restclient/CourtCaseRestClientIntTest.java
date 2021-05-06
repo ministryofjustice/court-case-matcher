@@ -25,9 +25,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import reactor.core.Exceptions;
+import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
@@ -37,7 +39,6 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedO
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -54,6 +55,7 @@ import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearc
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestMessagingConfig.class)
 public class CourtCaseRestClientIntTest {
 
     private static final String COURT_CODE = "B10JQ";
@@ -255,25 +257,6 @@ public class CourtCaseRestClientIntTest {
         restClient.postMatches(COURT_CODE, CASE_NO, null);
 
         verify(mockAppender, never()).doAppend(captorLoggingEvent.capture());
-    }
-
-    @Test
-    void whenGetOffenderProbationStatusDetail_thenMakeRestCallToCourtCaseService() {
-
-        Optional<ProbationStatusDetail> optional = restClient.getProbationStatusDetail("X320741").blockOptional();
-
-        assertThat(optional).isPresent();
-        ProbationStatusDetail detail = optional.get();
-        assertThat(detail.getStatus()).isEqualTo("CURRENT");
-        assertThat(detail.getInBreach()).isTrue();
-    }
-
-    @Test
-    void givenUnknownCrn_whenGetOffenderProbationStatusDetail_thenMakeReturnEmpty() {
-
-        Optional<ProbationStatusDetail> optional = restClient.getProbationStatusDetail("X404").blockOptional();
-
-        assertThat(optional).isEmpty();
     }
 
     @Builder

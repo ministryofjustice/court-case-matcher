@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
@@ -68,7 +68,6 @@ public class EventListener {
 
         Optional.ofNullable(courtCase.getCrn())
             .map(crn -> courtCaseService.updateProbationStatusDetail(courtCase)
-
                                         .onErrorReturn(courtCase))
             .orElse(Mono.just(courtCase))
             .subscribe(courtCaseService::saveCourtCase);
@@ -83,11 +82,11 @@ public class EventListener {
             courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getPnc());
 
         matcherService.getSearchResponse(courtCase)
-            .doOnSuccess(searchResult -> telemetryService.trackOffenderMatchEvent(courtCase, searchResult.getSearchResponse()))
+            .doOnSuccess(searchResult -> telemetryService.trackOffenderMatchEvent(courtCase, searchResult.getMatchResponse()))
             .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
             .onErrorResume(throwable -> Mono.just(SearchResult.builder()
-                    .searchResponse(
-                        SearchResponse.builder()
+                    .matchResponse(
+                        MatchResponse.builder()
                         .matchedBy(OffenderSearchMatchType.NOTHING)
                         .matches(Collections.emptyList())
                         .build())

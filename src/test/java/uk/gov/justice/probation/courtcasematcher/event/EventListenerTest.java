@@ -24,8 +24,8 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCas
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
@@ -188,9 +188,9 @@ class EventListenerTest {
     @DisplayName("Check the match event when the call to the matcher service returns")
     @Test
     void givenSearch_whenCourtCaseMatched_thenSave() {
-        SearchResponse searchResponse = SearchResponse.builder().build();
+        MatchResponse matchResponse = MatchResponse.builder().build();
         final var searchResult = SearchResult.builder()
-                .searchResponse(searchResponse)
+                .matchResponse(matchResponse)
                 .build();
         when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.just(searchResult));
 
@@ -198,7 +198,7 @@ class EventListenerTest {
 
         verify(matcherService).getSearchResponse(courtCase);
         verify(courtCaseService).createCase(courtCase, searchResult);
-        verify(telemetryService).trackOffenderMatchEvent(courtCase, searchResponse);
+        verify(telemetryService).trackOffenderMatchEvent(courtCase, matchResponse);
         verifyNoMoreInteractions(matcherService, courtCaseService, telemetryService);
     }
 
@@ -211,7 +211,7 @@ class EventListenerTest {
 
         verify(matcherService).getSearchResponse(courtCase);
         final var searchResult = SearchResult.builder()
-                .searchResponse(SearchResponse.builder()
+                .matchResponse(MatchResponse.builder()
                     .matches(Collections.emptyList())
                     .matchedBy(OffenderSearchMatchType.NOTHING)
                     .build())

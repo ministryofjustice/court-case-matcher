@@ -1,5 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
+import java.time.Duration;
+import java.util.function.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +18,8 @@ import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.Retry.RetrySignal;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
-
-import java.time.Duration;
-import java.util.function.Predicate;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponses;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
@@ -30,6 +30,10 @@ public class OffenderSearchRestClient {
     @Setter
     @Value("${offender-search.post-match-url}")
     private String postMatchUrl;
+
+    @Setter
+    @Value("${offender-search.post-search-url}")
+    private String postSearchUrl;
 
     @Setter
     @Value("${offender-search.disable-authentication:false}")
@@ -51,13 +55,13 @@ public class OffenderSearchRestClient {
         this.webClient = webClient;
     }
 
-    public Mono<SearchResponse> search(MatchRequest body){
+    public Mono<MatchResponse> match(MatchRequest body){
 
-        return post()
+        return post(postMatchUrl)
                 .body(BodyInserters.fromPublisher(Mono.just(body), MatchRequest.class))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(SearchResponse.class)
+                .bodyToMono(MatchResponse.class)
                 .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
                                 .jitter(0.0d)
                                 .doAfterRetryAsync(this::logRetrySignal)
@@ -66,10 +70,30 @@ public class OffenderSearchRestClient {
             ;
     }
 
-    private WebClient.RequestBodySpec post() {
+    public Mono<SearchResponses> search(String crn){
+        return post(postSearchUrl)
+            .bodyValue("{\"crn\": \"" + crn+ "\"}")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToMono(SearchResponses.class)
+            .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
+                .jitter(0.0d)
+                .doAfterRetryAsync(this::logRetrySignal)
+                .filter(EXCEPTION_RETRY_FILTER))
+            .onErrorResume(throwable -> {
+                if (Exceptions.isRetryExhausted(throwable)) {
+                    log.error("Retry error on offender search for {}. {} with maximum of {}", crn, throwable.getMessage(), maxRetries);
+                    return Mono.error(throwable);
+                }
+                return Mono.error(throwable);
+            })
+            ;
+    }
+
+    private WebClient.RequestBodySpec post(String uri) {
         WebClient.RequestBodySpec postSpec = webClient
                 .post()
-                .uri(postMatchUrl);
+                .uri(uri);
 
         if (!disableAuthentication)  {
             return postSpec.attributes(clientRegistrationId("offender-search-client"));
@@ -78,7 +102,7 @@ public class OffenderSearchRestClient {
         }
     }
 
-    private Mono<? extends SearchResponse> handleError(Throwable throwable) {
+    private Mono<? extends MatchResponse> handleError(Throwable throwable) {
 
         if (Exceptions.isRetryExhausted(throwable)) {
             log.error("Retry error :{} with maximum of {}", throwable.getMessage(), maxRetries);

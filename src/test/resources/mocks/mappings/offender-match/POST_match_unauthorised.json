@@ -5,18 +5,17 @@
     "bodyPatterns" : [
       {
         "equalToJson" : {
-          "firstName": "Arthur",
-          "surname": "MORGAN",
-          "dateOfBirth": "1975-01-01"
+          "firstName": "unauthorised",
+          "surname": "unauthorised",
+          "dateOfBirth": "1982-04-05"
         }
       }
     ]
   },
   "response": {
-    "status": 200,
+    "status": 401,
     "headers": {
       "Content-Type": "application/json"
-    },
-    "bodyFileName": "offender-search/POST_search_single_exact_response.json"
+    }
   }
 }

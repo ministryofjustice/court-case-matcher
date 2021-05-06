@@ -18,8 +18,8 @@ public enum MatchType {
     EXTERNAL_KEY;
 
     public static MatchType of(SearchResult result) {
-        var matchedBy = Optional.ofNullable(result.getSearchResponse())
-                .map(SearchResponse::getMatchedBy)
+        var matchedBy = Optional.ofNullable(result.getMatchResponse())
+                .map(MatchResponse::getMatchedBy)
                 .orElse(null);
 
         if (matchedBy == null)

@@ -5,15 +5,16 @@
     "bodyPatterns" : [
       {
         "equalToJson" : {
-          "crn": "CRN500"
+          "crn": "CRNMULTI"
         }
       }
     ]
   },
   "response": {
-    "status": 500,
+    "status": 200,
     "headers": {
       "Content-Type": "application/json"
-    }
+    },
+    "bodyFileName": "offender-search/POST_search_with_multiple_responses.json"
   }
 }

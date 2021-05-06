@@ -144,7 +144,7 @@ test {
         }
     }
     filter{
-        excludeTestsMatching "*IntTest*"
+        excludeTestsMatching '*WIP*'
     }
 }
 
