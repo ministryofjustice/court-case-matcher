@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.application;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -19,7 +20,10 @@ public class MessagingConfig {
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        var objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
     }
 
     @Bean(name = "messageXmlMapper")

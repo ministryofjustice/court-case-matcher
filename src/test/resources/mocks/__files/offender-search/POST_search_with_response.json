@@ -11,7 +11,10 @@
     "gender": "Male",
     "otherIds": {
       "crn": "X320741",
-      "pncNumber": "PNC123"
+      "pncNumber": "PNC123",
+      "croNumber": "171482/19R",
+      "nomsNumber": "A2228EH",
+      "mostRecentPrisonerNumber": "10112C"
     },
     "contactDetails": {},
     "offenderProfile": {
