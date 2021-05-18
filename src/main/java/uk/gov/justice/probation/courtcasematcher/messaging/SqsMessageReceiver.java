@@ -41,10 +41,13 @@ public class SqsMessageReceiver implements MessageReceiver {
     private String queueName;
 
     @SqsListener(value = "${aws.sqs.queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
-    public void receive(@NotEmpty String message, @Header("MessageId") String messageId) {
+    public void receive(@NotEmpty String message, @Header("MessageId") String messageId, @Header(value = "operation_Id", required = false) String operationId) throws Exception {
         log.info("Received message from SQS queue {} with messageId: {}", queueName, messageId);
-        telemetryService.trackSQSMessageEvent(messageId);
-        process(message, messageId);
+
+        try(final var ignored = telemetryService.withOperation(operationId)) {
+            telemetryService.trackSQSMessageEvent(messageId);
+            process(message, messageId);
+        }
     }
 
     public ExternalDocumentRequest parse(String message) throws JsonProcessingException {

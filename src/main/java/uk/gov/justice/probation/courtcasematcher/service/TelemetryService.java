@@ -121,4 +121,9 @@ public class TelemetryService {
             .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageID));
         telemetryClient.trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED.eventName, properties, Collections.emptyMap());
     }
+
+    public AutoCloseable withOperation(String operationId) {
+        telemetryClient.getContext().getOperation().setId(operationId);
+        return () -> telemetryClient.getContext().getOperation().setId(null);
+    }
 }

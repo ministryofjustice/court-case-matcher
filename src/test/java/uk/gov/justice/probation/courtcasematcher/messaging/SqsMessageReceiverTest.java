@@ -30,6 +30,9 @@ class SqsMessageReceiverTest {
     private EventBus eventBus;
 
     @Mock
+    private AutoCloseable operation;
+
+    @Mock
     private MessageParser<ExternalDocumentRequest> parser;
 
     @InjectMocks
@@ -37,28 +40,34 @@ class SqsMessageReceiverTest {
 
     @DisplayName("Given a valid message then track and process")
     @Test
-    void givenValidMessage_whenReceived_ThenTrackAndProcess() throws JsonProcessingException {
+    void givenValidMessage_whenReceived_ThenTrackAndProcess() throws Exception {
+        when(telemetryService.withOperation("operationId")).thenReturn(operation);
         ExternalDocumentRequest externalDocumentRequest = ExternalDocumentRequest.builder().build();
         when(parser.parseMessage("message", ExternalDocumentRequest.class)).thenReturn(externalDocumentRequest);
 
-        messageReceiver.receive("message", "MessageID");
+        messageReceiver.receive("message", "MessageID", "operationId");
 
+        verify(telemetryService).withOperation("operationId");
         verify(messageProcessor).process(externalDocumentRequest, "MessageID");
         verify(telemetryService).trackSQSMessageEvent("MessageID");
+        verify(operation).close();
     }
 
     @DisplayName("Given a valid message then track and process")
     @Test
-    void givenInvalidMessage_whenReceived_ThenTrackAndEventFail() throws JsonProcessingException {
+    void givenInvalidMessage_whenReceived_ThenTrackAndEventFail() throws Exception {
+        when(telemetryService.withOperation("operationId")).thenReturn(operation);
         when(parser.parseMessage("message", ExternalDocumentRequest.class)).thenThrow(JsonProcessingException.class);
 
         try {
-            messageReceiver.receive("message", "MessageID");
+            messageReceiver.receive("message", "MessageID", "operationId");
             fail("Expected a RuntimeException");
         }
         catch (RuntimeException ex) {
+            verify(telemetryService).withOperation("operationId");
             verify(telemetryService).trackSQSMessageEvent("MessageID");
             verify(eventBus).post(any(CourtCaseFailureEvent.class));
+            verify(operation).close();
         }
     }
 
