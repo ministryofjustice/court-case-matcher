@@ -81,5 +81,5 @@ The following feature flags are in operation.
 
 | Name      | Default | Description |
 | ----------- | ------- | ----------- |
-| process_court_case_matcher_messages | false | Allows turning on processing of messages from court-case-matcher queue |
+| aws_sqs_process_court_case_matcher_messages | false | Allows turning on processing of messages from court-case-matcher queue |
 

@@ -1,7 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.eventbus.EventBus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -14,7 +12,6 @@ import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import javax.validation.constraints.NotEmpty;
@@ -46,7 +43,7 @@ public class SqsMessageReceiver {
     @Value("${aws.sqs.process_court_case_matcher_messages:false}")
     private boolean processCourtCaseMatcherMessages;
 
-    @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+    @SqsListener(value = "${aws.sqs.crime_portal_gateway_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receiveXml(@NotEmpty String message, @Header("MessageId") String messageId, @Header(value = "operation_Id", required = false) String operationId)
         throws Exception {
         log.info("Received message from SQS queue {} with messageId: {}. Processing flag {}", cpgQueueName, messageId, processCourtCaseMatcherMessages);

@@ -5,7 +5,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.google.common.eventbus.EventBus;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
@@ -34,6 +32,7 @@ import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -80,7 +79,7 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() {
 
-        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, singleCaseXml);
+        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, singleCaseXml, Map.of("operation_Id", "operationId"));
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -93,7 +92,7 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("listNo", equalTo("2nd")))
         );
 
-        verify(telemetryService).withOperation(null);
+        verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
@@ -106,7 +105,7 @@ public class SqsMessageReceiverIntTest {
 
         var orgXml = Files.readString(Paths.get(BASE_PATH +"/xml/external-document-request-single-case-org.xml"));
 
-        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, orgXml);
+        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, orgXml, Map.of("operation_Id", "operationId"));
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -118,7 +117,7 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("defendantType", equalTo("ORGANISATION")))
         );
 
-        verify(telemetryService).withOperation(null);
+        verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
