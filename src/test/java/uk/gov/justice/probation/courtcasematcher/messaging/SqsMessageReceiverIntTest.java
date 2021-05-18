@@ -1,9 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
@@ -34,6 +30,11 @@ import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRespo
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
@@ -92,6 +93,7 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("listNo", equalTo("2nd")))
         );
 
+        verify(telemetryService).withOperation(null);
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
@@ -116,6 +118,7 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("defendantType", equalTo("ORGANISATION")))
         );
 
+        verify(telemetryService).withOperation(null);
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
