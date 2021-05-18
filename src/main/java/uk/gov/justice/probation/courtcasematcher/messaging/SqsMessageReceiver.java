@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
 import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
@@ -45,9 +46,10 @@ public class SqsMessageReceiver {
     @Value("${aws.sqs.process_court_case_matcher_messages:false}")
     private boolean processCourtCaseMatcherMessages;
 
-    @SqsListener(value = "${aws.sqs.queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
-    public void receive(@NotEmpty String message, @Header("MessageId") String messageId) {
-        log.info("Received message from SQS queue {} with messageId: {}", queueName, messageId);
+    @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+    public void receiveXml(@NotEmpty String message, @Header("MessageId") String messageId, @Header(value = "operation_Id", required = false) String operationId)
+        throws Exception {
+        log.info("Received message from SQS queue {} with messageId: {}. Processing flag {}", cpgQueueName, messageId, processCourtCaseMatcherMessages);
 
         if (!processCourtCaseMatcherMessages) {
             try (final var ignored = telemetryService.withOperation(operationId)) {
@@ -57,8 +59,16 @@ public class SqsMessageReceiver {
         }
     }
 
-    public ExternalDocumentRequest parse(String message) throws JsonProcessingException {
-        return parser.parseMessage(message, ExternalDocumentRequest.class);
+    @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+    public void receive(@NotEmpty String message, @Header("MessageId") String messageId, @Header(value = "operation_Id", required = false) String operationId)
+        throws Exception {
+        log.info("Received JSON message from SQS queue {} with messageId: {}. Processing flag {}", queueName, messageId, processCourtCaseMatcherMessages);
+        if (processCourtCaseMatcherMessages) {
+            try (final var ignored = telemetryService.withOperation(operationId)) {
+                telemetryService.trackSQSMessageEvent(messageId);
+                messageProcessor.process(message, messageId);
+            }
+        }
     }
 
 }

@@ -38,47 +38,49 @@ class SqsMessageReceiverTest {
 
     @DisplayName("Given a valid XML message then track and process")
     @Test
-    void givenValidMessage_whenReceived_ThenTrackAndProcess() throws JsonProcessingException {
+    void givenValidMessage_whenReceived_ThenTrackAndProcess() throws Exception {
+        sqsMessageReceiver = new SqsMessageReceiver(externalDocumentMessageProcessor, messageProcessor, telemetryService, "queueName", "queueName", false);
+
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
 
-
-        sqsMessageReceiver.receiveXml("<xml>test</xml>", "MessageID");
-
+        sqsMessageReceiver.receiveXml("<xml>test</xml>", "MessageID", "operationId");
 
         verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackSQSMessageEvent("MessageID");
         verify(externalDocumentMessageProcessor).process("<xml>test</xml>", "MessageID");
         verify(operation).close();
-
     }
 
     @DisplayName("Given a valid XML message but flag indicating to ignore then do no track or process ")
     @Test
-    void givenValidXmlMessageFlagIndicatesIgnore_whenReceived_ThenIgnore() {
+    void givenValidXmlMessageFlagIndicatesIgnore_whenReceived_ThenIgnore() throws Exception {
         sqsMessageReceiver = new SqsMessageReceiver(externalDocumentMessageProcessor, messageProcessor, telemetryService, "queueName", "queueName", true);
 
-        sqsMessageReceiver.receiveXml("<xml>test</xml>", "MessageID");
+        sqsMessageReceiver.receiveXml("<xml>test</xml>", "MessageID", "operationId");
 
         verifyNoMoreInteractions(telemetryService, externalDocumentMessageProcessor);
     }
 
     @DisplayName("Given a valid JSON message then track and process")
     @Test
-    void givenMessage_whenReceived_ThenTrackAndProcess() {
+    void givenMessage_whenReceived_ThenTrackAndProcess() throws Exception {
         sqsMessageReceiver = new SqsMessageReceiver(externalDocumentMessageProcessor, messageProcessor, telemetryService, "queueName", "queueName", true);
+        when(telemetryService.withOperation("operationId")).thenReturn(operation);
 
-        sqsMessageReceiver.receive("{}", "MessageID");
+        sqsMessageReceiver.receive("{}", "MessageID", "operationId");
 
+        verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackSQSMessageEvent("MessageID");
         verify(messageProcessor).process("{}", "MessageID");
+        verify(operation).close();
     }
 
     @DisplayName("Given a valid JSON message but flag indicating to ignore then do no track or process ")
     @Test
-    void givenValidJsonMessageFlagIndicatesIgnore_whenReceived_ThenIgnore() {
+    void givenValidJsonMessageFlagIndicatesIgnore_whenReceived_ThenIgnore() throws Exception {
         sqsMessageReceiver = new SqsMessageReceiver(externalDocumentMessageProcessor, messageProcessor, telemetryService, "queueName", "queueName", false);
 
-        sqsMessageReceiver.receive("{}", "MessageID");
+        sqsMessageReceiver.receive("{}", "MessageID", "operationId");
 
         verifyNoMoreInteractions(telemetryService, externalDocumentMessageProcessor);
     }
