@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -22,12 +21,16 @@ class SqsServiceTest {
     @Mock
     private AmazonSQSAsync amazonSQSAsync;
 
-    @InjectMocks
+    private static final String CPG_QUEUE_NAME = "queue";
+
+    @Mock
+    private AmazonSQSAsync cpgAmazonSQSAsync;
+
     private SqsService sqsService;
 
     @BeforeEach
     void beforeEach() {
-        sqsService = new SqsService(QUEUE_NAME, amazonSQSAsync);
+        sqsService = new SqsService(QUEUE_NAME, amazonSQSAsync, CPG_QUEUE_NAME, cpgAmazonSQSAsync);
     }
 
     @DisplayName("When ask for correct queue then it is available")
@@ -37,6 +40,7 @@ class SqsServiceTest {
         GetQueueUrlResult res = new GetQueueUrlResult().withQueueUrl("URL");
 
         when(amazonSQSAsync.getQueueUrl(QUEUE_NAME)).thenReturn(res);
+        when(cpgAmazonSQSAsync.getQueueUrl(CPG_QUEUE_NAME)).thenReturn(res);
 
         assertThat(sqsService.isQueueAvailable()).isTrue();
     }

@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 @Profile("sqs-messaging")
@@ -19,11 +20,11 @@ public class SqsMessagingConfig {
     @EnableAutoConfiguration(exclude = ArtemisAutoConfiguration.class)
     private static class ArtemisAutoConfigToggle{}
 
-    @Bean
+    @Bean(name = "cpgAmazonSQSAsync")
     public AmazonSQSAsync cpgAmazonSQSAsync(@Value("${aws.region-name}") final String regionName,
                                         @Value("${aws.sqs-endpoint-url}") final String awsEndpointUrl,
-                                        @Value("${aws_crime_portal_gateway_access_key_id}") final String awsAccessKeyId,
-                                        @Value("${aws_crime_portal_gateway_secret_access_key}") final String awsSecretAccessKey) {
+                                        @Value("${aws_sqs_crime_portal_gateway_access_key_id}") final String awsAccessKeyId,
+                                        @Value("${aws_sqs_crime_portal_gateway_secret_access_key}") final String awsSecretAccessKey) {
         return AmazonSQSAsyncClientBuilder
             .standard()
             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKeyId, awsSecretAccessKey)))
@@ -31,11 +32,12 @@ public class SqsMessagingConfig {
             .build();
     }
 
-    @Bean
-    public AmazonSQSAsync ccmAmazonSQSAsync(@Value("${aws.region-name}") final String regionName,
+    @Primary
+    @Bean(name = "amazonSQSAsync")
+    public AmazonSQSAsync amazonSQSAsync(@Value("${aws.region-name}") final String regionName,
                                         @Value("${aws.sqs-endpoint-url}") final String awsEndpointUrl,
-                                        @Value("${aws_crime_portal_gateway_access_key_id}") final String awsAccessKeyId,
-                                        @Value("${aws_crime_portal_gateway_secret_access_key}") final String awsSecretAccessKey) {
+                                        @Value("${aws_sqs_court_case_matcher_access_key_id}") final String awsAccessKeyId,
+                                        @Value("${aws_sqs_court_case_matcher_secret_access_key}") final String awsSecretAccessKey) {
         return AmazonSQSAsyncClientBuilder
             .standard()
             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKeyId, awsSecretAccessKey)))
