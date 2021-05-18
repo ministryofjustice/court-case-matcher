@@ -1,8 +1,16 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Set;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.eventbus.EventBus;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,18 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.MessageType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryEventType;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@DisplayName("MqMessageReceiver is component to receive Libra feeds from ActiveMQ feed")
+@DisplayName("MqMessageReceiver")
 @ExtendWith(MockitoExtension.class)
 class MqMessageReceiverTest {
 
@@ -38,7 +38,7 @@ class MqMessageReceiverTest {
     private static String singleCaseXml;
 
     @Mock
-    private MessageProcessor messageProcessor;
+    private ExternalDocumentMessageProcessor messageProcessor;
 
     @Mock
     private Validator validator;
@@ -63,10 +63,12 @@ class MqMessageReceiverTest {
 
     @BeforeEach
     void beforeEach() {
-        JacksonXmlModule xmlModule = new JacksonXmlModule();
+        var xmlModule = new JacksonXmlModule();
         xmlModule.setDefaultUseWrapper(false);
-        MessageParser<MessageType> parser = new MessageParser<>(new XmlMapper(xmlModule), validator);
-        messageReceiver = new MqMessageReceiver(messageProcessor, telemetryService, eventBus, parser);
+        var objectMapper = new XmlMapper(xmlModule);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.registerModule(new JavaTimeModule());
+        messageReceiver = new MqMessageReceiver(messageProcessor, telemetryService, new MessageParser<>(objectMapper, validator));
     }
 
     @DisplayName("Given valid message then process")
@@ -89,7 +91,6 @@ class MqMessageReceiverTest {
         }
         catch (RuntimeException ex) {
             verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED);
-            verify(eventBus).post(any(CourtCaseFailureEvent.class));
         }
     }
 
@@ -105,7 +106,6 @@ class MqMessageReceiverTest {
         }
         catch (RuntimeException ex) {
             verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED);
-            verify(eventBus).post(any(CourtCaseFailureEvent.class));
         }
 
     }

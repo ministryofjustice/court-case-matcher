@@ -198,7 +198,7 @@ class CourtCaseServiceTest {
         return Case.builder()
             .block(block)
             .caseNo(CASE_NO)
-            .id(CASE_ID)
+            .caseId(CASE_ID)
             .build();
     }
 }

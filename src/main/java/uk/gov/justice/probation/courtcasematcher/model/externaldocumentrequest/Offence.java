@@ -20,7 +20,9 @@ public class Offence {
     @JacksonXmlProperty(localName = "oseq")
     private final Integer seq;
 
-    private final String sum;
+    @JacksonXmlProperty(localName = "sum")
+    private final String summary;
     private final String title;
-    private final String as;
+    @JacksonXmlProperty(localName = "as")
+    private final String act;
 }

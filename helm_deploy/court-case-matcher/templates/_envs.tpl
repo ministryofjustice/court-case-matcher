@@ -43,27 +43,30 @@ env:
         name: pict-cpmg-wildfly-credentials
         key: user-password
 
-  - name: AWS_ACCESS_KEY_ID
+  - name: AWS_CRIME_PORTAL_GATEWAY_ACCESS_KEY_ID
     valueFrom:
       secretKeyRef:
         name: crime-portal-gateway-queue-credentials
         key: access_key_id
 
-  - name: AWS_SECRET_ACCESS_KEY
+  - name: AWS_CRIME_PORTAL_GATEWAY_SECRET_ACCESS_KEY
     valueFrom:
       secretKeyRef:
         name: crime-portal-gateway-queue-credentials
         key: secret_access_key
 
-  - name: AWS_SQS_QUEUE_NAME
+  - name: AWS_COURT_CASE_MATCHER_SQS_QUEUE_NAME
     valueFrom:
       secretKeyRef:
-        name: crime-portal-gateway-queue-credentials
+        name: court-case-matcher-queue-credentials
         key: sqs_name
 
-  - name: AWS_SQS_ENDPOINT_URL
+  - name: AWS_COURT_CASE_MATCHER_SQS_ENDPOINT_URL
     valueFrom:
       secretKeyRef:
-        name: crime-portal-gateway-queue-credentials
+        name: court-case-matcher-queue-credentials
         key: sqs_id
+
+  - name: AWS_SQS_PROCESS_COURT_CASE_MATCHER_MESSAGES
+    value: "{{ .Values.env.PROCESS_COURT_CASE_MATCHER_MESSAGES }}"
 {{- end -}}

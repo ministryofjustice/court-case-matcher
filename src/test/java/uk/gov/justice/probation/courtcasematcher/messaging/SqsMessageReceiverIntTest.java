@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -24,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
@@ -60,7 +62,7 @@ public class SqsMessageReceiverIntTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        singleCaseXml = Files.readString(Paths.get(BASE_PATH +"/external-document-request-single-case.xml"));
+        singleCaseXml = Files.readString(Paths.get(BASE_PATH +"/xml/external-document-request-single-case.xml"));
         MOCK_SERVER.start();
     }
 
@@ -69,7 +71,7 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.stop();
     }
 
-    private static final String QUEUE_NAME = "crime-portal-gateway-queue";
+    private static final String CPQ_QUEUE_NAME = "crime-portal-gateway-queue";
 
     @Autowired
     private QueueMessagingTemplate queueMessagingTemplate;
@@ -77,7 +79,7 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() {
 
-        queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCaseXml);
+        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, singleCaseXml);
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -100,9 +102,9 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase() throws IOException {
 
-        String orgXml = Files.readString(Paths.get(BASE_PATH +"/external-document-request-single-case-org.xml"));
+        var orgXml = Files.readString(Paths.get(BASE_PATH +"/xml/external-document-request-single-case-org.xml"));
 
-        queueMessagingTemplate.convertAndSend(QUEUE_NAME, orgXml);
+        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, orgXml);
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -130,16 +132,18 @@ public class SqsMessageReceiverIntTest {
         private String secretAccessKey;
         @Value("${aws.region_name}")
         private String regionName;
-        @Value("${aws.sqs.queue_name}")
+        @Value("${aws.sqs.crime_portal_gateway_queue_name}")
+        private String cpgQueueName;
+        @Value("${aws.sqs.court_case_matcher_queue_name}")
         private String queueName;
-        @Autowired
-        private EventBus eventBus;
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
-        private MessageParser messageParser;
+        @Qualifier("externalDocumentMessageProcessor")
+        private MessageProcessor externalDocumentMessageProcessor;
         @Autowired
-        private MessageProcessor messageProcessor;
+        @Qualifier("caseMessageProcessor")
+        private MessageProcessor caseMessageProcessor;
 
         @Primary
         @Bean
@@ -153,7 +157,7 @@ public class SqsMessageReceiverIntTest {
 
         @Bean
         public SqsMessageReceiver sqsMessageReceiver() {
-            return new SqsMessageReceiver(messageProcessor, telemetryService, eventBus, messageParser, queueName);
+            return new SqsMessageReceiver(externalDocumentMessageProcessor, caseMessageProcessor, telemetryService, cpgQueueName, queueName, false);
         }
 
         @Bean
