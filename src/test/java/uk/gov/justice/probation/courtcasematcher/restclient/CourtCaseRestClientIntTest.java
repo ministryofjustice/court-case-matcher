@@ -239,7 +239,7 @@ public class CourtCaseRestClientIntTest {
 
         restClient.postMatches("X500", CASE_NO, matches);
 
-        verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
+        verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS).atLeast(1)).doAppend(captorLoggingEvent.capture());
 
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
         assertThat(events).hasSizeGreaterThanOrEqualTo(1);

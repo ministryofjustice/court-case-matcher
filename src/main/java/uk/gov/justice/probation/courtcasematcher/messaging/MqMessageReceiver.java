@@ -1,7 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.eventbus.EventBus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -17,16 +16,13 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 @Profile("mq-messaging")
 @Component
 @RequiredArgsConstructor
-public class MqMessageReceiver implements MessageReceiver {
+public class MqMessageReceiver {
 
     private static final String CP_QUEUE = "CP_OutboundQueue";
 
-    private final MessageProcessor messageProcessor;
+    private final ExternalDocumentMessageProcessor messageProcessor;
 
     private final TelemetryService telemetryService;
-
-    @SuppressWarnings("UnstableApiUsage")
-    private final EventBus eventBus;
 
     private final MessageParser<MessageType> parser;
 
@@ -34,10 +30,15 @@ public class MqMessageReceiver implements MessageReceiver {
     public void receive(String message) {
         log.info("Received message from JMS, queue name {}", CP_QUEUE);
         telemetryService.trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED);
-        process(message, null);
+        try {
+            messageProcessor.process(parse(message), null);
+        } catch (Exception ex) {
+            var failEvent = messageProcessor.handleException(ex, message);
+            messageProcessor.logErrors(log, failEvent);
+            throw new RuntimeException(failEvent.getFailureMessage(), ex);
+        }
     }
 
-    @Override
     public ExternalDocumentRequest parse(String message) throws JsonProcessingException {
 
         MessageType messageType = parser.parseMessage(message, MessageType.class);
@@ -47,13 +48,4 @@ public class MqMessageReceiver implements MessageReceiver {
         return messageType.getMessageBody().getGatewayOperationType().getExternalDocumentRequest();
     }
 
-    @Override
-    public MessageProcessor getMessageProcessor() {
-        return messageProcessor;
-    }
-
-    @Override
-    public EventBus getEventBus() {
-        return eventBus;
-    }
 }

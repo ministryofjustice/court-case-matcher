@@ -20,12 +20,11 @@ public class SqsMessagingConfig {
     @EnableAutoConfiguration(exclude = ArtemisAutoConfiguration.class)
     private static class ArtemisAutoConfigToggle{}
 
-    @Primary
-    @Bean
-    public AmazonSQSAsync amazonSQSAsync(@Value("${aws.region-name}") final String regionName,
+    @Bean(name = "cpgAmazonSQSAsync")
+    public AmazonSQSAsync cpgAmazonSQSAsync(@Value("${aws.region-name}") final String regionName,
                                         @Value("${aws.sqs-endpoint-url}") final String awsEndpointUrl,
-                                        @Value("${aws_access_key_id}") final String awsAccessKeyId,
-                                        @Value("${aws_secret_access_key}") final String awsSecretAccessKey) {
+                                        @Value("${aws_sqs_crime_portal_gateway_access_key_id}") final String awsAccessKeyId,
+                                        @Value("${aws_sqs_crime_portal_gateway_secret_access_key}") final String awsSecretAccessKey) {
         return AmazonSQSAsyncClientBuilder
             .standard()
             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKeyId, awsSecretAccessKey)))
@@ -33,4 +32,16 @@ public class SqsMessagingConfig {
             .build();
     }
 
+    @Primary
+    @Bean(name = "amazonSQSAsync")
+    public AmazonSQSAsync amazonSQSAsync(@Value("${aws.region-name}") final String regionName,
+                                        @Value("${aws.sqs-endpoint-url}") final String awsEndpointUrl,
+                                        @Value("${aws_sqs_court_case_matcher_access_key_id}") final String awsAccessKeyId,
+                                        @Value("${aws_sqs_court_case_matcher_secret_access_key}") final String awsSecretAccessKey) {
+        return AmazonSQSAsyncClientBuilder
+            .standard()
+            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKeyId, awsSecretAccessKey)))
+            .withEndpointConfiguration(new EndpointConfiguration(awsEndpointUrl, regionName))
+            .build();
+    }
 }

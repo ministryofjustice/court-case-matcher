@@ -2,15 +2,12 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,18 +21,17 @@ public class MessageParser<T> {
     public static final String GW_MSG_SCHEMA = "http://www.justice.gov.uk/magistrates/cp/GatewayMessageSchema";
 
     private final Validator validator;
-    private final XmlMapper xmlMapper;
+    private final ObjectMapper mapper;
 
-    public MessageParser(@Qualifier("messageXmlMapper") XmlMapper xmlMapper, @Autowired Validator validator) {
+    public MessageParser(final ObjectMapper mapper, final Validator validator) {
         super();
-        this.xmlMapper = xmlMapper;
+        this.mapper = mapper;
         this.validator = validator;
-        this.xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     public T parseMessage (final String xml, final Class<T> type) throws JsonProcessingException {
-        JavaType javaType = xmlMapper.getTypeFactory().constructType(type);
-        T message = xmlMapper.readValue(xml, javaType);
+        JavaType javaType = mapper.getTypeFactory().constructType(type);
+        T message = mapper.readValue(xml, javaType);
         validate(message);
         return message;
     }

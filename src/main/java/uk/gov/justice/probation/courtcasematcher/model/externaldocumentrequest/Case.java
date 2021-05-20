@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -23,10 +24,11 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Builder
 @Data
+@Valid
 public class Case {
 
     @JacksonXmlProperty(localName = "c_id")
-    private final Long id;
+    private final Long caseId;
 
     @NotBlank
     @JacksonXmlProperty(localName = "caseno")
@@ -38,16 +40,21 @@ public class Case {
     @JacksonXmlProperty(localName = "def_name_elements")
     private final Name name;
 
-    private final String def_name;
-    private final String def_type;
-    private final String def_sex;
+    @JacksonXmlProperty(localName = "def_name")
+    private final String defendantName;
+    @JacksonXmlProperty(localName = "def_type")
+    private final String defendantType;
+    @JacksonXmlProperty(localName = "def_sex")
+    private final String defendantSex;
 
+    @JacksonXmlProperty(localName = "def_dob")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy", lenient = OptBoolean.TRUE)
     @JsonDeserialize(using = LocalDateDeserializer.class)
-    private final LocalDate def_dob;
+    private final LocalDate defendantDob;
     @JacksonXmlProperty(localName = "def_addr")
-    private final Address def_addr;
-    private final String def_age;
+    private final Address defendantAddress;
+    @JacksonXmlProperty(localName = "def_age")
+    private final String defendantAge;
 
     @JacksonXmlProperty(localName = "cro_number")
     private final String cro;
@@ -70,5 +77,9 @@ public class Case {
 
     @JsonBackReference
     private final Block block;
+
+    private final String courtCode;
+    private final String courtRoom;
+    private final LocalDateTime sessionStartTime;
 
 }

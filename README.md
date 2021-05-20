@@ -2,7 +2,16 @@ Court Case Matcher
 ==================
 [![CircleCI](https://circleci.com/gh/ministryofjustice/court-case-matcher.svg?style=svg)](https://circleci.com/gh/ministryofjustice/court-case-matcher)
 
-Service to receive details of cases, incoming from Libra, match against existing cases in court case service, match to offenders (offender-search) and update court case service.
+Service to receive details of cases, incoming from Libra, match against existing cases in court case service, match to offenders (offender-search) and update court case service. At the current time, the application is capable of receiving messages from 
+
+* MQ queue - receiving XML gateway messages
+* SQS crime portal gateway queue - receiving XML messages (ExternalDocumentRequest) containing batches of cases based on court / rooms
+* SQS court case matcher queue - receiving JSON messages, each containing a single queue
+
+The MQ method is effectively deprecated and will be removed.
+The intention is to migrate from the current queue used, being the crime portal gateway queue, to the court-case-matcher-queue which is fed by the court-list-splitter service. 
+
+The service is configured to read from both queues, but allows switching between with XML and JSON based messaging using the use of the feature flag `process_court_case_matcher_messages`.
 
 Dev Setup
 ---------
@@ -57,7 +66,7 @@ https://court-case-matcher-dev.apps.live-1.cloud-platform.service.justice.gov.uk
 To alter the level of the MessageReceiver to TRACE.
 
 ```
-curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRACE"}' https://court-case-matcher-dev.apps.live-1.cloud-platform.service.justice.gov.uk/actuator/loggers/uk.gov.justice.probation.courtcasematcher.messaging.MessageReceiver
+curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRACE"}' https://court-case-matcher-dev.apps.live-1.cloud-platform.service.justice.gov.uk/actuator/loggers/uk.gov.justice.probation.courtcasematcher.messaging.SqsMessageReceiver
 ```
 
 ### Application Ping
@@ -70,7 +79,7 @@ curl -X GET http://localhost:8080/ping
 
 The following feature flags are in operation.
 
-| Name      | Description |
-| ----------- | ----------- |
-
+| Name      | Default | Description |
+| ----------- | ------- | ----------- |
+| aws_sqs_process_court_case_matcher_messages | false | Allows turning on processing of messages from court-case-matcher queue |
 

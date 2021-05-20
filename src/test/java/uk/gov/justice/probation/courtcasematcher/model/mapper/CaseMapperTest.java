@@ -84,13 +84,13 @@ class CaseMapperTest {
         aCase = Case.builder()
             .block(block)
             .caseNo("123")
-            .def_addr(Address.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
-            .def_age("13")
-            .def_dob(DATE_OF_BIRTH)
+            .defendantAddress(Address.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
+            .defendantAge("13")
+            .defendantDob(DATE_OF_BIRTH)
             .name(name)
-            .def_sex("M")
-            .def_type("P")
-            .id(321321L)
+            .defendantSex("M")
+            .defendantType("P")
+            .caseId(321321L)
             .listNo("1st")
             .seq(1)
             .offences(singletonList(buildOffence("NEW Theft from a person", 1)))
@@ -269,15 +269,15 @@ class CaseMapperTest {
 
             uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence offence1 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
                 .builder()
-                .as("Contrary to section 2(2) and 8 of the Theft Act 1968.")
-                .sum("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
+                .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
+                .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
                 .title("Theft from a person")
                 .seq(1)
                 .build();
             uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence offence2 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
                 .builder()
-                .as("Contrary to section 1(1) and 7 of the Theft Act 1968.")
-                .sum("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Shop.")
+                .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
+                .summary("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Shop.")
                 .title("Theft from a shop")
                 .seq(2)
                 .build();
@@ -362,7 +362,7 @@ class CaseMapperTest {
                     .build()))
                 .build();
 
-            ReflectionTestUtils.setField(aCase, "def_dob", null);
+            ReflectionTestUtils.setField(aCase, "defendantDob", null);
 
             CourtCase courtCase = CaseMapper.merge(aCase, existingCourtCase);
 
@@ -481,8 +481,8 @@ class CaseMapperTest {
 
     private uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence buildOffence(String title, Integer seq) {
         return uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence.builder()
-            .as("Contrary to section 2(2) and 8 of the Theft Act 1968.")
-            .sum("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
+            .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
+            .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
             .title(title)
             .seq(seq)
             .build();
