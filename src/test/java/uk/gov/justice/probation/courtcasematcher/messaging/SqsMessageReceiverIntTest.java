@@ -126,11 +126,11 @@ public class SqsMessageReceiverIntTest {
 
     @TestConfiguration
     public static class AwsTestConfig {
-        @Value("${aws.sqs-endpoint-url}")
+        @Value("${aws.sqs.crime_portal_gateway_endpoint_url}")
         private String sqsEndpointUrl;
-        @Value("${aws.access_key_id}")
+        @Value("${aws.sqs.crime_portal_gateway_access_key_id}")
         private String accessKeyId;
-        @Value("${aws.secret_access_key}")
+        @Value("${aws.sqs.crime_portal_gateway_secret_access_key}")
         private String secretAccessKey;
         @Value("${aws.region_name}")
         private String regionName;

@@ -22,7 +22,7 @@ public class SqsMessagingConfig {
 
     @Bean(name = "cpgAmazonSQSAsync")
     public AmazonSQSAsync cpgAmazonSQSAsync(@Value("${aws.region-name}") final String regionName,
-                                        @Value("${aws.sqs-endpoint-url}") final String awsEndpointUrl,
+                                        @Value("${aws_sqs_crime_portal_gateway_endpoint_url}") final String awsEndpointUrl,
                                         @Value("${aws_sqs_crime_portal_gateway_access_key_id}") final String awsAccessKeyId,
                                         @Value("${aws_sqs_crime_portal_gateway_secret_access_key}") final String awsSecretAccessKey) {
         return AmazonSQSAsyncClientBuilder
@@ -35,7 +35,7 @@ public class SqsMessagingConfig {
     @Primary
     @Bean(name = "amazonSQSAsync")
     public AmazonSQSAsync amazonSQSAsync(@Value("${aws.region-name}") final String regionName,
-                                        @Value("${aws.sqs-endpoint-url}") final String awsEndpointUrl,
+                                        @Value("${aws_sqs_court_case_matcher_endpoint_url}") final String awsEndpointUrl,
                                         @Value("${aws_sqs_court_case_matcher_access_key_id}") final String awsAccessKeyId,
                                         @Value("${aws_sqs_court_case_matcher_secret_access_key}") final String awsSecretAccessKey) {
         return AmazonSQSAsyncClientBuilder
