@@ -20,6 +20,7 @@ ingress:
 
 env:
   JAVA_OPTS: "-Xmx512m"
+  PROCESS_COURT_CASE_MATCHER_MESSAGES: false
 
 spring:
   profile: preprod,sqs-messaging,instrumented
