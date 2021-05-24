@@ -72,7 +72,9 @@ springBoot {
     }
 }
 
-restAssuredVersion = "4.4.0"
+ext {
+    restAssuredVersion = '4.4.0'
+}
 
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
