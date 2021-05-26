@@ -3,7 +3,7 @@ import java.time.LocalDate
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.4.5'
+    id 'org.springframework.boot' version '2.5.0'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'com.github.ben-manes.versions' version '0.38.0'
     id "au.com.dius.pact" version "4.2.6"
@@ -46,7 +46,7 @@ bootJar {
 }
 
 jar {
-    baseName = rootProject.name
+    enabled = false // we use the boot JAR. Including this after Spring boot 2.5.0 caused issues
     manifest {
         attributes(
                 'Implementation-Title': rootProject.name, 'Implementation-Version': version
@@ -109,9 +109,6 @@ dependencies {
     }
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
-//            {
-//        exclude group: 'com.vaadin.external.google', module: 'android-json'
-//    }
     testImplementation 'io.projectreactor:reactor-test'
 
     testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.26.0'
