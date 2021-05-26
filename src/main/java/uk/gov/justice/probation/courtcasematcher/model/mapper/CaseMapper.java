@@ -61,9 +61,9 @@ public class CaseMapper {
     private static CourtCase.CourtCaseBuilder newFromLibraCase(Case aCase) {
         return CourtCase.builder()
             .caseNo(aCase.getCaseNo())
-            .courtCode(aCase.getBlock().getSession().getCourtCode())
+            .courtCode(aCase.getCourtCode())
             .caseId(String.valueOf(aCase.getCaseId()))
-            .courtRoom(aCase.getBlock().getSession().getCourtRoom())
+            .courtRoom(aCase.getCourtRoom())
             .defendantAddress(Optional.ofNullable(aCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
             .name(aCase.getName())
             .defendantName(nameFrom(aCase.getDefendantName(), aCase.getName()))
@@ -73,7 +73,7 @@ public class CaseMapper {
             .cro(aCase.getCro())
             .pnc(aCase.getPnc())
             .listNo(aCase.getListNo())
-            .sessionStartTime(aCase.getBlock().getSession().getSessionStartTime())
+            .sessionStartTime(aCase.getSessionStartTime())
             .nationality1(aCase.getNationality1())
             .nationality2(aCase.getNationality2())
             .offences(Optional.ofNullable(aCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()));
@@ -116,11 +116,11 @@ public class CaseMapper {
     public static CourtCase merge(Case incomingCase, CourtCase existingCourtCase) {
         return CourtCase.builder()
             // PK fields
-            .courtCode(incomingCase.getBlock().getSession().getCourtCode())
+            .courtCode(incomingCase.getCourtCode())
             .caseNo(existingCourtCase.getCaseNo())
             // Fields to be updated from incoming
             .caseId(String.valueOf(incomingCase.getCaseId()))
-            .courtRoom(incomingCase.getBlock().getSession().getCourtRoom())
+            .courtRoom(incomingCase.getCourtRoom())
             .defendantAddress(fromAddress(incomingCase.getDefendantAddress()))
             .name(incomingCase.getName())
             .defendantName(nameFrom(incomingCase.getDefendantName(), incomingCase.getName()))
@@ -128,7 +128,7 @@ public class CaseMapper {
             .defendantDob(incomingCase.getDefendantDob())
             .defendantType(DefendantType.of(incomingCase.getDefendantType()))
             .listNo(incomingCase.getListNo())
-            .sessionStartTime(incomingCase.getBlock().getSession().getSessionStartTime())
+            .sessionStartTime(incomingCase.getSessionStartTime())
             .offences(fromOffences(incomingCase.getOffences()))
             .nationality1(incomingCase.getNationality1())
             .nationality2(incomingCase.getNationality2())

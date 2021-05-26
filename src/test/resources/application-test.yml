@@ -43,7 +43,10 @@ aws:
     crime_portal_gateway_queue_name: "crime-portal-gateway-queue"
     crime_portal_gateway_access_key_id: foobar
     crime_portal_gateway_secret_access_key: foobar
+    court_case_matcher_endpoint_url: "http://localhost:4566"
     court_case_matcher_queue_name: "court-case-matcher-queue"
+    court_case_matcher_access_key_id: foobar
+    court_case_matcher_secret_access_key: foobar
 
 messaging:
   activemq:

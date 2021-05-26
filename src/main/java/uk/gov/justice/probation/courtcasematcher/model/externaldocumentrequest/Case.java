@@ -82,4 +82,15 @@ public class Case {
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
 
+    public String getCourtCode() {
+        return courtCode != null ? courtCode : block.getSession().getCourtCode();
+    }
+
+    public String getCourtRoom() {
+        return courtRoom != null ? courtRoom : block.getSession().getCourtRoom();
+    }
+
+    public LocalDateTime getSessionStartTime() {
+        return sessionStartTime != null ? sessionStartTime : block.getSession().getSessionStartTime();
+    }
 }

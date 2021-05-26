@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.service.SqsService;
 
 @Component
-@Profile("sqs-messaging")
+@Profile("sqs-ccm-messaging | sqs-cpg-messaging")
 public class SqsCheck implements ReactiveHealthIndicator {
 
     @Autowired

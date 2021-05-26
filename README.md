@@ -11,8 +11,6 @@ Service to receive details of cases, incoming from Libra, match against existing
 The MQ method is effectively deprecated and will be removed.
 The intention is to migrate from the current queue used, being the crime portal gateway queue, to the court-case-matcher-queue which is fed by the court-list-splitter service. 
 
-The service is configured to read from both queues, but allows switching between with XML and JSON based messaging using the use of the feature flag `process_court_case_matcher_messages`.
-
 Dev Setup
 ---------
 
@@ -74,12 +72,16 @@ curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRA
 curl -X GET http://localhost:8080/ping
 ```
 
+### Profiles
+
+It is possible to run the service with an ability to listen for messages either from the crime-portal-gateway queue (multiple cases, in XML) or the court-case-matcher queue (single cases, in JSON). In kubernetes namespace deployments, the service is currently configured to run with `sqs-cpg-messaging` but this can be changed by altering the `SPRING_PROFILES_ACTIVE` environment variable, to use `sqs-ccm-messaging`. These profiles are mutually exclusive at the current time. 
+
+It is expected that `sqs-cpg-messaging` will be removed at some in the medium term, when the "splitter" https://github.com/ministryofjustice/court-list-splitter project becomes available.
+
+
+
 
 ### Feature Flags
 
-The following feature flags are in operation.
 
-| Name      | Default | Description |
-| ----------- | ------- | ----------- |
-| aws_sqs_process_court_case_matcher_messages | false | Allows turning on processing of messages from court-case-matcher queue |
 

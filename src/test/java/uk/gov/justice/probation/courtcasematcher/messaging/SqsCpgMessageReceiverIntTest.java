@@ -1,10 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
@@ -28,10 +23,17 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
@@ -45,10 +47,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test"})
 @Import(TestMessagingConfig.class)
-public class SqsMessageReceiverIntTest {
+public class SqsCpgMessageReceiverIntTest {
 
     private static final String BASE_PATH = "src/test/resources/messages";
-    private static String singleCase;
+    private static String singleCaseXml;
 
     @Autowired
     private TelemetryService telemetryService;
@@ -60,7 +62,7 @@ public class SqsMessageReceiverIntTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        singleCase = Files.readString(Paths.get(BASE_PATH +"/json/case.json"));
+        singleCaseXml = Files.readString(Paths.get(BASE_PATH +"/xml/external-document-request-single-case.xml"));
         MOCK_SERVER.start();
     }
 
@@ -69,7 +71,7 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.stop();
     }
 
-    private static final String QUEUE_NAME = "court-case-matcher-queue";
+    private static final String CPQ_QUEUE_NAME = "crime-portal-gateway-queue";
 
     @Autowired
     private QueueMessagingTemplate queueMessagingTemplate;
@@ -77,7 +79,7 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() {
 
-        queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCase, Map.of("operation_Id", "operationId"));
+        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, singleCaseXml, Map.of("operation_Id", "operationId"));
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -86,22 +88,24 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/court/B10JQ/case/1600032981"))
                 .withRequestBody(matchingJsonPath("pnc", equalTo("2004/0012345U")))
-                .withRequestBody(matchingJsonPath("listNo", equalTo("1st")))
+                .withRequestBody(matchingJsonPath("probationStatus", equalTo("CURRENT")))
+                .withRequestBody(matchingJsonPath("listNo", equalTo("2nd")))
         );
 
         verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
+        verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
     @Test
     public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase() throws IOException {
 
-        var orgXml = Files.readString(Paths.get(BASE_PATH +"/json/case-org.json"));
+        var orgXml = Files.readString(Paths.get(BASE_PATH +"/xml/external-document-request-single-case-org.xml"));
 
-        queueMessagingTemplate.convertAndSend(QUEUE_NAME, orgXml, Map.of("operation_Id", "operationId"));
+        queueMessagingTemplate.convertAndSend(CPQ_QUEUE_NAME, orgXml, Map.of("operation_Id", "operationId"));
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -109,33 +113,34 @@ public class SqsMessageReceiverIntTest {
 
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/court/B10JQ/case/2100049401"))
-                .withRequestBody(matchingJsonPath("courtRoom", equalTo("07")))
+                .withRequestBody(matchingJsonPath("courtRoom", equalTo("7")))
                 .withRequestBody(matchingJsonPath("defendantType", equalTo("ORGANISATION")))
         );
 
         verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackSQSMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
+        verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
     @TestConfiguration
     public static class AwsTestConfig {
-        @Value("${aws.sqs.court_case_matcher_endpoint_url}")
+        @Value("${aws.sqs.crime_portal_gateway_endpoint_url}")
         private String sqsEndpointUrl;
-        @Value("${aws.sqs.court_case_matcher_access_key_id}")
+        @Value("${aws.sqs.crime_portal_gateway_access_key_id}")
         private String accessKeyId;
-        @Value("${aws.sqs.court_case_matcher_secret_access_key}")
+        @Value("${aws.sqs.crime_portal_gateway_secret_access_key}")
         private String secretAccessKey;
         @Value("${aws.region_name}")
         private String regionName;
-        @Value("${aws.sqs.court_case_matcher_queue_name}")
-        private String queueName;
+        @Value("${aws.sqs.crime_portal_gateway_queue_name}")
+        private String cpgQueueName;
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
-        @Qualifier("caseMessageProcessor")
-        private MessageProcessor caseMessageProcessor;
+        @Qualifier("externalDocumentMessageProcessor")
+        private MessageProcessor externalDocumentMessageProcessor;
 
         @Primary
         @Bean
@@ -148,8 +153,8 @@ public class SqsMessageReceiverIntTest {
         }
 
         @Bean
-        public SqsMessageReceiver sqsMessageReceiver() {
-            return new SqsMessageReceiver(caseMessageProcessor, telemetryService, queueName);
+        public SqsCpgMessageReceiver sqsMessageReceiver() {
+            return new SqsCpgMessageReceiver(externalDocumentMessageProcessor, telemetryService, cpgQueueName);
         }
 
         @Bean

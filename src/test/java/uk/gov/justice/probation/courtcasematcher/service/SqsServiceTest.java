@@ -21,16 +21,11 @@ class SqsServiceTest {
     @Mock
     private AmazonSQSAsync amazonSQSAsync;
 
-    private static final String CPG_QUEUE_NAME = "queue";
-
-    @Mock
-    private AmazonSQSAsync cpgAmazonSQSAsync;
-
     private SqsService sqsService;
 
     @BeforeEach
     void beforeEach() {
-        sqsService = new SqsService(QUEUE_NAME, amazonSQSAsync, CPG_QUEUE_NAME, cpgAmazonSQSAsync);
+        sqsService = new SqsService(QUEUE_NAME, amazonSQSAsync);
     }
 
     @DisplayName("When ask for correct queue then it is available")
@@ -40,7 +35,6 @@ class SqsServiceTest {
         GetQueueUrlResult res = new GetQueueUrlResult().withQueueUrl("URL");
 
         when(amazonSQSAsync.getQueueUrl(QUEUE_NAME)).thenReturn(res);
-        when(cpgAmazonSQSAsync.getQueueUrl(CPG_QUEUE_NAME)).thenReturn(res);
 
         assertThat(sqsService.isQueueAvailable()).isTrue();
     }

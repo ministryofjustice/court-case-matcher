@@ -21,10 +21,9 @@ ingress:
 
 env:
   JAVA_OPTS: "-Xmx512m"
-  PROCESS_COURT_CASE_MATCHER_MESSAGES: false
 
 spring:
-  profile: prod,sqs-messaging,instrumented
+  profile: prod,sqs-cpg-messaging,instrumented
 
 whitelist:
   office: "217.33.148.210/32"
