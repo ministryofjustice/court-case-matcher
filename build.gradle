@@ -46,7 +46,7 @@ bootJar {
 }
 
 jar {
-    baseName = rootProject.name
+    enabled = false // we use the boot JAR. Including this after Spring boot 2.5.0 caused issues
     manifest {
         attributes(
                 'Implementation-Title': rootProject.name, 'Implementation-Version': version
@@ -109,9 +109,6 @@ dependencies {
     }
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
-//            {
-//        exclude group: 'com.vaadin.external.google', module: 'android-json'
-//    }
     testImplementation 'io.projectreactor:reactor-test'
 
     testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.26.0'
