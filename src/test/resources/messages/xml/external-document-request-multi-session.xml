@@ -59,17 +59,17 @@
                       <asn>ASN</asn>
                       <marker>MARKER</marker>
                       <linked>LINKED</linked>
-                      <def_name>Mr. David DLONE</def_name>
+                      <def_name>Mr Arthur MORGAN</def_name>
                       <def_name_elements>
-                        <title>Mr.</title>
-                        <forename1>David</forename1>
-                        <surname>DLONE</surname>
+                        <title>Mr</title>
+                        <forename1>Arthur</forename1>
+                        <surname>MORGAN</surname>
                       </def_name_elements>
                       <def_type>P</def_type>
                       <def_sex>N</def_sex>
-                      <def_dob>02/02/2002</def_dob>
+                      <def_dob>01/01/1975</def_dob>
                       <def_age>20</def_age>
-                      <pnc_id>PNC-ID1</pnc_id>
+                      <pnc_id>2004/0012345U</pnc_id>
                       <cro_number>11111/79J</cro_number>
                       <def_addr>
                         <line1>39 The Street</line1>

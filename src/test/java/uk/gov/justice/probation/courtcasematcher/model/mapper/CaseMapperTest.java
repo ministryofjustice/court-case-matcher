@@ -64,12 +64,12 @@ class CaseMapperTest {
     @BeforeEach
     void beforeEach() {
 
-        Info info = Info.builder().ouCode(COURT_CODE).dateOfHearing(DATE_OF_HEARING).build();
-        Document document = Document.builder().info(info).build();
-        DataJob dataJob = DataJob.builder().document(document).build();
-        Job job = Job.builder().dataJob(dataJob).build();
+        var info = Info.builder().ouCode(COURT_CODE).dateOfHearing(DATE_OF_HEARING).build();
+        var document = Document.builder().info(info).build();
+        var dataJob = DataJob.builder().document(document).build();
+        var job = Job.builder().dataJob(dataJob).build();
 
-        Session session = Session.builder()
+        var session = Session.builder()
             .courtName(COURT_NAME)
             .courtRoom("00")
             .dateOfHearing(DATE_OF_HEARING)
@@ -95,6 +95,7 @@ class CaseMapperTest {
             .seq(1)
             .offences(singletonList(buildOffence("NEW Theft from a person", 1)))
             .build();
+
     }
 
     @DisplayName("New from an existing CourtCase, adding MatchDetails")
@@ -105,12 +106,12 @@ class CaseMapperTest {
         @Test
         void givenNoMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
 
-            CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            MatchResponse matchResponse = MatchResponse.builder()
+            var courtCase = CaseMapper.newFromCase(aCase);
+            var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NOTHING)
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
@@ -120,20 +121,20 @@ class CaseMapperTest {
         @DisplayName("Map a court case to a new court case when search response has yielded a single match")
         @Test
         void givenSingleMatch_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatch() {
-            Match match = Match.builder()
+            var match = Match.builder()
                 .offender(Offender.builder()
                     .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
                     .probationStatus(ProbationStatusDetail.builder().status("CURRENT").preSentenceActivity(true).build())
                     .build())
                 .build();
 
-            CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            MatchResponse matchResponse = MatchResponse.builder()
+            var courtCase = CaseMapper.newFromCase(aCase);
+            var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isEqualTo(CRN);
@@ -150,18 +151,18 @@ class CaseMapperTest {
         @DisplayName("Map a court case to a new court case when search response has yielded a single match")
         @Test
         void givenSingleMatchOnName_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatchButNoCrn() {
-            Match match = Match.builder().offender(Offender.builder()
+            var match = Match.builder().offender(Offender.builder()
                 .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
                 .build())
                 .build();
 
-            CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            MatchResponse matchResponse = MatchResponse.builder()
+            var courtCase = CaseMapper.newFromCase(aCase);
+            var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NAME)
                 .matches(List.of(match))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
@@ -176,18 +177,18 @@ class CaseMapperTest {
         @DisplayName("Map a court case to a new court case when search response has yielded a single match but null probation status")
         @Test
         void givenSingleMatchWithNoProbationStatus_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatch() {
-            Match match = Match.builder().offender(Offender.builder()
+            var match = Match.builder().offender(Offender.builder()
                 .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
                 .build())
                 .build();
 
-            CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            MatchResponse matchResponse = MatchResponse.builder()
+            var courtCase = CaseMapper.newFromCase(aCase);
+            var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isEqualTo(CRN);
@@ -195,29 +196,29 @@ class CaseMapperTest {
             assertThat(courtCaseNew.getBreach()).isNull();
             assertThat(courtCaseNew.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
+            var offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
         @DisplayName("Map a court case to a new court case when search response has yielded multiple matches")
         @Test
         void givenMultipleMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithListOfMatches() {
-            Match match1 = Match.builder().offender(Offender.builder()
+            var match1 = Match.builder().offender(Offender.builder()
                 .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
                 .build())
                 .build();
-            Match match2 = Match.builder().offender(Offender.builder()
+            var match2 = Match.builder().offender(Offender.builder()
                 .otherIds(OtherIds.builder().crn("CRN1").build())
                 .build())
                 .build();
 
-            CourtCase courtCase = CaseMapper.newFromCase(aCase);
-            MatchResponse matchResponse = MatchResponse.builder()
+            var courtCase = CaseMapper.newFromCase(aCase);
+            var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
                 .matches(List.of(match1, match2))
                 .build();
 
-            CourtCase courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
@@ -225,8 +226,8 @@ class CaseMapperTest {
             assertThat(courtCaseNew.getBreach()).isNull();
             assertThat(courtCaseNew.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(2);
-            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, PNC);
-            OffenderMatch offenderMatch2 = buildOffenderMatch(MatchType.PARTIAL_NAME, "CRN1", null, null);
+            var offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, PNC);
+            var offenderMatch2 = buildOffenderMatch(MatchType.PARTIAL_NAME, "CRN1", null, null);
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactlyInAnyOrder(offenderMatch1, offenderMatch2);
         }
 
@@ -250,14 +251,26 @@ class CaseMapperTest {
         }
     }
 
-    @DisplayName("New from incoming gateway case")
+    @DisplayName("New from incoming gateway (XML) or JSON case")
     @Nested
-    class NewFromGatewayCase {
+    class NewFromIncomingGatewayXMLOrJSONCase {
 
-        @DisplayName("Map from a new case composed of nulls. Ensures no null pointers.")
+        @DisplayName("Map from a new JSON case (with no block) composed of nulls. Ensures no null pointers.")
+        @Test
+        void givenJsonCase_whenMapCaseWithNullsThenCreateNewCaseNoOffences_EnsureNoNullPointer() {
+            var nullCase = Case.builder()
+                .courtCode(COURT_CODE)
+                .courtRoom("00")
+                .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
+                .caseNo("123")
+                .build();
+            assertThat(CaseMapper.newFromCase(nullCase)).isNotNull();
+        }
+
+        @DisplayName("Map from a new gateway XML case composed of nulls. Ensures no null pointers.")
         @Test
         void whenMapCaseWithNullsThenCreateNewCaseNoOffences_EnsureNoNullPointer() {
-            Case nullCase = Case.builder()
+            var nullCase = Case.builder()
                 .block(block)
                 .build();
             assertThat(CaseMapper.newFromCase(nullCase)).isNotNull();
@@ -267,14 +280,14 @@ class CaseMapperTest {
         @Test
         void whenMapCaseWithOffences_ThenCreateNewCase() {
 
-            uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence offence1 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
+            var offence1 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
                 .builder()
                 .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
                 .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
                 .title("Theft from a person")
                 .seq(1)
                 .build();
-            uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence offence2 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
+            var offence2 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
                 .builder()
                 .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
                 .summary("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Shop.")
@@ -283,16 +296,16 @@ class CaseMapperTest {
                 .build();
 
             // Put Seq 2 first in list
-            Case aCase = Case.builder()
+            var aCase = Case.builder()
                 .caseNo("123")
                 .block(block)
                 .offences(Arrays.asList(offence2, offence1))
                 .build();
 
-            CourtCase courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromCase(aCase);
 
             assertThat(courtCase.getOffences()).hasSize(2);
-            Offence offence = courtCase.getOffences().get(0);
+            var offence = courtCase.getOffences().get(0);
             assertThat(offence.getSequenceNumber()).isEqualTo(1);
             assertThat(offence.getAct()).isEqualTo("Contrary to section 2(2) and 8 of the Theft Act 1968.");
             assertThat(offence.getOffenceSummary()).isEqualTo("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.");
@@ -304,7 +317,7 @@ class CaseMapperTest {
         void whenMapNewCaseThenCreateNewCaseNoOffences() {
 
             ReflectionTestUtils.setField(aCase, "offences", null);
-            CourtCase courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromCase(aCase);
 
             assertThat(courtCase.getCaseNo()).isEqualTo("123");
             assertThat(courtCase.getCaseId()).isEqualTo("321321");
@@ -325,15 +338,18 @@ class CaseMapperTest {
         }
     }
 
-    @DisplayName("Merge incoming gateway case to existing CourtCase")
+    @DisplayName("Merge incoming gateway or JSON case to existing CourtCase")
     @Nested
-    class MergeGatewayToExistingCourtCase {
+    class MergeIncomingToExistingCourtCase {
 
-        @DisplayName("Merge the gateway case with the existing court case, including offences")
-        @Test
-        void whenMergeWithExistingCase_ThenUpdateExistingCase() {
+        private CourtCase existingCourtCase;
 
-            CourtCase existingCourtCase = CourtCase.builder()
+        // A case created from a flatted incoming JSON structure with no parent block as we find in XML
+        private Case jsonCase;
+
+        @BeforeEach
+        void beforeEach() {
+            existingCourtCase = CourtCase.builder()
                 .breach(Boolean.TRUE)
                 .suspendedSentenceOrder(Boolean.TRUE)
                 .crn("X320741")
@@ -362,10 +378,47 @@ class CaseMapperTest {
                     .build()))
                 .build();
 
+            jsonCase = Case.builder()
+                .caseNo("123")
+                .defendantAddress(Address.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
+                .defendantAge("13")
+                .defendantDob(DATE_OF_BIRTH)
+                .name(name)
+                .defendantSex("M")
+                .defendantType("P")
+                .caseId(321321L)
+                .listNo("1st")
+                .seq(1)
+                .offences(singletonList(buildOffence("NEW Theft from a person", 1)))
+                .courtCode(COURT_CODE)
+                .courtRoom("00")
+                .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
+                .build();
+        }
+
+        @DisplayName("Merge the gateway case with the existing court case, including offences")
+        @Test
+        void whenMergeWithExistingCase_ThenUpdateExistingCase() {
+
             ReflectionTestUtils.setField(aCase, "defendantDob", null);
 
-            CourtCase courtCase = CaseMapper.merge(aCase, existingCourtCase);
+            var courtCase = CaseMapper.merge(aCase, existingCourtCase);
 
+            assertCourtCase(courtCase);
+        }
+
+        @DisplayName("Merge the JSON case with the existing court case, including offences")
+        @Test
+        void givenCaseFromJson_whenMergeWithExistingCase_ThenUpdateExistingCase() {
+
+            ReflectionTestUtils.setField(jsonCase, "defendantDob", null);
+
+            var courtCase = CaseMapper.merge(jsonCase, existingCourtCase);
+            assertCourtCase(courtCase);
+
+        }
+
+        private void assertCourtCase(CourtCase courtCase) {
             // Fields that stay the same on existing value
             assertThat(courtCase.getCourtCode()).isEqualTo(COURT_CODE);
             assertThat(courtCase.getProbationStatus()).isEqualTo("CURRENT");
@@ -405,7 +458,7 @@ class CaseMapperTest {
         @Test
         void whenMergeWithExistingCase_ThenUpdateExistingCase() {
 
-            CourtCase existingCourtCase = CourtCase.builder()
+            var existingCourtCase = CourtCase.builder()
                 .breach(Boolean.TRUE)
                 .suspendedSentenceOrder(Boolean.TRUE)
                 .crn(CRN)
@@ -445,7 +498,7 @@ class CaseMapperTest {
                 .status("CURRENT")
                 .build();
 
-            CourtCase courtCase = CaseMapper.merge(probationStatusDetail, existingCourtCase);
+            var courtCase = CaseMapper.merge(probationStatusDetail, existingCourtCase);
 
             assertThat(courtCase).isNotSameAs(existingCourtCase);
 

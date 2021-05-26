@@ -151,21 +151,21 @@ class MessageParserTest {
         // Fields populated from the session
         assertThat(aCase.getDefendantAge()).isEqualTo("20");
         assertThat(aCase.getCaseId()).isEqualTo(1217464);
-        assertThat(aCase.getDefendantName()).isEqualTo("Mr. David DLONE");
+        assertThat(aCase.getDefendantName()).isEqualTo("Mr Arthur MORGAN");
         assertThat(aCase.getName()).isEqualTo(Name.builder()
-                                                .title("Mr.")
-                                                .forename1("David")
-                                                .surname("DLONE").build());
+                                                .title("Mr")
+                                                .forename1("Arthur")
+                                                .surname("MORGAN").build());
         assertThat(aCase.getDefendantType()).isEqualTo("P");
         assertThat(aCase.getDefendantSex()).isEqualTo("N");
         assertThat(aCase.getDefendantAge()).isEqualTo("20");
-        assertThat(aCase.getPnc()).isEqualTo("PNC-ID1");
+        assertThat(aCase.getPnc()).isEqualTo("2004/0012345U");
         assertThat(aCase.getCro()).isEqualTo("11111/79J");
         assertThat(aCase.getDefendantAddress()).usingRecursiveComparison().isEqualTo(Address.builder()
                                                                     .line1("39 The Street")
                                                                     .line2("Newtown")
                                                                     .pcode("NT4 6YH").build());
-        assertThat(aCase.getDefendantDob()).isEqualTo(LocalDate.of(2002, Month.FEBRUARY, 2));
+        assertThat(aCase.getDefendantDob()).isEqualTo(LocalDate.of(1975, Month.JANUARY, 1));
         assertThat(aCase.getNationality1()).isEqualTo("Angolan");
         assertThat(aCase.getNationality2()).isEqualTo("Austrian");
         assertThat(aCase.getSeq()).isEqualTo(1);

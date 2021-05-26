@@ -108,7 +108,10 @@ dependencies {
         because 'allows tests to run from IDEs that bundle older version of launcher'
     }
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+//            {
+//        exclude group: 'com.vaadin.external.google', module: 'android-json'
+//    }
     testImplementation 'io.projectreactor:reactor-test'
 
     testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.26.0'

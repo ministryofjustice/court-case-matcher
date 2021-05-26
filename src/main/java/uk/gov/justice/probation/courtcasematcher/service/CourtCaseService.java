@@ -27,7 +27,7 @@ public class CourtCaseService {
     private final OffenderSearchRestClient offenderSearchRestClient;
 
     public Mono<CourtCase> getCourtCase(Case aCase) {
-        return restClient.getCourtCase(aCase.getBlock().getSession().getCourtCode(), aCase.getCaseNo())
+        return restClient.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
             .map(existing -> CaseMapper.merge(aCase, existing))
             .switchIfEmpty(Mono.defer(() -> Mono.just(CaseMapper.newFromCase(aCase))));
     }
