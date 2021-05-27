@@ -59,7 +59,7 @@ executors:
       - image: circleci/openjdk:14-jdk-buster-browsers
       - image: localstack/localstack:latest
         environment:
-          - SERVICES=sqs
+          - SERVICES=sqs,sns
           - DEBUG=${DEBUG- }
           - DATA_DIR=/tmp/localstack/data
           - DOCKER_HOST=unix:///var/run/docker.sock
