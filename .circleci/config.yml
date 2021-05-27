@@ -57,7 +57,7 @@ executors:
   validator-integration:
     docker:
       - image: circleci/openjdk:14-jdk-buster-browsers
-      - image: localstack/localstack:0.11.2
+      - image: localstack/localstack:latest
         environment:
           - SERVICES=sqs
           - DEBUG=${DEBUG- }
