@@ -32,7 +32,7 @@ class SqsCpgMessageReceiverTest {
         sqsMessageReceiver.receiveXml("<xml>test</xml>", "MessageID", "operationId");
 
         verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackSQSMessageEvent("MessageID");
+        verify(telemetryService).trackCaseMessageReceivedEvent("MessageID");
         verify(externalDocumentMessageProcessor).process("<xml>test</xml>", "MessageID");
         verify(operation).close();
     }

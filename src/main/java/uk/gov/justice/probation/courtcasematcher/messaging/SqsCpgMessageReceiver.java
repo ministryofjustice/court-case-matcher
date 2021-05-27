@@ -38,7 +38,7 @@ public class SqsCpgMessageReceiver {
         log.info("Received message from SQS queue {} with messageId: {}", queueName, messageId);
 
         try (final var ignored = telemetryService.withOperation(operationId)) {
-            telemetryService.trackSQSMessageEvent(messageId);
+            telemetryService.trackCaseMessageReceivedEvent(messageId);
             xmlMessageProcessor.process(message, messageId);
         }
     }

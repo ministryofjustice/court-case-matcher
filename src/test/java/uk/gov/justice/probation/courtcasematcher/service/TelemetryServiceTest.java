@@ -117,7 +117,7 @@ class TelemetryServiceTest {
     @DisplayName("Record the event when an sqs message event happens")
     @Test
     void whenMessageReceived_thenRecord() {
-        telemetryService.trackSQSMessageEvent("messageId");
+        telemetryService.trackCaseMessageReceivedEvent("messageId");
 
         verify(telemetryClient).trackEvent(eq("PiCCourtListMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -131,7 +131,7 @@ class TelemetryServiceTest {
     @DisplayName("Record the event when an sqs message event happens and the messageId is null")
     @Test
     void whenMessageReceivedAndMessageIdNull_thenRecord() {
-        telemetryService.trackSQSMessageEvent(null);
+        telemetryService.trackCaseMessageReceivedEvent(null);
 
         verify(telemetryClient).trackEvent(eq("PiCCourtListMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -332,7 +332,7 @@ class TelemetryServiceTest {
     @Nested
     public class WithOperationTest {
 
-        private TelemetryContext telemetryContext = new TelemetryContext();
+        private final TelemetryContext telemetryContext = new TelemetryContext();
 
 
         @BeforeEach

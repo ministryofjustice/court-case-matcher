@@ -3,11 +3,12 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
+import org.springframework.cloud.aws.messaging.core.NotificationMessagingTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -39,6 +40,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -69,15 +71,16 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.stop();
     }
 
-    private static final String QUEUE_NAME = "court-case-matcher-queue";
+    private static final String TOPIC_NAME = "court-case-events-topic";
 
     @Autowired
-    private QueueMessagingTemplate queueMessagingTemplate;
+    private NotificationMessagingTemplate notificationMessagingTemplate;
+
 
     @Test
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() {
 
-        queueMessagingTemplate.convertAndSend(QUEUE_NAME, singleCase, Map.of("operation_Id", "operationId"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, singleCase);
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -89,8 +92,8 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("listNo", equalTo("1st")))
         );
 
-        verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackSQSMessageEvent(any(String.class));
+        verify(telemetryService).withOperation(nullable(String.class));
+        verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
@@ -99,9 +102,9 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase() throws IOException {
 
-        var orgXml = Files.readString(Paths.get(BASE_PATH +"/json/case-org.json"));
+        var orgJson = Files.readString(Paths.get(BASE_PATH +"/json/case-org.json"));
 
-        queueMessagingTemplate.convertAndSend(QUEUE_NAME, orgXml, Map.of("operation_Id", "operationId"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson);
 
         await()
             .atMost(5, TimeUnit.SECONDS)
@@ -113,8 +116,8 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("defendantType", equalTo("ORGANISATION")))
         );
 
-        verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackSQSMessageEvent(any(String.class));
+        verify(telemetryService).withOperation(nullable(String.class));
+        verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
@@ -123,9 +126,9 @@ public class SqsMessageReceiverIntTest {
     public static class AwsTestConfig {
         @Value("${aws.sqs.court_case_matcher_endpoint_url}")
         private String sqsEndpointUrl;
-        @Value("${aws.sqs.court_case_matcher_access_key_id}")
+        @Value("${aws.access_key_id}")
         private String accessKeyId;
-        @Value("${aws.sqs.court_case_matcher_secret_access_key}")
+        @Value("${aws.secret_access_key}")
         private String secretAccessKey;
         @Value("${aws.region_name}")
         private String regionName;
@@ -148,13 +151,22 @@ public class SqsMessageReceiverIntTest {
         }
 
         @Bean
-        public SqsMessageReceiver sqsMessageReceiver() {
-            return new SqsMessageReceiver(caseMessageProcessor, telemetryService, queueName);
+        public AmazonSNS amazonSNSClient() {
+            return AmazonSNSClientBuilder
+                .standard()
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
+                .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
+                .build();
         }
 
         @Bean
-        public QueueMessagingTemplate queueMessagingTemplate(@Autowired AmazonSQSAsync amazonSQSAsync) {
-            return new QueueMessagingTemplate(amazonSQSAsync);
+        public NotificationMessagingTemplate notificationMessagingTemplate(AmazonSNS amazonSNS) {
+            return new NotificationMessagingTemplate(amazonSNS);
+        }
+
+        @Bean
+        public SqsMessageReceiver sqsMessageReceiver() {
+            return new SqsMessageReceiver(caseMessageProcessor, telemetryService, queueName);
         }
     }
 
