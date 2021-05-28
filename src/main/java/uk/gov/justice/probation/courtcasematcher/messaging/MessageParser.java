@@ -29,9 +29,9 @@ public class MessageParser<T> {
         this.validator = validator;
     }
 
-    public T parseMessage (final String xml, final Class<T> type) throws JsonProcessingException {
+    public T parseMessage (final String messageString, final Class<T> type) throws JsonProcessingException {
         JavaType javaType = mapper.getTypeFactory().constructType(type);
-        T message = mapper.readValue(xml, javaType);
+        T message = mapper.readValue(messageString, javaType);
         validate(message);
         return message;
     }

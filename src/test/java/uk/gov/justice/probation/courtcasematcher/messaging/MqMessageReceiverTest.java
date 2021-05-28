@@ -77,7 +77,7 @@ class MqMessageReceiverTest {
 
         messageReceiver.receive(multiSessionXml);
 
-        verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED);
+        verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         verify(messageProcessor).process(any(ExternalDocumentRequest.class), isNull());
     }
 
@@ -90,7 +90,7 @@ class MqMessageReceiverTest {
             fail("Expected a RuntimeException");
         }
         catch (RuntimeException ex) {
-            verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED);
+            verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         }
     }
 
@@ -105,7 +105,7 @@ class MqMessageReceiverTest {
             fail("Expected a RuntimeException");
         }
         catch (RuntimeException ex) {
-            verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED);
+            verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         }
 
     }
