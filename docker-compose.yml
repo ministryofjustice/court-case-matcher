@@ -39,7 +39,7 @@ services:
       - 8999:8080
       - 9080:9080
     environment:
-      - SERVICES=sqs
+      - SERVICES=sqs,sns
       - PORT_WEB_UI=9080
       - DEBUG=${DEBUG- }
       - DATA_DIR=/tmp/localstack/data

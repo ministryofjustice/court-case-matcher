@@ -38,6 +38,8 @@ ou-code-length: 5
 # Localstack settings
 aws:
   region_name: eu-west-2
+  access_key_id: foobar
+  secret_access_key: foobar
   sqs:
     crime_portal_gateway_endpoint_url: "http://localhost:4566"
     crime_portal_gateway_queue_name: "crime-portal-gateway-queue"
@@ -47,6 +49,8 @@ aws:
     court_case_matcher_queue_name: "court-case-matcher-queue"
     court_case_matcher_access_key_id: foobar
     court_case_matcher_secret_access_key: foobar
+  sns:
+    court_case_matcher_endpoint_url: "http://localhost:4566"
 
 messaging:
   activemq:

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
@@ -39,10 +40,16 @@ public class CaseMessageProcessor implements MessageProcessor {
     @Qualifier("caseJsonParser")
     private final MessageParser<Case> parser;
 
+    @Autowired
+    @Qualifier("snsMessageWrapperJsonParser")
+    private final MessageParser<SnsMessageContainer> snsMessageWrapperJsonParser;
+
     @Override
     public void process(String payload, String messageId) {
         try {
-            saveCase(parser.parseMessage(payload, Case.class), messageId);
+            var snsMessageContainer = extractMessage(payload);
+            log.debug("Extracted message ID {} from SNS message. Incoming message ID was {} ", snsMessageContainer.getMessageId(), messageId);
+            saveCase(parser.parseMessage(snsMessageContainer.getMessage(), Case.class), messageId);
         }
         catch (Exception ex) {
             var failEvent = handleException(ex, payload);
@@ -57,6 +64,17 @@ public class CaseMessageProcessor implements MessageProcessor {
         }
         else {
             updateAndSave(courtCase);
+        }
+    }
+
+    SnsMessageContainer extractMessage(String snsMessageContainer) {
+        try {
+            return snsMessageWrapperJsonParser.parseMessage(snsMessageContainer, SnsMessageContainer.class);
+        }
+        catch (Exception ex) {
+            var failEvent = handleException(ex, snsMessageContainer);
+            logErrors(log, failEvent);
+            throw new RuntimeException(failEvent.getFailureMessage(), ex);
         }
     }
 

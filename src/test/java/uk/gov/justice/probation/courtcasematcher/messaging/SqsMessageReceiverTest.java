@@ -1,22 +1,25 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SqsMessageReceiverTest {
 
-    @Mock
-    private ExternalDocumentMessageProcessor externalDocumentMessageProcessor;
-
+    private static String singleCaseJson;
     @Mock
     private CaseMessageProcessor messageProcessor;
 
@@ -24,10 +27,13 @@ class SqsMessageReceiverTest {
     private TelemetryService telemetryService;
 
     @Mock
-    private MessageParser<ExternalDocumentRequest> parser;
-
-    @Mock
     private AutoCloseable operation;
+
+    @BeforeAll
+    static void beforeAll() throws IOException {
+        final String basePath = "src/test/resources/messages/json";
+        singleCaseJson = Files.readString(Paths.get(basePath +"/case-sns-metadata.json"));
+    }
 
     @DisplayName("Given a valid JSON message then track and process")
     @Test
@@ -35,11 +41,11 @@ class SqsMessageReceiverTest {
         var sqsMessageReceiver = new SqsMessageReceiver(messageProcessor, telemetryService, "queueName");
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
 
-        sqsMessageReceiver.receive("{}", "MessageID", "operationId");
+        sqsMessageReceiver.receive(singleCaseJson, "MessageID", "operationId");
 
         verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackSQSMessageEvent("MessageID");
-        verify(messageProcessor).process("{}", "MessageID");
+        verify(telemetryService).trackCaseMessageReceivedEvent("MessageID");
+        verify(messageProcessor).process(contains("\"Type\" : \"Notification\""), eq("MessageID"));
         verify(operation).close();
     }
 

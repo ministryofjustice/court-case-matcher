@@ -93,7 +93,7 @@ public class SqsCpgMessageReceiverIntTest {
         );
 
         verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackSQSMessageEvent(any(String.class));
+        verify(telemetryService).trackCourtListMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
         verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
@@ -118,7 +118,7 @@ public class SqsCpgMessageReceiverIntTest {
         );
 
         verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackSQSMessageEvent(any(String.class));
+        verify(telemetryService).trackCourtListMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);

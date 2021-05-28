@@ -102,7 +102,7 @@ public class CourtCaseRestClient {
             .onErrorResume((throwable) -> handleError(throwable, caseNo, courtCode))
             .subscribe(courtCaseApi -> {
                 eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build());
-                postMatches(courtCase.getCourtCode(), courtCase .getCaseNo(), offenderMatches);
+                postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), offenderMatches);
             }, throwable -> {
                 eventBus.post(CourtCaseFailureEvent.builder()
                     .failureMessage(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode))

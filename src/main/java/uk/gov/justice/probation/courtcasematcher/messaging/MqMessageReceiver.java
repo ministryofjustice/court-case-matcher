@@ -29,7 +29,7 @@ public class MqMessageReceiver {
     @JmsListener(destination = CP_QUEUE)
     public void receive(String message) {
         log.info("Received message from JMS, queue name {}", CP_QUEUE);
-        telemetryService.trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED);
+        telemetryService.trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         try {
             messageProcessor.process(parse(message), null);
         } catch (Exception ex) {

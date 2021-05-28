@@ -116,10 +116,10 @@ class TelemetryServiceTest {
 
     @DisplayName("Record the event when an sqs message event happens")
     @Test
-    void whenMessageReceived_thenRecord() {
-        telemetryService.trackSQSMessageEvent("messageId");
+    void whenCaseMessageReceived_thenRecord() {
+        telemetryService.trackCaseMessageReceivedEvent("messageId");
 
-        verify(telemetryClient).trackEvent(eq("PiCCourtListMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+        verify(telemetryClient).trackEvent(eq("PiCCourtCaseMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(1);
@@ -130,10 +130,10 @@ class TelemetryServiceTest {
 
     @DisplayName("Record the event when an sqs message event happens and the messageId is null")
     @Test
-    void whenMessageReceivedAndMessageIdNull_thenRecord() {
-        telemetryService.trackSQSMessageEvent(null);
+    void whenCaseMessageReceivedAndMessageIdNull_thenRecord() {
+        telemetryService.trackCaseMessageReceivedEvent(null);
 
-        verify(telemetryClient).trackEvent(eq("PiCCourtListMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+        verify(telemetryClient).trackEvent(eq("PiCCourtCaseMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(0);
@@ -329,11 +329,26 @@ class TelemetryServiceTest {
         );
     }
 
+    @DisplayName("Record the event when a list is received")
+    @Test
+    void whenListMessageReceived_thenRecord() {
+
+        telemetryService.trackCourtListMessageEvent("messageId");
+
+        verify(telemetryClient).trackEvent(eq("PiCCourtListMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+
+        Map<String, String> properties = propertiesCaptor.getValue();
+
+        assertThat(properties).hasSize(1);
+        assertThat(properties).contains(
+            entry(SQS_MESSAGE_ID_KEY, "messageId")
+        );
+    }
+
     @Nested
     public class WithOperationTest {
 
-        private TelemetryContext telemetryContext = new TelemetryContext();
-
+        private final TelemetryContext telemetryContext = new TelemetryContext();
 
         @BeforeEach
         public void setUp() {
