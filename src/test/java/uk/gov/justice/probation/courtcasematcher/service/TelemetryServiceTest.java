@@ -301,22 +301,20 @@ class TelemetryServiceTest {
 
 
 
-    @DisplayName("Record the event when a court case is received and messageId is null")
+    @DisplayName("Record the event when a court case is received as JSON and messageId is not null")
     @Test
-    void whenCourtCaseReceivedFromJson_andMessageIdIsNull_thenRecord() throws IOException {
+    void whenCourtCaseReceivedFromJson_andMessageIdIsNull_thenRecord() {
 
         var sessionStartTime = LocalDateTime.of(DATE_OF_HEARING, LocalTime.of(9, 30, 34));
         var caseJson = Case.builder().caseNo(CASE_NO).courtCode(COURT_CODE).courtRoom(COURT_ROOM)
             .sessionStartTime(sessionStartTime)
             .build();
 
-
         telemetryService.trackCourtCaseEvent(caseJson, "messageId");
 
         verify(telemetryClient).trackEvent(eq("PiCCourtCaseReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-
         assertThat(properties).hasSize(5);
         assertThat(properties).contains(
             entry(COURT_CODE_KEY, COURT_CODE),
@@ -326,7 +324,6 @@ class TelemetryServiceTest {
             entry(SQS_MESSAGE_ID_KEY, "messageId")
         );
     }
-
 
     @DisplayName("Record the event when a court list is received")
     @Test
