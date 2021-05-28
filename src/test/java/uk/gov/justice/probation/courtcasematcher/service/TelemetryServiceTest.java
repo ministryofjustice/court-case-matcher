@@ -27,7 +27,12 @@ import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Month;
 import java.util.Collections;
 import java.util.List;
@@ -293,6 +298,35 @@ class TelemetryServiceTest {
             entry(HEARING_DATE_KEY, "2020-11-05")
         );
     }
+
+
+
+    @DisplayName("Record the event when a court case is received and messageId is null")
+    @Test
+    void whenCourtCaseReceivedFromJson_andMessageIdIsNull_thenRecord() throws IOException {
+
+        var sessionStartTime = LocalDateTime.of(DATE_OF_HEARING, LocalTime.of(9, 30, 34));
+        var caseJson = Case.builder().caseNo(CASE_NO).courtCode(COURT_CODE).courtRoom(COURT_ROOM)
+            .sessionStartTime(sessionStartTime)
+            .build();
+
+
+        telemetryService.trackCourtCaseEvent(caseJson, "messageId");
+
+        verify(telemetryClient).trackEvent(eq("PiCCourtCaseReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+
+        Map<String, String> properties = propertiesCaptor.getValue();
+
+        assertThat(properties).hasSize(5);
+        assertThat(properties).contains(
+            entry(COURT_CODE_KEY, COURT_CODE),
+            entry(COURT_ROOM_KEY, COURT_ROOM),
+            entry(CASE_NO_KEY, CASE_NO),
+            entry(HEARING_DATE_KEY, "2020-11-05"),
+            entry(SQS_MESSAGE_ID_KEY, "messageId")
+        );
+    }
+
 
     @DisplayName("Record the event when a court list is received")
     @Test

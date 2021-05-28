@@ -90,6 +90,10 @@ public class Case {
         return courtRoom != null ? courtRoom : block.getSession().getCourtRoom();
     }
 
+    public LocalDate getDateOfHearing() {
+        return sessionStartTime != null ? sessionStartTime.toLocalDate() : block.getSession().getDateOfHearing();
+    }
+
     public LocalDateTime getSessionStartTime() {
         return sessionStartTime != null ? sessionStartTime : block.getSession().getSessionStartTime();
     }

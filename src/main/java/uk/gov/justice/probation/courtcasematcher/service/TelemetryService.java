@@ -74,11 +74,11 @@ public class TelemetryService {
     public void trackCourtCaseEvent(Case aCase, String messageId) {
 
         Map<String, String> properties = new HashMap<>(5);
-        ofNullable(aCase.getBlock().getSession().getCourtCode())
+        ofNullable(aCase.getCourtCode())
             .ifPresent((code) -> properties.put(COURT_CODE_KEY, code));
-        ofNullable(aCase.getBlock().getSession().getCourtRoom())
+        ofNullable(aCase.getCourtRoom())
             .ifPresent((courtRoom) -> properties.put(COURT_ROOM_KEY, courtRoom));
-        ofNullable(aCase.getBlock().getSession().getDateOfHearing())
+        ofNullable(aCase.getDateOfHearing())
             .ifPresent((dateOfHearing) -> properties.put(HEARING_DATE_KEY, dateOfHearing.toString()));
         ofNullable(aCase.getCaseNo())
             .ifPresent((caseNo) -> properties.put(CASE_NO_KEY, caseNo));
