@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 
 import java.time.format.DateTimeFormatter;
@@ -86,19 +85,6 @@ public class TelemetryService {
                 .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageId));
 
         telemetryClient.trackEvent(TelemetryEventType.COURT_CASE_RECEIVED.eventName, properties, Collections.emptyMap());
-    }
-
-    public void trackCourtListEvent(Info info, String messageId) {
-
-        Map<String, String> properties = new HashMap<>(3);
-        ofNullable(info.getOuCode())
-            .ifPresent((courtCode) -> properties.put(COURT_CODE_KEY, courtCode));
-        ofNullable(info.getDateOfHearing())
-            .ifPresent((dateOfHearing) -> properties.put(HEARING_DATE_KEY, dateOfHearing.toString()));
-        ofNullable(messageId)
-                .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageId));
-
-        telemetryClient.trackEvent(TelemetryEventType.COURT_LIST_RECEIVED.eventName, properties, Collections.emptyMap());
     }
 
     private Map<String, String> getCourtCaseProperties(CourtCase courtCase) {

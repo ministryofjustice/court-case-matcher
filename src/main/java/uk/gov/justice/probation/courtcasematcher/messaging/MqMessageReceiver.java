@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.MessageHeader;
 import uk.gov.justice.probation.courtcasematcher.model.MessageType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
-import uk.gov.justice.probation.courtcasematcher.service.TelemetryEventType;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 @Slf4j
@@ -29,7 +28,6 @@ public class MqMessageReceiver {
     @JmsListener(destination = CP_QUEUE)
     public void receive(String message) {
         log.info("Received message from JMS, queue name {}", CP_QUEUE);
-        telemetryService.trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         try {
             messageProcessor.process(parse(message), null);
         } catch (Exception ex) {

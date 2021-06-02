@@ -100,8 +100,7 @@ public class ExternalDocumentMessageProcessor implements MessageProcessor {
     }
 
     private void trackCourtListReceipt(Info info, String messageId) {
-        log.debug("Received court list for court {} on {}", info.getOuCode(), info.getDateOfHearing().toString());
-        telemetryService.trackCourtListEvent(info, messageId);
+        log.debug("Received court list for court {} on {}, message ID {}", info.getOuCode(), info.getDateOfHearing().toString(), messageId);
     }
 
     private List<Document> extractDocuments(ExternalDocumentRequest externalDocumentRequest) {

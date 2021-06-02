@@ -27,9 +27,6 @@ import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -64,7 +61,6 @@ class TelemetryServiceTest {
     private static final String PNC = "PNC/123";
     private static final String COURT_ROOM = "01";
     private static final LocalDate DATE_OF_HEARING = LocalDate.of(2020, Month.NOVEMBER, 5);
-    private static Info info;
     private static Case aCase;
     private static CourtCase courtCase;
 
@@ -80,7 +76,7 @@ class TelemetryServiceTest {
     @BeforeAll
     static void beforeEach() {
 
-        info = Info.builder()
+        Info info = Info.builder()
             .ouCode(COURT_CODE)
             .dateOfHearing(DATE_OF_HEARING)
             .build();
@@ -114,9 +110,9 @@ class TelemetryServiceTest {
     @DisplayName("Simple record of event with no properties")
     @Test
     void whenEvent_thenRecord() {
-        telemetryService.trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
+        telemetryService.trackEvent(TelemetryEventType.COURT_CASE_MESSAGE_RECEIVED);
 
-        verify(telemetryClient).trackEvent("PiCCourtListReceived");
+        verify(telemetryClient).trackEvent("PiCCourtCaseMessageReceived");
     }
 
     @DisplayName("Record the event when an sqs message event happens")
@@ -322,41 +318,6 @@ class TelemetryServiceTest {
             entry(CASE_NO_KEY, CASE_NO),
             entry(HEARING_DATE_KEY, "2020-11-05"),
             entry(SQS_MESSAGE_ID_KEY, "messageId")
-        );
-    }
-
-    @DisplayName("Record the event when a court list is received")
-    @Test
-    void whenCourtListReceived_thenRecord() {
-
-        telemetryService.trackCourtListEvent(info, "messageId");
-
-        verify(telemetryClient).trackEvent(eq("PiCCourtListReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
-
-        Map<String, String> properties = propertiesCaptor.getValue();
-
-        assertThat(properties).hasSize(3);
-        assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(SQS_MESSAGE_ID_KEY, "messageId")
-        );
-    }
-
-    @DisplayName("Record the event when a court list is received and messageId is null")
-    @Test
-    void whenCourtListReceived_andMessageIdIsNull_thenRecord() {
-
-        telemetryService.trackCourtListEvent(info, null);
-
-        verify(telemetryClient).trackEvent(eq("PiCCourtListReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
-
-        Map<String, String> properties = propertiesCaptor.getValue();
-
-        assertThat(properties).hasSize(2);
-        assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(HEARING_DATE_KEY, "2020-11-05")
         );
     }
 

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.Month;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -105,7 +104,6 @@ class ExternalDocumentMessageProcessorTest {
         externalDocumentMessageProcessor.process(singleCaseXml, "messageId");
 
         verify(eventBus, timeout(MATCHER_THREAD_TIMEOUT)).post(any(CourtCaseMatchEvent.class));
-        verify(telemetryService).trackCourtListEvent(any(Info.class), eq("messageId"));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), eq("messageId"));
         verifyNoMoreInteractions(eventBus, telemetryService);
     }
@@ -121,7 +119,6 @@ class ExternalDocumentMessageProcessorTest {
         externalDocumentMessageProcessor.process(singleCaseXml, "messageId");
 
         verify(eventBus, timeout(MATCHER_THREAD_TIMEOUT)).post(any(CourtCaseUpdateEvent.class));
-        verify(telemetryService).trackCourtListEvent(any(Info.class), eq("messageId"));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), eq("messageId"));
         verifyNoMoreInteractions(eventBus, telemetryService);
     }
@@ -136,7 +133,6 @@ class ExternalDocumentMessageProcessorTest {
         externalDocumentMessageProcessor.process(singleCaseXml, "messageId");
 
         verify(eventBus, timeout(MATCHER_THREAD_TIMEOUT)).post(any(CourtCaseUpdateEvent.class));
-        verify(telemetryService).trackCourtListEvent(any(Info.class), eq("messageId"));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), eq("messageId"));
         verifyNoMoreInteractions(eventBus, telemetryService);
     }
@@ -166,8 +162,6 @@ class ExternalDocumentMessageProcessorTest {
         verify(eventBus, timeout(1000)).post(argThat(CourtCaseUpdateEventMatcher.builder().caseNo("1600032979").build()));
         verify(eventBus, timeout(1000)).post(argThat(CourtCaseMatchEventMatcher.builder().caseNo("1600032952").build()));
         verify(eventBus, timeout(1000)).post(argThat(CourtCaseUpdateEventMatcher.builder().caseNo("1600011111").build()));
-        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.FEBRUARY, 20), COURT_CODE_CX)), eq("messageId"));
-        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.FEBRUARY, 23), COURT_CODE_CY)), eq("messageId"));
         verify(telemetryService).trackCourtCaseEvent(argThat(case1), eq("messageId"));
         verify(telemetryService).trackCourtCaseEvent(argThat(case2), eq("messageId"));
         verify(telemetryService).trackCourtCaseEvent(argThat(case3), eq("messageId"));
@@ -187,8 +181,6 @@ class ExternalDocumentMessageProcessorTest {
 
         verify(eventBus, timeout(MATCHER_THREAD_TIMEOUT).times(6)).post(any(CourtCaseUpdateEvent.class));
 
-        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.JULY, 25))), eq("messageId"));
-        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.JULY, 28))), eq("messageId"));
         verify(telemetryService, times(6)).trackCourtCaseEvent(any(Case.class), eq("messageId"));
         verifyNoMoreInteractions(eventBus, telemetryService);
     }
@@ -203,7 +195,6 @@ class ExternalDocumentMessageProcessorTest {
         externalDocumentMessageProcessor.process(multiCourtRoomXml, "messageId");
 
         verify(eventBus, timeout(MATCHER_THREAD_TIMEOUT).times(2)).post(any(CourtCaseUpdateEvent.class));
-        verify(telemetryService).trackCourtListEvent(argThat(matchesInfoWith(LocalDate.of(2020, Month.JULY, 25))), eq("messageId"));
         verify(telemetryService, times(2)).trackCourtCaseEvent(any(Case.class), eq("messageId"));
         verifyNoMoreInteractions(eventBus, telemetryService);
     }

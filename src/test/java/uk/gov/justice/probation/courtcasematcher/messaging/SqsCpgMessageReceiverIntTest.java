@@ -23,7 +23,6 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -96,7 +95,6 @@ public class SqsCpgMessageReceiverIntTest {
         verify(telemetryService).trackCourtListMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
-        verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -120,7 +118,6 @@ public class SqsCpgMessageReceiverIntTest {
         verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackCourtListMessageEvent(any(String.class));
         verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
-        verify(telemetryService).trackCourtListEvent(any(Info.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
 

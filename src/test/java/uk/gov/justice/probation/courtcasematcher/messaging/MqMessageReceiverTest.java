@@ -20,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.MessageType;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.ExternalDocumentRequest;
-import uk.gov.justice.probation.courtcasematcher.service.TelemetryEventType;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -77,7 +76,6 @@ class MqMessageReceiverTest {
 
         messageReceiver.receive(multiSessionXml);
 
-        verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         verify(messageProcessor).process(any(ExternalDocumentRequest.class), isNull());
     }
 
@@ -90,7 +88,6 @@ class MqMessageReceiverTest {
             fail("Expected a RuntimeException");
         }
         catch (RuntimeException ex) {
-            verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         }
     }
 
@@ -105,7 +102,6 @@ class MqMessageReceiverTest {
             fail("Expected a RuntimeException");
         }
         catch (RuntimeException ex) {
-            verify(telemetryService).trackEvent(TelemetryEventType.COURT_LIST_RECEIVED);
         }
 
     }
