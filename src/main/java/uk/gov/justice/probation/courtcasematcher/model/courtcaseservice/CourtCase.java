@@ -73,6 +73,8 @@ public class CourtCase implements Serializable {
 
     private final boolean preSentenceActivity;
 
+    private final boolean awaitingPsr;
+
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;
 

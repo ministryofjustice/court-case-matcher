@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -12,15 +11,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponses;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -61,6 +56,7 @@ public class OffenderSearchRestClientIntTest {
             assertThat(offender.getProbationStatus().getStatus()).isEqualTo("CURRENT");
             assertThat(offender.getProbationStatus().getInBreach()).isTrue();
             assertThat(offender.getProbationStatus().isPreSentenceActivity()).isFalse();
+            assertThat(offender.getProbationStatus().isAwaitingPsr()).isTrue();
             assertThat(offender.getProbationStatus().getPreviouslyKnownTerminationDate()).isEqualTo(LocalDate.of(2020, Month.FEBRUARY, 2));
         }
 
@@ -99,8 +95,8 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenSingleMatchReturned_whenMatch_thenVerifyMono() {
-            Name name = Name.builder().forename1("Arthur").surname("MORGAN").build();
-            Mono<MatchResponse> matchMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1975, 1, 1)));
+            var name = Name.builder().forename1("Arthur").surname("MORGAN").build();
+            var matchMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1975, 1, 1)));
 
             StepVerifier.create(matchMono)
                 .consumeNextWith(match -> Assertions.assertAll(
@@ -112,8 +108,8 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenSingleMatchNonExactMatchReturned_whenMatch_thenReturnIt() {
-            Name name = Name.builder().forename1("Calvin").surname("HARRIS").build();
-            Optional<MatchResponse> match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1969, Month.AUGUST, 26)))
+            var name = Name.builder().forename1("Calvin").surname("HARRIS").build();
+            var match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1969, Month.AUGUST, 26)))
                 .blockOptional();
 
             assertThat(match).isPresent();
@@ -124,20 +120,20 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenMultipleMatchesReturned_whenMatch_thenReturnThem() {
-            Name name = Name.builder().forename1("John").surname("MARSTON").build();
-            Optional<MatchResponse> match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)))
+            var name = Name.builder().forename1("John").surname("MARSTON").build();
+            var match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)))
                 .blockOptional();
 
             assertThat(match).isPresent();
             assertThat(match.get().getMatchedBy()).isEqualTo(OffenderSearchMatchType.ALL_SUPPLIED);
             assertThat(match.get().getMatches().size()).isEqualTo(2);
 
-            Offender offender1 = match.get().getMatches().get(0).getOffender();
+            var offender1 = match.get().getMatches().get(0).getOffender();
             assertThat(offender1.getOtherIds().getCrn()).isEqualTo("Y346123");
             assertThat(offender1.getOtherIds().getCroNumber()).isEqualTo("2234DEF");
             assertThat(offender1.getOtherIds().getPncNumber()).isEqualTo("BBCD1567");
 
-            Offender offender2 = match.get().getMatches().get(1).getOffender();
+            var offender2 = match.get().getMatches().get(1).getOffender();
             assertThat(offender2.getOtherIds().getCrn()).isEqualTo("Z346124");
             assertThat(offender2.getOtherIds().getCroNumber()).isEqualTo("3234DEG");
             assertThat(offender2.getOtherIds().getPncNumber()).isEqualTo("CBCD1568");
@@ -145,8 +141,8 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenNoMatchesReturned_whenMatch_thenReturnEmptyList() {
-            Name name = Name.builder().forename1("Juan").surname("MARSTONEZ").build();
-            Optional<MatchResponse> match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)))
+            var name = Name.builder().forename1("Juan").surname("MARSTONEZ").build();
+            var match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)))
                 .blockOptional();
 
             assertThat(match).isPresent();
@@ -156,8 +152,8 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected500_whenMatch_thenRetryAndError() {
-            Name name = Name.builder().forename1("error").surname("error").build();
-            Mono<MatchResponse> searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)));
+            var name = Name.builder().forename1("error").surname("error").build();
+            var searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)));
 
             StepVerifier.create(searchResponseMono)
                 .expectError(reactor.core.Exceptions.retryExhausted("Retries exhausted: 2/2", null).getClass())
@@ -166,8 +162,8 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected404_whenMatch_thenNoRetryButReturnSameError() {
-            Name name = Name.builder().forename1("not").surname("found").build();
-            Mono<MatchResponse> searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1999, 4, 5)));
+            var name = Name.builder().forename1("not").surname("found").build();
+            var searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1999, 4, 5)));
 
             StepVerifier.create(searchResponseMono)
                 .expectError(WebClientResponseException.NotFound.class)
@@ -176,15 +172,14 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected401_whenMatch_thenNoRetryButReturnSameError() {
-            Name name = Name.builder().forename1("unauthorised").surname("unauthorised").build();
-            Mono<MatchResponse> searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)));
+            var name = Name.builder().forename1("unauthorised").surname("unauthorised").build();
+            var searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)));
 
             StepVerifier.create(searchResponseMono)
                 .expectError(WebClientResponseException.Unauthorized.class)
                 .verify();
         }
     }
-
 
     @Nested
     class Search {
@@ -206,6 +201,7 @@ public class OffenderSearchRestClientIntTest {
             assertThat(target.getProbationStatusDetail().getStatus()).isEqualTo("CURRENT");
             assertThat(target.getProbationStatusDetail().getInBreach()).isEqualTo(Boolean.FALSE);
             assertThat(target.getProbationStatusDetail().isPreSentenceActivity()).isFalse();
+            assertThat(target.getProbationStatusDetail().isAwaitingPsr()).isTrue();
             assertThat(target.getProbationStatusDetail().getPreviouslyKnownTerminationDate()).isEqualTo(LocalDate.of(2013, Month.DECEMBER, 12));
         }
 
@@ -219,7 +215,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected500_whenSearch_thenRetryAndError() {
-            Mono<SearchResponses> searchResponseMono = restClient.search("CRN500");
+            var searchResponseMono = restClient.search("CRN500");
 
             StepVerifier.create(searchResponseMono)
                 .expectError(reactor.core.Exceptions.retryExhausted("Retries exhausted: 2/2", null).getClass())
@@ -228,7 +224,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected401_whenSearch_thenNoRetryButReturnSameError() {
-            Mono<SearchResponses> searchResponses = restClient.search("CRN401");
+            var searchResponses = restClient.search("CRN401");
 
             StepVerifier.create(searchResponses)
                 .expectError(WebClientResponseException.Unauthorized.class)
@@ -237,7 +233,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected404_whenMatch_thenNoRetryButReturnSameError() {
-            Mono<SearchResponses> searchResponseMono = restClient.search("CRN404");
+            var searchResponseMono = restClient.search("CRN404");
 
             StepVerifier.create(searchResponseMono)
                 .expectError(WebClientResponseException.NotFound.class)

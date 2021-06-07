@@ -16,4 +16,5 @@ public class ProbationStatusDetail {
     private final LocalDate previouslyKnownTerminationDate;
     private final Boolean inBreach;
     private final boolean preSentenceActivity;
+    private final boolean awaitingPsr;
 }

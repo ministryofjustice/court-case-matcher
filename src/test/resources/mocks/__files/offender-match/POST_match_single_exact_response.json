@@ -17,6 +17,7 @@
           "status": "CURRENT",
           "inBreach": true,
           "preSentenceActivity": false,
+          "awaitingPsr": true,
           "previouslyKnownTerminationDate": "2020-02-02"
         },
         "contactDetails": {},

@@ -151,6 +151,7 @@ public class CaseMapper {
             .preSentenceActivity(probationStatusDetail.isPreSentenceActivity())
             .previouslyKnownTerminationDate(probationStatusDetail.getPreviouslyKnownTerminationDate())
             .probationStatus(probationStatusDetail.getStatus())
+            .awaitingPsr(probationStatusDetail.isAwaitingPsr())
             // PK fields
             .courtCode(existingCourtCase.getCourtCode())
             .caseNo(existingCourtCase.getCaseNo())
@@ -190,6 +191,7 @@ public class CaseMapper {
                 .probationStatus(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
                 .probationStatusActual(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
                 .preSentenceActivity(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isPreSentenceActivity).orElse(false))
+                .awaitingPsr(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isAwaitingPsr).orElse(false))
                 .crn(offender.getOtherIds().getCrn())
                 .cro(offender.getOtherIds().getCroNumber())
                 .pnc(offender.getOtherIds().getPncNumber())
