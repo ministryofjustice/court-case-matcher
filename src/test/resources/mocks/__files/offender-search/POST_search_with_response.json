@@ -100,7 +100,8 @@
       "status": "CURRENT",
       "inBreach": false,
       "preSentenceActivity": false,
-      "previouslyKnownTerminationDate": "2013-12-12"
+      "previouslyKnownTerminationDate": "2013-12-12",
+      "awaitingPsr": true
     },
     "age": 19
   }

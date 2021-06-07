@@ -124,7 +124,7 @@ class CaseMapperTest {
             var match = Match.builder()
                 .offender(Offender.builder()
                     .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
-                    .probationStatus(ProbationStatusDetail.builder().status("CURRENT").preSentenceActivity(true).build())
+                    .probationStatus(ProbationStatusDetail.builder().status("CURRENT").preSentenceActivity(true).awaitingPsr(true).build())
                     .build())
                 .build();
 
@@ -143,16 +143,24 @@ class CaseMapperTest {
             assertThat(courtCaseNew.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(courtCaseNew.getBreach()).isNull();
             assertThat(courtCaseNew.isPreSentenceActivity()).isTrue();
+            assertThat(courtCaseNew.isAwaitingPsr()).isTrue();
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
             OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
-        @DisplayName("Map a court case to a new court case when search response has yielded a single match")
+        @DisplayName("Map a court case to a new court case when search response has yielded a single non-exact match")
         @Test
-        void givenSingleMatchOnName_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatchButNoCrn() {
+        void givenSingleMatchOnNameButNonExact_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatchButNoCrn() {
+            var previouslyKnownTerminationDate = LocalDate.of(2016, Month.DECEMBER, 25);
             var match = Match.builder().offender(Offender.builder()
                 .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                .probationStatus(ProbationStatusDetail.builder()
+                                        .awaitingPsr(true)
+                                        .preSentenceActivity(true)
+                                        .inBreach(Boolean.FALSE)
+                                        .previouslyKnownTerminationDate(previouslyKnownTerminationDate)
+                                        .status("PREVIOUSLY_KNOWN").build())
                 .build())
                 .build();
 
@@ -166,11 +174,14 @@ class CaseMapperTest {
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
+            // The new probation status details are all ignored because match is non-exact
             assertThat(courtCaseNew.getProbationStatus()).isNull();
             assertThat(courtCaseNew.getBreach()).isNull();
             assertThat(courtCaseNew.getPreviouslyKnownTerminationDate()).isNull();
+            assertThat(courtCaseNew.isPreSentenceActivity()).isFalse();
+            assertThat(courtCaseNew.isAwaitingPsr()).isFalse();
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            OffenderMatch expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, PNC);
+            var expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, PNC);
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(expectedOffenderMatch);
         }
 
@@ -487,15 +498,17 @@ class CaseMapperTest {
                 .preSentenceActivity(false)
                 .probationStatus("NOT_SENTENCED")
                 .breach(false)
+                .awaitingPsr(false)
                 .previouslyKnownTerminationDate(LocalDate.of(2001, Month.AUGUST, 26))
                 .build();
 
-            LocalDate nextPrevKnownTermDate = existingCourtCase.getPreviouslyKnownTerminationDate().plusDays(1);
-            ProbationStatusDetail probationStatusDetail = ProbationStatusDetail.builder()
+            var nextPrevKnownTermDate = existingCourtCase.getPreviouslyKnownTerminationDate().plusDays(1);
+            var probationStatusDetail = ProbationStatusDetail.builder()
                 .preSentenceActivity(true)
                 .inBreach(Boolean.TRUE)
                 .previouslyKnownTerminationDate(nextPrevKnownTermDate)
                 .status("CURRENT")
+                .awaitingPsr(true)
                 .build();
 
             var courtCase = CaseMapper.merge(probationStatusDetail, existingCourtCase);
@@ -507,6 +520,7 @@ class CaseMapperTest {
             assertThat(courtCase.getPreviouslyKnownTerminationDate()).isEqualTo(nextPrevKnownTermDate);
             assertThat(courtCase.getBreach()).isTrue();
             assertThat(courtCase.isPreSentenceActivity()).isTrue();
+            assertThat(courtCase.isAwaitingPsr()).isTrue();
             // Fields that stay the same on existing value
             assertThat(courtCase.getCaseId()).isEqualTo(existingCourtCase.getCaseId());
             assertThat(courtCase.getCaseNo()).isEqualTo(existingCourtCase.getCaseNo());
