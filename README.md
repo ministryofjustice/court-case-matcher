@@ -11,6 +11,9 @@ Service to receive details of cases, incoming from Libra, match against existing
 The MQ method is effectively deprecated and will be removed.
 The intention is to migrate from the current queue used, being the crime portal gateway queue, to the court-case-matcher-queue which is fed by the court-list-splitter service. 
 
+For more informations, check our [Runbook](https://dsdmoj.atlassian.net/wiki/spaces/NDSS/pages/2548662614/Prepare+a+Case+for+Sentence+RUNBOOK)
+
+
 Dev Setup
 ---------
 
