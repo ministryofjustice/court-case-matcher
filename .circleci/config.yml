@@ -116,6 +116,9 @@ jobs:
             - build/libs
             - build.gradle
             - app_version.txt
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   test-integration:
     executor: validator-integration
@@ -145,9 +148,6 @@ jobs:
           path: build/test-results
       - store_artifacts:
           path: build/reports/tests
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
 
   pact-publish:
     executor: builder
