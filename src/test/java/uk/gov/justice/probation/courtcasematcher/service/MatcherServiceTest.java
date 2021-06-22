@@ -125,7 +125,7 @@ class MatcherServiceTest {
 
         var searchResult = matcherService.getSearchResponse(COURT_CASE).block();
 
-        assertThat(searchResult).isNull();
+        assertThat(searchResult).isNotNull();
         LoggingEvent loggingEvent = captureFirstLogEvent();
         assertThat(loggingEvent.getLevel()).isEqualTo(Level.INFO);
         assertThat(loggingEvent.getFormattedMessage().trim())
