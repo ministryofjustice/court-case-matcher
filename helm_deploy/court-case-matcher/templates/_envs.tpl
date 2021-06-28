@@ -32,16 +32,10 @@ env:
         key: nomis-oauth-client-secret
 
   - name: GATEWAY_JMS_USERNAME
-    valueFrom:
-      secretKeyRef:
-        name: pict-cpmg-wildfly-credentials
-        key: jmsuser
+    value: "not used - to be deleted"
 
   - name: GATEWAY_JMS_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: pict-cpmg-wildfly-credentials
-        key: user-password
+    value: "not used - to be deleted"
 
   - name: AWS_SQS_CRIME_PORTAL_GATEWAY_ACCESS_KEY_ID
     valueFrom:
