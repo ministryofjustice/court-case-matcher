@@ -77,6 +77,7 @@ orbs:
   snyk: snyk/snyk@0.0.10
   dps: ministryofjustice/dps@1.2.1
   hmpps: ministryofjustice/hmpps@2.3
+  slack: circleci/slack@4.4.2
 
 jobs:
   build:
@@ -115,6 +116,9 @@ jobs:
             - build/libs
             - build.gradle
             - app_version.txt
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   test-integration:
     executor: validator-integration
