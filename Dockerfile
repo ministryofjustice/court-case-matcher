@@ -1,4 +1,4 @@
-FROM openjdk:14-oraclelinux7
+FROM openjdk:16-slim
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
 ENV TZ=Europe/London
