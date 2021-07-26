@@ -1,8 +1,5 @@
-package uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest;
+package uk.gov.justice.probation.courtcasematcher.model.gateway;
 
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +7,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)

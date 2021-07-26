@@ -7,19 +7,6 @@ management:
     health:
       show-details: always
       path-mapping: "health"
-  health:
-    jms:
-      enabled: true
-
-logging:
-  level:
-    org.apache.activemq: DEBUG
-    org.springframework.jms: DEBUG
-    uk.gov.justice.probation.courtcasematcher.messaging.MessageReceiver: TRACE
-
-GATEWAY_JMS_HOST: localhost
-GATEWAY_JMS_USERNAME: jmsuser
-GATEWAY_JMS_PASSWORD: jmsuser
 
 court-case-service:
   base-url: http://localhost:8082/
@@ -35,7 +22,5 @@ aws:
   sqs-endpoint-url: "http://localhost:4566"
 
 messaging:
-  activemq:
-    enabled: false
   sqs:
     enabled: true

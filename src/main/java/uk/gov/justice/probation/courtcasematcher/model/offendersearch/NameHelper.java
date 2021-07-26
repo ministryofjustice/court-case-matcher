@@ -3,7 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.model.offendersearch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 
 import java.util.Arrays;
 import java.util.List;

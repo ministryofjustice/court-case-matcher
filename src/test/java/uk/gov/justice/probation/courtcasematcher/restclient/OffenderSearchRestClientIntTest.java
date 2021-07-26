@@ -1,7 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import java.time.LocalDate;
-import java.time.Month;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,11 +11,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
+
+import java.time.LocalDate;
+import java.time.Month;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

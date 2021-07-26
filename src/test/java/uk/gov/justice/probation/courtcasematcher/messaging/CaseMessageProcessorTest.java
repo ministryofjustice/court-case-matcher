@@ -1,13 +1,8 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import javax.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,13 +15,19 @@ import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
+
+import javax.validation.Validator;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -1,10 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.model.offendersearch;
 
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,7 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Builder

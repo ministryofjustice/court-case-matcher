@@ -1,10 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.model.courtcaseservice;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
@@ -14,7 +9,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import reactor.util.StringUtils;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Data
 @Builder
