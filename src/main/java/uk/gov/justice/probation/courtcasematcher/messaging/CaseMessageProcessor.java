@@ -1,7 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import java.util.Collections;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -12,13 +10,16 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
+
+import java.util.Collections;
+import java.util.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)

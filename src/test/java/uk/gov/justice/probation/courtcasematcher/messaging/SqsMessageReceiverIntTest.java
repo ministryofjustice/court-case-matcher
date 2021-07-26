@@ -1,9 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
@@ -28,11 +24,16 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;

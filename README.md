@@ -4,12 +4,7 @@ Court Case Matcher
 
 Service to receive details of cases, incoming from Libra, match against existing cases in court case service, match to offenders (offender-search) and update court case service. At the current time, the application is capable of receiving messages from 
 
-* MQ queue - receiving XML gateway messages
-* SQS crime portal gateway queue - receiving XML messages (ExternalDocumentRequest) containing batches of cases based on court / rooms
 * SQS court case matcher queue - receiving JSON messages, each containing a single queue
-
-The MQ method is effectively deprecated and will be removed.
-The intention is to migrate from the current queue used, being the crime portal gateway queue, to the court-case-matcher-queue which is fed by the court-list-splitter service. 
 
 For more informations, check our [Runbook](https://dsdmoj.atlassian.net/wiki/spaces/NDSS/pages/2548662614/Prepare+a+Case+for+Sentence+RUNBOOK)
 
@@ -21,10 +16,10 @@ The service uses Lombok and so annotation processors must be [turned on within t
 
 court-case-matcher is capable of reading messages from a configured SQS queue. There is a docker compose config which will start SQS services with a correctly configured queue. This is required for running  integration tests which use AWS.
 
-There are integration tests which send messages to the SQS queue. If required, it is also possible to send them via a running instance of crime-portal-gateway, or using the AWS CLI
+There are integration tests which send messages to the SQS queue. If required, it is also possible to send them using the AWS CLI
 
 ```
-aws sqs send-message --region eu-west-2 --endpoint-url http://localhost:4566  --queue-url http://localhost:4566/000000000000/crime-portal-gateway-queue  --message-body $msg
+aws sqs send-message --region eu-west-2 --endpoint-url http://localhost:4566  --queue-url http://localhost:4566/000000000000/court-case-matcher-queue  --message-body $msg
 ```
 
 ```
@@ -74,12 +69,6 @@ curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRA
 ```
 curl -X GET http://localhost:8080/ping
 ```
-
-### Profiles
-
-It is possible to run the service with an ability to listen for messages either from the crime-portal-gateway queue (multiple cases, in XML) or the court-case-matcher queue (single cases, in JSON). In kubernetes namespace deployments, the service is currently configured to run with `sqs-cpg-messaging` but this can be changed by altering the `SPRING_PROFILES_ACTIVE` environment variable, to use `sqs-ccm-messaging`. These profiles are mutually exclusive at the current time. 
-
-It is expected that `sqs-cpg-messaging` will be removed at some in the medium term, when the "splitter" https://github.com/ministryofjustice/court-list-splitter project becomes available.
 
 
 
