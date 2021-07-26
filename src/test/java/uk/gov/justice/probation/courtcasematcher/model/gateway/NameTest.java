@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest;
+package uk.gov.justice.probation.courtcasematcher.model.gateway;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,11 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -39,10 +33,17 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedO
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

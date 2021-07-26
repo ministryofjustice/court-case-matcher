@@ -1,13 +1,14 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import javax.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
+
+import javax.validation.ConstraintViolationException;
 
 public interface MessageProcessor {
 

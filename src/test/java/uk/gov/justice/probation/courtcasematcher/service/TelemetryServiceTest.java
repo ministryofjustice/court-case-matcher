@@ -14,22 +14,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Block;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.DataJob;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Document;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Job;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -64,7 +55,6 @@ class TelemetryServiceTest {
     private static final String PNC = "PNC/123";
     private static final String COURT_ROOM = "01";
     private static final LocalDate DATE_OF_HEARING = LocalDate.of(2020, Month.NOVEMBER, 5);
-    private static Info info;
     private static Case aCase;
     private static CourtCase courtCase;
 
@@ -80,27 +70,12 @@ class TelemetryServiceTest {
     @BeforeAll
     static void beforeEach() {
 
-        info = Info.builder()
-            .ouCode(COURT_CODE)
-            .dateOfHearing(DATE_OF_HEARING)
-            .build();
-        Document document = Document.builder().info(info).build();
-        DataJob dataJob = DataJob.builder().document(document).build();
-        Job job = Job.builder().dataJob(dataJob).build();
-
-        Session session = Session.builder()
-            .courtName("COURT_NAME")
-            .courtRoom(COURT_ROOM)
-            .dateOfHearing(DATE_OF_HEARING)
-            .job(job)
-            .build();
-
         aCase = Case.builder()
-            .block(Block.builder()
-                .session(session)
-                .build())
             .caseNo(CASE_NO)
+            .courtCode(COURT_CODE)
+            .courtRoom(COURT_ROOM)
             .pnc(PNC)
+            .sessionStartTime(DATE_OF_HEARING.atStartOfDay())
             .build();
 
         courtCase = CourtCase.builder()
@@ -324,58 +299,6 @@ class TelemetryServiceTest {
             entry(SQS_MESSAGE_ID_KEY, "messageId")
         );
     }
-
-    @DisplayName("Record the event when a court list is received")
-    @Test
-    void whenCourtListReceived_thenRecord() {
-
-        telemetryService.trackCourtListEvent(info, "messageId");
-
-        verify(telemetryClient).trackEvent(eq("PiCCourtListReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
-
-        Map<String, String> properties = propertiesCaptor.getValue();
-
-        assertThat(properties).hasSize(3);
-        assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(SQS_MESSAGE_ID_KEY, "messageId")
-        );
-    }
-
-    @DisplayName("Record the event when a court list is received and messageId is null")
-    @Test
-    void whenCourtListReceived_andMessageIdIsNull_thenRecord() {
-
-        telemetryService.trackCourtListEvent(info, null);
-
-        verify(telemetryClient).trackEvent(eq("PiCCourtListReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
-
-        Map<String, String> properties = propertiesCaptor.getValue();
-
-        assertThat(properties).hasSize(2);
-        assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(HEARING_DATE_KEY, "2020-11-05")
-        );
-    }
-
-    @DisplayName("Record the event when a list is received")
-    @Test
-    void whenListMessageReceived_thenRecord() {
-
-        telemetryService.trackCourtListMessageEvent("messageId");
-
-        verify(telemetryClient).trackEvent(eq("PiCCourtListMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
-
-        Map<String, String> properties = propertiesCaptor.getValue();
-
-        assertThat(properties).hasSize(1);
-        assertThat(properties).contains(
-            entry(SQS_MESSAGE_ID_KEY, "messageId")
-        );
-    }
-
     @Nested
     public class WithOperationTest {
 

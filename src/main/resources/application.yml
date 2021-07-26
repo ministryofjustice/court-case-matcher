@@ -28,12 +28,6 @@ spring:
       max-concurrency: 1
   application:
     name: court-case-matcher
-  artemis:
-    mode: native
-    host: ${GATEWAY_JMS_HOST:localhost}
-    user: ${GATEWAY_JMS_USERNAME}
-    password: ${GATEWAY_JMS_PASSWORD}
-    port: ${GATEWAY_JMS_PORT:5445}
   security:
     oauth2:
       client:
@@ -79,10 +73,6 @@ ou-code-length: 5
 
 aws:
   region-name: eu-west-2
-
-messaging:
-  activemq:
-    queueName: "CP_OutboundQueue"
 
 health:
   default-ping-path: /ping

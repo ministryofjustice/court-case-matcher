@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;

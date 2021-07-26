@@ -1,9 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -21,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
@@ -29,6 +25,11 @@ import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
