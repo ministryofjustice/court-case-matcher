@@ -10,9 +10,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Block;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponses;
@@ -20,7 +18,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.Month;
 import java.util.Collections;
 import java.util.List;
@@ -63,13 +60,18 @@ class CourtCaseServiceTest {
     void givenExistingCase_whenGetCourtCase_thenMergeAndReturn() {
         Case aCase = buildCase();
 
-        CourtCase courtCase = CourtCase.builder().caseId(Long.toString(CASE_ID)).caseNo(CASE_NO).courtCode(COURT_CODE).courtRoom("2").build();
+        CourtCase courtCase = CourtCase.builder()
+                .caseId(Long.toString(CASE_ID))
+                .caseNo(CASE_NO)
+                .courtCode(COURT_CODE)
+                .courtRoom("2")
+                .build();
+
         when(restClient.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
 
         CourtCase updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
-        assertThat(courtCase.getCourtRoom()).isNotEqualTo(aCase.getBlock().getSession().getCourtRoom());
         verify(restClient).getCourtCase(COURT_CODE, CASE_NO);
     }
 
@@ -184,19 +186,9 @@ class CourtCaseServiceTest {
     }
 
     private Case buildCase() {
-        Session session = Session.builder()
+        return Case.builder()
             .courtCode(COURT_CODE)
             .courtRoom(COURT_ROOM)
-            .dateOfHearing(LocalDate.of(2020, Month.AUGUST, 26))
-            .start(LocalTime.of(9,0))
-            .build();
-
-        Block block = Block.builder()
-            .session(session)
-            .build();
-
-        return Case.builder()
-            .block(block)
             .caseNo(CASE_NO)
             .caseId(CASE_ID)
             .build();

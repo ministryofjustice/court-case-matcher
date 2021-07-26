@@ -12,8 +12,8 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIde
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
@@ -79,10 +79,10 @@ public class CaseMapper {
             .offences(Optional.ofNullable(aCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()));
     }
 
-    private static List<Offence> fromOffences(List<uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence> offences) {
+    private static List<Offence> fromOffences(List<uk.gov.justice.probation.courtcasematcher.model.gateway.Offence> offences) {
         return Optional.ofNullable(offences)
                         .map(offs -> offs.stream()
-                            .sorted(comparing(uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence::getSeq))
+                            .sorted(comparing(uk.gov.justice.probation.courtcasematcher.model.gateway.Offence::getSeq))
                             .map(offence -> Offence.builder()
                                 .offenceTitle(offence.getTitle())
                                 .offenceSummary(offence.getSummary())
@@ -93,7 +93,7 @@ public class CaseMapper {
                         .orElse(Collections.emptyList());
     }
 
-    public static Address fromAddress(uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Address def_addr) {
+    public static Address fromAddress(uk.gov.justice.probation.courtcasematcher.model.gateway.Address def_addr) {
         return Optional.ofNullable(def_addr)
                         .map(address -> Address.builder()
                                         .line1(def_addr.getLine1())

@@ -5,8 +5,6 @@ import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @AllArgsConstructor
@@ -19,7 +17,7 @@ public class SqsService {
 
     public boolean isQueueAvailable() {
         try {
-            return checkQueue(queueName, amazonSQSAsync);// && checkQueue(cpqQueueName, cpgAmazonSQSAsync);
+            return checkQueue(queueName, amazonSQSAsync);
         }
         catch (QueueDoesNotExistException existException) {
             return false;

@@ -11,15 +11,9 @@ import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIde
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Address;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Block;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Case;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.DataJob;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Document;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Info;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Job;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Name;
-import uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Session;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Address;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
+import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
@@ -57,33 +51,15 @@ class CaseMapperTest {
     public static final String CRO = "CRO456";
     public static final String PNC = "PNC789";
 
-    private Block block;
-
     private Case aCase;
 
     @BeforeEach
     void beforeEach() {
 
-        var info = Info.builder().ouCode(COURT_CODE).dateOfHearing(DATE_OF_HEARING).build();
-        var document = Document.builder().info(info).build();
-        var dataJob = DataJob.builder().document(document).build();
-        var job = Job.builder().dataJob(dataJob).build();
-
-        var session = Session.builder()
-            .courtName(COURT_NAME)
-            .courtRoom("00")
-            .dateOfHearing(DATE_OF_HEARING)
-            .start(START_TIME)
-            .job(job)
-            .build();
-
-        block = Block.builder()
-            .session(session)
-            .build();
-
         aCase = Case.builder()
-            .block(block)
             .caseNo("123")
+            .courtCode(COURT_CODE)
+            .courtRoom("00")
             .defendantAddress(Address.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
             .defendantAge("13")
             .defendantDob(DATE_OF_BIRTH)
@@ -94,6 +70,7 @@ class CaseMapperTest {
             .listNo("1st")
             .seq(1)
             .offences(singletonList(buildOffence("NEW Theft from a person", 1)))
+            .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
             .build();
 
     }
@@ -262,9 +239,9 @@ class CaseMapperTest {
         }
     }
 
-    @DisplayName("New from incoming gateway (XML) or JSON case")
+    @DisplayName("New from incoming JSON case")
     @Nested
-    class NewFromIncomingGatewayXMLOrJSONCase {
+    class NewFromIncomingGatewayJSONCase {
 
         @DisplayName("Map from a new JSON case (with no block) composed of nulls. Ensures no null pointers.")
         @Test
@@ -278,27 +255,19 @@ class CaseMapperTest {
             assertThat(CaseMapper.newFromCase(nullCase)).isNotNull();
         }
 
-        @DisplayName("Map from a new gateway XML case composed of nulls. Ensures no null pointers.")
-        @Test
-        void whenMapCaseWithNullsThenCreateNewCaseNoOffences_EnsureNoNullPointer() {
-            var nullCase = Case.builder()
-                .block(block)
-                .build();
-            assertThat(CaseMapper.newFromCase(nullCase)).isNotNull();
-        }
 
         @DisplayName("Map from a new case with offences")
         @Test
         void whenMapCaseWithOffences_ThenCreateNewCase() {
 
-            var offence1 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
+            var offence1 = uk.gov.justice.probation.courtcasematcher.model.gateway.Offence
                 .builder()
                 .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
                 .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
                 .title("Theft from a person")
                 .seq(1)
                 .build();
-            var offence2 = uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence
+            var offence2 = uk.gov.justice.probation.courtcasematcher.model.gateway.Offence
                 .builder()
                 .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
                 .summary("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Shop.")
@@ -309,7 +278,6 @@ class CaseMapperTest {
             // Put Seq 2 first in list
             var aCase = Case.builder()
                 .caseNo("123")
-                .block(block)
                 .offences(Arrays.asList(offence2, offence1))
                 .build();
 
@@ -321,31 +289,6 @@ class CaseMapperTest {
             assertThat(offence.getAct()).isEqualTo("Contrary to section 2(2) and 8 of the Theft Act 1968.");
             assertThat(offence.getOffenceSummary()).isEqualTo("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.");
             assertThat(offence.getOffenceTitle()).isEqualTo("Theft from a person");
-        }
-
-        @DisplayName("Map a new case from gateway case but with no offences")
-        @Test
-        void whenMapNewCaseThenCreateNewCaseNoOffences() {
-
-            ReflectionTestUtils.setField(aCase, "offences", null);
-            var courtCase = CaseMapper.newFromCase(aCase);
-
-            assertThat(courtCase.getCaseNo()).isEqualTo("123");
-            assertThat(courtCase.getCaseId()).isEqualTo("321321");
-            assertThat(courtCase.getCourtCode()).isEqualTo(COURT_CODE);
-            assertThat(courtCase.getCourtRoom()).isEqualTo("00");
-            assertThat(courtCase.getProbationStatus()).isNull();
-            assertThat(courtCase.getDefendantAddress().getLine1()).isEqualTo("line 1");
-            assertThat(courtCase.getDefendantAddress().getLine2()).isEqualTo("line 2");
-            assertThat(courtCase.getDefendantAddress().getLine3()).isEqualTo("line 3");
-            assertThat(courtCase.getDefendantAddress().getPostcode()).isEqualTo("LD1 1AA");
-            assertThat(courtCase.getDefendantDob()).isEqualTo(DATE_OF_BIRTH);
-            assertThat(courtCase.getDefendantName()).isEqualTo("Mr Patrick Floyd Jarvis Garrett");
-            assertThat(courtCase.getName()).isEqualTo(name);
-            assertThat(courtCase.getDefendantSex()).isEqualTo("M");
-            assertThat(courtCase.getDefendantType()).isSameAs(DefendantType.PERSON);
-            assertThat(courtCase.getSessionStartTime()).isEqualTo(SESSION_START_TIME);
-            assertThat(courtCase.getOffences()).isEmpty();
         }
     }
 
@@ -370,6 +313,7 @@ class CaseMapperTest {
                 .probationStatus("Current")
                 .probationStatusActual("CURRENT")
                 .courtCode(COURT_CODE)
+                .courtRoom("01")
                 .defendantAddress(null)
                 .defendantName("Pat Garrett")
                 .defendantType(DefendantType.ORGANISATION)
@@ -405,17 +349,6 @@ class CaseMapperTest {
                 .courtRoom("00")
                 .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
                 .build();
-        }
-
-        @DisplayName("Merge the gateway case with the existing court case, including offences")
-        @Test
-        void whenMergeWithExistingCase_ThenUpdateExistingCase() {
-
-            ReflectionTestUtils.setField(aCase, "defendantDob", null);
-
-            var courtCase = CaseMapper.merge(aCase, existingCourtCase);
-
-            assertCourtCase(courtCase);
         }
 
         @DisplayName("Merge the JSON case with the existing court case, including offences")
@@ -546,8 +479,8 @@ class CaseMapperTest {
         }
     }
 
-    private uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence buildOffence(String title, Integer seq) {
-        return uk.gov.justice.probation.courtcasematcher.model.externaldocumentrequest.Offence.builder()
+    private uk.gov.justice.probation.courtcasematcher.model.gateway.Offence buildOffence(String title, Integer seq) {
+        return uk.gov.justice.probation.courtcasematcher.model.gateway.Offence.builder()
             .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
             .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
             .title(title)
