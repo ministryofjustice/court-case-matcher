@@ -20,7 +20,7 @@ import javax.validation.constraints.NotEmpty;
 @Component
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-@Profile("sqs-ccm-messaging")
+@Profile("!test")
 public class SqsMessageReceiver {
 
     @Autowired
