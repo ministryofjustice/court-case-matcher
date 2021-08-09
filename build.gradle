@@ -119,7 +119,7 @@ dependencies {
     testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
     testImplementation "io.rest-assured:json-path:$restAssuredVersion"
     testImplementation "io.rest-assured:xml-path:$restAssuredVersion"
-    testImplementation "com.github.tomakehurst:wiremock-jre8:2.29.1"
+    testImplementation "com.github.tomakehurst:wiremock-jre8:2.30.0"
     testImplementation 'org.mockito:mockito-core:3.11.2'
     testImplementation 'org.apache.activemq:artemis-junit:2.17.0'
     testAnnotationProcessor 'org.projectlombok:lombok'
