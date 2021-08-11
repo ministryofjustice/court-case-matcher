@@ -9,6 +9,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -52,9 +54,13 @@ public class SqsMessageReceiverIntTest {
 
     private static final String BASE_PATH = "src/test/resources/messages";
     private static String singleCase;
+    private static String failingCase;
 
     @Autowired
     private TelemetryService telemetryService;
+
+    @Autowired
+    private SqsDlqMessageReceiver dlqMessageReceiver;
 
     private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
 
@@ -64,7 +70,13 @@ public class SqsMessageReceiverIntTest {
     @BeforeAll
     static void beforeAll() throws IOException {
         singleCase = Files.readString(Paths.get(BASE_PATH +"/json/case.json"));
+        failingCase = Files.readString(Paths.get(BASE_PATH +"/json/failing-case.json"));
         MOCK_SERVER.start();
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        dlqMessageReceiver.clearMessages();
     }
 
     @AfterAll
@@ -123,6 +135,28 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
+    @Test
+    public void givenCaseFailsAtCCS_whenReceivePayload_thenPlaceOnDLQ() {
+
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, failingCase);
+
+
+        await()
+                .atMost(60, TimeUnit.SECONDS)
+                .until(() -> {
+                    System.out.println(dlqMessageReceiver.getMessages().size());
+                    return dlqMessageReceiver.getMessages().size() == 1;
+                });
+
+        MOCK_SERVER.verify(
+            putRequestedFor(urlEqualTo("/court/B10JQ/case/666666"))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("666666")))
+                .withRequestBody(matchingJsonPath("crn", equalTo("X500")))
+        );
+        assertThat(dlqMessageReceiver.getMessages().size()).isEqualTo(1);
+        assertThat(dlqMessageReceiver.getMessages().get(0)).contains("666666");
+    }
+
     @TestConfiguration
     public static class AwsTestConfig {
         @Value("${aws.sqs.court_case_matcher_endpoint_url}")
@@ -135,6 +169,8 @@ public class SqsMessageReceiverIntTest {
         private String regionName;
         @Value("${aws.sqs.court_case_matcher_queue_name}")
         private String queueName;
+//        @Value("${aws.sqs.court_case_matcher_dlq_name}")
+//        private String dlqName;
         @MockBean
         private TelemetryService telemetryService;
         @Autowired

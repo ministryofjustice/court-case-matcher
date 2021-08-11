@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/court/B10JQ/case/666666/grouped-offender-matches"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "Location": "/court/B10JQ/case/666666/grouped-offender-matches/4"
+    }
+  }
+}
