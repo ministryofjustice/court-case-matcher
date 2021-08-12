@@ -1,17 +1,16 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Optional;
 import com.google.common.eventbus.EventBus;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.Disposable;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
+import reactor.tuple.Tuple2;
 import reactor.util.retry.Retry;
 import reactor.util.retry.Retry.RetrySignal;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
@@ -27,6 +27,11 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient.EXCEPTION_RETRY_FILTER;
@@ -112,26 +117,23 @@ public class CourtCaseRestClient {
             });
     }
 
-    public void postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
+    public Mono<ResponseEntity<Void>> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
 
-        Optional.ofNullable(offenderMatches).ifPresent(matches -> {
-            final String path = String.format(matchesPostTemplate, courtCode, caseNo);
-            post(path, matches)
-                .retrieve()
-                .toBodilessEntity()
-                .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
+        return Mono.justOrEmpty(offenderMatches)
+            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), matches))
+            .flatMap(tuple2 -> post(tuple2.getT1(), tuple2.getT2())
+                    .retrieve()
+                    .toBodilessEntity()
+                    .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
                     .jitter(0.0d)
                     .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_MATCHES, courtCode, caseNo))
-                    .filter(EXCEPTION_RETRY_FILTER))
-                .subscribe(responseEntity -> {
-                    log.info("Successful POST of offender matches. Response location: {} ",
-                        Optional.ofNullable(responseEntity.getHeaders().getFirst(HttpHeaders.LOCATION))
-                            .orElse("[NOT FOUND]"));
-                }, throwable -> {
-                    String error = String.format(ERR_MSG_FORMAT_POST_MATCH, courtCode, caseNo, offenderMatches.getMatches().size());
-                    log.error(error, throwable);
-                });
-        });
+                    .filter(EXCEPTION_RETRY_FILTER)))
+            .doOnNext(responseEntity -> log.info("Successful POST of offender matches. Response location: {} ",
+                    Optional.ofNullable(responseEntity)
+                            .map(HttpEntity::getHeaders)
+                            .map((HttpHeaders headers) -> headers.getFirst(HttpHeaders.LOCATION))
+                            .orElse("[NOT FOUND]")))
+            .doOnError(throwable -> log.error(String.format(ERR_MSG_FORMAT_POST_MATCH, courtCode, caseNo, Optional.ofNullable(offenderMatches).map(GroupedOffenderMatches::getMatches).map(List::size)), throwable));
     }
 
     private WebClient.RequestHeadersSpec<?> get(String path) {

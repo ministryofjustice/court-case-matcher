@@ -142,7 +142,7 @@ public class SqsMessageReceiverIntTest {
 
 
         await()
-                .atMost(60, TimeUnit.SECONDS)
+                .atMost(5, TimeUnit.SECONDS)
                 .until(() -> {
                     System.out.println(dlqMessageReceiver.getMessages().size());
                     return dlqMessageReceiver.getMessages().size() == 1;
