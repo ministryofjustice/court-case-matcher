@@ -19,24 +19,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
 import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
-import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
-import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
-import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -44,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -59,21 +51,11 @@ class EventListenerTest {
     private static final LocalDateTime DATE_OF_HEARING = LocalDate.of(2020, Month.NOVEMBER, 5).atStartOfDay();
     private static final String PNC = "PNC";
     private static final String CRN = "X340741";
-    private static CourtCase courtCase = null;
-    private static CourtCase matchedCourtCase = null;
-
-    @Mock
-    private MatcherService matcherService;
 
     @Mock
     private CourtCaseService courtCaseService;
-
-    @Mock
-    private TelemetryService telemetryService;
-
     @Mock
     private Appender<ILoggingEvent> mockAppender;
-
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
 
@@ -91,8 +73,6 @@ class EventListenerTest {
             .caseNo(CASE)
             .pnc(PNC)
             .sessionStartTime(DATE_OF_HEARING);
-        courtCase = builder.build();
-        matchedCourtCase = builder.crn(CRN).build();
     }
 
     @BeforeEach
@@ -101,7 +81,7 @@ class EventListenerTest {
         logger.addAppender(mockAppender);
 
         eventBus = new EventBus();
-        eventListener = new EventListener(eventBus, matcherService, courtCaseService, telemetryService);
+        eventListener = new EventListener(eventBus);
     }
 
     @DisplayName("Ensure that successful events are logged and counted")
@@ -165,60 +145,4 @@ class EventListenerTest {
     void checkEventBusRegistration() {
         eventBus.post(CourtCaseFailureEvent.builder().failureMessage("Problem").build());
     }
-
-    @DisplayName("With an unmatched case the update event just saves")
-    @Test
-    void givenUnmatchedCourtCase_whenUpdate_thenSave() {
-        eventListener.courtCaseUpdateEvent(CourtCaseUpdateEvent.builder().courtCase(courtCase).build());
-
-        verify(courtCaseService).saveCourtCase(courtCase);
-    }
-
-    @DisplayName("With a matched case the update event includes an update on probation status detail")
-    @Test
-    void givenMatchedCourtCase_whenUpdate_thenRefreshProbationStatusDetailAndSave() {
-        when(courtCaseService.updateProbationStatusDetail(matchedCourtCase)).thenReturn(Mono.just(matchedCourtCase));
-        eventListener.courtCaseUpdateEvent(CourtCaseUpdateEvent.builder().courtCase(matchedCourtCase).build());
-
-        verify(courtCaseService).updateProbationStatusDetail(matchedCourtCase);
-        verify(courtCaseService).saveCourtCase(matchedCourtCase);
-        verifyNoMoreInteractions(courtCaseService);
-    }
-
-    @DisplayName("Check the match event when the call to the matcher service returns")
-    @Test
-    void givenSearch_whenCourtCaseMatched_thenSave() {
-        MatchResponse matchResponse = MatchResponse.builder().build();
-        final var searchResult = SearchResult.builder()
-                .matchResponse(matchResponse)
-                .build();
-        when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.just(searchResult));
-
-        eventBus.post(CourtCaseMatchEvent.builder().courtCase(courtCase).build());
-
-        verify(matcherService).getSearchResponse(courtCase);
-        verify(courtCaseService).createCase(courtCase, searchResult);
-        verify(telemetryService).trackOffenderMatchEvent(courtCase, matchResponse);
-        verifyNoMoreInteractions(matcherService, courtCaseService, telemetryService);
-    }
-
-    @DisplayName("Check the match event when the call to the matcher service returns an empty response")
-    @Test
-    void givenSearchWhichFails_whenCourtCaseMatched_thenSave() {
-        when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
-
-        eventListener.courtCaseMatchEvent(CourtCaseMatchEvent.builder().courtCase(courtCase).build());
-
-        verify(matcherService).getSearchResponse(courtCase);
-        final var searchResult = SearchResult.builder()
-                .matchResponse(MatchResponse.builder()
-                    .matches(Collections.emptyList())
-                    .matchedBy(OffenderSearchMatchType.NOTHING)
-                    .build())
-                .build();
-        verify(courtCaseService).createCase(courtCase, searchResult);
-        verify(telemetryService).trackOffenderMatchFailureEvent(courtCase);
-        verifyNoMoreInteractions(matcherService, courtCaseService, telemetryService);
-    }
-
 }

@@ -7,37 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
-import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
-import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
-import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
-
-import java.util.Collections;
-import java.util.Optional;
 
 @Component
 @Slf4j
 public class EventListener {
 
-    private final CourtCaseService courtCaseService;
-
-    private final MatcherService matcherService;
-
-    private final TelemetryService telemetryService;
-
     @Autowired
-    public EventListener(EventBus eventBus,
-                         MatcherService matcherService,
-                         CourtCaseService courtCaseService,
-                         TelemetryService telemetryService) {
+    public EventListener(EventBus eventBus) {
         super();
-        this.matcherService = matcherService;
-        this.courtCaseService = courtCaseService;
-        this.telemetryService = telemetryService;
         eventBus.register(this);
     }
 
@@ -59,41 +36,4 @@ public class EventListener {
         String court = courtCaseEvent.getCourtCase().getCourtCode();
         log.info("EventBus success event for posting case {} for court {}. ", caseNo, court);
     }
-
-    @AllowConcurrentEvents
-    @Subscribe
-    public void courtCaseUpdateEvent(CourtCaseUpdateEvent courtCaseEvent) {
-        final CourtCase courtCase = courtCaseEvent.getCourtCase();
-        log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getCrn(), courtCase.getCourtCode());
-
-        Optional.ofNullable(courtCase.getCrn())
-            .map(crn -> courtCaseService.updateProbationStatusDetail(courtCase)
-                                        .onErrorReturn(courtCase))
-            .orElse(Mono.just(courtCase))
-            .subscribe(courtCaseService::saveCourtCase);
-    }
-
-    @AllowConcurrentEvents
-    @Subscribe
-    public void courtCaseMatchEvent(CourtCaseMatchEvent courtCaseEvent) {
-
-        CourtCase courtCase = courtCaseEvent.getCourtCase();
-        log.info("Matching offender and saving case no {} for court {}, pnc {}",
-            courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getPnc());
-
-        matcherService.getSearchResponse(courtCase)
-            .doOnSuccess(searchResult -> telemetryService.trackOffenderMatchEvent(courtCase, searchResult.getMatchResponse()))
-            .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
-            .onErrorResume(throwable -> Mono.just(SearchResult.builder()
-                    .matchResponse(
-                        MatchResponse.builder()
-                        .matchedBy(OffenderSearchMatchType.NOTHING)
-                        .matches(Collections.emptyList())
-                        .build())
-                    .build()))
-            .subscribe(searchResult -> courtCaseService.createCase(courtCase, searchResult))
-            ;
-
-    }
-
 }

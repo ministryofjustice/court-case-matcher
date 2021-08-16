@@ -34,8 +34,9 @@ public interface MessageProcessor {
 
     default String saveCase(Case aCase, String messageId) {
         getTelemetryService().trackCourtCaseEvent(aCase, messageId);
-        getCourtCaseService().getCourtCase(aCase)
-            .subscribe(this::postCaseEvent);
+        final var courtCase = getCourtCaseService().getCourtCase(aCase)
+                .block();
+        postCaseEvent(courtCase);
         return aCase.getCaseNo();
     }
 

@@ -83,17 +83,19 @@ public class CaseMessageProcessor implements MessageProcessor {
 
         log.info("Matching offender and saving case no {} for court {}, pnc {}", courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getPnc());
 
-        matcherService.getSearchResponse(courtCase)
-            .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
-            .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
-            .onErrorResume(throwable -> Mono.just(SearchResult.builder()
-                .matchResponse(
-                    MatchResponse.builder()
-                        .matchedBy(OffenderSearchMatchType.NOTHING)
-                        .matches(Collections.emptyList())
-                        .build())
-                .build()))
-            .subscribe(searchResult -> courtCaseService.createCase(courtCase, searchResult));
+        final var searchResult = matcherService.getSearchResponse(courtCase)
+                .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
+                .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
+                .onErrorResume(throwable -> Mono.just(SearchResult.builder()
+                        .matchResponse(
+                                MatchResponse.builder()
+                                        .matchedBy(OffenderSearchMatchType.NOTHING)
+                                        .matches(Collections.emptyList())
+                                        .build())
+                        .build()))
+                .block();
+
+        courtCaseService.createCase(courtCase, searchResult);
     }
 
     private void updateAndSave(final CourtCase courtCase) {

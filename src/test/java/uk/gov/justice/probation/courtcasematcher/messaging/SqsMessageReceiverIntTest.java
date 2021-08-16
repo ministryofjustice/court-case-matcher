@@ -9,7 +9,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,11 +74,6 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.start();
     }
 
-    @BeforeEach
-    public void beforeEach() {
-        dlqMessageReceiver.clearMessages();
-    }
-
     @AfterAll
     static void afterAll() {
         MOCK_SERVER.stop();
@@ -96,7 +91,7 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, singleCase);
 
         await()
-            .atMost(5, TimeUnit.SECONDS)
+            .atMost(10, TimeUnit.SECONDS)
             .until(() -> countPutRequestsTo("/court/B10JQ/case/1600032981") == 1);
 
         MOCK_SERVER.verify(
@@ -136,17 +131,18 @@ public class SqsMessageReceiverIntTest {
     }
 
     @Test
+    @Disabled("This test can be run in isolation to check DLQ behaviour but it is fragile and slow when run as part of " +
+            "a suite due to it's reliance on an external SQS DLQ. " +
+            "As pushing to the DLQ is built in behaviour of the AWS SQS API this test has been disabled and only kept " +
+            "for future debugging of similar issues")
     public void givenCaseFailsAtCCS_whenReceivePayload_thenPlaceOnDLQ() {
+        dlqMessageReceiver.clearMessages();
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, failingCase);
 
-
         await()
                 .atMost(60, TimeUnit.SECONDS)
-                .until(() -> {
-                    System.out.println(dlqMessageReceiver.getMessages().size());
-                    return dlqMessageReceiver.getMessages().size() == 1;
-                });
+                .until(() -> dlqMessageReceiver.getMessages().size() == 1);
 
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/court/B10JQ/case/666666"))
@@ -154,6 +150,8 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("crn", equalTo("X500")))
         );
         assertThat(dlqMessageReceiver.getMessages().size()).isEqualTo(1);
+        // This assertion can fail if the test is not run in isolation as other failed messages can be mistakenly be
+        // pulled from the queue
         assertThat(dlqMessageReceiver.getMessages().get(0)).contains("666666");
     }
 
