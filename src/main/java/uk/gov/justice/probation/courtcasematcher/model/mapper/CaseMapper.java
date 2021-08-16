@@ -3,15 +3,15 @@ package uk.gov.justice.probation.courtcasematcher.model.mapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase.CourtCaseBuilder;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
+import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
@@ -130,6 +130,37 @@ public class CaseMapper {
             .listNo(incomingCase.getListNo())
             .sessionStartTime(incomingCase.getSessionStartTime())
             .offences(fromOffences(incomingCase.getOffences()))
+            .nationality1(incomingCase.getNationality1())
+            .nationality2(incomingCase.getNationality2())
+            // Fields to be retained from existing court case
+            .breach(existingCourtCase.getBreach())
+            .previouslyKnownTerminationDate(existingCourtCase.getPreviouslyKnownTerminationDate())
+            .crn(existingCourtCase.getCrn())
+            .probationStatus(existingCourtCase.getProbationStatusActual())
+            .probationStatusActual(existingCourtCase.getProbationStatusActual())
+            .suspendedSentenceOrder(existingCourtCase.getSuspendedSentenceOrder())
+            .pnc(existingCourtCase.getPnc())
+
+            .build();
+    }
+
+    public static CourtCase merge(CourtCase incomingCase, CourtCase existingCourtCase) {
+        return CourtCase.builder()
+            // PK fields
+            .courtCode(incomingCase.getCourtCode())
+            .caseNo(existingCourtCase.getCaseNo())
+            // Fields to be updated from incoming
+            .caseId(String.valueOf(incomingCase.getCaseId()))
+            .courtRoom(incomingCase.getCourtRoom())
+            .defendantAddress(incomingCase.getDefendantAddress())
+            .name(incomingCase.getName())
+            .defendantName(nameFrom(incomingCase.getDefendantName(), incomingCase.getName()))
+            .defendantSex(incomingCase.getDefendantSex())
+            .defendantDob(incomingCase.getDefendantDob())
+            .defendantType(incomingCase.getDefendantType())
+            .listNo(incomingCase.getListNo())
+            .sessionStartTime(incomingCase.getSessionStartTime())
+            .offences(incomingCase.getOffences())
             .nationality1(incomingCase.getNationality1())
             .nationality2(incomingCase.getNationality2())
             // Fields to be retained from existing court case

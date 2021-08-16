@@ -19,9 +19,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase.CourtCaseBuilder;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 

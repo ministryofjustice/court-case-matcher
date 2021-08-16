@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.courtcaseservice;
+package uk.gov.justice.probation.courtcasematcher.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -88,5 +88,10 @@ public class CourtCase implements Serializable {
 
     public boolean shouldMatchToOffender() {
         return isPerson() && !StringUtils.hasText(crn);
+    }
+
+
+    public LocalDate getDateOfHearing() {
+        return sessionStartTime != null ? sessionStartTime.toLocalDate() : null;
     }
 }

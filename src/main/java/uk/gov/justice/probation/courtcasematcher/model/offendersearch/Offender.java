@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
+import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 
 @Getter
 @Builder

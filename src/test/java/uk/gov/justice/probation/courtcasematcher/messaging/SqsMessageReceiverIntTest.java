@@ -23,8 +23,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -52,7 +51,6 @@ public class SqsMessageReceiverIntTest {
 
     private static final String BASE_PATH = "src/test/resources/messages";
     private static String singleCase;
-    private static String failingCase;
 
     @Autowired
     private TelemetryService telemetryService;
@@ -65,7 +63,6 @@ public class SqsMessageReceiverIntTest {
     @BeforeAll
     static void beforeAll() throws IOException {
         singleCase = Files.readString(Paths.get(BASE_PATH +"/json/case.json"));
-        failingCase = Files.readString(Paths.get(BASE_PATH +"/json/failing-case.json"));
         MOCK_SERVER.start();
     }
 
@@ -97,7 +94,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
@@ -121,7 +118,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackCourtCaseEvent(any(Case.class), any(String.class));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
 

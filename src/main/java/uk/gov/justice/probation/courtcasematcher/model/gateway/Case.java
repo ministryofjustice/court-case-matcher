@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -55,7 +57,7 @@ public class Case {
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
 
-    public LocalDate getDateOfHearing() {
-        return sessionStartTime != null ? sessionStartTime.toLocalDate() : null;
+    public CourtCase asDomain() {
+        return CaseMapper.newFromCase(this);
     }
 }

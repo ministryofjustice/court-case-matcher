@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.courtcaseservice;
+package uk.gov.justice.probation.courtcasematcher.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;

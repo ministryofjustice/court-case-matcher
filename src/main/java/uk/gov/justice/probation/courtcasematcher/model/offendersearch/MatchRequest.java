@@ -14,7 +14,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 
 import java.time.LocalDate;

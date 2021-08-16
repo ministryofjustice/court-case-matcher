@@ -1,13 +1,14 @@
-package uk.gov.justice.probation.courtcasematcher.model.courtcaseservice;
+package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import java.time.LocalDate;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 @Builder

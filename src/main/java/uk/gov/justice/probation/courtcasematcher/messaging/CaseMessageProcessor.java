@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
@@ -50,7 +50,7 @@ public class CaseMessageProcessor implements MessageProcessor {
         try {
             var snsMessageContainer = extractMessage(payload);
             log.debug("Extracted message ID {} from SNS message. Incoming message ID was {} ", snsMessageContainer.getMessageId(), messageId);
-            saveCase(parser.parseMessage(snsMessageContainer.getMessage(), Case.class), messageId);
+            saveCase(parser.parseMessage(snsMessageContainer.getMessage(), Case.class).asDomain(), messageId);
         }
         catch (Exception ex) {
             var failEvent = handleException(ex, payload);
@@ -99,6 +99,7 @@ public class CaseMessageProcessor implements MessageProcessor {
     }
 
     private void updateAndSave(final CourtCase courtCase) {
+        //TODO: This should be domain case
         log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getCrn(), courtCase.getCourtCode());
 
         Optional.ofNullable(courtCase.getCrn())

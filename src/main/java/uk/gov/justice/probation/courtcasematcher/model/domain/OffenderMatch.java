@@ -1,13 +1,14 @@
-package uk.gov.justice.probation.courtcasematcher.model.courtcaseservice;
+package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 @AllArgsConstructor
 @Builder

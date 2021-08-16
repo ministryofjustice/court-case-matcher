@@ -22,8 +22,8 @@ import reactor.util.retry.Retry;
 import reactor.util.retry.Retry.RetrySignal;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
 
 import java.nio.charset.StandardCharsets;
@@ -92,6 +92,7 @@ public class CourtCaseRestClient {
     }
 
     public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
+        // TODO: convert domain -> restclient representation
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
         final GroupedOffenderMatches offenderMatches = courtCase.getGroupedOffenderMatches();
 

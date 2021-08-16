@@ -5,8 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.MatchDetails;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
@@ -26,13 +25,15 @@ public class CourtCaseService {
     @Autowired
     private final OffenderSearchRestClient offenderSearchRestClient;
 
-    public Mono<CourtCase> getCourtCase(Case aCase) {
+    public Mono<CourtCase> getCourtCase(CourtCase aCase) {
+        // TODO: Return domain object
         return restClient.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
             .map(existing -> CaseMapper.merge(aCase, existing))
-            .switchIfEmpty(Mono.defer(() -> Mono.just(CaseMapper.newFromCase(aCase))));
+            .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
     }
 
     public void createCase(CourtCase courtCase, SearchResult searchResult) {
+        //TODO: This should be domain courtCase
 
         Optional.ofNullable(searchResult)
             .ifPresentOrElse(result -> {
@@ -49,6 +50,7 @@ public class CourtCaseService {
     }
 
     public void saveCourtCase(CourtCase courtCase) {
+        // TODO: This should be domain case
         try {
             restClient.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase).block();
         } finally {
@@ -57,6 +59,7 @@ public class CourtCaseService {
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
+        // TODO: This should be domain case
         return offenderSearchRestClient.search(courtCase.getCrn())
             .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
             .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
