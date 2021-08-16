@@ -3,9 +3,6 @@
     "method": "POST",
     "url": "/court/X500/case/12345/grouped-offender-matches",
     "bodyPatterns": [
-      {
-        "matches" : ".*X99999.*"
-      }
     ]
   },
   "response": {

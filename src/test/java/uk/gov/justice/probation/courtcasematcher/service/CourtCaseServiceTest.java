@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,16 +44,25 @@ class CourtCaseServiceTest {
 
     @InjectMocks
     private CourtCaseService courtCaseService;
+    private final GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
+            .matches(Collections.emptyList())
+            .build();
 
     @DisplayName("Save court case.")
     @Test
     void saveCourtCase() {
-
-        CourtCase courtCase = CourtCase.builder().caseNo(CASE_NO).courtCode(COURT_CODE).build();
+        final var courtCase = CourtCase.builder()
+                .caseNo(CASE_NO)
+                .courtCode(COURT_CODE)
+                .groupedOffenderMatches(matches)
+                .build();
+        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(restClient.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
         verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(restClient).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
     @DisplayName("Incoming gateway case which is merged with the existing.")
@@ -92,29 +102,54 @@ class CourtCaseServiceTest {
     @DisplayName("Save a court case with a search response.")
     @Test
     void givenSearchResponse_whenCreateCourtCase_thenPutCase() {
-
         MatchResponse matchResponse = MatchResponse.builder().build();
-        CourtCase courtCase = CourtCase.builder()
+        final var courtCase = CourtCase.builder()
                             .caseId(Long.toString(CASE_ID))
                             .caseNo(CASE_NO)
                             .courtCode(COURT_CODE)
-                            .groupedOffenderMatches(GroupedOffenderMatches.builder().matches(Collections.emptyList()).build())
+                            .groupedOffenderMatches(matches)
                             .build();
+        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(restClient.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build());
 
         verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(restClient).postMatches(COURT_CODE, CASE_NO, matches);
+    }
+
+    @DisplayName("Save a search responses even if case put fails.")
+    @Test
+    void givenSearchResponse_whenCreateCourtCaseFails_thenPostMatches() {
+        MatchResponse matchResponse = MatchResponse.builder().build();
+        final var courtCase = CourtCase.builder()
+                            .caseId(Long.toString(CASE_ID))
+                            .caseNo(CASE_NO)
+                            .courtCode(COURT_CODE)
+                            .groupedOffenderMatches(matches)
+                            .build();
+        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenThrow(new RuntimeException("bang!"));
+        when(restClient.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
+
+        assertThatExceptionOfType(RuntimeException.class)
+            .isThrownBy(() -> courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build()))
+            .withMessage("bang!");
+
+        verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(restClient).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
     @DisplayName("Save a court case without a search response.")
     @Test
     void givenNoSearchResponse_whenCreateCourtCase_thenReturn() {
-
-        CourtCase courtCase = CourtCase.builder().caseId(Long.toString(CASE_ID)).caseNo(CASE_NO).courtCode(COURT_CODE).build();
+        final var courtCase = CourtCase.builder().caseId(Long.toString(CASE_ID)).caseNo(CASE_NO).courtCode(COURT_CODE).build();
+        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(restClient.postMatches(COURT_CODE, CASE_NO, null)).thenReturn(Mono.empty());
 
         courtCaseService.createCase(courtCase, null);
 
         verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(restClient).postMatches(COURT_CODE, CASE_NO, null);
     }
 
     @DisplayName("Fetch and update probation status")

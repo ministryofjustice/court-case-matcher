@@ -10,13 +10,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.Disposable;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 import reactor.tuple.Tuple2;
@@ -93,31 +91,27 @@ public class CourtCaseRestClient {
             });
     }
 
-    public Disposable putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
+    public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
         final GroupedOffenderMatches offenderMatches = courtCase.getGroupedOffenderMatches();
 
         return put(path, courtCase)
-            .retrieve()
-            .bodyToMono(CourtCase.class)
-            .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
-                .jitter(0.0d)
-                .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_CASE, courtCode, caseNo))
-                .filter(EXCEPTION_RETRY_FILTER))
-            .onErrorResume((throwable) -> handleError(throwable, caseNo, courtCode))
-            .subscribe(courtCaseApi -> {
-                eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build());
-                postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), offenderMatches);
-            }, throwable -> {
-                eventBus.post(CourtCaseFailureEvent.builder()
-                    .failureMessage(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode))
-                    .throwable(throwable)
-                    .build());
-                postMatches(courtCase.getCourtCode(), courtCase .getCaseNo(), offenderMatches);
-            });
+                .retrieve()
+                .bodyToMono(CourtCase.class)
+                .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
+                        .jitter(0.0d)
+                        .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_CASE, courtCode, caseNo))
+                        .filter(EXCEPTION_RETRY_FILTER))
+                .doOnSuccess(courtCaseApi -> eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build()))
+                .doOnError(throwable -> handleError(throwable, caseNo, courtCode))
+                .doOnError(throwable -> eventBus.post(CourtCaseFailureEvent.builder()
+                        .failureMessage(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode))
+                        .throwable(throwable)
+                        .build()))
+                .then();
     }
 
-    public Mono<ResponseEntity<Void>> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
+    public Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
 
         return Mono.justOrEmpty(offenderMatches)
             .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), matches))
@@ -133,7 +127,8 @@ public class CourtCaseRestClient {
                             .map(HttpEntity::getHeaders)
                             .map((HttpHeaders headers) -> headers.getFirst(HttpHeaders.LOCATION))
                             .orElse("[NOT FOUND]")))
-            .doOnError(throwable -> log.error(String.format(ERR_MSG_FORMAT_POST_MATCH, courtCode, caseNo, Optional.ofNullable(offenderMatches).map(GroupedOffenderMatches::getMatches).map(List::size)), throwable));
+            .doOnError(throwable -> log.error(String.format(ERR_MSG_FORMAT_POST_MATCH, courtCode, caseNo, Optional.ofNullable(offenderMatches).map(GroupedOffenderMatches::getMatches).map(List::size)), throwable))
+            .then();
     }
 
     private WebClient.RequestHeadersSpec<?> get(String path) {
@@ -174,12 +169,11 @@ public class CourtCaseRestClient {
         return spec.attributes(clientRegistrationId("offender-search-client"));
     }
 
-    private Mono<? extends CourtCase> handleError(Throwable throwable, String courtCode, String caseNo) {
+    private void handleError(Throwable throwable, String courtCode, String caseNo) {
 
         if (Exceptions.isRetryExhausted(throwable)) {
             log.error(String.format(ERROR_MSG_FORMAT_RETRY_PUT_CASE, caseNo, courtCode, maxRetries, maxRetries));
         }
-        return Mono.error(throwable);
     }
 
     private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String courtCode, String caseNo) {

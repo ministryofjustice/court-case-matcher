@@ -142,7 +142,7 @@ public class SqsMessageReceiverIntTest {
 
 
         await()
-                .atMost(5, TimeUnit.SECONDS)
+                .atMost(60, TimeUnit.SECONDS)
                 .until(() -> {
                     System.out.println(dlqMessageReceiver.getMessages().size());
                     return dlqMessageReceiver.getMessages().size() == 1;
@@ -169,8 +169,6 @@ public class SqsMessageReceiverIntTest {
         private String regionName;
         @Value("${aws.sqs.court_case_matcher_queue_name}")
         private String queueName;
-//        @Value("${aws.sqs.court_case_matcher_dlq_name}")
-//        private String dlqName;
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
