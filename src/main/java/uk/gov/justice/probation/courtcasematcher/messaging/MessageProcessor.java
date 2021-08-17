@@ -10,6 +10,15 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import javax.validation.ConstraintViolationException;
 
+/**
+ * MessageProcessor
+ *
+ * The MessageProcessor is responsible for orchestrating the various service calls required as a result of an incoming
+ * message. It's important that any errors that should result in a push to the DLQ should throw an exception, which will
+ * be passed back up to the caller. As Reactive Monos are asynchronous these must be blocked in order to expose any
+ * errors that occurred. Without this blocking behaviour, exceptions will be raised on a separate thread and the caller
+ * will not know to push to the DLQ.
+ */
 public interface MessageProcessor {
 
     default CourtCaseFailureEvent handleException(Exception ex, String payload) {
@@ -32,12 +41,11 @@ public interface MessageProcessor {
         }
     }
 
-    default String saveCase(Case aCase, String messageId) {
+    default void saveCase(Case aCase, String messageId) {
         getTelemetryService().trackCourtCaseEvent(aCase, messageId);
         final var courtCase = getCourtCaseService().getCourtCase(aCase)
                 .block();
         postCaseEvent(courtCase);
-        return aCase.getCaseNo();
     }
 
     void postCaseEvent(CourtCase courtCase);
