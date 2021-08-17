@@ -39,6 +39,7 @@ aws:
   sqs:
     court_case_matcher_endpoint_url: "http://localhost:4566"
     court_case_matcher_queue_name: "court-case-matcher-queue"
+    court_case_matcher_dlq_name: "court-case-matcher-dlq"
     court_case_matcher_access_key_id: foobar
     court_case_matcher_secret_access_key: foobar
   sns:

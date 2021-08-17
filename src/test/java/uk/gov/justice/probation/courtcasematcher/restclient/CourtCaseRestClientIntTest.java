@@ -22,6 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.Exceptions;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
@@ -45,7 +46,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
@@ -166,9 +171,13 @@ public class CourtCaseRestClientIntTest {
     @Test
     void whenPutCourtCase_thenMakeRestCallToCourtCaseService() {
 
-        restClient.putCourtCase(COURT_CODE, CASE_NO, A_CASE);
+        restClient.putCourtCase(COURT_CODE, CASE_NO, A_CASE).block();
 
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(any(CourtCaseSuccessEvent.class));
+
+        MOCK_SERVER.verify(
+                putRequestedFor(urlEqualTo(String.format("/court/%s/case/%s", COURT_CODE, CASE_NO)))
+        );
     }
 
     @Test
@@ -180,17 +189,31 @@ public class CourtCaseRestClientIntTest {
             .courtCode(unknownCourtCode)
             .build();
 
-        restClient.putCourtCase(unknownCourtCode, CASE_NO, courtCaseApi);
+        assertThatExceptionOfType(WebClientResponseException.class)
+            .isThrownBy(() -> restClient.putCourtCase(unknownCourtCode, CASE_NO, courtCaseApi).block())
+            .withMessage("404 Not Found from PUT http://localhost:8090/court/XXX/case/12345");
 
         var notFoundException = createException(HttpStatus.NOT_FOUND).getClass();
         var failureEventMatcher
             = FailureEventMatcher.builder().throwableClass(notFoundException).build();
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(argThat(failureEventMatcher));
+        MOCK_SERVER.verify(1,
+                putRequestedFor(urlEqualTo("/court/XXX/case/12345"))
+        );
     }
 
     @Test
-    void whenRestClientThrows500OnPut_ThenRetryWithFailureEvent() {
-        restClient.putCourtCase("X500", CASE_NO, A_CASE);
+    void whenRestClientThrows500OnPut_ThenThrow() {
+        final var aCase = CourtCase.builder()
+                .caseId("1246257")
+                .caseNo(CASE_NO)
+                .courtCode("X500")
+                .groupedOffenderMatches(matches)
+                .build();
+
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> restClient.putCourtCase("X500", CASE_NO, aCase).block())
+                .withMessage("Retries exhausted: 1/1");
 
         var retryExhaustedException = Exceptions.retryExhausted("Message", new IllegalArgumentException()).getClass();
         var failureEventMatcher= FailureEventMatcher.builder().throwableClass(retryExhaustedException).build();
@@ -200,12 +223,15 @@ public class CourtCaseRestClientIntTest {
     @Test
     void whenPostOffenderMatches_thenMakeRestCallToCourtCaseService() {
 
-        restClient.postMatches(COURT_CODE, CASE_NO, matches);
+        restClient.postMatches(COURT_CODE, "666666", matches).block();
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
 
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
         assertThat(events).hasSizeGreaterThanOrEqualTo(1);
+        MOCK_SERVER.verify(
+                postRequestedFor(urlEqualTo(String.format("/court/%s/case/%s/grouped-offender-matches", COURT_CODE, "666666")))
+        );
     }
 
     @Test
@@ -222,7 +248,9 @@ public class CourtCaseRestClientIntTest {
                 .build()))
             .build();
 
-        restClient.postMatches("XXX", CASE_NO, matches);
+        assertThatExceptionOfType(WebClientResponseException.class)
+            .isThrownBy(() -> restClient.postMatches("XXX", CASE_NO, matches).block())
+            .withMessage("404 Not Found from POST http://localhost:8090/court/XXX/case/12345/grouped-offender-matches");
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
@@ -238,7 +266,9 @@ public class CourtCaseRestClientIntTest {
     @Test
     void whenRestClientThrows500OnPostMatches_ThenRetryAndLogRetryExhaustedError() {
 
-        restClient.postMatches("X500", CASE_NO, matches);
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> restClient.postMatches("X500", CASE_NO, matches).block())
+                .withMessage("Retries exhausted: 1/1");
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS).atLeast(1)).doAppend(captorLoggingEvent.capture());
 
@@ -249,13 +279,13 @@ public class CourtCaseRestClientIntTest {
             .findFirst()
             .map(event -> event.getThrowableProxy().getClassName())
             .orElse(null);
-        assertThat(className).contains("WebClientResponseException$NotFound");
+        assertThat(className).contains("reactor.core.Exceptions$RetryExhaustedException");
     }
 
     @Test
     void whenRestClientCalledWithNull_ThenFailureEvent() {
 
-        restClient.postMatches(COURT_CODE, CASE_NO, null);
+        restClient.postMatches(COURT_CODE, CASE_NO, null).block();
 
         verify(mockAppender, never()).doAppend(captorLoggingEvent.capture());
     }

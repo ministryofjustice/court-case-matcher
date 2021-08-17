@@ -52,6 +52,7 @@ public class SqsMessageReceiverIntTest {
 
     private static final String BASE_PATH = "src/test/resources/messages";
     private static String singleCase;
+    private static String failingCase;
 
     @Autowired
     private TelemetryService telemetryService;
@@ -64,6 +65,7 @@ public class SqsMessageReceiverIntTest {
     @BeforeAll
     static void beforeAll() throws IOException {
         singleCase = Files.readString(Paths.get(BASE_PATH +"/json/case.json"));
+        failingCase = Files.readString(Paths.get(BASE_PATH +"/json/failing-case.json"));
         MOCK_SERVER.start();
     }
 
@@ -84,7 +86,7 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, singleCase);
 
         await()
-            .atMost(5, TimeUnit.SECONDS)
+            .atMost(10, TimeUnit.SECONDS)
             .until(() -> countPutRequestsTo("/court/B10JQ/case/1600032981") == 1);
 
         MOCK_SERVER.verify(

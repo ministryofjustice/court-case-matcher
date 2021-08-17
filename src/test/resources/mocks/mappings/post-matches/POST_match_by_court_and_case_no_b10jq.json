@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/court/B10JQ/case/12345/grouped-offender-matches",
+    "bodyPatterns": [
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "Location": "/court/SHF/case/1600028974/grouped-offender-matches/4"
+    }
+  }
+}

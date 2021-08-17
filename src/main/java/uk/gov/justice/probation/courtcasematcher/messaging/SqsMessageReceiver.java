@@ -42,5 +42,4 @@ public class SqsMessageReceiver {
             messageProcessor.process(message, messageId);
         }
     }
-
 }

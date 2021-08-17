@@ -49,7 +49,11 @@ public class CourtCaseService {
     }
 
     public void saveCourtCase(CourtCase courtCase) {
-        restClient.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase);
+        try {
+            restClient.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase).block();
+        } finally {
+            restClient.postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase.getGroupedOffenderMatches()).block();
+        }
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {

@@ -1,9 +1,7 @@
 {
   "request": {
-    "method": "POST",
-    "url": "/court/X500/case/12345/grouped-offender-matches",
-    "bodyPatterns": [
-    ]
+    "method": "PUT",
+    "url": "/court/B10JQ/case/666666"
   },
   "response": {
     "status": 500,
