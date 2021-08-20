@@ -2,8 +2,8 @@ package uk.gov.justice.probation.courtcasematcher.service;
 
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 
 @Data
 @Builder

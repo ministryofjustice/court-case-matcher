@@ -10,12 +10,11 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponses;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -221,12 +220,11 @@ class CourtCaseServiceTest {
     }
 
     private CourtCase buildCase() {
-        return Case.builder()
+        return CourtCase.builder()
             .courtCode(COURT_CODE)
             .courtRoom(COURT_ROOM)
             .caseNo(CASE_NO)
-            .caseId(CASE_ID)
-            .build()
-            .asDomain();
+            .caseId(CASE_ID.toString())
+            .build();
     }
 }

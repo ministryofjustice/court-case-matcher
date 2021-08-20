@@ -14,11 +14,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -11,8 +11,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 

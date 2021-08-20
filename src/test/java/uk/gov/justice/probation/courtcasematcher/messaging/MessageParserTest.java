@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.probation.courtcasematcher.application.MessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Address;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Offence;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 
 import javax.validation.ConstraintViolationException;
 import java.io.IOException;
@@ -43,7 +43,7 @@ class MessageParserTest {
 
         @Qualifier("caseJsonParser")
         @Autowired
-        public MessageParser<Case> messageParser;
+        public MessageParser<LibraCase> messageParser;
 
         @DisplayName("Parse a valid message")
         @Test
@@ -51,7 +51,7 @@ class MessageParserTest {
             var path = "src/test/resources/messages/json/case.json";
             var content = Files.readString(Paths.get(path));
 
-            var aCase = messageParser.parseMessage(content, Case.class);
+            var aCase = messageParser.parseMessage(content, LibraCase.class);
             checkCase(aCase);
         }
 
@@ -61,7 +61,7 @@ class MessageParserTest {
             var path = "src/test/resources/messages/json/case-invalid.json";
             var content = Files.readString(Paths.get(path));
 
-            var thrown = catchThrowable(() -> messageParser.parseMessage(content, Case.class));
+            var thrown = catchThrowable(() -> messageParser.parseMessage(content, LibraCase.class));
 
             var ex = (ConstraintViolationException) thrown;
             assertThat(ex.getConstraintViolations()).hasSize(1);
@@ -70,34 +70,34 @@ class MessageParserTest {
         }
     }
 
-    private static void checkCase(Case aCase) {
+    private static void checkCase(LibraCase aLibraCase) {
         // Fields populated from the session
-        assertThat(aCase.getDefendantAge()).isEqualTo("20");
-        assertThat(aCase.getCaseId()).isEqualTo(1217464);
-        assertThat(aCase.getDefendantName()).isEqualTo("Mr Arthur MORGAN");
-        assertThat(aCase.getName()).isEqualTo(Name.builder()
+        assertThat(aLibraCase.getDefendantAge()).isEqualTo("20");
+        assertThat(aLibraCase.getCaseId()).isEqualTo(1217464);
+        assertThat(aLibraCase.getDefendantName()).isEqualTo("Mr Arthur MORGAN");
+        assertThat(aLibraCase.getName()).isEqualTo(LibraName.builder()
                                                 .title("Mr")
                                                 .forename1("Arthur")
                                                 .surname("MORGAN").build());
-        assertThat(aCase.getDefendantType()).isEqualTo("P");
-        assertThat(aCase.getDefendantSex()).isEqualTo("N");
-        assertThat(aCase.getDefendantAge()).isEqualTo("20");
-        assertThat(aCase.getPnc()).isEqualTo("2004/0012345U");
-        assertThat(aCase.getCro()).isEqualTo("11111/79J");
-        assertThat(aCase.getDefendantAddress()).usingRecursiveComparison().isEqualTo(Address.builder()
+        assertThat(aLibraCase.getDefendantType()).isEqualTo("P");
+        assertThat(aLibraCase.getDefendantSex()).isEqualTo("N");
+        assertThat(aLibraCase.getDefendantAge()).isEqualTo("20");
+        assertThat(aLibraCase.getPnc()).isEqualTo("2004/0012345U");
+        assertThat(aLibraCase.getCro()).isEqualTo("11111/79J");
+        assertThat(aLibraCase.getDefendantAddress()).usingRecursiveComparison().isEqualTo(LibraAddress.builder()
                                                                     .line1("39 The Street")
                                                                     .line2("Newtown")
                                                                     .pcode("NT4 6YH").build());
-        assertThat(aCase.getDefendantDob()).isEqualTo(LocalDate.of(1975, Month.JANUARY, 1));
-        assertThat(aCase.getNationality1()).isEqualTo("Angolan");
-        assertThat(aCase.getNationality2()).isEqualTo("Austrian");
-        assertThat(aCase.getSeq()).isEqualTo(1);
-        assertThat(aCase.getListNo()).isEqualTo("1st");
-        assertThat(aCase.getOffences()).hasSize(1);
-        checkOffence(aCase.getOffences().get(0));
+        assertThat(aLibraCase.getDefendantDob()).isEqualTo(LocalDate.of(1975, Month.JANUARY, 1));
+        assertThat(aLibraCase.getNationality1()).isEqualTo("Angolan");
+        assertThat(aLibraCase.getNationality2()).isEqualTo("Austrian");
+        assertThat(aLibraCase.getSeq()).isEqualTo(1);
+        assertThat(aLibraCase.getListNo()).isEqualTo("1st");
+        assertThat(aLibraCase.getOffences()).hasSize(1);
+        checkOffence(aLibraCase.getOffences().get(0));
     }
 
-    private static void checkOffence(Offence offence) {
+    private static void checkOffence(LibraOffence offence) {
         assertThat(offence.getSeq()).isEqualTo(1);
         assertThat(offence.getTitle()).isEqualTo("Theft from a shop");
         assertThat(offence.getSummary()).isEqualTo("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Person.");

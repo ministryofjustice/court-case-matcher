@@ -25,8 +25,8 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.CourtCaseRequest;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.GroupedOffenderMatchesRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CourtCaseRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.GroupedOffenderMatchesRequest;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;

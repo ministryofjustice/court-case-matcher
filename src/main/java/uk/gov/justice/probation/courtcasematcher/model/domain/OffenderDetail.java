@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 
 import java.time.LocalDate;
 import java.util.List;

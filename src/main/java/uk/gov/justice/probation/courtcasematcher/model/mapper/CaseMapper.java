@@ -3,20 +3,23 @@ package uk.gov.justice.probation.courtcasematcher.model.mapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase.CourtCaseBuilder;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,8 +33,8 @@ import static java.util.Comparator.comparing;
 @Slf4j
 public class CaseMapper {
 
-    public static CourtCase newFromCase(Case aCase) {
-        return newFromLibraCase(aCase)
+    public static CourtCase newFromCase(LibraCase aLibraCase) {
+        return newFromLibraCase(aLibraCase)
             .isNew(true)
             .build();
     }
@@ -58,31 +61,31 @@ public class CaseMapper {
             .offences(courtCase.getOffences());
     }
 
-    private static CourtCase.CourtCaseBuilder newFromLibraCase(Case aCase) {
+    private static CourtCase.CourtCaseBuilder newFromLibraCase(LibraCase aLibraCase) {
         return CourtCase.builder()
-            .caseNo(aCase.getCaseNo())
-            .courtCode(aCase.getCourtCode())
-            .caseId(String.valueOf(aCase.getCaseId()))
-            .courtRoom(aCase.getCourtRoom())
-            .defendantAddress(Optional.ofNullable(aCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
-            .name(Optional.ofNullable(aCase.getName()).map(Name::asDomain).orElse(null))
-            .defendantName(nameFrom(aCase.getDefendantName(), aCase.getName()))
-            .defendantDob(aCase.getDefendantDob())
-            .defendantSex(aCase.getDefendantSex())
-            .defendantType(DefendantType.of(aCase.getDefendantType()))
-            .cro(aCase.getCro())
-            .pnc(aCase.getPnc())
-            .listNo(aCase.getListNo())
-            .sessionStartTime(aCase.getSessionStartTime())
-            .nationality1(aCase.getNationality1())
-            .nationality2(aCase.getNationality2())
-            .offences(Optional.ofNullable(aCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()));
+            .caseNo(aLibraCase.getCaseNo())
+            .courtCode(aLibraCase.getCourtCode())
+            .caseId(String.valueOf(aLibraCase.getCaseId()))
+            .courtRoom(aLibraCase.getCourtRoom())
+            .defendantAddress(Optional.ofNullable(aLibraCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
+            .name(Optional.ofNullable(aLibraCase.getName()).map(LibraName::asDomain).orElse(null))
+            .defendantName(nameFrom(aLibraCase.getDefendantName(), aLibraCase.getName()))
+            .defendantDob(aLibraCase.getDefendantDob())
+            .defendantSex(aLibraCase.getDefendantSex())
+            .defendantType(DefendantType.of(aLibraCase.getDefendantType()))
+            .cro(aLibraCase.getCro())
+            .pnc(aLibraCase.getPnc())
+            .listNo(aLibraCase.getListNo())
+            .sessionStartTime(aLibraCase.getSessionStartTime())
+            .nationality1(aLibraCase.getNationality1())
+            .nationality2(aLibraCase.getNationality2())
+            .offences(Optional.ofNullable(aLibraCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()));
     }
 
-    private static List<Offence> fromOffences(List<uk.gov.justice.probation.courtcasematcher.model.gateway.Offence> offences) {
+    private static List<Offence> fromOffences(List<LibraOffence> offences) {
         return Optional.ofNullable(offences)
                         .map(offs -> offs.stream()
-                            .sorted(comparing(uk.gov.justice.probation.courtcasematcher.model.gateway.Offence::getSeq))
+                            .sorted(comparing(LibraOffence::getSeq))
                             .map(offence -> Offence.builder()
                                 .offenceTitle(offence.getTitle())
                                 .offenceSummary(offence.getSummary())
@@ -93,7 +96,7 @@ public class CaseMapper {
                         .orElse(Collections.emptyList());
     }
 
-    public static Address fromAddress(uk.gov.justice.probation.courtcasematcher.model.gateway.Address def_addr) {
+    public static Address fromAddress(LibraAddress def_addr) {
         return Optional.ofNullable(def_addr)
                         .map(address -> Address.builder()
                                         .line1(def_addr.getLine1())
@@ -106,17 +109,17 @@ public class CaseMapper {
             .orElse(null);
     }
 
+    public static String nameFrom(String defendantName, LibraName libraName) {
+        return Optional.ofNullable(defendantName)
+            .orElse(Optional.ofNullable(libraName)
+                .map(LibraName::getFullName)
+                .orElse(null));
+    }
+
     public static String nameFrom(String defendantName, Name name) {
         return Optional.ofNullable(defendantName)
             .orElse(Optional.ofNullable(name)
                 .map(Name::getFullName)
-                .orElse(null));
-    }
-
-    public static String nameFrom(String defendantName, uk.gov.justice.probation.courtcasematcher.model.domain.Name name) {
-        return Optional.ofNullable(defendantName)
-            .orElse(Optional.ofNullable(name)
-                .map(uk.gov.justice.probation.courtcasematcher.model.domain.Name::getFullName)
                 .orElse(null));
     }
 

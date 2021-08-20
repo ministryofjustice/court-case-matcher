@@ -5,6 +5,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
@@ -12,14 +16,12 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Address;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
 
 import java.time.LocalDate;
@@ -39,16 +41,15 @@ class CaseMapperTest {
     private static final LocalTime START_TIME = LocalTime.of(9, 10);
     private static final LocalDateTime SESSION_START_TIME = LocalDateTime.of(2020, Month.FEBRUARY, 29, 9, 10);
     private static final String COURT_CODE = "B10JQ";
-    private static final String COURT_NAME = "North Shields Magistrates Court";
 
-    private static final uk.gov.justice.probation.courtcasematcher.model.domain.Name nameDomain = Name.builder().title("Mr")
+    private static final Name name = Name.builder().title("Mr")
                                                     .forename1("Patrick")
                                                     .forename2("Floyd")
                                                     .forename3("Jarvis")
                                                     .surname("Garrett")
                                                     .build();
 
-    private static final uk.gov.justice.probation.courtcasematcher.model.gateway.Name nameGateway = uk.gov.justice.probation.courtcasematcher.model.gateway.Name.builder().title("Mr")
+    private static final LibraName libraName = LibraName.builder().title("Mr")
                                                     .forename1("Patrick")
                                                     .forename2("Floyd")
                                                     .forename3("Jarvis")
@@ -58,19 +59,19 @@ class CaseMapperTest {
     public static final String CRO = "CRO456";
     public static final String PNC = "PNC789";
 
-    private Case aCase;
+    private LibraCase aLibraCase;
 
     @BeforeEach
     void beforeEach() {
 
-        aCase = Case.builder()
+        aLibraCase = LibraCase.builder()
             .caseNo("123")
             .courtCode(COURT_CODE)
             .courtRoom("00")
-            .defendantAddress(Address.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
+            .defendantAddress(LibraAddress.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
             .defendantAge("13")
             .defendantDob(DATE_OF_BIRTH)
-            .name(nameGateway)
+            .name(libraName)
             .defendantSex("M")
             .defendantType("P")
             .caseId(321321L)
@@ -90,7 +91,7 @@ class CaseMapperTest {
         @Test
         void givenNoMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
 
-            var courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NOTHING)
                 .build();
@@ -112,7 +113,7 @@ class CaseMapperTest {
                     .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
@@ -148,7 +149,7 @@ class CaseMapperTest {
                 .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NAME)
                 .matches(List.of(match))
@@ -177,7 +178,7 @@ class CaseMapperTest {
                 .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
@@ -207,7 +208,7 @@ class CaseMapperTest {
                 .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
                 .matches(List.of(match1, match2))
@@ -253,7 +254,7 @@ class CaseMapperTest {
         @DisplayName("Map from a new JSON case (with no block) composed of nulls. Ensures no null pointers.")
         @Test
         void givenJsonCase_whenMapCaseWithNullsThenCreateNewCaseNoOffences_EnsureNoNullPointer() {
-            var nullCase = Case.builder()
+            var nullCase = LibraCase.builder()
                 .courtCode(COURT_CODE)
                 .courtRoom("00")
                 .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
@@ -267,14 +268,14 @@ class CaseMapperTest {
         @Test
         void whenMapCaseWithOffences_ThenCreateNewCase() {
 
-            var offence1 = uk.gov.justice.probation.courtcasematcher.model.gateway.Offence
+            var offence1 = LibraOffence
                 .builder()
                 .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
                 .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
                 .title("Theft from a person")
                 .seq(1)
                 .build();
-            var offence2 = uk.gov.justice.probation.courtcasematcher.model.gateway.Offence
+            var offence2 = LibraOffence
                 .builder()
                 .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
                 .summary("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Shop.")
@@ -283,7 +284,7 @@ class CaseMapperTest {
                 .build();
 
             // Put Seq 2 first in list
-            var aCase = Case.builder()
+            var aCase = LibraCase.builder()
                 .caseNo("123")
                 .offences(Arrays.asList(offence2, offence1))
                 .build();
@@ -344,7 +345,7 @@ class CaseMapperTest {
                 .caseNo("123")
                 .defendantAddress(uk.gov.justice.probation.courtcasematcher.model.domain.Address.builder().line1("line 1").line2("line 2").line3("line 3").postcode("LD1 1AA").build())
                 .defendantDob(DATE_OF_BIRTH)
-                .name(nameDomain)
+                .name(name)
                 .defendantSex("M")
                 .defendantType(DefendantType.PERSON)
                 .caseId("321321")
@@ -386,7 +387,7 @@ class CaseMapperTest {
             assertThat(courtCase.getDefendantAddress().getPostcode()).isEqualTo("LD1 1AA");
             assertThat(courtCase.getDefendantDob()).isNull();
             assertThat(courtCase.getDefendantName()).isEqualTo("Mr Patrick Floyd Jarvis Garrett");
-            assertThat(courtCase.getName()).isEqualTo(nameDomain);
+            assertThat(courtCase.getName()).isEqualTo(name);
             assertThat(courtCase.getDefendantType()).isSameAs(DefendantType.PERSON);
             assertThat(courtCase.getDefendantSex()).isEqualTo("M");
             assertThat(courtCase.getSessionStartTime()).isEqualTo(SESSION_START_TIME);
@@ -420,7 +421,7 @@ class CaseMapperTest {
                 .defendantName("Pat Garrett")
                 .defendantType(DefendantType.PERSON)
                 .defendantDob(LocalDate.of(1969, Month.JANUARY, 1))
-                .name(uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Pat").surname("Garrett").build())
+                .name(Name.builder().forename1("Pat").surname("Garrett").build())
                 .nationality1("USA")
                 .nationality2("Irish")
                 .defendantSex("N")
@@ -493,8 +494,8 @@ class CaseMapperTest {
             .build();
     }
 
-    private uk.gov.justice.probation.courtcasematcher.model.gateway.Offence buildOffence(String title, Integer seq) {
-        return uk.gov.justice.probation.courtcasematcher.model.gateway.Offence.builder()
+    private LibraOffence buildOffence(String title, Integer seq) {
+        return LibraOffence.builder()
             .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
             .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
             .title(title)

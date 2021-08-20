@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.NameRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

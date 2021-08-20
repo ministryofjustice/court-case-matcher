@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.NameHelper;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.NameHelper;
 
 import java.util.List;
 

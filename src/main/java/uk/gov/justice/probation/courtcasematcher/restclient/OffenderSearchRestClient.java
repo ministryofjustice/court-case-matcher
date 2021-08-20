@@ -1,7 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import java.time.Duration;
-import java.util.function.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +15,12 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.Retry.RetrySignal;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponses;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
+
+import java.time.Duration;
+import java.util.function.Predicate;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 

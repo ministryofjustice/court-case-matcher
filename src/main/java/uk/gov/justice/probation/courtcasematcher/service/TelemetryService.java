@@ -4,7 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;

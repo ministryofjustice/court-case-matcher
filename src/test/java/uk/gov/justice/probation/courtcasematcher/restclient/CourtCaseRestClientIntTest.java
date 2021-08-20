@@ -34,7 +34,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMat
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 

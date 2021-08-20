@@ -5,6 +5,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CourtCaseRequest;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
