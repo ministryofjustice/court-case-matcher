@@ -94,7 +94,6 @@ public class CourtCaseRestClient {
     public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
         // TODO: convert domain -> restclient representation
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
-        final GroupedOffenderMatches offenderMatches = courtCase.getGroupedOffenderMatches();
 
         return put(path, courtCase)
                 .retrieve()

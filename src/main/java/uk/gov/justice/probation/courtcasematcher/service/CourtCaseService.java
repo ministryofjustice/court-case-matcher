@@ -26,31 +26,28 @@ public class CourtCaseService {
     private final OffenderSearchRestClient offenderSearchRestClient;
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {
-        // TODO: Return domain object
         return restClient.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
             .map(existing -> CaseMapper.merge(aCase, existing))
             .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
     }
 
     public void createCase(CourtCase courtCase, SearchResult searchResult) {
-        //TODO: This should be domain courtCase
-
-        Optional.ofNullable(searchResult)
-            .ifPresentOrElse(result -> {
+        final var updatedCase = Optional.ofNullable(searchResult)
+                .map(result -> {
                     var response = result.getMatchResponse();
                     log.debug("Save court case with search response for case {}, court {}",
-                        courtCase.getCaseNo(), courtCase.getCourtCode());
-                    saveCourtCase(CaseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
+                            courtCase.getCaseNo(), courtCase.getCourtCode());
+                    return CaseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
                             .matchType(MatchType.of(result))
                             .matches(response.getMatches())
                             .exactMatch(response.isExactMatch())
-                            .build()));
-                },
-                () -> saveCourtCase(courtCase));
+                            .build());
+                })
+                .orElse(courtCase);
+        saveCourtCase(updatedCase);
     }
 
     public void saveCourtCase(CourtCase courtCase) {
-        // TODO: This should be domain case
         try {
             restClient.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase).block();
         } finally {
@@ -59,7 +56,6 @@ public class CourtCaseService {
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
-        // TODO: This should be domain case
         return offenderSearchRestClient.search(courtCase.getCrn())
             .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
             .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())

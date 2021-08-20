@@ -99,7 +99,6 @@ public class CaseMessageProcessor implements MessageProcessor {
     }
 
     private void updateAndSave(final CourtCase courtCase) {
-        //TODO: This should be domain case
         log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getCrn(), courtCase.getCourtCode());
 
         Optional.ofNullable(courtCase.getCrn())
