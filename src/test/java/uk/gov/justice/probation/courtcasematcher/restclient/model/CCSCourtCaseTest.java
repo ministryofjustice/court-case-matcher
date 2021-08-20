@@ -5,7 +5,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CourtCaseRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSCourtCase;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,11 +14,28 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
-class CourtCaseRequestTest {
+class CCSCourtCaseTest {
 
     @Test
-    public void whenCourtCaseRequestOfDomainObject_thenDoIt() {
-        final CourtCase courtCase = CourtCase.builder()
+    public void map() {
+        final CourtCase courtCase = buildCase();
+
+        final var courtCaseRequest = CCSCourtCase.of(courtCase);
+
+        assertThat(courtCaseRequest).usingRecursiveComparison().isEqualTo(courtCase);
+    }
+
+    @Test
+    public void mapBack() {
+        final CourtCase original = buildCase();
+
+        final var actual = CCSCourtCase.of(original).asDomain();
+
+        assertThat(actual).isEqualTo(original);
+    }
+
+    private CourtCase buildCase() {
+        return CourtCase.builder()
                 .caseId("1234")
                 .caseNo("5678")
                 .courtRoom("ROOM 1")
@@ -28,7 +45,7 @@ class CourtCaseRequestTest {
                 .crn("crn")
                 .cro("cro")
                 .pnc("pnc")
-                .defendantDob(LocalDate.of(2000,01,01))
+                .defendantDob(LocalDate.of(2000, 01, 01))
                 .defendantSex("FEMALE")
                 .defendantType(PERSON)
                 .listNo("1")
@@ -36,10 +53,10 @@ class CourtCaseRequestTest {
                 .nationality2("nat2")
                 .isNew(true)
                 .preSentenceActivity(true)
-                .previouslyKnownTerminationDate(LocalDate.of(2001,01,01))
+                .previouslyKnownTerminationDate(LocalDate.of(2001, 01, 01))
                 .probationStatus("Current")
                 .probationStatusActual("Current actual")
-                .sessionStartTime(LocalDateTime.of(2002,1,1,1,1))
+                .sessionStartTime(LocalDateTime.of(2002, 1, 1, 1, 1))
                 .suspendedSentenceOrder(true)
                 .defendantName("Frederiche")
                 .name(Name.builder()
@@ -63,10 +80,6 @@ class CourtCaseRequestTest {
                         .line5("line5")
                         .build())
                 .build();
-
-        final var courtCaseRequest = CourtCaseRequest.of(courtCase);
-
-        assertThat(courtCaseRequest).usingRecursiveComparison().isEqualTo(courtCase);
     }
 
 }

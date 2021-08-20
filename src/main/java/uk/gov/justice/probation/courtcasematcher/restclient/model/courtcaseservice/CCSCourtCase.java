@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import reactor.util.StringUtils;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CourtCaseRequest implements Serializable {
+public class CCSCourtCase implements Serializable {
 
     private final String caseId;
 
@@ -42,7 +41,7 @@ public class CourtCaseRequest implements Serializable {
 
     private final String probationStatusActual;
 
-    private final List<OffenceRequest> offences;
+    private final List<CCSOffence> offences;
 
     private final String crn;
 
@@ -50,15 +49,15 @@ public class CourtCaseRequest implements Serializable {
 
     private final String pnc;
 
-    private final NameRequest name;
+    private final CCSName name;
 
     private final String defendantName;
 
-    private final AddressRequest defendantAddress;
+    private final CCSAddress defendantAddress;
 
     private final LocalDate defendantDob;
 
-    private final DefendantType defendantType;
+    private final CCSDefendantType defendantType;
 
     private final String defendantSex;
 
@@ -85,21 +84,11 @@ public class CourtCaseRequest implements Serializable {
     private final boolean isNew;
 
     public boolean isPerson() {
-        return Optional.ofNullable(defendantType).map(defType -> defType == DefendantType.PERSON).orElse(false);
+        return Optional.ofNullable(defendantType).map(defType -> defType == CCSDefendantType.PERSON).orElse(false);
     }
 
-    public boolean shouldMatchToOffender() {
-        return isPerson() && !StringUtils.hasText(crn);
-    }
-
-
-    public LocalDate getDateOfHearing() {
-        return sessionStartTime != null ? sessionStartTime.toLocalDate() : null;
-    }
-
-
-    public static CourtCaseRequest of(CourtCase domain){
-        return CourtCaseRequest.builder()
+    public static CCSCourtCase of(CourtCase domain){
+        return CCSCourtCase.builder()
                 .awaitingPsr(domain.isAwaitingPsr())
                 .breach(domain.getBreach())
                 .caseId(domain.getCaseId())
@@ -117,7 +106,7 @@ public class CourtCaseRequest implements Serializable {
                 .suspendedSentenceOrder(domain.getSuspendedSentenceOrder())
                 .defendantDob(domain.getDefendantDob())
                 .defendantName(CaseMapper.nameFrom(domain.getDefendantName(), domain.getName()))
-                .defendantType(DefendantType.of(domain.getDefendantType()))
+                .defendantType(CCSDefendantType.of(domain.getDefendantType()))
                 .defendantSex(domain.getDefendantSex())
                 .isNew(domain.isNew())
                 .listNo(domain.getListNo())
@@ -125,16 +114,57 @@ public class CourtCaseRequest implements Serializable {
                 .nationality2(domain.getNationality2())
 
                 .name(Optional.ofNullable(domain.getName())
-                        .map(NameRequest::of)
+                        .map(CCSName::of)
                         .orElse(null))
                 .defendantAddress(Optional.ofNullable(domain.getDefendantAddress())
-                        .map(AddressRequest::of)
+                        .map(CCSAddress::of)
                         .orElse(null))
                 .offences(Optional.ofNullable(domain.getOffences())
                         .map(offences -> offences.stream()
-                                .map(OffenceRequest::of)
+                                .map(CCSOffence::of)
                                 .collect(Collectors.toList()))
                         .orElse(null))
+                .build();
+    }
+
+    public CourtCase asDomain() {
+        return CourtCase.builder()
+                .awaitingPsr(isAwaitingPsr())
+                .breach(getBreach())
+                .caseId(getCaseId())
+                .caseNo(getCaseNo())
+                .courtCode(getCourtCode())
+                .courtRoom(getCourtRoom())
+                .crn(getCrn())
+                .cro(getCro())
+                .pnc(getPnc())
+                .preSentenceActivity(isPreSentenceActivity())
+                .previouslyKnownTerminationDate(getPreviouslyKnownTerminationDate())
+                .probationStatus(getProbationStatus())
+                .probationStatusActual(getProbationStatusActual())
+                .sessionStartTime(getSessionStartTime())
+                .suspendedSentenceOrder(getSuspendedSentenceOrder())
+                .defendantDob(getDefendantDob())
+                .defendantName(getDefendantName())
+                .defendantType(getDefendantType().asDomain())
+                .defendantSex(getDefendantSex())
+                .isNew(isNew())
+                .listNo(getListNo())
+                .nationality1(getNationality1())
+                .nationality2(getNationality2())
+
+                .name(Optional.ofNullable(getName())
+                        .map(CCSName::asDomain)
+                        .orElse(null))
+                .defendantAddress(Optional.ofNullable(getDefendantAddress())
+                        .map(CCSAddress::asDomain)
+                        .orElse(null))
+                .offences(Optional.ofNullable(getOffences())
+                        .map(offences -> offences.stream()
+                                .map(CCSOffence::asDomain)
+                                .collect(Collectors.toList()))
+                        .orElse(null))
+
                 .build();
     }
 }

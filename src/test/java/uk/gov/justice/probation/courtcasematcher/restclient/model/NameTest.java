@@ -2,7 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.NameRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +16,7 @@ public void map() {
             .surname("sur")
             .title("title")
             .build();
-    final var nameRequest = NameRequest.of(name);
+    final var nameRequest = CCSName.of(name);
 
     assertThat(nameRequest).usingRecursiveComparison().isEqualTo(name);
     }

@@ -7,10 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
@@ -18,7 +15,7 @@ import java.util.stream.Stream;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class NameRequest {
+public class CCSName {
 
     private final String title;
     private final String forename1;
@@ -26,8 +23,8 @@ public class NameRequest {
     private final String forename3;
     private final String surname;
 
-    public static NameRequest of(uk.gov.justice.probation.courtcasematcher.model.domain.Name name) {
-        return NameRequest.builder()
+    public static CCSName of(uk.gov.justice.probation.courtcasematcher.model.domain.Name name) {
+        return CCSName.builder()
                 .title(name.getTitle())
                 .forename1(name.getForename1())
                 .forename2(name.getForename2())
@@ -36,18 +33,13 @@ public class NameRequest {
                 .build();
     }
 
-    public String getForenames() {
-        return Stream.of(forename1, forename2, forename3)
-            .filter(Objects::nonNull)
-            .collect(Collectors.joining(" "))
-            .trim();
+    public Name asDomain() {
+        return Name.builder()
+                .title(getTitle())
+                .forename1(getForename1())
+                .forename2(getForename2())
+                .forename3(getForename3())
+                .surname(getSurname())
+                .build();
     }
-
-    public String getFullName() {
-        return Stream.of(title, forename1, forename2, forename3, surname)
-            .filter(Objects::nonNull)
-            .collect(Collectors.joining(" "))
-            .trim();
-    }
-
 }

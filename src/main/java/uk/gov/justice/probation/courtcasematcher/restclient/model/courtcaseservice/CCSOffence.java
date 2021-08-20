@@ -13,7 +13,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OffenceRequest {
+public class CCSOffence {
 
     private final String offenceTitle;
 
@@ -23,12 +23,21 @@ public class OffenceRequest {
 
     private final Integer sequenceNumber;
 
-    public static OffenceRequest of(Offence offence) {
-        return OffenceRequest.builder()
+    public static CCSOffence of(Offence offence) {
+        return CCSOffence.builder()
                 .offenceTitle(offence.getOffenceTitle())
                 .offenceSummary(offence.getOffenceSummary())
                 .act(offence.getAct())
                 .sequenceNumber(offence.getSequenceNumber())
+                .build();
+    }
+
+    public Offence asDomain() {
+        return Offence.builder()
+                .offenceTitle(getOffenceTitle())
+                .offenceSummary(getOffenceSummary())
+                .act(getAct())
+                .sequenceNumber(getSequenceNumber())
                 .build();
     }
 }

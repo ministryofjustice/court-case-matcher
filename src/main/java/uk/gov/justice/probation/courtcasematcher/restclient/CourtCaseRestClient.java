@@ -25,7 +25,7 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CourtCaseRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSCourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.GroupedOffenderMatchesRequest;
 
 import java.nio.charset.StandardCharsets;
@@ -82,10 +82,10 @@ public class CourtCaseRestClient {
         return get(path)
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
-            .bodyToMono(CourtCase.class)
+            .bodyToMono(CCSCourtCase.class)
             .map(courtCaseResponse -> {
                 log.debug("GET succeeded for retrieving the case for path {}", path);
-                return courtCaseResponse;
+                return courtCaseResponse.asDomain();
             })
             .onErrorResume((e) -> {
                 // This is normal in the context of CCM, don't log
@@ -96,7 +96,7 @@ public class CourtCaseRestClient {
     public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
-        return put(path, CourtCaseRequest.of(courtCase))
+        return put(path, CCSCourtCase.of(courtCase))
                 .retrieve()
                 .bodyToMono(CourtCase.class)
                 .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
@@ -141,11 +141,11 @@ public class CourtCaseRestClient {
         return addSpecAuthAttribute(spec, path);
     }
 
-    private WebClient.RequestHeadersSpec<?> put(String path, CourtCaseRequest courtCaseRequest) {
+    private WebClient.RequestHeadersSpec<?> put(String path, CCSCourtCase CCSCourtCase) {
         WebClient.RequestHeadersSpec<?> spec =  webClient
             .put()
             .uri(uriBuilder -> uriBuilder.path(path).build())
-            .body(Mono.just(courtCaseRequest), CourtCase.class)
+            .body(Mono.just(CCSCourtCase), CourtCase.class)
             .accept(MediaType.APPLICATION_JSON);
 
         return addSpecAuthAttribute(spec, path);
