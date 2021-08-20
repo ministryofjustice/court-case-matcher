@@ -34,7 +34,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMat
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
@@ -143,7 +142,7 @@ public class CourtCaseRestClientIntTest {
             .caseNo(CASE_NO)
             .defendantAddress(address)
             .defendantDob(LocalDate.of(1977, Month.DECEMBER, 11))
-            .name(Name.builder().title("Mr")
+            .name(uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().title("Mr")
                 .forename1("Dylan")
                 .forename2("Adam")
                 .surname("ARMSTRONG")

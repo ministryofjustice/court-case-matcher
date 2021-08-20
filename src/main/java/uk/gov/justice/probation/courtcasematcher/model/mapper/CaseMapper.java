@@ -65,7 +65,7 @@ public class CaseMapper {
             .caseId(String.valueOf(aCase.getCaseId()))
             .courtRoom(aCase.getCourtRoom())
             .defendantAddress(Optional.ofNullable(aCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
-            .name(aCase.getName())
+            .name(Optional.ofNullable(aCase.getName()).map(Name::asDomain).orElse(null))
             .defendantName(nameFrom(aCase.getDefendantName(), aCase.getName()))
             .defendantDob(aCase.getDefendantDob())
             .defendantSex(aCase.getDefendantSex())
@@ -113,35 +113,11 @@ public class CaseMapper {
                 .orElse(null));
     }
 
-    public static CourtCase merge(Case incomingCase, CourtCase existingCourtCase) {
-        return CourtCase.builder()
-            // PK fields
-            .courtCode(incomingCase.getCourtCode())
-            .caseNo(existingCourtCase.getCaseNo())
-            // Fields to be updated from incoming
-            .caseId(String.valueOf(incomingCase.getCaseId()))
-            .courtRoom(incomingCase.getCourtRoom())
-            .defendantAddress(fromAddress(incomingCase.getDefendantAddress()))
-            .name(incomingCase.getName())
-            .defendantName(nameFrom(incomingCase.getDefendantName(), incomingCase.getName()))
-            .defendantSex(incomingCase.getDefendantSex())
-            .defendantDob(incomingCase.getDefendantDob())
-            .defendantType(DefendantType.of(incomingCase.getDefendantType()))
-            .listNo(incomingCase.getListNo())
-            .sessionStartTime(incomingCase.getSessionStartTime())
-            .offences(fromOffences(incomingCase.getOffences()))
-            .nationality1(incomingCase.getNationality1())
-            .nationality2(incomingCase.getNationality2())
-            // Fields to be retained from existing court case
-            .breach(existingCourtCase.getBreach())
-            .previouslyKnownTerminationDate(existingCourtCase.getPreviouslyKnownTerminationDate())
-            .crn(existingCourtCase.getCrn())
-            .probationStatus(existingCourtCase.getProbationStatusActual())
-            .probationStatusActual(existingCourtCase.getProbationStatusActual())
-            .suspendedSentenceOrder(existingCourtCase.getSuspendedSentenceOrder())
-            .pnc(existingCourtCase.getPnc())
-
-            .build();
+    public static String nameFrom(String defendantName, uk.gov.justice.probation.courtcasematcher.model.domain.Name name) {
+        return Optional.ofNullable(defendantName)
+            .orElse(Optional.ofNullable(name)
+                .map(uk.gov.justice.probation.courtcasematcher.model.domain.Name::getFullName)
+                .orElse(null));
     }
 
     public static CourtCase merge(CourtCase incomingCase, CourtCase existingCourtCase) {

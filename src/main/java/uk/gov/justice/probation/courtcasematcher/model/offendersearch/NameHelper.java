@@ -3,7 +3,6 @@ package uk.gov.justice.probation.courtcasematcher.model.offendersearch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,11 +36,11 @@ public class NameHelper {
                 .collect(Collectors.joining(" "));
     }
 
-    public Name getNameFromFields(String fullName) {
+    public uk.gov.justice.probation.courtcasematcher.model.domain.Name getNameFromFields(String fullName) {
 
         String name = trimTitle(fullName);
 
-        return Name.builder()
+        return uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
             .title(getTitle(fullName))
             .forename1(getFirstName(name))
             .surname(getSurname(name))

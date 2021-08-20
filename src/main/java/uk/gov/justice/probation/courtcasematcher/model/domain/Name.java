@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.gateway;
+package uk.gov.justice.probation.courtcasematcher.model.domain;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -40,13 +40,4 @@ public class Name {
             .trim();
     }
 
-    public uk.gov.justice.probation.courtcasematcher.model.domain.Name asDomain() {
-        return uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
-                .title(getTitle())
-                .forename1(getForename1())
-                .forename2(getForename2())
-                .forename3(getForename3())
-                .surname(getSurname())
-                .build();
-    }
 }

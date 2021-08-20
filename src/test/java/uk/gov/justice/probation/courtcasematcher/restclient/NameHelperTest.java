@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.NameHelper;
 
 import java.util.List;
@@ -69,7 +68,7 @@ class NameHelperTest {
     void whenGetNameFromNormalName_thenReturn() {
         String fullName = "Mr Arthur MORGAN";
 
-        Name name = nameHelper.getNameFromFields(fullName);
+        uk.gov.justice.probation.courtcasematcher.model.domain.Name name = nameHelper.getNameFromFields(fullName);
 
         assertThat(name.getTitle()).isEqualTo("Mr");
         assertThat(name.getForename1()).isEqualTo("Arthur");
@@ -83,7 +82,7 @@ class NameHelperTest {
                 "Mrs JUDI DENCH,JUDI DENCH"})
     void givenVariousTitles_whenGetSurname_thenReturn(String fullName, String expectedSurname) {
 
-        Name name = nameHelper.getNameFromFields(fullName);
+        uk.gov.justice.probation.courtcasematcher.model.domain.Name name = nameHelper.getNameFromFields(fullName);
 
         assertThat(name.getSurname()).isEqualTo(expectedSurname);
     }
@@ -92,7 +91,7 @@ class NameHelperTest {
     void whenGetNameFromSurnameOnly_thenReturn() {
         String fullName = "MORGAN";
 
-        Name name = nameHelper.getNameFromFields(fullName);
+        uk.gov.justice.probation.courtcasematcher.model.domain.Name name = nameHelper.getNameFromFields(fullName);
 
         assertThat(name.getTitle()).isNullOrEmpty();
         assertThat(name.getForename1()).isNullOrEmpty();
@@ -103,7 +102,7 @@ class NameHelperTest {
     void whenGetNameFromMultipleForenames_thenReturn() {
         String fullName = "Arthur Stanley MORGAN";
 
-        Name name = nameHelper.getNameFromFields(fullName);
+        uk.gov.justice.probation.courtcasematcher.model.domain.Name name = nameHelper.getNameFromFields(fullName);
 
         assertThat(name.getTitle()).isNullOrEmpty();
         assertThat(name.getForename1()).isEqualTo("Arthur Stanley");

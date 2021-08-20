@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +25,7 @@ class MatchRequestFactoryTest {
     private static final String FORENAME_2 = "forename2";
     private static final String FORENAME_3 = "forename3";
     private static final String TITLE = "Mr";
-    private static final Name COMPLETE_NAME = Name.builder()
+    private static final uk.gov.justice.probation.courtcasematcher.model.domain.Name COMPLETE_NAME = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
             .forename1(FORENAME_1)
             .forename2(FORENAME_2)
             .forename3(FORENAME_3)
@@ -115,7 +114,7 @@ class MatchRequestFactoryTest {
     @DisplayName("Given minimal input of surname only then request is built.")
     @Test
     public void givenMinimalValuesProvided_thenBuildValidRequest() {
-        final var name = Name.builder()
+        final var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
                 .surname(SURNAME)
                 .build();
 
@@ -129,7 +128,7 @@ class MatchRequestFactoryTest {
     @DisplayName("Given no surname then exception is thrown.")
     @Test
     public void givenNoSurnameProvided_shouldThrowException() {
-        final var name = Name.builder()
+        final var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
                 .build();
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> factory.buildFrom(null, name, DATE_OF_BIRTH));

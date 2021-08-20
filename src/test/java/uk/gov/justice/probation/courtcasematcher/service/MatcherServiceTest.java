@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
@@ -47,7 +46,7 @@ class MatcherServiceTest {
     private static final String PNC = "PNC";
 
     private static final LocalDate DEF_DOB = LocalDate.of(2000, 6, 17);
-    private static final Name DEF_NAME = Name.builder().forename1("Arthur")
+    private static final uk.gov.justice.probation.courtcasematcher.model.domain.Name DEF_NAME = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Arthur")
                                                 .surname("MORGAN")
                                                 .build();
 

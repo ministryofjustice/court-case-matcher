@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.gateway;
+package uk.gov.justice.probation.courtcasematcher.restclient.model;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,13 +18,23 @@ import java.util.stream.Stream;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class Name {
+public class NameRequest {
 
     private final String title;
     private final String forename1;
     private final String forename2;
     private final String forename3;
     private final String surname;
+
+    public static NameRequest of(uk.gov.justice.probation.courtcasematcher.model.domain.Name name) {
+        return NameRequest.builder()
+                .title(name.getTitle())
+                .forename1(name.getForename1())
+                .forename2(name.getForename2())
+                .forename3(name.getForename3())
+                .surname(name.getSurname())
+                .build();
+    }
 
     public String getForenames() {
         return Stream.of(forename1, forename2, forename3)
@@ -40,13 +50,4 @@ public class Name {
             .trim();
     }
 
-    public uk.gov.justice.probation.courtcasematcher.model.domain.Name asDomain() {
-        return uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
-                .title(getTitle())
-                .forename1(getForename1())
-                .forename2(getForename2())
-                .forename3(getForename3())
-                .surname(getSurname())
-                .build();
-    }
 }

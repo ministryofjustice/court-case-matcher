@@ -8,12 +8,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Address;
 import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
@@ -41,7 +41,14 @@ class CaseMapperTest {
     private static final String COURT_CODE = "B10JQ";
     private static final String COURT_NAME = "North Shields Magistrates Court";
 
-    private static final Name name = Name.builder().title("Mr")
+    private static final uk.gov.justice.probation.courtcasematcher.model.domain.Name nameDomain = Name.builder().title("Mr")
+                                                    .forename1("Patrick")
+                                                    .forename2("Floyd")
+                                                    .forename3("Jarvis")
+                                                    .surname("Garrett")
+                                                    .build();
+
+    private static final uk.gov.justice.probation.courtcasematcher.model.gateway.Name nameGateway = uk.gov.justice.probation.courtcasematcher.model.gateway.Name.builder().title("Mr")
                                                     .forename1("Patrick")
                                                     .forename2("Floyd")
                                                     .forename3("Jarvis")
@@ -63,7 +70,7 @@ class CaseMapperTest {
             .defendantAddress(Address.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
             .defendantAge("13")
             .defendantDob(DATE_OF_BIRTH)
-            .name(name)
+            .name(nameGateway)
             .defendantSex("M")
             .defendantType("P")
             .caseId(321321L)
@@ -299,7 +306,7 @@ class CaseMapperTest {
         private CourtCase existingCourtCase;
 
         // A case created from a flatted incoming JSON structure with no parent block as we find in XML
-        private Case jsonCase;
+        private CourtCase jsonCase;
 
         @BeforeEach
         void beforeEach() {
@@ -333,18 +340,16 @@ class CaseMapperTest {
                     .build()))
                 .build();
 
-            jsonCase = Case.builder()
+            jsonCase = CourtCase.builder()
                 .caseNo("123")
-                .defendantAddress(Address.builder().line1("line 1").line2("line 2").line3("line 3").pcode("LD1 1AA").build())
-                .defendantAge("13")
+                .defendantAddress(uk.gov.justice.probation.courtcasematcher.model.domain.Address.builder().line1("line 1").line2("line 2").line3("line 3").postcode("LD1 1AA").build())
                 .defendantDob(DATE_OF_BIRTH)
-                .name(name)
+                .name(nameDomain)
                 .defendantSex("M")
-                .defendantType("P")
-                .caseId(321321L)
+                .defendantType(DefendantType.PERSON)
+                .caseId("321321")
                 .listNo("1st")
-                .seq(1)
-                .offences(singletonList(buildOffence("NEW Theft from a person", 1)))
+                .offences(singletonList(buildOffenceDomain("NEW Theft from a person", 1)))
                 .courtCode(COURT_CODE)
                 .courtRoom("00")
                 .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
@@ -381,7 +386,7 @@ class CaseMapperTest {
             assertThat(courtCase.getDefendantAddress().getPostcode()).isEqualTo("LD1 1AA");
             assertThat(courtCase.getDefendantDob()).isNull();
             assertThat(courtCase.getDefendantName()).isEqualTo("Mr Patrick Floyd Jarvis Garrett");
-            assertThat(courtCase.getName()).isEqualTo(name);
+            assertThat(courtCase.getName()).isEqualTo(nameDomain);
             assertThat(courtCase.getDefendantType()).isSameAs(DefendantType.PERSON);
             assertThat(courtCase.getDefendantSex()).isEqualTo("M");
             assertThat(courtCase.getSessionStartTime()).isEqualTo(SESSION_START_TIME);
@@ -415,7 +420,7 @@ class CaseMapperTest {
                 .defendantName("Pat Garrett")
                 .defendantType(DefendantType.PERSON)
                 .defendantDob(LocalDate.of(1969, Month.JANUARY, 1))
-                .name(Name.builder().forename1("Pat").surname("Garrett").build())
+                .name(uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Pat").surname("Garrett").build())
                 .nationality1("USA")
                 .nationality2("Irish")
                 .defendantSex("N")
@@ -479,12 +484,20 @@ class CaseMapperTest {
         }
     }
 
+    private uk.gov.justice.probation.courtcasematcher.model.domain.Offence buildOffenceDomain(String title, Integer seq) {
+        return uk.gov.justice.probation.courtcasematcher.model.domain.Offence.builder()
+            .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
+            .offenceSummary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
+            .offenceTitle(title)
+            .sequenceNumber(seq)
+            .build();
+    }
+
     private uk.gov.justice.probation.courtcasematcher.model.gateway.Offence buildOffence(String title, Integer seq) {
         return uk.gov.justice.probation.courtcasematcher.model.gateway.Offence.builder()
             .act("Contrary to section 2(2) and 8 of the Theft Act 1968.")
             .summary("On 02/02/2022 at Town, stole Article, to the value of £0.02, belonging to Person.")
             .title(title)
-            .seq(seq)
             .build();
     }
 

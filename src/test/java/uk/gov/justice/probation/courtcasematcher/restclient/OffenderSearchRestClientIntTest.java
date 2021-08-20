@@ -11,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -42,7 +41,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenSingleMatchReturned_whenMatch_thenReturnIt() {
-            var name = Name.builder().forename1("Arthur").surname("MORGAN").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Arthur").surname("MORGAN").build();
             var match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1975, 1, 1))).blockOptional();
 
             assertThat(match).isPresent();
@@ -63,7 +62,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenSingleMatchReturned_whenMatchWithPncNoDob_thenReturnIt() {
-            var name = Name.builder().forename1("Arthur").surname("MORGAN").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Arthur").surname("MORGAN").build();
             var match = restClient.match(matchRequestFactory.buildFrom("2004/0012345U", name, LocalDate.of(1975, 1, 1))).blockOptional();
 
             assertThat(match).isPresent();
@@ -79,7 +78,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenSingleMatchReturned_whenMatchWithPncWithDob_thenReturnIt() {
-            var name = Name.builder().forename1("Arthur").surname("MORGAN").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Arthur").surname("MORGAN").build();
             matchRequestFactory.setUseDobWithPnc(true);
             var match = restClient.match(matchRequestFactory.buildFrom("2004/0012345U", name, LocalDate.of(1975, 1, 1))).blockOptional();
 
@@ -96,7 +95,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenSingleMatchReturned_whenMatch_thenVerifyMono() {
-            var name = Name.builder().forename1("Arthur").surname("MORGAN").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Arthur").surname("MORGAN").build();
             var matchMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1975, 1, 1)));
 
             StepVerifier.create(matchMono)
@@ -109,7 +108,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenSingleMatchNonExactMatchReturned_whenMatch_thenReturnIt() {
-            var name = Name.builder().forename1("Calvin").surname("HARRIS").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Calvin").surname("HARRIS").build();
             var match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1969, Month.AUGUST, 26)))
                 .blockOptional();
 
@@ -121,7 +120,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenMultipleMatchesReturned_whenMatch_thenReturnThem() {
-            var name = Name.builder().forename1("John").surname("MARSTON").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("John").surname("MARSTON").build();
             var match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)))
                 .blockOptional();
 
@@ -142,7 +141,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenNoMatchesReturned_whenMatch_thenReturnEmptyList() {
-            var name = Name.builder().forename1("Juan").surname("MARSTONEZ").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Juan").surname("MARSTONEZ").build();
             var match = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)))
                 .blockOptional();
 
@@ -153,7 +152,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected500_whenMatch_thenRetryAndError() {
-            var name = Name.builder().forename1("error").surname("error").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("error").surname("error").build();
             var searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)));
 
             StepVerifier.create(searchResponseMono)
@@ -163,7 +162,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected404_whenMatch_thenNoRetryButReturnSameError() {
-            var name = Name.builder().forename1("not").surname("found").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("not").surname("found").build();
             var searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1999, 4, 5)));
 
             StepVerifier.create(searchResponseMono)
@@ -173,7 +172,7 @@ public class OffenderSearchRestClientIntTest {
 
         @Test
         public void givenUnexpected401_whenMatch_thenNoRetryButReturnSameError() {
-            var name = Name.builder().forename1("unauthorised").surname("unauthorised").build();
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("unauthorised").surname("unauthorised").build();
             var searchResponseMono = restClient.match(matchRequestFactory.buildFrom(null, name, LocalDate.of(1982, 4, 5)));
 
             StepVerifier.create(searchResponseMono)

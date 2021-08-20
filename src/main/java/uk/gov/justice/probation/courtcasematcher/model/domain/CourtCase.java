@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import reactor.util.StringUtils;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
 
 import java.io.Serializable;
 import java.time.LocalDate;

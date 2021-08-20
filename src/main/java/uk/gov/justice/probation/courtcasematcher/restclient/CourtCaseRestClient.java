@@ -25,6 +25,8 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.CourtCaseRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.GroupedOffenderMatchesRequest;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -92,10 +94,9 @@ public class CourtCaseRestClient {
     }
 
     public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
-        // TODO: convert domain -> restclient representation
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
-        return put(path, courtCase)
+        return put(path, CourtCaseRequest.of(courtCase))
                 .retrieve()
                 .bodyToMono(CourtCase.class)
                 .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
@@ -114,7 +115,7 @@ public class CourtCaseRestClient {
     public Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
 
         return Mono.justOrEmpty(offenderMatches)
-            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), matches))
+            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), GroupedOffenderMatchesRequest.of(matches)))
             .flatMap(tuple2 -> post(tuple2.getT1(), tuple2.getT2())
                     .retrieve()
                     .toBodilessEntity()
@@ -140,17 +141,17 @@ public class CourtCaseRestClient {
         return addSpecAuthAttribute(spec, path);
     }
 
-    private WebClient.RequestHeadersSpec<?> put(String path, CourtCase courtCase) {
+    private WebClient.RequestHeadersSpec<?> put(String path, CourtCaseRequest courtCaseRequest) {
         WebClient.RequestHeadersSpec<?> spec =  webClient
             .put()
             .uri(uriBuilder -> uriBuilder.path(path).build())
-            .body(Mono.just(courtCase), CourtCase.class)
+            .body(Mono.just(courtCaseRequest), CourtCase.class)
             .accept(MediaType.APPLICATION_JSON);
 
         return addSpecAuthAttribute(spec, path);
     }
 
-    private WebClient.RequestHeadersSpec<?> post(String path, GroupedOffenderMatches request) {
+    private WebClient.RequestHeadersSpec<?> post(String path, GroupedOffenderMatchesRequest request) {
         WebClient.RequestHeadersSpec<?> spec = webClient
             .post()
             .uri(uriBuilder -> uriBuilder.path(path).build())
