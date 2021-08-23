@@ -69,7 +69,7 @@ class CourtCaseServiceConsumerPactTest {
             .object("defendantAddress", addressPart)
             .object("name", namePart)
             .eachLike("offences")
-                .stringType("offenceTitle","offenceSummary", "act")
+                .stringTypes("offenceTitle","offenceSummary", "act")
             ;
 
         return builder
