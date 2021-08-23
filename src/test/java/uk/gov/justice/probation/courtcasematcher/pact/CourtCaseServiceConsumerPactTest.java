@@ -53,15 +53,15 @@ class CourtCaseServiceConsumerPactTest {
     public RequestResponsePact putCourtCasePact(PactDslWithProvider builder) {
 
         PactDslJsonBody addressPart = new PactDslJsonBody()
-            .stringType("line1", "line2", "line3", "line4", "line5", "postcode");
+            .stringTypes("line1", "line2", "line3", "line4", "line5", "postcode");
         PactDslJsonBody namePart = new PactDslJsonBody()
-            .stringType("title", "forename1", "forename2", "forename3", "surname");
+            .stringTypes("title", "forename1", "forename2", "forename3", "surname");
 
         PactDslJsonBody body = new PactDslJsonBody()
             .stringValue("courtCode", "B10JQ")
             .stringValue("caseNo", "1600028914")
-            .stringType("caseId", "courtRoom", "probationStatus", "defendantName", "defendantSex", "crn", "pnc", "cro", "listNo", "nationality1", "nationality2")
-            .booleanType("suspendedSentenceOrder", "breach", "preSentenceActivity")
+            .stringTypes("caseId", "courtRoom", "probationStatus", "defendantName", "defendantSex", "crn", "pnc", "cro", "listNo", "nationality1", "nationality2")
+            .booleanTypes("suspendedSentenceOrder", "breach", "preSentenceActivity")
             .date("previouslyKnownTerminationDate","yyyy-MM-dd")
             .date("defendantDob","yyyy-MM-dd")
             .datetime("sessionStartTime")
@@ -69,7 +69,7 @@ class CourtCaseServiceConsumerPactTest {
             .object("defendantAddress", addressPart)
             .object("name", namePart)
             .eachLike("offences")
-                .stringType("offenceTitle","offenceSummary", "act")
+                .stringTypes("offenceTitle","offenceSummary", "act")
             ;
 
         return builder
