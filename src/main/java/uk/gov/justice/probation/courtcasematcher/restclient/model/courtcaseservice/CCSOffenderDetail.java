@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class OffenderDetail {
+public class CCSOffenderDetail {
     private OtherIds otherIds;
     private String title;
     private String forename;

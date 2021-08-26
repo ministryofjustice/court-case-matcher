@@ -6,15 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @Builder
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class MatchIdentifiers {
-    @NotNull
-    private final String crn;
-    private final String pnc;
-    private final String cro;
+public class CCSProbationStatusDetail {
+    private final String status;
+    private final LocalDate previouslyKnownTerminationDate;
+    private final Boolean inBreach;
+    private final boolean preSentenceActivity;
+    private final boolean awaitingPsr;
 }

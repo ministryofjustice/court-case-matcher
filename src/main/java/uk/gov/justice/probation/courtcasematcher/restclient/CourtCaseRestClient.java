@@ -26,7 +26,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSCourtCase;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.GroupedOffenderMatchesRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -115,7 +115,7 @@ public class CourtCaseRestClient {
     public Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
 
         return Mono.justOrEmpty(offenderMatches)
-            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), GroupedOffenderMatchesRequest.of(matches)))
+            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), CCSGroupedOffenderMatchesRequest.of(matches)))
             .flatMap(tuple2 -> post(tuple2.getT1(), tuple2.getT2())
                     .retrieve()
                     .toBodilessEntity()
@@ -151,7 +151,7 @@ public class CourtCaseRestClient {
         return addSpecAuthAttribute(spec, path);
     }
 
-    private WebClient.RequestHeadersSpec<?> post(String path, GroupedOffenderMatchesRequest request) {
+    private WebClient.RequestHeadersSpec<?> post(String path, CCSGroupedOffenderMatchesRequest request) {
         WebClient.RequestHeadersSpec<?> spec = webClient
             .post()
             .uri(uriBuilder -> uriBuilder.path(path).build())

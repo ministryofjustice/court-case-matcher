@@ -78,7 +78,7 @@ public class CCSCourtCase implements Serializable {
     private final boolean awaitingPsr;
 
     @JsonIgnore
-    private final GroupedOffenderMatchesRequest groupedOffenderMatches;
+    private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
 
     @JsonIgnore
     private final boolean isNew;
