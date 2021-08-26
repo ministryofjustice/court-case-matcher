@@ -7,7 +7,6 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.google.common.eventbus.EventBus;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -19,11 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase.CourtCaseBuilder;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
-import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Path;
@@ -44,7 +40,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class EventListenerTest {
 
-    private final static Name DEFENDANT_NAME = Name.builder().forename1("Nic").surname("CAGE").build();
+    private final static LibraName DEFENDANT_NAME = LibraName.builder().forename1("Nic").surname("CAGE").build();
     private final static LocalDate DEFENDANT_DOB = LocalDate.of(1955, Month.SEPTEMBER, 25);
     private final static String CASE = "123456";
     private final static String COURT_CODE = "B10JQ00";
@@ -53,8 +49,6 @@ class EventListenerTest {
     private static final String CRN = "X340741";
 
     @Mock
-    private CourtCaseService courtCaseService;
-    @Mock
     private Appender<ILoggingEvent> mockAppender;
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
@@ -62,18 +56,6 @@ class EventListenerTest {
     private EventBus eventBus;
 
     private EventListener eventListener;
-
-    @BeforeAll
-    static void beforeAll() {
-        CourtCaseBuilder builder = CourtCase.builder()
-            .defendantName(DEFENDANT_NAME.getFullName())
-            .defendantType(DefendantType.PERSON)
-            .defendantDob(DEFENDANT_DOB)
-            .courtCode(COURT_CODE)
-            .caseNo(CASE)
-            .pnc(PNC)
-            .sessionStartTime(DATE_OF_HEARING);
-    }
 
     @BeforeEach
     void beforeEach() {

@@ -13,13 +13,12 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.Offender;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OtherIds;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -55,7 +54,6 @@ class TelemetryServiceTest {
     private static final String PNC = "PNC/123";
     private static final String COURT_ROOM = "01";
     private static final LocalDate DATE_OF_HEARING = LocalDate.of(2020, Month.NOVEMBER, 5);
-    private static Case aCase;
     private static CourtCase courtCase;
 
     @Captor
@@ -70,16 +68,9 @@ class TelemetryServiceTest {
     @BeforeAll
     static void beforeEach() {
 
-        aCase = Case.builder()
-            .caseNo(CASE_NO)
-            .courtCode(COURT_CODE)
-            .courtRoom(COURT_ROOM)
-            .pnc(PNC)
-            .sessionStartTime(DATE_OF_HEARING.atStartOfDay())
-            .build();
-
         courtCase = CourtCase.builder()
                 .courtCode(COURT_CODE)
+                .courtRoom(COURT_ROOM)
                 .caseNo(CASE_NO)
                 .pnc(PNC)
                 .sessionStartTime(DATE_OF_HEARING.atStartOfDay())
@@ -239,7 +230,7 @@ class TelemetryServiceTest {
     @Test
     void whenCourtCaseReceived_thenRecord() {
 
-        telemetryService.trackCourtCaseEvent(aCase, "messageId");
+        telemetryService.trackCourtCaseEvent(courtCase, "messageId");
 
         verify(telemetryClient).trackEvent(eq("PiCCourtCaseReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -259,7 +250,7 @@ class TelemetryServiceTest {
     @Test
     void whenCourtCaseReceived_andMessageIdIsNull_thenRecord() {
 
-        telemetryService.trackCourtCaseEvent(aCase, null);
+        telemetryService.trackCourtCaseEvent(courtCase, null);
 
         verify(telemetryClient).trackEvent(eq("PiCCourtCaseReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -281,7 +272,7 @@ class TelemetryServiceTest {
     void whenCourtCaseReceivedFromJson_andMessageIdIsNull_thenRecord() {
 
         var sessionStartTime = LocalDateTime.of(DATE_OF_HEARING, LocalTime.of(9, 30, 34));
-        var caseJson = Case.builder().caseNo(CASE_NO).courtCode(COURT_CODE).courtRoom(COURT_ROOM)
+        var caseJson = CourtCase.builder().caseNo(CASE_NO).courtCode(COURT_CODE).courtRoom(COURT_ROOM)
             .sessionStartTime(sessionStartTime)
             .build();
 

@@ -27,15 +27,14 @@ import reactor.core.Exceptions;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Address;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.MatchIdentifiers;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.Offence;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Name;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -143,7 +142,7 @@ public class CourtCaseRestClientIntTest {
             .caseNo(CASE_NO)
             .defendantAddress(address)
             .defendantDob(LocalDate.of(1977, Month.DECEMBER, 11))
-            .name(Name.builder().title("Mr")
+            .name(uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().title("Mr")
                 .forename1("Dylan")
                 .forename2("Adam")
                 .surname("ARMSTRONG")

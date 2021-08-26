@@ -8,11 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
@@ -39,7 +39,7 @@ public class CaseMessageProcessor implements MessageProcessor {
 
     @Autowired
     @Qualifier("caseJsonParser")
-    private final MessageParser<Case> parser;
+    private final MessageParser<LibraCase> parser;
 
     @Autowired
     @Qualifier("snsMessageWrapperJsonParser")
@@ -50,7 +50,7 @@ public class CaseMessageProcessor implements MessageProcessor {
         try {
             var snsMessageContainer = extractMessage(payload);
             log.debug("Extracted message ID {} from SNS message. Incoming message ID was {} ", snsMessageContainer.getMessageId(), messageId);
-            saveCase(parser.parseMessage(snsMessageContainer.getMessage(), Case.class), messageId);
+            saveCase(parser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain(), messageId);
         }
         catch (Exception ex) {
             var failEvent = handleException(ex, payload);

@@ -22,9 +22,11 @@ import reactor.util.retry.Retry;
 import reactor.util.retry.Retry.RetrySignal;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSCourtCase;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.GroupedOffenderMatchesRequest;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -80,10 +82,10 @@ public class CourtCaseRestClient {
         return get(path)
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
-            .bodyToMono(CourtCase.class)
+            .bodyToMono(CCSCourtCase.class)
             .map(courtCaseResponse -> {
                 log.debug("GET succeeded for retrieving the case for path {}", path);
-                return courtCaseResponse;
+                return courtCaseResponse.asDomain();
             })
             .onErrorResume((e) -> {
                 // This is normal in the context of CCM, don't log
@@ -93,9 +95,8 @@ public class CourtCaseRestClient {
 
     public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
-        final GroupedOffenderMatches offenderMatches = courtCase.getGroupedOffenderMatches();
 
-        return put(path, courtCase)
+        return put(path, CCSCourtCase.of(courtCase))
                 .retrieve()
                 .bodyToMono(CourtCase.class)
                 .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
@@ -114,7 +115,7 @@ public class CourtCaseRestClient {
     public Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
 
         return Mono.justOrEmpty(offenderMatches)
-            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), matches))
+            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, courtCode, caseNo), GroupedOffenderMatchesRequest.of(matches)))
             .flatMap(tuple2 -> post(tuple2.getT1(), tuple2.getT2())
                     .retrieve()
                     .toBodilessEntity()
@@ -140,17 +141,17 @@ public class CourtCaseRestClient {
         return addSpecAuthAttribute(spec, path);
     }
 
-    private WebClient.RequestHeadersSpec<?> put(String path, CourtCase courtCase) {
+    private WebClient.RequestHeadersSpec<?> put(String path, CCSCourtCase CCSCourtCase) {
         WebClient.RequestHeadersSpec<?> spec =  webClient
             .put()
             .uri(uriBuilder -> uriBuilder.path(path).build())
-            .body(Mono.just(courtCase), CourtCase.class)
+            .body(Mono.just(CCSCourtCase), CourtCase.class)
             .accept(MediaType.APPLICATION_JSON);
 
         return addSpecAuthAttribute(spec, path);
     }
 
-    private WebClient.RequestHeadersSpec<?> post(String path, GroupedOffenderMatches request) {
+    private WebClient.RequestHeadersSpec<?> post(String path, GroupedOffenderMatchesRequest request) {
         WebClient.RequestHeadersSpec<?> spec = webClient
             .post()
             .uri(uriBuilder -> uriBuilder.path(path).build())

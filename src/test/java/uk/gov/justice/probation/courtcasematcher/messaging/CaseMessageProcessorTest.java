@@ -13,11 +13,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.DefendantType.PERSON;
+import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
 class CaseMessageProcessorTest {
@@ -71,7 +71,7 @@ class CaseMessageProcessorTest {
         var objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.registerModule(new JavaTimeModule());
-        ReflectionTestUtils.setField(messageProcessor, "parser", new MessageParser<Case>(objectMapper, validator));
+        ReflectionTestUtils.setField(messageProcessor, "parser", new MessageParser<LibraCase>(objectMapper, validator));
         ReflectionTestUtils.setField(messageProcessor, "snsMessageWrapperJsonParser", new MessageParser<SnsMessageContainer>(objectMapper, validator));
     }
 
@@ -91,15 +91,15 @@ class CaseMessageProcessorTest {
         var matchResponse = MatchResponse.builder().build();
         var searchResult = SearchResult.builder().matchResponse(matchResponse).build();
         var courtCase = CourtCase.builder().defendantType(PERSON).build();
-        when(courtCaseService.getCourtCase(any(Case.class))).thenReturn(Mono.just(courtCase));
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(any(CourtCase.class))).thenReturn(Mono.just(searchResult));
 
         messageProcessor.process(caseWrappedJson, "messageId");
 
-        verify(telemetryService).trackCourtCaseEvent(any(Case.class), eq("messageId"));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq("messageId"));
         verify(telemetryService).trackOffenderMatchEvent(eq(courtCase), eq(matchResponse));
         verify(courtCaseService).createCase(eq(courtCase), eq(searchResult));
-        verify(courtCaseService).getCourtCase(any(Case.class));
+        verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
@@ -109,14 +109,14 @@ class CaseMessageProcessorTest {
         var courtCase = CourtCase.builder().defendantType(PERSON).build();
         var matchResponse = MatchResponse.builder().matchedBy(OffenderSearchMatchType.NOTHING).matches(Collections.emptyList()).build();
         var errorSearchResult = SearchResult.builder().matchResponse(matchResponse).build();
-        when(courtCaseService.getCourtCase(any(Case.class))).thenReturn(Mono.just(courtCase));
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
 
         messageProcessor.process(caseWrappedJson, "messageId");
 
-        verify(telemetryService).trackCourtCaseEvent(any(Case.class), eq("messageId"));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq("messageId"));
         verify(telemetryService).trackOffenderMatchFailureEvent(eq(courtCase));
-        verify(courtCaseService).getCourtCase(any(Case.class));
+        verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).createCase(eq(courtCase), eq(errorSearchResult));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
@@ -125,13 +125,13 @@ class CaseMessageProcessorTest {
     @Test
     void whenValidMessageReceivedForMatchedCase_ThenUpdateAndSave() {
         var courtCase = CourtCase.builder().defendantType(PERSON).crn("X320741").build();
-        when(courtCaseService.getCourtCase(any(Case.class))).thenReturn(Mono.just(courtCase));
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
 
         messageProcessor.process(caseWrappedJson, "messageId");
 
-        verify(telemetryService).trackCourtCaseEvent(any(Case.class), eq("messageId"));
-        verify(courtCaseService).getCourtCase(any(Case.class));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq("messageId"));
+        verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCase));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
         verifyNoMoreInteractions(courtCaseService, telemetryService);

@@ -3,8 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
@@ -41,7 +40,7 @@ public interface MessageProcessor {
         }
     }
 
-    default void saveCase(Case aCase, String messageId) {
+    default void saveCase(CourtCase aCase, String messageId) {
         getTelemetryService().trackCourtCaseEvent(aCase, messageId);
         final var courtCase = getCourtCaseService().getCourtCase(aCase)
                 .block();

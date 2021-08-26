@@ -7,15 +7,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.GroupedOffenderMatches;
-import uk.gov.justice.probation.courtcasematcher.model.courtcaseservice.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.model.gateway.Case;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponse;
-import uk.gov.justice.probation.courtcasematcher.model.offendersearch.SearchResponses;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -68,7 +67,7 @@ class CourtCaseServiceTest {
     @DisplayName("Incoming gateway case which is merged with the existing.")
     @Test
     void givenExistingCase_whenGetCourtCase_thenMergeAndReturn() {
-        Case aCase = buildCase();
+        var aCase = buildCase();
 
         CourtCase courtCase = CourtCase.builder()
                 .caseId(Long.toString(CASE_ID))
@@ -88,7 +87,7 @@ class CourtCaseServiceTest {
     @DisplayName("Get court case which is new, return a transformed copy.")
     @Test
     void givenNewCase_whenGetCourtCase_thenReturn() {
-        Case aCase = buildCase();
+        var aCase = buildCase();
 
         when(restClient.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
 
@@ -220,12 +219,12 @@ class CourtCaseServiceTest {
         verify(offenderSearchRestClient).search(CRN);
     }
 
-    private Case buildCase() {
-        return Case.builder()
+    private CourtCase buildCase() {
+        return CourtCase.builder()
             .courtCode(COURT_CODE)
             .courtRoom(COURT_ROOM)
             .caseNo(CASE_NO)
-            .caseId(CASE_ID)
+            .caseId(CASE_ID.toString())
             .build();
     }
 }
