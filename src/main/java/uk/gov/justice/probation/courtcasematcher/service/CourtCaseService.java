@@ -10,7 +10,7 @@ import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.MatchDetails;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class CourtCaseService {
                     log.debug("Save court case with search response for case {}, court {}",
                             courtCase.getCaseNo(), courtCase.getCourtCode());
                     return CaseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
-                            .matchType(MatchType.of(result))
+                            .matchType(OffenderSearchMatchType.domainMatchTypeOf(result))
                             .matches(response.getMatches())
                             .exactMatch(response.isExactMatch())
                             .build());

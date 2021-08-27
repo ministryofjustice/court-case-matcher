@@ -3,8 +3,8 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseserv
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
+import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
 
 import java.util.Collections;
 
