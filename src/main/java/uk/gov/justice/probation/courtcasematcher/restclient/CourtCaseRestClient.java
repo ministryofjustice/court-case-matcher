@@ -74,6 +74,19 @@ public class CourtCaseRestClient {
         this.webClient = webClient;
         this.eventBus = eventBus;
     }
+    public CourtCaseRestClient(@Qualifier("courtCaseServiceWebClient") WebClient webClient,
+                               EventBus eventBus,
+                               String matchesPostTemplate,
+                               String courtCasePutTemplate,
+                               boolean disableAuthentication
+    ) {
+        super();
+        this.webClient = webClient;
+        this.eventBus = eventBus;
+        this.matchesPostTemplate = matchesPostTemplate;
+        this.courtCasePutTemplate = courtCasePutTemplate;
+        this.disableAuthentication = disableAuthentication;
+    }
 
     public Mono<CourtCase> getCourtCase(final String courtCode, final String caseNo) throws WebClientResponseException {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);

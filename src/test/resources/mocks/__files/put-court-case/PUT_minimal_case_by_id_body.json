@@ -1,0 +1,52 @@
+{
+  "caseNo": "case no",
+  "caseId": "D517D32D-3C80-41E8-846E-D274DC2B94A5",
+  "courtCode": "B10JQ",
+  "defendants": [
+    {
+      "address": {
+        "line1": "line1",
+        "line2": "line2",
+        "line3": "line3",
+        "line4": "line4",
+        "line5": "line5",
+        "postcode": "postcode"
+      },
+      "awaitingPsr": true,
+      "breach": true,
+      "crn": "crn",
+      "cro": "cro",
+      "pnc": "pnc",
+      "dateOfBirth": "1986-11-28",
+      "name": {
+        "title": "title",
+        "forename1": "forename1",
+        "forename2": "forename2",
+        "forename3": "forename3",
+        "surname": "surname"
+      },
+      "offences": [
+        {
+          "act": "act",
+          "offenceSummary": "offence summary",
+          "offenceTitle": "offence title",
+          "sequenceNumber": 1
+        }
+      ],
+      "probationStatus": "Current",
+      "type": "PERSON",
+      "preSentenceActivity": true,
+      "previouslyKnownTerminationDate": "2021-08-25",
+      "sex": "sex",
+      "suspendedSentenceOrder": true
+    }
+  ],
+  "hearingDays": [
+    {
+      "courtCode": "B10JQ",
+      "courtRoom": "ROOM 1",
+      "listNo": "1",
+      "sessionStartTime": "2021-08-26T09:00:00.000Z"
+    }
+  ]
+}
