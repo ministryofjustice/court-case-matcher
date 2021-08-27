@@ -26,59 +26,35 @@ import java.util.stream.Collectors;
 public class CCSCourtCase implements Serializable {
 
     private final String caseId;
-
     @Setter(AccessLevel.NONE)
     private final String caseNo;
-
     @Setter(AccessLevel.NONE)
     private final String courtCode;
-
     private final String courtRoom;
-
     private final LocalDateTime sessionStartTime;
-
     private final String probationStatus;
-
     private final String probationStatusActual;
-
     private final List<CCSOffence> offences;
-
     private final String crn;
-
     private final String cro;
-
     private final String pnc;
-
     private final CCSName name;
-
     private final String defendantName;
-
     private final CCSAddress defendantAddress;
-
     private final LocalDate defendantDob;
-
     private final CCSDefendantType defendantType;
-
     private final String defendantSex;
-
     private final String listNo;
-
     private final String nationality1;
-
     private final String nationality2;
-
     private final Boolean breach;
-
     private final LocalDate previouslyKnownTerminationDate;
-
     private final Boolean suspendedSentenceOrder;
-
     private final boolean preSentenceActivity;
-
     private final boolean awaitingPsr;
 
     @JsonIgnore
-    private final GroupedOffenderMatchesRequest groupedOffenderMatches;
+    private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
 
     @JsonIgnore
     private final boolean isNew;

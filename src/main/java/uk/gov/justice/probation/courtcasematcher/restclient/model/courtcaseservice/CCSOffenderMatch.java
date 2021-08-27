@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
 
 import javax.validation.Valid;
@@ -14,14 +15,23 @@ import javax.validation.constraints.NotNull;
 @Builder
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class OffenderMatch {
+public class CCSOffenderMatch {
     @NotNull
     @Valid
-    private final MatchIdentifiers matchIdentifiers;
+    private final CCSMatchIdentifiers matchIdentifiers;
     @NotNull
     private final MatchType matchType;
     @NotNull
     private final Boolean confirmed;
     @NotNull
     private final Boolean rejected;
+
+    public static CCSOffenderMatch of(OffenderMatch offenderMatch) {
+        return CCSOffenderMatch.builder()
+                .matchType(offenderMatch.getMatchType())
+                .confirmed(offenderMatch.getConfirmed())
+                .matchIdentifiers(CCSMatchIdentifiers.of(offenderMatch.getMatchIdentifiers()))
+                .rejected(offenderMatch.getRejected())
+                .build();
+    }
 }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,9 +13,17 @@ import javax.validation.constraints.NotNull;
 @Builder
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class MatchIdentifiers {
+public class CCSMatchIdentifiers {
     @NotNull
     private final String crn;
     private final String pnc;
     private final String cro;
+
+    public static CCSMatchIdentifiers of(MatchIdentifiers matchIdentifiers) {
+        return CCSMatchIdentifiers.builder()
+                .crn(matchIdentifiers.getCrn())
+                .pnc(matchIdentifiers.getPnc())
+                .cro(matchIdentifiers.getCro())
+                .build();
+    }
 }
