@@ -15,6 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestCl
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.time.LocalDate;
 import java.time.Month;

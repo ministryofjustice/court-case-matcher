@@ -22,7 +22,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
-import uk.gov.justice.probation.courtcasematcher.service.SearchResult;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

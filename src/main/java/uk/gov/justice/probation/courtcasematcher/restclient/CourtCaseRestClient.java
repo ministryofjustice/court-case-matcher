@@ -98,11 +98,12 @@ public class CourtCaseRestClient {
 
         return put(path, CCSCourtCase.of(courtCase))
                 .retrieve()
-                .bodyToMono(CourtCase.class)
+                .bodyToMono(CCSCourtCase.class)
                 .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
                         .jitter(0.0d)
                         .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_CASE, courtCode, caseNo))
                         .filter(EXCEPTION_RETRY_FILTER))
+                .map(CCSCourtCase::asDomain)
                 .doOnSuccess(courtCaseApi -> eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build()))
                 .doOnError(throwable -> handleError(throwable, caseNo, courtCode))
                 .doOnError(throwable -> eventBus.post(CourtCaseFailureEvent.builder()
@@ -145,7 +146,7 @@ public class CourtCaseRestClient {
         WebClient.RequestHeadersSpec<?> spec =  webClient
             .put()
             .uri(uriBuilder -> uriBuilder.path(path).build())
-            .body(Mono.just(CCSCourtCase), CourtCase.class)
+            .body(Mono.just(CCSCourtCase), CCSCourtCase.class)
             .accept(MediaType.APPLICATION_JSON);
 
         return addSpecAuthAttribute(spec, path);
@@ -155,7 +156,7 @@ public class CourtCaseRestClient {
         WebClient.RequestHeadersSpec<?> spec = webClient
             .post()
             .uri(uriBuilder -> uriBuilder.path(path).build())
-            .body(Mono.just(request), GroupedOffenderMatches.class)
+            .body(Mono.just(request), CCSGroupedOffenderMatchesRequest.class)
             .accept(MediaType.APPLICATION_JSON);
 
         return addSpecAuthAttribute(spec, path);

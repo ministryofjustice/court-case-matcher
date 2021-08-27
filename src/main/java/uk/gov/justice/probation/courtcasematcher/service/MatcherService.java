@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 @Service
 @Slf4j

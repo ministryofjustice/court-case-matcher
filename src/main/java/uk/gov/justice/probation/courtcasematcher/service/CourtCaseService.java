@@ -11,6 +11,7 @@ import uk.gov.justice.probation.courtcasematcher.model.mapper.MatchDetails;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.util.Optional;
 
