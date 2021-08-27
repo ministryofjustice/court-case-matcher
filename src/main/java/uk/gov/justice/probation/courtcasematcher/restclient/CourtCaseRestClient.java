@@ -24,6 +24,7 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSCourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
@@ -38,7 +39,7 @@ import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearc
 
 @Component
 @Slf4j
-public class CourtCaseRestClient {
+public class CourtCaseRestClient implements CourtCaseRepository {
 
     private static final String ERR_MSG_FORMAT_PUT_CASE = "Unexpected exception when applying PUT to update case number '%s' for court '%s'.";
     private static final String ERR_MSG_FORMAT_POST_MATCH = "Unexpected exception when POST matches for case number '%s' for court '%s'. Match count was %s";
@@ -88,6 +89,7 @@ public class CourtCaseRestClient {
         this.disableAuthentication = disableAuthentication;
     }
 
+    @Override
     public Mono<CourtCase> getCourtCase(final String courtCode, final String caseNo) throws WebClientResponseException {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
@@ -106,6 +108,7 @@ public class CourtCaseRestClient {
             });
     }
 
+    @Override
     public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
@@ -126,6 +129,7 @@ public class CourtCaseRestClient {
                 .then();
     }
 
+    @Override
     public Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
 
         return Mono.justOrEmpty(offenderMatches)

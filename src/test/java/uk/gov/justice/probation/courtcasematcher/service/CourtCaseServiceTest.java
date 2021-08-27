@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
@@ -37,7 +37,7 @@ class CourtCaseServiceTest {
     private static final Long CASE_ID = 321344L;
 
     @Mock
-    private CourtCaseRestClient restClient;
+    private CourtCaseRepository courtCaseRepo;
 
     @Mock
     private OffenderSearchRestClient offenderSearchRestClient;
@@ -56,13 +56,13 @@ class CourtCaseServiceTest {
                 .courtCode(COURT_CODE)
                 .groupedOffenderMatches(matches)
                 .build();
-        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
-        when(restClient.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
-        verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
-        verify(restClient).postMatches(COURT_CODE, CASE_NO, matches);
+        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
     @DisplayName("Incoming gateway case which is merged with the existing.")
@@ -77,12 +77,12 @@ class CourtCaseServiceTest {
                 .courtRoom("2")
                 .build();
 
-        when(restClient.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
+        when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
 
         CourtCase updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
-        verify(restClient).getCourtCase(COURT_CODE, CASE_NO);
+        verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
     }
 
     @DisplayName("Get court case which is new, return a transformed copy.")
@@ -90,13 +90,13 @@ class CourtCaseServiceTest {
     void givenNewCase_whenGetCourtCase_thenReturn() {
         var aCase = buildCase();
 
-        when(restClient.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
+        when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
 
         CourtCase newCourtCase = courtCaseService.getCourtCase(aCase).block();
 
         assertThat(newCourtCase.getCourtCode()).isSameAs(COURT_CODE);
         assertThat(newCourtCase.getCaseNo()).isSameAs(CASE_NO);
-        verify(restClient).getCourtCase(COURT_CODE, CASE_NO);
+        verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
     }
 
     @DisplayName("Save a court case with a search response.")
@@ -109,13 +109,13 @@ class CourtCaseServiceTest {
                             .courtCode(COURT_CODE)
                             .groupedOffenderMatches(matches)
                             .build();
-        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
-        when(restClient.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build());
 
-        verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
-        verify(restClient).postMatches(COURT_CODE, CASE_NO, matches);
+        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
     @DisplayName("Save a search responses even if case put fails.")
@@ -128,28 +128,28 @@ class CourtCaseServiceTest {
                             .courtCode(COURT_CODE)
                             .groupedOffenderMatches(matches)
                             .build();
-        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenThrow(new RuntimeException("bang!"));
-        when(restClient.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenThrow(new RuntimeException("bang!"));
+        when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         assertThatExceptionOfType(RuntimeException.class)
             .isThrownBy(() -> courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build()))
             .withMessage("bang!");
 
-        verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
-        verify(restClient).postMatches(COURT_CODE, CASE_NO, matches);
+        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
     @DisplayName("Save a court case without a search response.")
     @Test
     void givenNoSearchResponse_whenCreateCourtCase_thenReturn() {
         final var courtCase = CourtCase.builder().caseId(Long.toString(CASE_ID)).caseNo(CASE_NO).courtCode(COURT_CODE).build();
-        when(restClient.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
-        when(restClient.postMatches(COURT_CODE, CASE_NO, null)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, null)).thenReturn(Mono.empty());
 
         courtCaseService.createCase(courtCase, null);
 
-        verify(restClient).putCourtCase(COURT_CODE, CASE_NO, courtCase);
-        verify(restClient).postMatches(COURT_CODE, CASE_NO, null);
+        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, null);
     }
 
     @DisplayName("Fetch and update probation status")
