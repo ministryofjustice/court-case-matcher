@@ -87,7 +87,9 @@ public class LegacyCourtCaseRestClient implements CourtCaseRepository {
     }
 
     @Override
-    public Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase) {
+    public Mono<Void> putCourtCase(CourtCase courtCase) {
+        final var courtCode = courtCase.getCourtCode();
+        final var caseNo = courtCase.getCaseNo();
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
         return put(path, CCSCourtCase.of(courtCase))

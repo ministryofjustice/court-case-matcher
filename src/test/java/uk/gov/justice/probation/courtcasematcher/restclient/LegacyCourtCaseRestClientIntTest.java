@@ -170,7 +170,7 @@ public class LegacyCourtCaseRestClientIntTest {
     @Test
     void whenPutCourtCase_thenMakeRestCallToCourtCaseService() {
 
-        restClient.putCourtCase(COURT_CODE, CASE_NO, A_CASE).block();
+        restClient.putCourtCase(A_CASE).block();
 
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(any(CourtCaseSuccessEvent.class));
 
@@ -189,7 +189,7 @@ public class LegacyCourtCaseRestClientIntTest {
             .build();
 
         assertThatExceptionOfType(WebClientResponseException.class)
-            .isThrownBy(() -> restClient.putCourtCase(unknownCourtCode, CASE_NO, courtCaseApi).block())
+            .isThrownBy(() -> restClient.putCourtCase(courtCaseApi).block())
             .withMessage("404 Not Found from PUT http://localhost:8090/court/XXX/case/12345");
 
         var notFoundException = createException(HttpStatus.NOT_FOUND).getClass();
@@ -211,7 +211,7 @@ public class LegacyCourtCaseRestClientIntTest {
                 .build();
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> restClient.putCourtCase("X500", CASE_NO, aCase).block())
+                .isThrownBy(() -> restClient.putCourtCase(aCase).block())
                 .withMessage("Retries exhausted: 1/1");
 
         var retryExhaustedException = Exceptions.retryExhausted("Message", new IllegalArgumentException()).getClass();

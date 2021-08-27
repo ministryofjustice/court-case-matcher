@@ -50,7 +50,7 @@ public class CourtCaseService {
 
     public void saveCourtCase(CourtCase courtCase) {
         try {
-            courtCaseRepository.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase).block();
+            courtCaseRepository.putCourtCase(courtCase).block();
         } finally {
             courtCaseRepository.postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase.getGroupedOffenderMatches()).block();
         }

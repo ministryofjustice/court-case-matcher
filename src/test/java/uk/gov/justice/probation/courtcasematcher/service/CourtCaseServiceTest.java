@@ -56,12 +56,12 @@ class CourtCaseServiceTest {
                 .courtCode(COURT_CODE)
                 .groupedOffenderMatches(matches)
                 .build();
-        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
         when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
-        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
@@ -109,12 +109,12 @@ class CourtCaseServiceTest {
                             .courtCode(COURT_CODE)
                             .groupedOffenderMatches(matches)
                             .build();
-        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
         when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build());
 
-        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
@@ -128,14 +128,14 @@ class CourtCaseServiceTest {
                             .courtCode(COURT_CODE)
                             .groupedOffenderMatches(matches)
                             .build();
-        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenThrow(new RuntimeException("bang!"));
+        when(courtCaseRepo.putCourtCase(courtCase)).thenThrow(new RuntimeException("bang!"));
         when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         assertThatExceptionOfType(RuntimeException.class)
             .isThrownBy(() -> courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build()))
             .withMessage("bang!");
 
-        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
     }
 
@@ -143,12 +143,12 @@ class CourtCaseServiceTest {
     @Test
     void givenNoSearchResponse_whenCreateCourtCase_thenReturn() {
         final var courtCase = CourtCase.builder().caseId(Long.toString(CASE_ID)).caseNo(CASE_NO).courtCode(COURT_CODE).build();
-        when(courtCaseRepo.putCourtCase(COURT_CODE, CASE_NO, courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
         when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, null)).thenReturn(Mono.empty());
 
         courtCaseService.createCase(courtCase, null);
 
-        verify(courtCaseRepo).putCourtCase(COURT_CODE, CASE_NO, courtCase);
+        verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, null);
     }
 

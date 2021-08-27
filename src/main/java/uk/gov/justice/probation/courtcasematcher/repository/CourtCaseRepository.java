@@ -8,7 +8,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMat
 public interface CourtCaseRepository {
     Mono<CourtCase> getCourtCase(String courtCode, String caseNo) throws WebClientResponseException;
 
-    Mono<Void> putCourtCase(String courtCode, String caseNo, CourtCase courtCase);
+    Mono<Void> putCourtCase(CourtCase courtCase);
 
     Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches);
 }

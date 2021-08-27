@@ -102,7 +102,7 @@ class CourtCaseServiceClientPactTest {
     void putMinimalCourtCase(MockServer mockServer) {
 
         final var mono = getCourtCaseRestClient(mockServer)
-                .putCourtCase("B10JQ", "1234567890", aMinimalValidCourtCase());
+                .putCourtCase(aMinimalValidCourtCase());
 
         assertThat(mono.blockOptional()).isEmpty();
     }
@@ -112,7 +112,7 @@ class CourtCaseServiceClientPactTest {
     void putCourtCaseWithAllFields(MockServer mockServer) {
 
         final var mono = getCourtCaseRestClient(mockServer)
-                .putCourtCase("B10JQ", "1234567890", aCourtCaseWithAllFields());
+                .putCourtCase(aCourtCaseWithAllFields());
 
         assertThat(mono.blockOptional()).isEmpty();
     }
