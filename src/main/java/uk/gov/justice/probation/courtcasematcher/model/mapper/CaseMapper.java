@@ -13,12 +13,12 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase.CourtCas
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
+import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
 
 import java.util.Collections;

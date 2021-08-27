@@ -4,8 +4,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchType;
 
 import java.util.Collections;
 import java.util.List;
