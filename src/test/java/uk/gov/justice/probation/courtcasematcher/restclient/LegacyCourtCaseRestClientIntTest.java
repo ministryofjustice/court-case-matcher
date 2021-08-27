@@ -61,7 +61,7 @@ import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearc
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TestMessagingConfig.class)
-public class CourtCaseRestClientIntTest {
+public class LegacyCourtCaseRestClientIntTest {
 
     private static final String COURT_CODE = "B10JQ";
     private static final String CASE_NO = "12345";
@@ -96,7 +96,7 @@ public class CourtCaseRestClientIntTest {
     private EventBus eventBus;
 
     @Autowired
-    private CourtCaseRestClient restClient;
+    private LegacyCourtCaseRestClient restClient;
 
     private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
 
@@ -106,7 +106,7 @@ public class CourtCaseRestClientIntTest {
     @BeforeEach
     void beforeEach() {
         MockitoAnnotations.openMocks(this);
-        Logger logger = (Logger) getLogger(LoggerFactory.getLogger(CourtCaseRestClient.class).getName());
+        Logger logger = (Logger) getLogger(LoggerFactory.getLogger(LegacyCourtCaseRestClient.class).getName());
         logger.addAppender(mockAppender);
     }
 

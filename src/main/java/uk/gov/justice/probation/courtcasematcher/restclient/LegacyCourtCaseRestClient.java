@@ -1,25 +1,19 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
 import com.google.common.eventbus.EventBus;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 import reactor.tuple.Tuple2;
-import reactor.util.retry.Retry;
-import reactor.util.retry.Retry.RetrySignal;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
@@ -30,63 +24,47 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservi
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
-import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient.EXCEPTION_RETRY_FILTER;
-
 @Component
 @Slf4j
-public class CourtCaseRestClient implements CourtCaseRepository {
+public class LegacyCourtCaseRestClient implements CourtCaseRepository {
 
     private static final String ERR_MSG_FORMAT_PUT_CASE = "Unexpected exception when applying PUT to update case number '%s' for court '%s'.";
     private static final String ERR_MSG_FORMAT_POST_MATCH = "Unexpected exception when POST matches for case number '%s' for court '%s'. Match count was %s";
 
-    private static final String ERROR_MSG_FORMAT_INITIAL_CASE = "Initial error from PUT of the case %s for court %s. Will retry.";
+    private static final String ERROR_MSG_FORMAT_INITIAL_PUT_CASE = "Initial error from PUT of the case %s for court %s. Will retry.";
     private static final String ERROR_MSG_FORMAT_RETRY_PUT_CASE = "Retry error from PUT of the case %s for court %s, at attempt %s of %s.";
-    private static final String ERROR_MSG_FORMAT_INITIAL_MATCHES = "Initial error from POST of the offender matches for case %s in court %s, Will retry.";
+    private static final String ERROR_MSG_FORMAT_INITIAL_POST_MATCHES = "Initial error from POST of the offender matches for case %s in court %s, Will retry.";
     private static final String ERROR_MSG_FORMAT_RETRY_POST_MATCHES = "Retry error from POST of the offender matches for case %s in court %s, at attempt %s of %s.";
+    private final CourtCaseServiceRestHelper courtCaseServiceRestHelper;
 
     @Value("${court-case-service.case-put-url-template}")
     private String courtCasePutTemplate;
     @Value("${court-case-service.matches-post-url-template}")
     private String matchesPostTemplate;
 
-    @Value("${court-case-service.disable-authentication:false}")
-    private Boolean disableAuthentication;
-
     private final EventBus eventBus;
 
-    private final WebClient webClient;
-
-    @Setter
-    @Value("${court-case-service.max-retries:3}")
-    private int maxRetries;
-
-    @Setter
-    @Value("${court-case-service.min-backoff-seconds:3}")
-    private int minBackOffSeconds;
-
     @Autowired
-    public CourtCaseRestClient(@Qualifier("courtCaseServiceWebClient") WebClient webClient, EventBus eventBus) {
+    public LegacyCourtCaseRestClient(CourtCaseServiceRestHelper courtCaseServiceRestHelper,
+                                     EventBus eventBus) {
         super();
-        this.webClient = webClient;
+        this.courtCaseServiceRestHelper = courtCaseServiceRestHelper;
         this.eventBus = eventBus;
     }
-    public CourtCaseRestClient(@Qualifier("courtCaseServiceWebClient") WebClient webClient,
-                               EventBus eventBus,
-                               String matchesPostTemplate,
-                               String courtCasePutTemplate,
-                               boolean disableAuthentication
+
+    public LegacyCourtCaseRestClient(CourtCaseServiceRestHelper courtCaseServiceRestHelper,
+                                     EventBus eventBus,
+                                     String matchesPostTemplate,
+                                     String courtCasePutTemplate
     ) {
         super();
-        this.webClient = webClient;
+        this.courtCaseServiceRestHelper = courtCaseServiceRestHelper;
         this.eventBus = eventBus;
         this.matchesPostTemplate = matchesPostTemplate;
         this.courtCasePutTemplate = courtCasePutTemplate;
-        this.disableAuthentication = disableAuthentication;
     }
 
     @Override
@@ -94,7 +72,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
-        return get(path)
+        return courtCaseServiceRestHelper.get(path, this)
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
             .bodyToMono(CCSCourtCase.class)
@@ -115,13 +93,10 @@ public class CourtCaseRestClient implements CourtCaseRepository {
         return put(path, CCSCourtCase.of(courtCase))
                 .retrieve()
                 .bodyToMono(CCSCourtCase.class)
-                .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
-                        .jitter(0.0d)
-                        .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_CASE, courtCode, caseNo))
-                        .filter(EXCEPTION_RETRY_FILTER))
+                .retryWhen(courtCaseServiceRestHelper.buildRetrySpec(courtCode, caseNo, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_PUT_CASE, this))
                 .map(CCSCourtCase::asDomain)
                 .doOnSuccess(courtCaseApi -> eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build()))
-                .doOnError(throwable -> handleError(throwable, caseNo, courtCode))
+                .doOnError(throwable -> handlePutError(throwable, caseNo, courtCode))
                 .doOnError(throwable -> eventBus.post(CourtCaseFailureEvent.builder()
                         .failureMessage(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode))
                         .throwable(throwable)
@@ -137,10 +112,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
             .flatMap(tuple2 -> post(tuple2.getT1(), tuple2.getT2())
                     .retrieve()
                     .toBodilessEntity()
-                    .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
-                    .jitter(0.0d)
-                    .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_MATCHES, courtCode, caseNo))
-                    .filter(EXCEPTION_RETRY_FILTER)))
+                    .retryWhen(courtCaseServiceRestHelper.buildRetrySpec(courtCode, caseNo, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_POST_MATCHES, this)))
             .doOnNext(responseEntity -> log.info("Successful POST of offender matches. Response location: {} ",
                     Optional.ofNullable(responseEntity)
                             .map(HttpEntity::getHeaders)
@@ -150,47 +122,18 @@ public class CourtCaseRestClient implements CourtCaseRepository {
             .then();
     }
 
-    private WebClient.RequestHeadersSpec<?> get(String path) {
-        final WebClient.RequestHeadersSpec<?> spec = webClient
-            .get()
-            .uri(uriBuilder -> uriBuilder.path(path).build())
-            .accept(MediaType.APPLICATION_JSON);
-
-        return addSpecAuthAttribute(spec, path);
-    }
-
     private WebClient.RequestHeadersSpec<?> put(String path, CCSCourtCase CCSCourtCase) {
-        WebClient.RequestHeadersSpec<?> spec =  webClient
-            .put()
-            .uri(uriBuilder -> uriBuilder.path(path).build())
-            .body(Mono.just(CCSCourtCase), CCSCourtCase.class)
-            .accept(MediaType.APPLICATION_JSON);
-
-        return addSpecAuthAttribute(spec, path);
+        return courtCaseServiceRestHelper.putObject(path, CCSCourtCase, CCSCourtCase.class);
     }
 
     private WebClient.RequestHeadersSpec<?> post(String path, CCSGroupedOffenderMatchesRequest request) {
-        WebClient.RequestHeadersSpec<?> spec = webClient
-            .post()
-            .uri(uriBuilder -> uriBuilder.path(path).build())
-            .body(Mono.just(request), CCSGroupedOffenderMatchesRequest.class)
-            .accept(MediaType.APPLICATION_JSON);
-
-        return addSpecAuthAttribute(spec, path);
+        return courtCaseServiceRestHelper.postObject(path, request, CCSGroupedOffenderMatchesRequest.class, this);
     }
 
-    private RequestHeadersSpec<?> addSpecAuthAttribute(RequestHeadersSpec<?> spec, String path) {
-        if (disableAuthentication) {
-            return spec;
-        }
-
-        log.info(String.format("Authenticating with %s for call to %s", "offender-search-client", path));
-        return spec.attributes(clientRegistrationId("offender-search-client"));
-    }
-
-    private void handleError(Throwable throwable, String courtCode, String caseNo) {
+    private void handlePutError(Throwable throwable, String courtCode, String caseNo) {
 
         if (Exceptions.isRetryExhausted(throwable)) {
+            final var maxRetries = courtCaseServiceRestHelper.getMaxRetries();
             log.error(String.format(ERROR_MSG_FORMAT_RETRY_PUT_CASE, caseNo, courtCode, maxRetries, maxRetries));
         }
     }
@@ -212,13 +155,4 @@ public class CourtCaseRestClient implements CourtCaseRepository {
             StandardCharsets.UTF_8);
     }
 
-    private Mono<Void> logRetrySignal(RetrySignal retrySignal, String messageFormat, String initialMessageFormat, String courtCode, String caseNo) {
-        if (retrySignal.totalRetries() > 0 ) {
-            log.warn(String.format(messageFormat, caseNo, courtCode, retrySignal.totalRetries(), maxRetries));
-        }
-        else {
-            log.warn(String.format(initialMessageFormat, caseNo, courtCode));
-        }
-        return Mono.empty();
-    }
 }

@@ -24,7 +24,8 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
-import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceRestHelper;
+import uk.gov.justice.probation.courtcasematcher.restclient.LegacyCourtCaseRestClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,7 @@ class CourtCaseServiceClientPactTest {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "/put-court-case/POST_matches.json"), UTF_8);
 
-        final var location = String.format("/court/B10JQ/case/1234567890", CASE_ID);
+        final var location = String.format("/court/B10JQ/case/%s", CASE_ID);
         return builder
                 .uponReceiving("a request to put a minimal court case")
                 .path(location)
@@ -143,12 +144,12 @@ class CourtCaseServiceClientPactTest {
                 .build();
     }
 
-    private CourtCaseRestClient getCourtCaseRestClient(MockServer mockServer) {
-        return new CourtCaseRestClient(getWebClient(mockServer),
+    private LegacyCourtCaseRestClient getCourtCaseRestClient(MockServer mockServer) {
+        return new LegacyCourtCaseRestClient(new CourtCaseServiceRestHelper(getWebClient(mockServer)),
                 bus,
                 "/court/%s/case/%s/grouped-offender-matches",
-                "/court/%s/case/%s",
-                true);
+                "/court/%s/case/%s"
+        );
     }
 
     private CourtCase aMinimalValidCourtCase() {
