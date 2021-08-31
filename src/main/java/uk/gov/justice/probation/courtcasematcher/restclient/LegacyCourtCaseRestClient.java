@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-@Component
+@Component("legacyClient")
 @Slf4j
 public class LegacyCourtCaseRestClient implements CourtCaseRepository {
 
@@ -72,7 +72,7 @@ public class LegacyCourtCaseRestClient implements CourtCaseRepository {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
-        return courtCaseServiceRestHelper.get(path, this)
+        return courtCaseServiceRestHelper.get(path)
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
             .bodyToMono(CCSCourtCase.class)
@@ -95,7 +95,7 @@ public class LegacyCourtCaseRestClient implements CourtCaseRepository {
         return put(path, CCSCourtCase.of(courtCase))
                 .retrieve()
                 .bodyToMono(CCSCourtCase.class)
-                .retryWhen(courtCaseServiceRestHelper.buildRetrySpec(courtCode, caseNo, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_PUT_CASE, this))
+                .retryWhen(courtCaseServiceRestHelper.buildRetrySpec(courtCode, caseNo, ERROR_MSG_FORMAT_RETRY_PUT_CASE, ERROR_MSG_FORMAT_INITIAL_PUT_CASE))
                 .map(CCSCourtCase::asDomain)
                 .doOnSuccess(courtCaseApi -> eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build()))
                 .doOnError(throwable -> handlePutError(throwable, caseNo, courtCode))
@@ -114,7 +114,7 @@ public class LegacyCourtCaseRestClient implements CourtCaseRepository {
             .flatMap(tuple2 -> post(tuple2.getT1(), tuple2.getT2())
                     .retrieve()
                     .toBodilessEntity()
-                    .retryWhen(courtCaseServiceRestHelper.buildRetrySpec(courtCode, caseNo, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_POST_MATCHES, this)))
+                    .retryWhen(courtCaseServiceRestHelper.buildRetrySpec(courtCode, caseNo, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_POST_MATCHES)))
             .doOnNext(responseEntity -> log.info("Successful POST of offender matches. Response location: {} ",
                     Optional.ofNullable(responseEntity)
                             .map(HttpEntity::getHeaders)

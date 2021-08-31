@@ -32,7 +32,6 @@ public class CCSCourtCase implements Serializable {
     private final String courtCode;
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
-    private final String probationStatus;
     private final String probationStatusActual;
     private final List<CCSOffence> offences;
     private final String crn;
@@ -76,8 +75,7 @@ public class CCSCourtCase implements Serializable {
                 .pnc(domain.getPnc())
                 .preSentenceActivity(domain.isPreSentenceActivity())
                 .previouslyKnownTerminationDate(domain.getPreviouslyKnownTerminationDate())
-                .probationStatus(domain.getProbationStatus())
-                .probationStatusActual(domain.getProbationStatusActual())
+                .probationStatusActual(domain.getProbationStatus())
                 .sessionStartTime(domain.getSessionStartTime())
                 .suspendedSentenceOrder(domain.getSuspendedSentenceOrder())
                 .defendantDob(domain.getDefendantDob())
@@ -116,8 +114,7 @@ public class CCSCourtCase implements Serializable {
                 .pnc(getPnc())
                 .preSentenceActivity(isPreSentenceActivity())
                 .previouslyKnownTerminationDate(getPreviouslyKnownTerminationDate())
-                .probationStatus(getProbationStatus())
-                .probationStatusActual(getProbationStatusActual())
+                .probationStatus(getProbationStatusActual())
                 .sessionStartTime(getSessionStartTime())
                 .suspendedSentenceOrder(getSuspendedSentenceOrder())
                 .defendantDob(getDefendantDob())

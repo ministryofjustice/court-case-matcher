@@ -37,8 +37,6 @@ public class CourtCase implements Serializable {
 
     private final String probationStatus;
 
-    private final String probationStatusActual;
-
     private final List<Offence> offences;
 
     private final String crn;

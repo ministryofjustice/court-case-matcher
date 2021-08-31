@@ -13,10 +13,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSCourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
 
 import java.time.Duration;
+import java.util.function.BiFunction;
 
 import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient.EXCEPTION_RETRY_FILTER;
 
@@ -43,11 +43,11 @@ public class CourtCaseServiceRestHelper {
         this.webClient = webClient;
     }
 
-    WebClient.RequestHeadersSpec<?> putObject(String path, CCSCourtCase CCSCourtCase, Class<CCSCourtCase> type) {
+    WebClient.RequestHeadersSpec<?> putObject(String path, Object obj, Class<?> type) {
         WebClient.RequestHeadersSpec<?> spec = webClient
                 .put()
                 .uri(uriBuilder -> uriBuilder.path(path).build())
-                .body(Mono.just(CCSCourtCase), type)
+                .body(Mono.just(obj), type)
                 .accept(MediaType.APPLICATION_JSON);
 
         return addSpecAuthAttribute(spec, path);
@@ -72,24 +72,32 @@ public class CourtCaseServiceRestHelper {
         return addSpecAuthAttribute(spec, path);
     }
 
-    Mono<Void> logRetrySignal(Retry.RetrySignal retrySignal, String messageFormat, String initialMessageFormat, String courtCode, String caseNo, LegacyCourtCaseRestClient courtCaseRestClient) {
+    Mono<Void> logRetrySignal(Retry.RetrySignal retrySignal, String initialMessage, BiFunction<Long, Integer, String> subsequentMessageFunc) {
         if (retrySignal.totalRetries() > 0 ) {
-            log.warn(String.format(messageFormat, caseNo, courtCode, retrySignal.totalRetries(), maxRetries));
+            log.warn(subsequentMessageFunc.apply(retrySignal.totalRetries(), maxRetries));
         }
         else {
-            log.warn(String.format(initialMessageFormat, caseNo, courtCode));
+            log.warn(initialMessage);
         }
         return Mono.empty();
     }
 
-    RetryBackoffSpec buildRetrySpec(String courtCode, String caseNo, String errorMsgFormatRetryPutCase, String errorMsgFormatInitialCase, LegacyCourtCaseRestClient courtCaseRestClient) {
+    RetryBackoffSpec buildRetrySpec(String courtCode, String caseNo, String errorMsgFormatRetryPutCase, String errorMsgFormatInitialCase) {
         return Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
                 .jitter(0.0d)
-                .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, errorMsgFormatRetryPutCase, errorMsgFormatInitialCase, courtCode, caseNo, courtCaseRestClient))
+                .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, String.format(errorMsgFormatInitialCase, courtCode, caseNo),
+                        (totalRetries, maxRetries) -> String.format(errorMsgFormatRetryPutCase, caseNo, courtCode, totalRetries, maxRetries)))
                 .filter(EXCEPTION_RETRY_FILTER);
     }
 
-    WebClient.RequestHeadersSpec<?> get(String path, LegacyCourtCaseRestClient courtCaseRestClient) {
+    RetryBackoffSpec buildRetrySpec(String intialMessage, BiFunction<Long, Integer, String> subsequentMessageFunc) {
+        return Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
+                .jitter(0.0d)
+                .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, intialMessage, subsequentMessageFunc))
+                .filter(EXCEPTION_RETRY_FILTER);
+    }
+
+    WebClient.RequestHeadersSpec<?> get(String path) {
         final WebClient.RequestHeadersSpec<?> spec = webClient
             .get()
             .uri(uriBuilder -> uriBuilder.path(path).build())

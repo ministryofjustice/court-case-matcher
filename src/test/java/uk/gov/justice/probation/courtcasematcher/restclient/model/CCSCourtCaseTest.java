@@ -22,7 +22,9 @@ class CCSCourtCaseTest {
 
         final var courtCaseRequest = CCSCourtCase.of(courtCase);
 
-        assertThat(courtCaseRequest).usingRecursiveComparison().isEqualTo(courtCase);
+        assertThat(courtCaseRequest).usingRecursiveComparison()
+                .ignoringFields("probationStatusActual")
+                .isEqualTo(courtCase);
     }
 
     @Test
@@ -45,7 +47,7 @@ class CCSCourtCaseTest {
                 .crn("crn")
                 .cro("cro")
                 .pnc("pnc")
-                .defendantDob(LocalDate.of(2000, 01, 01))
+                .defendantDob(LocalDate.of(2000, 1, 1))
                 .defendantSex("FEMALE")
                 .defendantType(PERSON)
                 .listNo("1")
@@ -53,9 +55,8 @@ class CCSCourtCaseTest {
                 .nationality2("nat2")
                 .isNew(true)
                 .preSentenceActivity(true)
-                .previouslyKnownTerminationDate(LocalDate.of(2001, 01, 01))
+                .previouslyKnownTerminationDate(LocalDate.of(2001, 1, 1))
                 .probationStatus("Current")
-                .probationStatusActual("Current actual")
                 .sessionStartTime(LocalDateTime.of(2002, 1, 1, 1, 1))
                 .suspendedSentenceOrder(true)
                 .defendantName("Frederiche")

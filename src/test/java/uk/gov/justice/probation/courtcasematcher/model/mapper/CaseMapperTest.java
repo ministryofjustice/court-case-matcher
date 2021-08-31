@@ -318,8 +318,7 @@ class CaseMapperTest {
                 .pnc("PNC")
                 .caseNo("12345")
                 .caseId("123456")
-                .probationStatus("Current")
-                .probationStatusActual("CURRENT")
+                .probationStatus("CURRENT")
                 .courtCode(COURT_CODE)
                 .courtRoom("01")
                 .defendantAddress(null)
@@ -372,7 +371,6 @@ class CaseMapperTest {
             // Fields that stay the same on existing value
             assertThat(courtCase.getCourtCode()).isEqualTo(COURT_CODE);
             assertThat(courtCase.getProbationStatus()).isEqualTo("CURRENT");
-            assertThat(courtCase.getProbationStatusActual()).isEqualTo("CURRENT");
             assertThat(courtCase.getCaseNo()).isEqualTo("12345");
             assertThat(courtCase.getBreach()).isTrue();
             assertThat(courtCase.getSuspendedSentenceOrder()).isTrue();

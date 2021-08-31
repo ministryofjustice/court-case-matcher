@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "PUT",
+    "url": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended",
+    "bodyPatterns": [
+      {
+        "matches" : ".*caseId.*D517D32D-3C80-41E8-846E-D274DC2B94A5.*"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "put-court-case/PUT_case_details_body.json"
+  }
+}

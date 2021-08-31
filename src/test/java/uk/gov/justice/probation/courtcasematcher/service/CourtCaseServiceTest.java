@@ -158,7 +158,7 @@ class CourtCaseServiceTest {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
         var courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO).probationStatus("Previously known")
-            .probationStatusActual("PREVIOUSLY_KNOWN").build();
+            .probationStatus("PREVIOUSLY_KNOWN").build();
         var probationStatusDetail = ProbationStatusDetail.builder()
                                                                     .status("CURRENT")
                                                                     .preSentenceActivity(true)
@@ -183,8 +183,7 @@ class CourtCaseServiceTest {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
         var courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO)
-            .probationStatus("Previously known")
-            .probationStatusActual("PREVIOUSLY_KNOWN")
+            .probationStatus("PREVIOUSLY_KNOWN")
             .build();
         var probationStatusDetail = ProbationStatusDetail.builder()
             .status("CURRENT")
@@ -199,8 +198,7 @@ class CourtCaseServiceTest {
 
         var courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
-        assertThat(courtCaseResult.getProbationStatus()).isEqualTo("Previously known");
-        assertThat(courtCaseResult.getProbationStatusActual()).isEqualTo("PREVIOUSLY_KNOWN");
+        assertThat(courtCaseResult.getProbationStatus()).isEqualTo("PREVIOUSLY_KNOWN");
         assertThat(courtCaseResult.getPreviouslyKnownTerminationDate()).isNull();
         assertThat(courtCaseResult.getBreach()).isNull();
         assertThat(courtCaseResult.isPreSentenceActivity()).isFalse();

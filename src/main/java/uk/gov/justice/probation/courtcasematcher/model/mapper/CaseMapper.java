@@ -146,8 +146,7 @@ public class CaseMapper {
             .breach(existingCourtCase.getBreach())
             .previouslyKnownTerminationDate(existingCourtCase.getPreviouslyKnownTerminationDate())
             .crn(existingCourtCase.getCrn())
-            .probationStatus(existingCourtCase.getProbationStatusActual())
-            .probationStatusActual(existingCourtCase.getProbationStatusActual())
+            .probationStatus(existingCourtCase.getProbationStatus())
             .suspendedSentenceOrder(existingCourtCase.getSuspendedSentenceOrder())
             .pnc(existingCourtCase.getPnc())
 
@@ -199,7 +198,6 @@ public class CaseMapper {
                 .previouslyKnownTerminationDate(
                     Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getPreviouslyKnownTerminationDate).orElse(null))
                 .probationStatus(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
-                .probationStatusActual(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
                 .preSentenceActivity(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isPreSentenceActivity).orElse(false))
                 .awaitingPsr(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isAwaitingPsr).orElse(false))
                 .crn(offender.getOtherIds().getCrn())

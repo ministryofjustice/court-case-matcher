@@ -3,19 +3,28 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSExtendedCase;
 
-//@Component
+@Component
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourtCaseRestClient implements CourtCaseRepository {
 
     @Autowired
     private LegacyCourtCaseRestClient legacyCourtCaseRestClient;
+
+    @Autowired
+    private CourtCaseServiceRestHelper restHelper;
+
+    @Value("${court-case-service.case-put-url-template-extended}")
+    private String courtCasePutTemplate;
 
     @Override
     public Mono<CourtCase> getCourtCase(String courtCode, String caseNo) throws WebClientResponseException {
@@ -24,7 +33,23 @@ public class CourtCaseRestClient implements CourtCaseRepository {
 
     @Override
     public Mono<Void> putCourtCase(CourtCase courtCase) {
-        return null;
+        final var caseId = courtCase.getCaseId();
+        final String path = String.format(courtCasePutTemplate, caseId);
+        return restHelper.putObject(path, CCSExtendedCase.of(courtCase), CCSExtendedCase.class)
+                .retrieve()
+                .toBodilessEntity()
+                .retryWhen(restHelper.buildRetrySpec(
+                        String.format("Initial retry failed for caseId %s", caseId),
+                        (attemptNo, maxAttempts) -> String.format("Retry failed for caseId %s at attempt %s of %s", caseId, attemptNo, maxAttempts))
+                )
+//                .map(CCSCourtCase::asDomain)
+//                .doOnSuccess(courtCaseApi -> eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build()))
+//                .doOnError(throwable -> handlePutError(throwable, caseNo, courtCode))
+//                .doOnError(throwable -> eventBus.post(CourtCaseFailureEvent.builder()
+//                        .failureMessage(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode))
+//                        .throwable(throwable)
+//                        .build()))
+                .then();
     }
 
     @Override

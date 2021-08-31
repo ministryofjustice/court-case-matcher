@@ -1,8 +1,10 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
@@ -18,13 +20,15 @@ import java.util.Optional;
 @Service
 @Slf4j
 @AllArgsConstructor
+@NoArgsConstructor
 public class CourtCaseService {
 
     @Autowired
-    private final CourtCaseRepository courtCaseRepository;
+    @Qualifier("legacyClient")
+    private CourtCaseRepository courtCaseRepository;
 
     @Autowired
-    private final OffenderSearchRestClient offenderSearchRestClient;
+    private OffenderSearchRestClient offenderSearchRestClient;
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {
         return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
