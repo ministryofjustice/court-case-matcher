@@ -19,8 +19,12 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMat
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.CASE_ID;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.aCourtCaseBuilderWithAllFields;
 
 @SpringBootTest
@@ -28,6 +32,7 @@ import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.aC
 @Import(TestMessagingConfig.class)
 @ExtendWith(MockitoExtension.class)
 public class CourtCaseRestClientIntTest {
+    public static final String CASE_ID_SERVER_ERROR = "771F1C21-D2CA-4235-8659-5C3C7D7C58B6";
     @Mock
     private Mono<Void> mono;
     @Mock
@@ -39,21 +44,39 @@ public class CourtCaseRestClientIntTest {
     @Qualifier("courtCaseServiceWebClient")
     private WebClient webClient;
 
-    private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
-
     @Autowired
     private CourtCaseRestClient client;
+
+    private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
 
     @RegisterExtension
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
 
     @Test
-    public void validPut_isSuccessful() {
+    public void whenPutOk_thenItsSuccessful() {
         final var courtCase = aCourtCaseBuilderWithAllFields()
-                .caseId("D517D32D-3C80-41E8-846E-D274DC2B94A5")
                 .build();
         final var voidMono = client.putCourtCase(courtCase);
         assertThat(voidMono.blockOptional()).isEmpty();
+
+        MOCK_SERVER.findAllUnmatchedRequests();
+        MOCK_SERVER.verify(
+                putRequestedFor(urlEqualTo(String.format("/case/%s/extended", CASE_ID)))
+        );
+    }
+
+
+
+    @Test
+    void whenRestClientThrows500OnPut_ThenThrow() {
+        final var aCase = aCourtCaseBuilderWithAllFields()
+                .caseId(CASE_ID_SERVER_ERROR)
+                .courtCode("X500")
+                .build();
+
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> client.putCourtCase(aCase).block())
+                .withMessage("Retries exhausted: 1/1");
     }
 
     @Test

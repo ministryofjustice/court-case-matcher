@@ -63,7 +63,6 @@ public class DomainDataHelper {
                 .courtCode("B10JQ")
                 .courtRoom("ROOM 1")
                 .sessionStartTime(LocalDateTime.of(2021, 8, 26, 9, 0))
-                .probationStatus("Current")
                 .offences(Collections.singletonList(Offence.builder()
                         .offenceTitle("offence title")
                         .offenceSummary("offence summary")

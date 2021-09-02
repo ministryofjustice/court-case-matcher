@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservi
 @Component
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class CourtCaseRestClient implements CourtCaseRepository {
 
     @Autowired
@@ -42,13 +44,6 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                         String.format("Initial retry failed for caseId %s", caseId),
                         (attemptNo, maxAttempts) -> String.format("Retry failed for caseId %s at attempt %s of %s", caseId, attemptNo, maxAttempts))
                 )
-//                .map(CCSCourtCase::asDomain)
-//                .doOnSuccess(courtCaseApi -> eventBus.post(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build()))
-//                .doOnError(throwable -> handlePutError(throwable, caseNo, courtCode))
-//                .doOnError(throwable -> eventBus.post(CourtCaseFailureEvent.builder()
-//                        .failureMessage(String.format(ERR_MSG_FORMAT_PUT_CASE, caseNo, courtCode))
-//                        .throwable(throwable)
-//                        .build()))
                 .then();
     }
 
