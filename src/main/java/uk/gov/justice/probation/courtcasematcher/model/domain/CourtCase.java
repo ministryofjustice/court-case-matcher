@@ -25,6 +25,8 @@ public class CourtCase implements Serializable {
 
     private final String caseId;
 
+    private final String defendantId;
+
     @Setter(AccessLevel.NONE)
     private final String caseNo;
 

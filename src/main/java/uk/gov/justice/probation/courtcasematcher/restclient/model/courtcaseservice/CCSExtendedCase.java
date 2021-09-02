@@ -31,6 +31,7 @@ public class CCSExtendedCase {
                         .listNo(courtCase.getListNo())
                         .build()))
                 .defendants(Collections.singletonList(CCSDefendant.builder()
+                        .defendantId(courtCase.getDefendantId())
                         .name(CCSName.of(courtCase.getName()))
                         .dateOfBirth(courtCase.getDefendantDob())
                         .address(CCSAddress.of(courtCase.getDefendantAddress()))

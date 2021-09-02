@@ -57,6 +57,7 @@ class CourtCaseRestClientPactTest {
                 defendant.stringType("type");
                 defendant.booleanType("preSentenceActivity");
                 defendant.booleanType("awaitingPsr");
+                defendant.stringType("defendantId");
             })));
             rootObject.array("hearingDays", (array) -> array.object((hearingDay) -> {
                 hearingDay.stringType("courtCode");
@@ -120,8 +121,7 @@ class CourtCaseRestClientPactTest {
                 defendant.booleanType("suspendedSentenceOrder");
                 defendant.booleanType("awaitingPsr");
                 defendant.booleanType("breach");
-                // TODO: This will need to be added when we start getting it from CHER
-//                defendant.stringType("defendantId");
+                defendant.stringType("defendantId");
             })));
             rootObject.array("hearingDays", (array) -> array.object((hearingDay) -> {
                 hearingDay.stringType("courtCode");

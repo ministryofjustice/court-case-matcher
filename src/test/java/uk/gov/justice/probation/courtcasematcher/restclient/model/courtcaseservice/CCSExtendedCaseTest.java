@@ -27,6 +27,7 @@ public class CCSExtendedCaseTest {
                 .listNo("1")
                 .build());
         assertThat(actual.getDefendants()).asList().containsExactly(CCSDefendant.builder()
+                .defendantId(courtCase.getDefendantId())
                 .name(CCSName.builder()
                         .title("title")
                         .forename1("forename 1")

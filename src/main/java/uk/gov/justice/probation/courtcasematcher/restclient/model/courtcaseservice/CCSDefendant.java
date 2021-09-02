@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CCSDefendant {
+    private String defendantId;
     private CCSAddress address;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;

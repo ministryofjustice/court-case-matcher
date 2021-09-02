@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 
 public class DomainDataHelper {
+    public static final String DEFENDANT_ID = "8E07B58D-3ED3-440E-9CC2-2BC94EDBC5AF";
     public static String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
 
     public static CourtCase aCourtCaseWithAllFields() {
@@ -60,6 +61,7 @@ public class DomainDataHelper {
     public static CourtCase.CourtCaseBuilder aMinimalCourtCaseBuilder() {
         return CourtCase.builder()
                 .caseId(CASE_ID)
+                .defendantId(DEFENDANT_ID)
                 .courtCode("B10JQ")
                 .courtRoom("ROOM 1")
                 .sessionStartTime(LocalDateTime.of(2021, 8, 26, 9, 0))

@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-@Component("legacyClient")
+@Component("legacy-client")
 @Slf4j
 public class LegacyCourtCaseRestClient implements CourtCaseRepository {
 

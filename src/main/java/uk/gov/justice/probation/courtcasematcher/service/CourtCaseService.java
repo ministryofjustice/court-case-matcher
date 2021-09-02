@@ -24,7 +24,7 @@ import java.util.Optional;
 public class CourtCaseService {
 
     @Autowired
-    @Qualifier("legacyClient")
+    @Qualifier("court-case-rest-client")
     private CourtCaseRepository courtCaseRepository;
 
     @Autowired

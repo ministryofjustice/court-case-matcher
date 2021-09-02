@@ -1,28 +1,32 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import java.util.Map;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.CASE_ID;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.aCourtCaseBuilderWithAllFields;
@@ -39,10 +43,8 @@ public class CourtCaseRestClientIntTest {
     private Mono<CourtCase> courtCaseMono;
     @MockBean
     private LegacyCourtCaseRestClient legacyClient;
-
-    @Autowired
-    @Qualifier("courtCaseServiceWebClient")
-    private WebClient webClient;
+    @MockBean
+    private FeatureFlags featureFlags;
 
     @Autowired
     private CourtCaseRestClient client;
@@ -51,6 +53,11 @@ public class CourtCaseRestClientIntTest {
 
     @RegisterExtension
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
+
+    @BeforeEach
+    public void setUp() {
+        when(featureFlags.getFlags()).thenReturn(Map.of("use-legacy-court-case-rest-client", false));
+    }
 
     @Test
     public void whenPutOk_thenItsSuccessful() {
@@ -96,5 +103,28 @@ public class CourtCaseRestClientIntTest {
         final var actualMono = client.getCourtCase("court code", "case no");
 
         assertThat(actualMono).isEqualTo(courtCaseMono);
+    }
+
+    @Test
+    public void givenFeatureEnabled_putCourtCase_delegatesToLegacyClient() {
+        when(featureFlags.getFlags()).thenReturn(Map.of("use-legacy-court-case-rest-client", true));
+        final var courtCase = aCourtCaseBuilderWithAllFields()
+                .build();
+        when(legacyClient.putCourtCase(courtCase)).thenReturn(mono);
+        final var actual = client.putCourtCase(courtCase);
+
+        verify(legacyClient).putCourtCase(courtCase);
+        assertThat(actual).isEqualTo(mono);
+    }
+
+    @Test
+    public void givenFeaturesNull_whenPutCourtCase_delegatesToLegacyClient() {
+        when(featureFlags.getFlags()).thenReturn(null);
+        final var courtCase = aCourtCaseBuilderWithAllFields()
+                .build();
+        when(legacyClient.putCourtCase(courtCase)).thenReturn(mono);
+        final var actual = client.putCourtCase(courtCase);
+
+        verify(legacyClient, never()).putCourtCase(courtCase);
     }
 }
