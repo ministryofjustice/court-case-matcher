@@ -12,6 +12,6 @@ public class CCSHearingDay {
     private String courtCode;
     private String courtRoom;
     private String listNo;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime sessionStartTime;
 }

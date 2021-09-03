@@ -42,7 +42,7 @@ class CourtCaseRestClientPactTest {
                 defendant.object("address", (addressObj -> {
                     addressObj.stringType("line1");
                 }));
-                defendant.stringType("dateOfBirth");
+                defendant.date("dateOfBirth","yyyy-MM-dd");
                 defendant.object("name", (name -> {
                     name.stringType("title");
                     name.stringType("forename1");
@@ -63,7 +63,7 @@ class CourtCaseRestClientPactTest {
                 hearingDay.stringType("courtCode");
                 hearingDay.stringType("courtRoom");
                 hearingDay.stringType("listNo");
-                hearingDay.stringType("sessionStartTime");
+                hearingDay.datetime("sessionStartTime", "yyyy-MM-dd'T'HH:mm:ss");
             }));
         }).build();
 
@@ -96,7 +96,7 @@ class CourtCaseRestClientPactTest {
                     addressObj.stringType("line5");
                     addressObj.stringType("postcode");
                 }));
-                defendant.stringType("dateOfBirth");
+                defendant.date("dateOfBirth","yyyy-MM-dd");
                 defendant.object("name", (name -> {
                     name.stringType("title");
                     name.stringType("forename1");
@@ -116,7 +116,7 @@ class CourtCaseRestClientPactTest {
                 defendant.stringType("cro");
                 defendant.stringType("pnc");
                 defendant.booleanType("preSentenceActivity");
-                defendant.stringType("previouslyKnownTerminationDate");
+                defendant.date("previouslyKnownTerminationDate", "yyyy-MM-dd");
                 defendant.stringType("sex");
                 defendant.booleanType("suspendedSentenceOrder");
                 defendant.booleanType("awaitingPsr");
@@ -127,7 +127,7 @@ class CourtCaseRestClientPactTest {
                 hearingDay.stringType("courtCode");
                 hearingDay.stringType("courtRoom");
                 hearingDay.stringType("listNo");
-                hearingDay.stringType("sessionStartTime");
+                hearingDay.datetime("sessionStartTime", "yyyy-MM-dd'T'HH:mm:ss");
             }));
         }).build();
 
