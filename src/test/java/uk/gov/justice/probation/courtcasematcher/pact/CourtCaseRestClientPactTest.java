@@ -54,7 +54,7 @@ class CourtCaseRestClientPactTest {
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
                 }));
-                defendant.stringType("type");
+                defendant.stringValue("type", "PERSON");
                 defendant.booleanType("preSentenceActivity");
                 defendant.booleanType("awaitingPsr");
                 defendant.stringType("defendantId");
@@ -111,7 +111,7 @@ class CourtCaseRestClientPactTest {
                     offence.integerType("sequenceNumber");
                 }));
                 defendant.stringType("probationStatus");
-                defendant.stringType("type");
+                defendant.stringType("type", "PERSON");
                 defendant.stringType("crn");
                 defendant.stringType("cro");
                 defendant.stringType("pnc");
