@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -84,12 +84,15 @@ public class SqsMessageReceiverIntTest {
 
         await()
             .atMost(10, TimeUnit.SECONDS)
-            .until(() -> countPutRequestsTo("/court/B10JQ/case/1600032981") == 1);
+            .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
 
         MOCK_SERVER.verify(
-            putRequestedFor(urlEqualTo("/court/B10JQ/case/1600032981"))
-                .withRequestBody(matchingJsonPath("pnc", equalTo("2004/0012345U")))
-                .withRequestBody(matchingJsonPath("listNo", equalTo("1st")))
+            putRequestedFor(urlMatching("/case/.*/extended"))
+                .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032981")))
+                .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
@@ -108,12 +111,14 @@ public class SqsMessageReceiverIntTest {
 
         await()
             .atMost(5, TimeUnit.SECONDS)
-            .until(() -> countPutRequestsTo("/court/B10JQ/case/2100049401") == 1);
+            .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
 
         MOCK_SERVER.verify(
-            putRequestedFor(urlEqualTo("/court/B10JQ/case/2100049401"))
-                .withRequestBody(matchingJsonPath("courtRoom", equalTo("07")))
-                .withRequestBody(matchingJsonPath("defendantType", equalTo("ORGANISATION")))
+            putRequestedFor(urlMatching("/case/.*/extended"))
+                .withRequestBody(matchingJsonPath("caseId", equalTo("A0884637-5A70-4622-88E9-7324949B8E7A")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("07")))
+                .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("ORGANISATION")))
+                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("51EB661C-6CDF-46B2-ACF3-95098CF41154")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
@@ -171,7 +176,7 @@ public class SqsMessageReceiverIntTest {
     }
 
     public int countPutRequestsTo(final String url) {
-        return MOCK_SERVER.findAll(putRequestedFor(urlEqualTo(url))).size();
+        return MOCK_SERVER.findAll(putRequestedFor(urlMatching(url))).size();
     }
 
 }

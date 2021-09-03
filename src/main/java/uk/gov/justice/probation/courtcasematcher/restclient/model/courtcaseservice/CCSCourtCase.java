@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
@@ -106,8 +105,8 @@ public class CCSCourtCase implements Serializable {
 
     public CourtCase asDomain() {
         return CourtCase.builder()
-                .caseId(Optional.ofNullable(getCaseId()).orElse(UUID.randomUUID().toString()))
-                .defendantId(Optional.ofNullable(getDefendantId()).orElse(UUID.randomUUID().toString()))
+                .caseId(getCaseId())
+                .defendantId(getDefendantId())
                 .awaitingPsr(isAwaitingPsr())
                 .breach(getBreach())
                 .caseNo(getCaseNo())

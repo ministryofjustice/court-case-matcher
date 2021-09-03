@@ -28,8 +28,6 @@ import java.util.List;
 @Valid
 public class LibraCase {
 
-    private final Long caseId;
-
     @NotBlank
     @JacksonXmlProperty(localName = "caseno")
     private final String caseNo;
@@ -58,6 +56,6 @@ public class LibraCase {
     private final LocalDateTime sessionStartTime;
 
     public CourtCase asDomain() {
-        return CaseMapper.newFromCase(this);
+        return CaseMapper.newFromLibraCase(this);
     }
 }
