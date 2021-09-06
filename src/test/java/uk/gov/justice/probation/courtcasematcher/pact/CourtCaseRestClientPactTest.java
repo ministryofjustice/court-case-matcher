@@ -68,6 +68,7 @@ class CourtCaseRestClientPactTest {
         }).build();
 
         return builder
+                .given("a case will be PUT by id")
                 .uponReceiving("a request to put a minimal court case")
                 .path(String.format("/case/%s/extended", CASE_ID))
                 .headers("Content-type", "application/json")
@@ -133,6 +134,7 @@ class CourtCaseRestClientPactTest {
 
         final var location = String.format("/case/%s/extended", CASE_ID);
         return builder
+                .given("a case will be PUT by id")
                 .uponReceiving("a request to put a full court case")
                 .body(body)
                 .headers("Content-type", "application/json")
