@@ -157,8 +157,12 @@ class CourtCaseServiceTest {
     void whenUpdateProbationStatus_thenMergeAndReturn() {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
-        var courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO).probationStatus("Previously known")
-            .probationStatus("PREVIOUSLY_KNOWN").build();
+        var courtCase = CourtCase.builder()
+                .crn(CRN)
+                .courtCode(COURT_CODE)
+                .caseNo(CASE_NO)
+                .probationStatus("PREVIOUSLY_KNOWN")
+                .build();
         var probationStatusDetail = ProbationStatusDetail.builder()
                                                                     .status("CURRENT")
                                                                     .preSentenceActivity(true)
@@ -182,15 +186,18 @@ class CourtCaseServiceTest {
     void givenMultipleSearchResponses_whenUpdateProbationStatus_thenIgnore() {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
-        var courtCase = CourtCase.builder().crn(CRN).courtCode(COURT_CODE).caseNo(CASE_NO)
-            .probationStatus("PREVIOUSLY_KNOWN")
-            .build();
+        var courtCase = CourtCase.builder()
+                .crn(CRN)
+                .courtCode(COURT_CODE)
+                .caseNo(CASE_NO)
+                .probationStatus("PREVIOUSLY_KNOWN")
+                .build();
         var probationStatusDetail = ProbationStatusDetail.builder()
-            .status("CURRENT")
-            .preSentenceActivity(true)
-            .previouslyKnownTerminationDate(localDate)
-            .inBreach(Boolean.TRUE)
-            .build();
+                .status("CURRENT")
+                .preSentenceActivity(true)
+                .previouslyKnownTerminationDate(localDate)
+                .inBreach(Boolean.TRUE)
+                .build();
         var searchResponse1 = SearchResponse.builder().probationStatusDetail(probationStatusDetail).build();
         var searchResponse2 = SearchResponse.builder().probationStatusDetail(probationStatusDetail).build();
 

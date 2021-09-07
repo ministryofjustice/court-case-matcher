@@ -10,6 +10,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffe
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase.CourtCaseBuilder;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
@@ -38,6 +39,7 @@ public class CaseMapper {
         return CourtCase.builder()
                 .caseId(UUID.randomUUID().toString())
                 .defendantId(UUID.randomUUID().toString())
+                .source(DataSource.LIBRA)
                 .isNew(true)
 
                 .caseNo(aLibraCase.getCaseNo())

@@ -38,6 +38,7 @@ class CourtCaseRestClientPactTest {
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
             rootObject.stringType("courtCode");
+            rootObject.stringValue("source", "LIBRA");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
                     addressObj.stringType("line1");
@@ -88,6 +89,7 @@ class CourtCaseRestClientPactTest {
             rootObject.stringType("caseId");
             rootObject.stringType("caseNo");
             rootObject.stringType("courtCode");
+            rootObject.stringValue("source", "LIBRA");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
                     addressObj.stringType("line1");

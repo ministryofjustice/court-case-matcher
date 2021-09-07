@@ -33,6 +33,7 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.LIBRA;
 
 class CaseMapperTest {
 
@@ -264,12 +265,14 @@ class CaseMapperTest {
                 .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
                 .caseNo("123")
                 .build();
-            assertThat(CaseMapper.newFromLibraCase(nullCase)).isNotNull();
+            final var actual = CaseMapper.newFromLibraCase(nullCase);
+            assertThat(actual).isNotNull();
+            assertThat(actual.getSource()).isEqualTo(LIBRA);
         }
 
         @DisplayName("Generate UUIDs")
         @Test
-        void givenLibraCase_whenNewFromLibraCase_thenGenerateIds() {
+        void givenLibraCase_whenNewFromLibraCase_thenGenerateIdsAndSource() {
             var nullCase = LibraCase.builder()
                 .courtCode(COURT_CODE)
                 .courtRoom("00")
@@ -279,6 +282,7 @@ class CaseMapperTest {
             final var actual = CaseMapper.newFromLibraCase(nullCase);
             assertThat(actual.getCaseId()).hasSameSizeAs(A_UUID);
             assertThat(actual.getDefendantId()).hasSameSizeAs(A_UUID);
+            assertThat(actual.getSource()).isEqualTo(LIBRA);
         }
 
 

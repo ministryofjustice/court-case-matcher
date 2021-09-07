@@ -1,7 +1,7 @@
-package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice;
+package uk.gov.justice.probation.courtcasematcher.model.domain;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

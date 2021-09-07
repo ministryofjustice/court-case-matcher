@@ -81,6 +81,8 @@ public class CourtCase implements Serializable {
     @JsonIgnore
     private final boolean isNew;
 
+    private final DataSource source;
+
     public boolean isPerson() {
         return Optional.ofNullable(defendantType).map(defType -> defType == DefendantType.PERSON).orElse(false);
     }

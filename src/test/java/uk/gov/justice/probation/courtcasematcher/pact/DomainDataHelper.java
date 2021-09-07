@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.pact;
 
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
@@ -60,6 +61,7 @@ public class DomainDataHelper {
 
     public static CourtCase.CourtCaseBuilder aMinimalCourtCaseBuilder() {
         return CourtCase.builder()
+                .source(DataSource.LIBRA)
                 .caseId(CASE_ID)
                 .defendantId(DEFENDANT_ID)
                 .courtCode("B10JQ")

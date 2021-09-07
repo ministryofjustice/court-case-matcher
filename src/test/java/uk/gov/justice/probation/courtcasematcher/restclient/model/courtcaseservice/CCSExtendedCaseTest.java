@@ -16,6 +16,7 @@ public class CCSExtendedCaseTest {
         final var actual = CCSExtendedCase.of(courtCase);
 
         assertThat(actual).isNotNull();
+        assertThat(actual.getSource()).isEqualTo(CCSDataSource.LIBRA);
         assertThat(actual.getCaseId()).isEqualTo(courtCase.getCaseId());
         assertThat(actual.getCaseNo()).isEqualTo(courtCase.getCaseNo());
         assertThat(actual.getCourtCode()).isEqualTo(courtCase.getCourtCode());

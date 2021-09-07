@@ -18,12 +18,14 @@ public class CCSExtendedCase {
     private String courtCode;
     private List<CCSDefendant> defendants;
     private List<CCSHearingDay> hearingDays;
+    private CCSDataSource source;
 
     public static CCSExtendedCase of(CourtCase courtCase) {
         return CCSExtendedCase.builder()
                 .caseId(courtCase.getCaseId())
                 .caseNo(courtCase.getCaseNo())
                 .courtCode(courtCase.getCourtCode())
+                .source(CCSDataSource.of(courtCase.getSource()))
                 .hearingDays(Collections.singletonList(CCSHearingDay.builder()
                         .courtCode(courtCase.getCourtCode())
                         .courtRoom(courtCase.getCourtRoom())
