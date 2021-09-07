@@ -13,6 +13,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "bodyFileName": "PUT_case_details_body.json"
+    "bodyFileName": "put-court-case/PUT_case_details_body.json"
   }
 }

@@ -25,6 +25,8 @@ public class CourtCase implements Serializable {
 
     private final String caseId;
 
+    private final String defendantId;
+
     @Setter(AccessLevel.NONE)
     private final String caseNo;
 
@@ -36,8 +38,6 @@ public class CourtCase implements Serializable {
     private final LocalDateTime sessionStartTime;
 
     private final String probationStatus;
-
-    private final String probationStatusActual;
 
     private final List<Offence> offences;
 
@@ -80,6 +80,8 @@ public class CourtCase implements Serializable {
 
     @JsonIgnore
     private final boolean isNew;
+
+    private final DataSource source;
 
     public boolean isPerson() {
         return Optional.ofNullable(defendantType).map(defType -> defType == DefendantType.PERSON).orElse(false);

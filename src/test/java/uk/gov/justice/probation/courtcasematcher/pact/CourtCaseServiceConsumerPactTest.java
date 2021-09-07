@@ -1,10 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.pact;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
@@ -16,11 +11,15 @@ import au.com.dius.pact.core.model.annotations.PactDirectory;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -119,7 +118,7 @@ class CourtCaseServiceConsumerPactTest {
         var httpResponse = Request
             .Put(mockServer.getUrl() + "/court/B10JQ/case/1600028914")
             .setHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
-            .bodyFile(new File(BASE_MOCK_PATH + "PUT_case_details_body.json"), ContentType.APPLICATION_JSON)
+            .bodyFile(new File(BASE_MOCK_PATH + "put-court-case/PUT_case_details_body.json"), ContentType.APPLICATION_JSON)
             .execute()
             .returnResponse();
 

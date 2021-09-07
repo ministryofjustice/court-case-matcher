@@ -1,0 +1,34 @@
+{
+  "caseId": "D517D32D-3C80-41E8-846E-D274DC2B94A5",
+  "defendants": [
+    {
+      "address": {
+        "line1": "line1"
+      },
+      "dateOfBirth": "1986-11-28",
+      "name": {
+        "title": "title",
+        "forename1": "forename",
+        "surname": "surname"
+      },
+      "offences": [
+        {
+          "act": "act",
+          "offenceSummary": "offence summary",
+          "offenceTitle": "offence title",
+          "sequenceNumber": 1
+        }
+      ],
+      "probationStatus": "Current",
+      "type": "PERSON"
+    }
+  ],
+  "hearingDays": [
+    {
+      "courtCode": "B10JQ",
+      "courtRoom": "ROOM 1",
+      "listNo": "1",
+      "sessionStartTime": "2021-08-26T09:00:00.000Z"
+    }
+  ]
+}

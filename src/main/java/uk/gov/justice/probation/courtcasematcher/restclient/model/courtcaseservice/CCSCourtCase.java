@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 public class CCSCourtCase implements Serializable {
 
     private final String caseId;
+    private final String defendantId;
     @Setter(AccessLevel.NONE)
     private final String caseNo;
     @Setter(AccessLevel.NONE)
     private final String courtCode;
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
-    private final String probationStatus;
     private final String probationStatusActual;
     private final List<CCSOffence> offences;
     private final String crn;
@@ -52,6 +52,7 @@ public class CCSCourtCase implements Serializable {
     private final Boolean suspendedSentenceOrder;
     private final boolean preSentenceActivity;
     private final boolean awaitingPsr;
+    private final CCSDataSource source;
 
     @JsonIgnore
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
@@ -65,6 +66,8 @@ public class CCSCourtCase implements Serializable {
 
     public static CCSCourtCase of(CourtCase domain){
         return CCSCourtCase.builder()
+                .source(CCSDataSource.of(domain.getSource()))
+                .defendantId(domain.getDefendantId())
                 .awaitingPsr(domain.isAwaitingPsr())
                 .breach(domain.getBreach())
                 .caseId(domain.getCaseId())
@@ -76,8 +79,7 @@ public class CCSCourtCase implements Serializable {
                 .pnc(domain.getPnc())
                 .preSentenceActivity(domain.isPreSentenceActivity())
                 .previouslyKnownTerminationDate(domain.getPreviouslyKnownTerminationDate())
-                .probationStatus(domain.getProbationStatus())
-                .probationStatusActual(domain.getProbationStatusActual())
+                .probationStatusActual(domain.getProbationStatus())
                 .sessionStartTime(domain.getSessionStartTime())
                 .suspendedSentenceOrder(domain.getSuspendedSentenceOrder())
                 .defendantDob(domain.getDefendantDob())
@@ -105,9 +107,11 @@ public class CCSCourtCase implements Serializable {
 
     public CourtCase asDomain() {
         return CourtCase.builder()
+                .source(Optional.ofNullable(source).map(CCSDataSource::asDomain).orElse(null))
+                .caseId(getCaseId())
+                .defendantId(getDefendantId())
                 .awaitingPsr(isAwaitingPsr())
                 .breach(getBreach())
-                .caseId(getCaseId())
                 .caseNo(getCaseNo())
                 .courtCode(getCourtCode())
                 .courtRoom(getCourtRoom())
@@ -116,8 +120,7 @@ public class CCSCourtCase implements Serializable {
                 .pnc(getPnc())
                 .preSentenceActivity(isPreSentenceActivity())
                 .previouslyKnownTerminationDate(getPreviouslyKnownTerminationDate())
-                .probationStatus(getProbationStatus())
-                .probationStatusActual(getProbationStatusActual())
+                .probationStatus(getProbationStatusActual())
                 .sessionStartTime(getSessionStartTime())
                 .suspendedSentenceOrder(getSuspendedSentenceOrder())
                 .defendantDob(getDefendantDob())

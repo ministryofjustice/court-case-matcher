@@ -10,6 +10,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffe
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase.CourtCaseBuilder;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
@@ -24,6 +25,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
@@ -33,17 +35,38 @@ import static java.util.Comparator.comparing;
 @Slf4j
 public class CaseMapper {
 
-    public static CourtCase newFromCase(LibraCase aLibraCase) {
-        return newFromLibraCase(aLibraCase)
-            .isNew(true)
+    public static CourtCase newFromLibraCase(LibraCase aLibraCase) {
+        return CourtCase.builder()
+                .caseId(UUID.randomUUID().toString())
+                .defendantId(UUID.randomUUID().toString())
+                .source(DataSource.LIBRA)
+                .isNew(true)
+
+                .caseNo(aLibraCase.getCaseNo())
+                .courtCode(aLibraCase.getCourtCode())
+                .courtRoom(aLibraCase.getCourtRoom())
+                .defendantAddress(Optional.ofNullable(aLibraCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
+                .name(Optional.ofNullable(aLibraCase.getName()).map(LibraName::asDomain).orElse(null))
+                .defendantName(nameFrom(aLibraCase.getDefendantName(), aLibraCase.getName()))
+                .defendantDob(aLibraCase.getDefendantDob())
+                .defendantSex(aLibraCase.getDefendantSex())
+                .defendantType(DefendantType.of(aLibraCase.getDefendantType()))
+                .cro(aLibraCase.getCro())
+                .pnc(aLibraCase.getPnc())
+                .listNo(aLibraCase.getListNo())
+                .sessionStartTime(aLibraCase.getSessionStartTime())
+                .nationality1(aLibraCase.getNationality1())
+                .nationality2(aLibraCase.getNationality2())
+                .offences(Optional.ofNullable(aLibraCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()))
             .build();
     }
 
-    private static CourtCase.CourtCaseBuilder newFromCourtCase(CourtCase courtCase) {
+    private static CourtCase.CourtCaseBuilder newFromCourtCaseBuilder(CourtCase courtCase) {
         return CourtCase.builder()
+            .caseId(courtCase.getCaseId())
+            .defendantId(courtCase.getDefendantId())
             .caseNo(courtCase.getCaseNo())
             .courtCode(courtCase.getCourtCode())
-            .caseId(String.valueOf(courtCase.getCaseId()))
             .courtRoom(courtCase.getCourtRoom())
             .defendantAddress(courtCase.getDefendantAddress())
             .defendantName(courtCase.getDefendantName())
@@ -59,27 +82,6 @@ public class CaseMapper {
             .nationality2(courtCase.getNationality2())
             .preSentenceActivity(courtCase.isPreSentenceActivity())
             .offences(courtCase.getOffences());
-    }
-
-    private static CourtCase.CourtCaseBuilder newFromLibraCase(LibraCase aLibraCase) {
-        return CourtCase.builder()
-            .caseNo(aLibraCase.getCaseNo())
-            .courtCode(aLibraCase.getCourtCode())
-            .caseId(String.valueOf(aLibraCase.getCaseId()))
-            .courtRoom(aLibraCase.getCourtRoom())
-            .defendantAddress(Optional.ofNullable(aLibraCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
-            .name(Optional.ofNullable(aLibraCase.getName()).map(LibraName::asDomain).orElse(null))
-            .defendantName(nameFrom(aLibraCase.getDefendantName(), aLibraCase.getName()))
-            .defendantDob(aLibraCase.getDefendantDob())
-            .defendantSex(aLibraCase.getDefendantSex())
-            .defendantType(DefendantType.of(aLibraCase.getDefendantType()))
-            .cro(aLibraCase.getCro())
-            .pnc(aLibraCase.getPnc())
-            .listNo(aLibraCase.getListNo())
-            .sessionStartTime(aLibraCase.getSessionStartTime())
-            .nationality1(aLibraCase.getNationality1())
-            .nationality2(aLibraCase.getNationality2())
-            .offences(Optional.ofNullable(aLibraCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()));
     }
 
     private static List<Offence> fromOffences(List<LibraOffence> offences) {
@@ -142,12 +144,14 @@ public class CaseMapper {
             .offences(incomingCase.getOffences())
             .nationality1(incomingCase.getNationality1())
             .nationality2(incomingCase.getNationality2())
+
             // Fields to be retained from existing court case
+            .caseId(Optional.ofNullable(existingCourtCase.getCaseId()).orElse(incomingCase.getCaseId()))
+            .defendantId(Optional.ofNullable(existingCourtCase.getDefendantId()).orElse(incomingCase.getDefendantId()))
             .breach(existingCourtCase.getBreach())
             .previouslyKnownTerminationDate(existingCourtCase.getPreviouslyKnownTerminationDate())
             .crn(existingCourtCase.getCrn())
-            .probationStatus(existingCourtCase.getProbationStatusActual())
-            .probationStatusActual(existingCourtCase.getProbationStatusActual())
+            .probationStatus(existingCourtCase.getProbationStatus())
             .suspendedSentenceOrder(existingCourtCase.getSuspendedSentenceOrder())
             .pnc(existingCourtCase.getPnc())
 
@@ -167,6 +171,7 @@ public class CaseMapper {
             .caseNo(existingCourtCase.getCaseNo())
             // Fields to be retained
             .caseId(String.valueOf(existingCourtCase.getCaseId()))
+            .defendantId(String.valueOf(existingCourtCase.getDefendantId()))
             .crn(existingCourtCase.getCrn())
             .cro(existingCourtCase.getCro())
             .courtRoom(existingCourtCase.getCourtRoom())
@@ -188,7 +193,7 @@ public class CaseMapper {
 
     public static CourtCase newFromCourtCaseWithMatches(CourtCase incomingCase, MatchDetails matchDetails) {
 
-        CourtCaseBuilder courtCaseBuilder = newFromCourtCase(incomingCase)
+        CourtCaseBuilder courtCaseBuilder = newFromCourtCaseBuilder(incomingCase)
             .groupedOffenderMatches(buildGroupedOffenderMatch(matchDetails.getMatches(), matchDetails.getMatchType()));
 
         if (matchDetails.isExactMatch()) {
@@ -199,7 +204,6 @@ public class CaseMapper {
                 .previouslyKnownTerminationDate(
                     Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getPreviouslyKnownTerminationDate).orElse(null))
                 .probationStatus(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
-                .probationStatusActual(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
                 .preSentenceActivity(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isPreSentenceActivity).orElse(false))
                 .awaitingPsr(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isAwaitingPsr).orElse(false))
                 .crn(offender.getOtherIds().getCrn())
