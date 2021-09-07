@@ -6,7 +6,8 @@ plugins {
     id 'org.springframework.boot' version '2.5.4'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'com.github.ben-manes.versions' version '0.39.0'
-    id "au.com.dius.pact" version "4.2.10"
+    id "au.com.dius.pact" version "4.2.11"
+    id 'info.solidsoft.pitest' version '1.5.1'
 }
 
 repositories {
@@ -14,7 +15,13 @@ repositories {
 }
 
 apply plugin: 'idea'
+apply plugin: 'info.solidsoft.pitest'
 
+pitest {
+    //adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
+    junit5PluginVersion = '0.12'
+    // ...
+}
 project.sourceCompatibility = JavaVersion.VERSION_15
 project.targetCompatibility = JavaVersion.VERSION_15
 

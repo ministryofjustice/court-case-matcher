@@ -33,6 +33,7 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.LIBRA;
 
 class CaseMapperTest {
 
@@ -58,6 +59,9 @@ class CaseMapperTest {
     public static final String CRN = "CRN123";
     public static final String CRO = "CRO456";
     public static final String PNC = "PNC789";
+    private static final String A_UUID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
+    private static final String DEFENDANT_ID = "9E27A145-E847-4AAB-9FF9-B88912520D14";
+    private static final String CASE_ID = "8CC06F57-F5F7-4858-A9BF-035F7D6AC60F";
 
     private LibraCase aLibraCase;
 
@@ -74,7 +78,6 @@ class CaseMapperTest {
             .name(libraName)
             .defendantSex("M")
             .defendantType("P")
-            .caseId(321321L)
             .listNo("1st")
             .seq(1)
             .offences(singletonList(buildOffence("NEW Theft from a person", 1)))
@@ -91,7 +94,7 @@ class CaseMapperTest {
         @Test
         void givenNoMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
 
-            var courtCase = CaseMapper.newFromCase(aLibraCase);
+            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NOTHING)
                 .build();
@@ -101,6 +104,8 @@ class CaseMapperTest {
             assertThat(courtCaseNew).isNotSameAs(courtCase);
             assertThat(courtCaseNew.getCrn()).isNull();
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(0);
+            assertThat(courtCaseNew.getCaseId()).isEqualTo(courtCase.getCaseId());
+            assertThat(courtCaseNew.getDefendantId()).isEqualTo(courtCase.getDefendantId());
         }
 
         @DisplayName("Map a court case to a new court case when search response has yielded a single match")
@@ -113,7 +118,7 @@ class CaseMapperTest {
                     .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aLibraCase);
+            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
@@ -149,7 +154,7 @@ class CaseMapperTest {
                 .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aLibraCase);
+            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.NAME)
                 .matches(List.of(match))
@@ -178,7 +183,7 @@ class CaseMapperTest {
                 .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aLibraCase);
+            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                 .matches(List.of(match))
@@ -208,7 +213,7 @@ class CaseMapperTest {
                 .build())
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aLibraCase);
+            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
             var matchResponse = MatchResponse.builder()
                 .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
                 .matches(List.of(match1, match2))
@@ -249,7 +254,7 @@ class CaseMapperTest {
 
     @DisplayName("New from incoming JSON case")
     @Nested
-    class NewFromIncomingGatewayJSONCase {
+    class NewFromIncomingLibraCase {
 
         @DisplayName("Map from a new JSON case (with no block) composed of nulls. Ensures no null pointers.")
         @Test
@@ -260,7 +265,24 @@ class CaseMapperTest {
                 .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
                 .caseNo("123")
                 .build();
-            assertThat(CaseMapper.newFromCase(nullCase)).isNotNull();
+            final var actual = CaseMapper.newFromLibraCase(nullCase);
+            assertThat(actual).isNotNull();
+            assertThat(actual.getSource()).isEqualTo(LIBRA);
+        }
+
+        @DisplayName("Generate UUIDs")
+        @Test
+        void givenLibraCase_whenNewFromLibraCase_thenGenerateIdsAndSource() {
+            var nullCase = LibraCase.builder()
+                .courtCode(COURT_CODE)
+                .courtRoom("00")
+                .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
+                .caseNo("123")
+                .build();
+            final var actual = CaseMapper.newFromLibraCase(nullCase);
+            assertThat(actual.getCaseId()).hasSameSizeAs(A_UUID);
+            assertThat(actual.getDefendantId()).hasSameSizeAs(A_UUID);
+            assertThat(actual.getSource()).isEqualTo(LIBRA);
         }
 
 
@@ -289,7 +311,7 @@ class CaseMapperTest {
                 .offences(Arrays.asList(offence2, offence1))
                 .build();
 
-            var courtCase = CaseMapper.newFromCase(aCase);
+            var courtCase = CaseMapper.newFromLibraCase(aCase);
 
             assertThat(courtCase.getOffences()).hasSize(2);
             var offence = courtCase.getOffences().get(0);
@@ -307,7 +329,7 @@ class CaseMapperTest {
         private CourtCase existingCourtCase;
 
         // A case created from a flatted incoming JSON structure with no parent block as we find in XML
-        private CourtCase jsonCase;
+        private CourtCase libraCase;
 
         @BeforeEach
         void beforeEach() {
@@ -317,9 +339,7 @@ class CaseMapperTest {
                 .crn("X320741")
                 .pnc("PNC")
                 .caseNo("12345")
-                .caseId("123456")
-                .probationStatus("Current")
-                .probationStatusActual("CURRENT")
+                .probationStatus("CURRENT")
                 .courtCode(COURT_CODE)
                 .courtRoom("01")
                 .defendantAddress(null)
@@ -341,14 +361,15 @@ class CaseMapperTest {
                     .build()))
                 .build();
 
-            jsonCase = CourtCase.builder()
+            libraCase = CourtCase.builder()
+                .caseId(CASE_ID)
+                .defendantId(DEFENDANT_ID)
                 .caseNo("123")
                 .defendantAddress(uk.gov.justice.probation.courtcasematcher.model.domain.Address.builder().line1("line 1").line2("line 2").line3("line 3").postcode("LD1 1AA").build())
                 .defendantDob(DATE_OF_BIRTH)
                 .name(name)
                 .defendantSex("M")
                 .defendantType(DefendantType.PERSON)
-                .caseId("321321")
                 .listNo("1st")
                 .offences(singletonList(buildOffenceDomain("NEW Theft from a person", 1)))
                 .courtCode(COURT_CODE)
@@ -361,25 +382,61 @@ class CaseMapperTest {
         @Test
         void givenCaseFromJson_whenMergeWithExistingCase_ThenUpdateExistingCase() {
 
-            ReflectionTestUtils.setField(jsonCase, "defendantDob", null);
+            ReflectionTestUtils.setField(libraCase, "defendantDob", null);
 
-            var courtCase = CaseMapper.merge(jsonCase, existingCourtCase);
+            var courtCase = CaseMapper.merge(libraCase, existingCourtCase);
             assertCourtCase(courtCase);
 
+        }
+
+        @DisplayName("Use existing defendantId and caseId if present")
+        @Test
+        void givenLibraCase_whenMergeWithExistingCasewithIds_ThenUseExistingIds() {
+
+            ReflectionTestUtils.setField(libraCase, "defendantDob", null);
+
+            final var existingCaseId = "82034D44-B709-4227-9CF9-CBFC67F98041";
+            final var existingDefendantId = "C09C6A23-0390-41BB-948C-08399BD72720";
+            final var existingCourtCase = CourtCase.builder()
+                    .caseId(existingCaseId)
+                    .defendantId(existingDefendantId)
+                    .build();
+
+            var courtCase = CaseMapper.merge(libraCase, existingCourtCase);
+
+            assertThat(courtCase.getCaseId()).isEqualTo(existingCaseId);
+            assertThat(courtCase.getDefendantId()).isEqualTo(existingDefendantId);
+
+        }
+
+        @DisplayName("Use new defendantId and caseId if existing not present")
+        @Test
+        void givenLibraCase_whenMergeWithExistingCaseWithoutIds_ThenUseNewIds() {
+
+            ReflectionTestUtils.setField(libraCase, "defendantDob", null);
+
+            final var existingCourtCase = CourtCase.builder()
+                    .caseId(null)
+                    .defendantId(null)
+                    .build();
+
+            var courtCase = CaseMapper.merge(libraCase, existingCourtCase);
+
+            assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
+            assertThat(courtCase.getDefendantId()).isEqualTo(DEFENDANT_ID);
         }
 
         private void assertCourtCase(CourtCase courtCase) {
             // Fields that stay the same on existing value
             assertThat(courtCase.getCourtCode()).isEqualTo(COURT_CODE);
             assertThat(courtCase.getProbationStatus()).isEqualTo("CURRENT");
-            assertThat(courtCase.getProbationStatusActual()).isEqualTo("CURRENT");
             assertThat(courtCase.getCaseNo()).isEqualTo("12345");
             assertThat(courtCase.getBreach()).isTrue();
             assertThat(courtCase.getSuspendedSentenceOrder()).isTrue();
             assertThat(courtCase.getCrn()).isEqualTo("X320741");
             assertThat(courtCase.getPnc()).isEqualTo("PNC");
             // Fields that get overwritten from Libra incoming (even if null)
-            assertThat(courtCase.getCaseId()).isEqualTo("321321");
+            assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
             assertThat(courtCase.getCourtRoom()).isEqualTo("00");
             assertThat(courtCase.getDefendantAddress().getLine1()).isEqualTo("line 1");
             assertThat(courtCase.getDefendantAddress().getLine2()).isEqualTo("line 2");
@@ -409,13 +466,14 @@ class CaseMapperTest {
         void whenMergeWithExistingCase_ThenUpdateExistingCase() {
 
             var existingCourtCase = CourtCase.builder()
+                .caseId(CASE_ID)
+                .defendantId(DEFENDANT_ID)
                 .breach(Boolean.TRUE)
                 .suspendedSentenceOrder(Boolean.TRUE)
                 .crn(CRN)
                 .pnc(PNC)
                 .cro(CRO)
                 .caseNo("12345")
-                .caseId("123456")
                 .courtCode(COURT_CODE)
                 .defendantAddress(null)
                 .defendantName("Pat Garrett")
@@ -462,6 +520,7 @@ class CaseMapperTest {
             assertThat(courtCase.isAwaitingPsr()).isTrue();
             // Fields that stay the same on existing value
             assertThat(courtCase.getCaseId()).isEqualTo(existingCourtCase.getCaseId());
+            assertThat(courtCase.getDefendantId()).isEqualTo(existingCourtCase.getDefendantId());
             assertThat(courtCase.getCaseNo()).isEqualTo(existingCourtCase.getCaseNo());
             assertThat(courtCase.getCourtCode()).isEqualTo(existingCourtCase.getCourtCode());
             assertThat(courtCase.getCourtRoom()).isEqualTo(existingCourtCase.getCourtRoom());

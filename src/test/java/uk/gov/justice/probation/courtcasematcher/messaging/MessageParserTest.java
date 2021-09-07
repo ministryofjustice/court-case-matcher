@@ -73,7 +73,6 @@ class MessageParserTest {
     private static void checkCase(LibraCase aLibraCase) {
         // Fields populated from the session
         assertThat(aLibraCase.getDefendantAge()).isEqualTo("20");
-        assertThat(aLibraCase.getCaseId()).isEqualTo(1217464);
         assertThat(aLibraCase.getDefendantName()).isEqualTo("Mr Arthur MORGAN");
         assertThat(aLibraCase.getName()).isEqualTo(LibraName.builder()
                                                 .title("Mr")

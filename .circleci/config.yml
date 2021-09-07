@@ -157,7 +157,7 @@ jobs:
           keys:
             - gradle-{{ checksum "build.gradle" }}
             - gradle-
-      - run: PACTCONSUMER_VERSION=main ./gradlew -Dpact.writer.overwrite=true test pactPublish
+      - run: PACTCONSUMER_VERSION=$CIRCLE_BRANCH ./gradlew -Dpact.writer.overwrite=true test pactPublish
 
   build_docker:
     executor: deployer
@@ -257,9 +257,6 @@ workflows:
       - pact-publish:
           requires:
             - build
-          filters:
-            branches:
-              only: main
       - dps/helm_lint:
           name: helm_lint_dev
           env: dev

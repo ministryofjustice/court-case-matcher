@@ -1,14 +1,16 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.MatchDetails;
-import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
@@ -18,16 +20,18 @@ import java.util.Optional;
 @Service
 @Slf4j
 @AllArgsConstructor
+@NoArgsConstructor
 public class CourtCaseService {
 
     @Autowired
-    private final CourtCaseRestClient restClient;
+    @Qualifier("court-case-rest-client")
+    private CourtCaseRepository courtCaseRepository;
 
     @Autowired
-    private final OffenderSearchRestClient offenderSearchRestClient;
+    private OffenderSearchRestClient offenderSearchRestClient;
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {
-        return restClient.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
+        return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
             .map(existing -> CaseMapper.merge(aCase, existing))
             .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
     }
@@ -50,9 +54,9 @@ public class CourtCaseService {
 
     public void saveCourtCase(CourtCase courtCase) {
         try {
-            restClient.putCourtCase(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase).block();
+            courtCaseRepository.putCourtCase(courtCase).block();
         } finally {
-            restClient.postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase.getGroupedOffenderMatches()).block();
+            courtCaseRepository.postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase.getGroupedOffenderMatches()).block();
         }
     }
 
