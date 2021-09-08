@@ -49,7 +49,7 @@ public class CaseMessageProcessor implements MessageProcessor {
     public void process(String payload, String messageId) {
         try {
             var snsMessageContainer = extractMessage(payload);
-            log.debug("Extracted message ID {} from SNS message. Incoming message ID was {} ", snsMessageContainer.getMessageId(), messageId);
+            log.debug("Extracted message ID {} from SNS message of type %s. Incoming message ID was {} ", snsMessageContainer.getMessageId(), snsMessageContainer.getMessageType(), messageId);
             saveCase(parser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain(), messageId);
         }
         catch (Exception ex) {
