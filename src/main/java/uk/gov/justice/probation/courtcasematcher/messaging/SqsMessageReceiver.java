@@ -34,8 +34,11 @@ public class SqsMessageReceiver {
     private String queueName;
 
     @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
-    public void receive(@NotEmpty String message, @Header("MessageId") String messageId, @Header(value = "operation_Id", required = false) String operationId)
-        throws Exception {
+    public void receive(
+            @NotEmpty String message,
+            @Header("MessageId") String messageId,
+            @Header(value = "operation_Id", required = false) String operationId)
+            throws Exception {
         log.info("Received JSON message from SQS queue {} with messageId: {}. ", queueName, messageId);
         try (final var ignored = telemetryService.withOperation(operationId)) {
             telemetryService.trackCaseMessageReceivedEvent(messageId);

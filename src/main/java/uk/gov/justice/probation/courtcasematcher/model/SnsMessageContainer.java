@@ -1,14 +1,15 @@
 package uk.gov.justice.probation.courtcasematcher.model;
 
-import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 @Data
 @Builder
@@ -44,5 +45,8 @@ public class SnsMessageContainer implements Serializable {
 
     @JsonProperty(value = "UnsubscribeURL")
     private final String unsubscribeURL;
+
+    @JsonProperty(value = "MessageAttributes")
+    private final MessageAttributes messageAttributes;
 
 }
