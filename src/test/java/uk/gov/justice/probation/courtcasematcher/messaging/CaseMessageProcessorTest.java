@@ -8,13 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
-import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
@@ -56,7 +52,6 @@ class CaseMessageProcessorTest {
     @Mock
     private MatcherService matcherService;
 
-    @InjectMocks
     private CaseMessageProcessor messageProcessor;
 
     @BeforeAll
@@ -71,8 +66,14 @@ class CaseMessageProcessorTest {
         var objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.registerModule(new JavaTimeModule());
-        ReflectionTestUtils.setField(messageProcessor, "parser", new MessageParser<LibraCase>(objectMapper, validator));
-        ReflectionTestUtils.setField(messageProcessor, "snsMessageWrapperJsonParser", new MessageParser<SnsMessageContainer>(objectMapper, validator));
+
+        messageProcessor = new CaseMessageProcessor(telemetryService,
+                courtCaseService,
+                matcherService,
+                new MessageParser<>(objectMapper, validator),
+                new MessageParser<>(objectMapper, validator)
+        );
+
     }
 
     @DisplayName("Receive a valid unmatched case for person then match and save")
