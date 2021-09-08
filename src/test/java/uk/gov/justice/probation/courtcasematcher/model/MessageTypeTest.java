@@ -12,7 +12,7 @@ class MessageTypeTest {
         assertThat(MessageType.of("CP_TEST_COURT_CASE")).isEqualTo(MessageType.COMMON_PLATFORM_HEARING);
         assertThat(MessageType.of("LIBRA_COURT_CASE")).isEqualTo(MessageType.LIBRA_COURT_CASE);
         assertThat(MessageType.of("SUMMAT_WRONG")).isEqualTo(MessageType.UNKNOWN);
-        assertThat(MessageType.of(null)).isEqualTo(MessageType.UNKNOWN);
+        assertThat(MessageType.of(null)).isEqualTo(MessageType.NONE);
     }
 
 }

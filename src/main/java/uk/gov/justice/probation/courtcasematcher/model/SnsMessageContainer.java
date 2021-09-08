@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -49,4 +50,9 @@ public class SnsMessageContainer implements Serializable {
     @JsonProperty(value = "MessageAttributes")
     private final MessageAttributes messageAttributes;
 
+    public MessageType getMessageType() {
+        return Optional.ofNullable(getMessageAttributes())
+                .map(MessageAttributes::getMessageType)
+                .orElse(MessageType.NONE);
+    }
 }

@@ -8,13 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 public enum MessageType {
     LIBRA_COURT_CASE,
     COMMON_PLATFORM_HEARING,
+    NONE,
     UNKNOWN;
 
     @JsonCreator
     public static MessageType of(@JsonProperty("Value") String messageType) {
         if (messageType ==  null){
             log.warn("Expected message type but was null");
-            return UNKNOWN;
+            return NONE;
         }
         return switch (messageType) {
             case "LIBRA_COURT_CASE" -> LIBRA_COURT_CASE;
