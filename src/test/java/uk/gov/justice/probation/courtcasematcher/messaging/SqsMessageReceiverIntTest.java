@@ -143,7 +143,7 @@ public class SqsMessageReceiverIntTest {
         private TelemetryService telemetryService;
         @Autowired
         @Qualifier("caseMessageProcessor")
-        private MessageProcessor caseMessageProcessor;
+        private CaseMessageProcessor caseMessageProcessor;
 
         @Primary
         @Bean

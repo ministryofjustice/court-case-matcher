@@ -25,7 +25,7 @@ public class SqsMessageReceiver {
 
     @Autowired
     @Qualifier("caseMessageProcessor")
-    private final MessageProcessor messageProcessor;
+    private final CaseMessageProcessor messageProcessor;
 
     @Autowired
     private final TelemetryService telemetryService;

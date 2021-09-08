@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -78,9 +79,9 @@ class CaseMessageProcessorTest {
 
     @DisplayName("Receive a valid unmatched case for person then match and save")
     @Test
-    void whenValidMessageReceivedForPerson_ThenMatchAndSave1() {
+    void whenValidMessageReceivedForPerson_ThenMatchAndSave1() throws JsonProcessingException {
 
-        var snsMessageContainer=  messageProcessor.extractMessage(caseWrappedJson);
+        var snsMessageContainer=  messageProcessor.extractSnsMessage(caseWrappedJson);
 
         assertThat(snsMessageContainer.getMessageId()).isEqualTo("5bc08be0-16e9-5da9-b9ec-d2c870a59bad");
         assertThat(snsMessageContainer.getMessage()).contains("\"caseNo\": \"1600032981\"");
