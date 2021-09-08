@@ -48,7 +48,7 @@ class MessageParserTest {
         @DisplayName("Parse a valid message")
         @Test
         void whenValidCase_ThenReturn() throws IOException {
-            var path = "src/test/resources/messages/json/case.json";
+            var path = "src/test/resources/messages/libra/case.json";
             var content = Files.readString(Paths.get(path));
 
             var aCase = messageParser.parseMessage(content, LibraCase.class);
@@ -58,7 +58,7 @@ class MessageParserTest {
         @DisplayName("Parse an invalid message")
         @Test
         void whenInvalidCase_ThenThrowConstraintViolation() throws IOException {
-            var path = "src/test/resources/messages/json/case-invalid.json";
+            var path = "src/test/resources/messages/libra/case-invalid.json";
             var content = Files.readString(Paths.get(path));
 
             var thrown = catchThrowable(() -> messageParser.parseMessage(content, LibraCase.class));
