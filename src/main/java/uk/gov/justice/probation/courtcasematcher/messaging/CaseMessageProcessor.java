@@ -7,9 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
@@ -18,7 +16,6 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-import javax.validation.ConstraintViolationException;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -42,12 +39,13 @@ public class CaseMessageProcessor {
     private final CaseExtractor caseExtractor;
 
     public void process(String payload, String messageId) {
+        final CourtCase courtCase = caseExtractor.extractCourtCase(payload, messageId);
         try {
-            final CourtCase courtCase = caseExtractor.extractCourtCase(payload, messageId);
             matchAndSaveCase(courtCase, messageId);
         }
         catch (Exception ex) {
-            logAndRethrow(payload, ex);
+            log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
+            throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
@@ -61,17 +59,6 @@ public class CaseMessageProcessor {
         else {
             updateAndSave(courtCase);
         }
-    }
-
-    private void logAndRethrow(String payload, Exception ex) {
-        var failEvent = buildFailureEvent(ex, payload);
-        log.error("Message processing failed. Error: {} ", failEvent.getFailureMessage(), failEvent.getThrowable());
-        if (!CollectionUtils.isEmpty(failEvent.getViolations())) {
-            failEvent.getViolations().forEach(
-                cv -> log.error("Validation failed : {} at {} ", cv.getMessage(), cv.getPropertyPath().toString())
-            );
-        }
-        throw new RuntimeException(failEvent.getFailureMessage(), ex);
     }
 
 
@@ -102,16 +89,5 @@ public class CaseMessageProcessor {
                 .onErrorReturn(courtCase))
             .orElse(Mono.just(courtCase))
             .subscribe(courtCaseService::saveCourtCase);
-    }
-
-    private CourtCaseFailureEvent buildFailureEvent(Exception ex, String payload) {
-        CourtCaseFailureEvent.CourtCaseFailureEventBuilder builder = CourtCaseFailureEvent.builder()
-            .failureMessage(ex.getMessage())
-            .throwable(ex)
-            .incomingMessage(payload);
-        if (ex instanceof ConstraintViolationException) {
-            builder.violations(((ConstraintViolationException)ex).getConstraintViolations());
-        }
-        return builder.build();
     }
 }
