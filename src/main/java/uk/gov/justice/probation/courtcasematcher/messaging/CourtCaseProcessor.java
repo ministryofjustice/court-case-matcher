@@ -3,6 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,22 +25,21 @@ import java.util.Optional;
 @Service
 @Qualifier("caseMessageProcessor")
 @Slf4j
-public class CaseMessageProcessor {
+public class CourtCaseProcessor {
 
     @Autowired
+    @NonNull
     private final TelemetryService telemetryService;
 
     @Autowired
+    @NonNull
     private final CourtCaseService courtCaseService;
 
     @Autowired
+    @NonNull
     private final MatcherService matcherService;
 
-    @Autowired
-    private final CaseExtractor caseExtractor;
-
-    public void process(String payload, String messageId) {
-        final CourtCase courtCase = caseExtractor.extractCourtCase(payload, messageId);
+    public void process(CourtCase courtCase, String messageId) {
         try {
             matchAndSaveCase(courtCase, messageId);
         }

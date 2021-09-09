@@ -19,7 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOf
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CaseExtractorTest {
+class CourtCaseExtractorTest {
     private static final String MESSAGE_ID = "messageId";
     private static final String MESSAGE_STRING = "messageString";
     private static final String CASE_NO = "123456";
@@ -34,13 +34,13 @@ class CaseExtractorTest {
     @Mock
     private Path path;
 
-    private CaseExtractor caseExtractor;
+    private CourtCaseExtractor caseExtractor;
     private final SnsMessageContainer snsMessageContainer = SnsMessageContainer.builder().message(MESSAGE_STRING).build();
     private final LibraCase libraCase = LibraCase.builder().caseNo(CASE_NO).build();
 
     @BeforeEach
     public void setUp() {
-        caseExtractor = new CaseExtractor(
+        caseExtractor = new CourtCaseExtractor(
                 snsContainerParser,
                 libraParser
         );

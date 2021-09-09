@@ -3,6 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,14 +25,20 @@ import javax.validation.constraints.NotEmpty;
 public class SqsMessageReceiver {
 
     @Autowired
-    @Qualifier("caseMessageProcessor")
-    private final CaseMessageProcessor messageProcessor;
+    @NonNull
+    @Qualifier("courtCaseProcessor")
+    private final CourtCaseProcessor courtCaseProcessor;
 
     @Autowired
+    @NonNull
     private final TelemetryService telemetryService;
 
     @Value("${aws.sqs.court_case_matcher_queue_name}")
     private String queueName;
+
+    @Autowired
+    @NonNull
+    private CourtCaseExtractor courtCaseExtractor;
 
     @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(
@@ -40,9 +47,12 @@ public class SqsMessageReceiver {
             @Header(value = "operation_Id", required = false) String operationId)
             throws Exception {
         log.info("Received JSON message from SQS queue {} with messageId: {}. ", queueName, messageId);
+
         try (final var ignored = telemetryService.withOperation(operationId)) {
             telemetryService.trackCaseMessageReceivedEvent(messageId);
-            messageProcessor.process(message, messageId);
+            final var courtCase = courtCaseExtractor.extractCourtCase(message, messageId);
+
+            courtCaseProcessor.process(courtCase, messageId);
         }
     }
 }

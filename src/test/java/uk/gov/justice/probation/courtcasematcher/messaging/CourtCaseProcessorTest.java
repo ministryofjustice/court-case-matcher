@@ -35,10 +35,9 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
-class CaseMessageProcessorTest {
+class CourtCaseProcessorTest {
     private static final long MATCHER_THREAD_TIMEOUT = 4000;
     private static final String MESSAGE_ID = "messageId";
-    private static String caseWrappedJsonInvalid;
     private static String caseWrappedJson;
     @Mock
     private Validator validator;
@@ -52,13 +51,13 @@ class CaseMessageProcessorTest {
     @Mock
     private MatcherService matcherService;
 
-    private CaseMessageProcessor messageProcessor;
+    private CourtCaseProcessor messageProcessor;
+    private CourtCaseExtractor caseExtractor;
 
     @BeforeAll
     static void beforeAll() throws IOException {
         final String basePath = "src/test/resources/messages/libra";
         caseWrappedJson = Files.readString(Paths.get(basePath +"/case-sns-metadata.json"));
-        caseWrappedJsonInvalid = Files.readString(Paths.get(basePath +"/case-sns-metadata-invalid.json"));
     }
 
     @BeforeEach
@@ -67,12 +66,13 @@ class CaseMessageProcessorTest {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.registerModule(new JavaTimeModule());
 
-        messageProcessor = new CaseMessageProcessor(telemetryService,
-                courtCaseService,
-                matcherService,
-                new CaseExtractor(
+        caseExtractor = new CourtCaseExtractor(
                 new MessageParser<>(objectMapper, validator),
-                new MessageParser<>(objectMapper, validator))
+                new MessageParser<>(objectMapper, validator));
+
+        messageProcessor = new CourtCaseProcessor(telemetryService,
+                courtCaseService,
+                matcherService
         );
 
     }
@@ -86,7 +86,8 @@ class CaseMessageProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(any(CourtCase.class))).thenReturn(Mono.just(searchResult));
 
-        messageProcessor.process(caseWrappedJson, MESSAGE_ID);
+        final var aCase = caseExtractor.extractCourtCase(caseWrappedJson, MESSAGE_ID);
+        messageProcessor.process(aCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(telemetryService).trackOffenderMatchEvent(eq(courtCase), eq(matchResponse));
@@ -104,7 +105,8 @@ class CaseMessageProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
 
-        messageProcessor.process(caseWrappedJson, MESSAGE_ID);
+        final var aCase = caseExtractor.extractCourtCase(caseWrappedJson, MESSAGE_ID);
+        messageProcessor.process(aCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(telemetryService).trackOffenderMatchFailureEvent(eq(courtCase));
@@ -120,7 +122,8 @@ class CaseMessageProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
 
-        messageProcessor.process(caseWrappedJson, MESSAGE_ID);
+        final var aCase = caseExtractor.extractCourtCase(caseWrappedJson, MESSAGE_ID);
+        messageProcessor.process(aCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
@@ -129,19 +132,8 @@ class CaseMessageProcessorTest {
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
-
     @Test
-    void givenInvalidCaseJson_thenThrowRuntimeException() {
-        assertThrows(RuntimeException.class, () -> messageProcessor.process("{\"courtCode\": }", MESSAGE_ID));
-    }
-
-    @Test
-    void givenMissingMessageContent_thenThrowRuntimeException() {
-        assertThrows(RuntimeException.class, () -> messageProcessor.process(caseWrappedJsonInvalid, MESSAGE_ID));
-    }
-
-    @Test
-    void givenNullMessageContent_thenThrowRuntimeException() {
-        assertThrows(RuntimeException.class, () -> messageProcessor.process(caseWrappedJsonInvalid, MESSAGE_ID));
+    void givenNullCourtCase_thenThrowRuntimeException() {
+        assertThrows(RuntimeException.class, () -> messageProcessor.process(null, MESSAGE_ID));
     }
 }

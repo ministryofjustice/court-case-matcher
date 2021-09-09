@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,12 +19,14 @@ import javax.validation.ConstraintViolationException;
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @AllArgsConstructor
 @Slf4j
-public class CaseExtractor {
+public class CourtCaseExtractor {
     @Autowired
+    @NonNull
     @Qualifier("snsMessageWrapperJsonParser")
     final MessageParser<SnsMessageContainer> snsMessageWrapperJsonParser;
 
     @Autowired
+    @NonNull
     @Qualifier("caseJsonParser")
     final MessageParser<LibraCase> parser;
 

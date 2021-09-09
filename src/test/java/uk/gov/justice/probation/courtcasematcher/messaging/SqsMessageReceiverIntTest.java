@@ -142,8 +142,10 @@ public class SqsMessageReceiverIntTest {
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
-        @Qualifier("caseMessageProcessor")
-        private CaseMessageProcessor caseMessageProcessor;
+        @Qualifier("courtCaseProcessor")
+        private CourtCaseProcessor caseMessageProcessor;
+        @Autowired
+        private CourtCaseExtractor caseExtractor;
 
         @Primary
         @Bean
@@ -171,7 +173,7 @@ public class SqsMessageReceiverIntTest {
 
         @Bean
         public SqsMessageReceiver sqsMessageReceiver() {
-            return new SqsMessageReceiver(caseMessageProcessor, telemetryService, queueName);
+            return new SqsMessageReceiver(caseMessageProcessor, telemetryService, queueName, caseExtractor);
         }
     }
 
