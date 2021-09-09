@@ -61,7 +61,7 @@ class CaseMessageProcessorTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        final String basePath = "src/test/resources/messages/json";
+        final String basePath = "src/test/resources/messages/libra";
         caseWrappedJson = Files.readString(Paths.get(basePath +"/case-sns-metadata.json"));
         caseWrappedJsonInvalid = Files.readString(Paths.get(basePath +"/case-sns-metadata-invalid.json"));
     }

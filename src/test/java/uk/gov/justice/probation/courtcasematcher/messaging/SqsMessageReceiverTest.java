@@ -1,8 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,7 +32,7 @@ class SqsMessageReceiverTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        final String basePath = "src/test/resources/messages/json";
+        final String basePath = "src/test/resources/messages/libra";
         singleCaseJson = Files.readString(Paths.get(basePath +"/case-sns-metadata.json"));
     }
 

@@ -62,7 +62,7 @@ public class SqsMessageReceiverIntTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        singleCase = Files.readString(Paths.get(BASE_PATH +"/json/case.json"));
+        singleCase = Files.readString(Paths.get(BASE_PATH +"/libra/case.json"));
         MOCK_SERVER.start();
     }
 
@@ -105,7 +105,7 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase() throws IOException {
 
-        var orgJson = Files.readString(Paths.get(BASE_PATH +"/json/case-org.json"));
+        var orgJson = Files.readString(Paths.get(BASE_PATH +"/libra/case-org.json"));
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson);
 
