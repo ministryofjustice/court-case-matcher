@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.model;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 

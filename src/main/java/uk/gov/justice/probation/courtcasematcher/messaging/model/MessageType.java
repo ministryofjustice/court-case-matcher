@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model;
+package uk.gov.justice.probation.courtcasematcher.messaging.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
