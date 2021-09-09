@@ -10,6 +10,18 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.probation.courtcasematcher.application.MessagingConfig;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Address;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CommonPlatformHearing;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CourtCentre;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Defendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.HearingDay;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.JurisdictionType;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.LegalEntityDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Offence;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Organisation;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.PersonDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.PersonDetails;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.ProsecutionCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
@@ -23,6 +35,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -34,12 +47,179 @@ class MessageParserTest {
 
     private static final LocalDate HEARING_DATE = LocalDate.of(2020, Month.FEBRUARY, 20);
     private static final LocalTime START_TIME = LocalTime.of(9, 1);
-    private static final LocalDateTime SESSION_START_TIME = LocalDateTime.of(HEARING_DATE, START_TIME);
 
     @Nested
-    @DisplayName("Case JSON")
+    @DisplayName("Common Platform Json")
     @Import(MessagingConfig.class)
-    class CaseJsonMessageParser {
+    class CommonPlatformJsonMessageParser {
+
+        @Autowired
+        @Qualifier("commonPlatformJsonParser")
+        public MessageParser<CommonPlatformHearing> messageParser;
+
+        @Test
+        void whenValidCase_ThenReturn() throws IOException {
+            var path = "src/test/resources/messages/common-platform/hearing.json";
+            var content = Files.readString(Paths.get(path));
+
+            var aHearing = messageParser.parseMessage(content, CommonPlatformHearing.class);
+
+            final var defendants = List.of(defendant1(), defendant2());
+            checkHearing(aHearing, defendants);
+        }
+
+        @Test
+        void givenLegalEntityDefendant_whenValidCase_ThenReturn() throws IOException {
+            var path = "src/test/resources/messages/common-platform/hearing-with-legal-entity-defendant.json";
+            var content = Files.readString(Paths.get(path));
+
+            var aHearing = messageParser.parseMessage(content, CommonPlatformHearing.class);
+            checkHearing(aHearing, List.of(defendant1(), legalEntityDefendant()));
+        }
+
+        private void checkHearing(CommonPlatformHearing actual, List<Defendant> defendants) {
+            assertThat(actual).isNotNull();
+            assertThat(actual.getId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
+            assertThat(actual.getCourtCentre()).isEqualTo(
+                    CourtCentre.builder()
+                            .id("9b583616-049b-30f9-a14f-028a53b7cfe8")
+                            .roomId("7cb09222-49e1-3622-a5a6-ad253d2b3c39")
+                            .roomName("Crown Court 3-1")
+                            .code("B10JQ00")
+                            .build()
+            );
+            assertThat(actual.getHearingDays()).containsExactly(
+                    HearingDay.builder()
+                            .listedDurationMinutes(60)
+                            .listingSequence(0)
+                            .sittingDay(LocalDateTime.of(2021, 9, 8, 9, 0))
+                            .build(),
+                    HearingDay.builder()
+                            .listedDurationMinutes(30)
+                            .listingSequence(1)
+                            .sittingDay(LocalDateTime.of(2021, 9, 9, 10, 30))
+                            .build()
+            );
+            assertThat(actual.getProsecutionCases()).hasSize(1);
+            assertThat(actual.getProsecutionCases().get(0))
+                    .usingRecursiveComparison()
+                    .isEqualTo(ProsecutionCase.builder()
+                            .id("b7417f11-49d8-482d-b516-ba4135d38d0d")
+                            .defendants(defendants)
+                            .build());
+            assertThat(actual.getJurisdictionType()).isEqualTo(JurisdictionType.CROWN);
+        }
+        private Defendant legalEntityDefendant() {
+            return Defendant.builder()
+                    .id("903c4c54-f667-4770-8fdf-1adbb5957c25")
+                    .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
+                    .pncId(null)
+                    .croNumber(null)
+                    .offences(List.of(Offence.builder()
+                                    .id(null)
+                                    .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
+                                    .offenceTitle("Wound / inflict grievous bodily harm without intent")
+                                    .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
+                                    .build(),
+                            Offence.builder()
+                                    .id(null)
+                                    .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
+                                    .offenceTitle("Wound / inflict grievous bodily harm without intent")
+                                    .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
+                                    .build()))
+                    .personDefendant(null)
+                    .legalEntityDefendant(LegalEntityDefendant.builder()
+                            .organisation(Organisation.builder()
+                                    .name("An Organisation")
+                                    .build())
+                            .build())
+                    .build();
+        }
+
+        private Defendant defendant1() {
+            return Defendant.builder()
+                    .id("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")
+                    .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
+                    .pncId("2004/0012345U")
+                    .croNumber("12345ABCDEF")
+                    .offences(List.of(Offence.builder()
+                                    .id("a63d9020-aa6b-4997-92fd-72a692b036de")
+                                    .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
+                                    .offenceTitle("Wound / inflict grievous bodily harm without intent")
+                                    .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
+                                    .build(),
+                            Offence.builder()
+                                    .id("ea1c2cf1-f155-483b-a908-81158a9b2f9b")
+                                    .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
+                                    .offenceTitle("Wound / inflict grievous bodily harm without intent")
+                                    .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
+                                    .build()))
+                    .personDefendant(PersonDefendant.builder()
+                            .personDetails(PersonDetails.builder()
+                                    .address(Address.builder()
+                                            .address1("13 Wind Street")
+                                            .address2("Swansea")
+                                            .address3("Wales")
+                                            .address4("UK")
+                                            .address5("Earth")
+                                            .postcode("SA1 1FU")
+                                            .build())
+                                    .dateOfBirth(LocalDate.of(1983, 2, 28))
+                                    .title("Mr")
+                                    .firstName("Norbert")
+                                    .middleName("Forester")
+                                    .lastName("McCullough")
+                                    .gender("MALE")
+                                    .build())
+                            .build())
+                    .build();
+        }
+
+        private Defendant defendant2() {
+            return Defendant.builder()
+                    .id("903c4c54-f667-4770-8fdf-1adbb5957c25")
+                    .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
+                    .pncId(null)
+                    .croNumber(null)
+                    .offences(List.of(Offence.builder()
+                                    .id(null)
+                                    .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
+                                    .offenceTitle("Wound / inflict grievous bodily harm without intent")
+                                    .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
+                                    .build(),
+                            Offence.builder()
+                                    .id(null)
+                                    .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
+                                    .offenceTitle("Wound / inflict grievous bodily harm without intent")
+                                    .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
+                                    .build()))
+                    .personDefendant(PersonDefendant.builder()
+                            .personDetails(PersonDetails.builder()
+                                    .address(Address.builder()
+                                            .address1("14 Tottenham Court Road")
+                                            .address2("London Road")
+                                            .address3("England")
+                                            .address4("UK")
+                                            .address5("Earth")
+                                            .postcode("W1T 7RJ")
+                                            .build())
+                                    .dateOfBirth(LocalDate.of(1997, 2, 28))
+                                    .title(null)
+                                    .firstName("Phyllis")
+                                    .middleName(null)
+                                    .lastName("Leffler")
+                                    .gender("FEMALE")
+                                    .build())
+                            .build())
+                    .build();
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Libra JSON")
+    @Import(MessagingConfig.class)
+    class LibraJsonMessageParser {
 
         @Autowired
         @Qualifier("libraJsonParser")
@@ -52,7 +232,7 @@ class MessageParserTest {
             var content = Files.readString(Paths.get(path));
 
             var aCase = messageParser.parseMessage(content, LibraCase.class);
-            checkCase(aCase);
+            checkLibraCase(aCase);
         }
 
         @DisplayName("Parse an invalid message")
@@ -66,27 +246,27 @@ class MessageParserTest {
             var ex = (ConstraintViolationException) thrown;
             assertThat(ex.getConstraintViolations()).hasSize(1);
             assertThat(ex.getConstraintViolations()).anyMatch(cv -> cv.getMessage().equals("must not be blank")
-                && cv.getPropertyPath().toString().equals("caseNo"));
+                    && cv.getPropertyPath().toString().equals("caseNo"));
         }
     }
 
-    private static void checkCase(LibraCase aLibraCase) {
+    private static void checkLibraCase(LibraCase aLibraCase) {
         // Fields populated from the session
         assertThat(aLibraCase.getDefendantAge()).isEqualTo("20");
         assertThat(aLibraCase.getDefendantName()).isEqualTo("Mr Arthur MORGAN");
         assertThat(aLibraCase.getName()).isEqualTo(LibraName.builder()
-                                                .title("Mr")
-                                                .forename1("Arthur")
-                                                .surname("MORGAN").build());
+                .title("Mr")
+                .forename1("Arthur")
+                .surname("MORGAN").build());
         assertThat(aLibraCase.getDefendantType()).isEqualTo("P");
         assertThat(aLibraCase.getDefendantSex()).isEqualTo("N");
         assertThat(aLibraCase.getDefendantAge()).isEqualTo("20");
         assertThat(aLibraCase.getPnc()).isEqualTo("2004/0012345U");
         assertThat(aLibraCase.getCro()).isEqualTo("11111/79J");
         assertThat(aLibraCase.getDefendantAddress()).usingRecursiveComparison().isEqualTo(LibraAddress.builder()
-                                                                    .line1("39 The Street")
-                                                                    .line2("Newtown")
-                                                                    .pcode("NT4 6YH").build());
+                .line1("39 The Street")
+                .line2("Newtown")
+                .pcode("NT4 6YH").build());
         assertThat(aLibraCase.getDefendantDob()).isEqualTo(LocalDate.of(1975, Month.JANUARY, 1));
         assertThat(aLibraCase.getNationality1()).isEqualTo("Angolan");
         assertThat(aLibraCase.getNationality2()).isEqualTo("Austrian");

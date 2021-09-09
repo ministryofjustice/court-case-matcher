@@ -1,19 +1,31 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
+import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+
+import java.util.List;
 
 @Data
 @Builder
+@NoArgsConstructor(access=AccessLevel.PRIVATE, force = true)
+@AllArgsConstructor
 public class CommonPlatformHearing {
-    @NonNull
-    private final String caseId;
+    @JsonProperty("id")
+    private final String id;
+    private final CourtCentre courtCentre;
+    private final List<HearingDay> hearingDays;
+    private final JurisdictionType jurisdictionType;
+    private final List<ProsecutionCase> prosecutionCases;
 
     public CourtCase asDomain() {
         return CourtCase.builder()
-                .caseId(caseId)
+                // TODO: This should be populated from prosecutionCaseId
+                .caseId(id)
                 .build();
     }
 }

@@ -44,7 +44,7 @@ class CourtCaseExtractorTest {
     private final SnsMessageContainer.SnsMessageContainerBuilder messageContainerBuilder = SnsMessageContainer.builder()
             .message(MESSAGE_STRING);
     private final LibraCase libraCase = LibraCase.builder().caseNo(CASE_NO).build();
-    private final CommonPlatformHearing commonPlatformHearing = CommonPlatformHearing.builder().caseId(CASE_ID).build();
+    private final CommonPlatformHearing commonPlatformHearing = CommonPlatformHearing.builder().id(CASE_ID).build();
 
     @BeforeEach
     public void setUp() {
