@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CommonPlatformHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
@@ -27,8 +28,13 @@ public class CourtCaseExtractor {
 
     @Autowired
     @NonNull
-    @Qualifier("caseJsonParser")
-    final MessageParser<LibraCase> parser;
+    @Qualifier("libraJsonParser")
+    final MessageParser<LibraCase> libraParser;
+
+    @Autowired
+    @NonNull
+    @Qualifier("commonPlatformJsonParser")
+    final MessageParser<CommonPlatformHearing> commonPlatformParser;
 
 
     CourtCase extractCourtCase(String payload, String messageId) {
@@ -36,7 +42,11 @@ public class CourtCaseExtractor {
             SnsMessageContainer snsMessageContainer = snsMessageWrapperJsonParser.parseMessage(payload, SnsMessageContainer.class);
             log.debug("Extracted message ID {} from SNS message of type {}. Incoming message ID was {} ", snsMessageContainer.getMessageId(), snsMessageContainer.getMessageType(), messageId);
 
-            return parser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain();
+            return switch (snsMessageContainer.getMessageType()){
+                case LIBRA_COURT_CASE -> libraParser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain();
+                case COMMON_PLATFORM_HEARING -> commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CommonPlatformHearing.class).asDomain();
+                default -> throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
+            };
 
         } catch (ConstraintViolationException e) {
             log.error("Message validation failed. Error: {} ", e.getMessage(), e);

@@ -32,6 +32,7 @@ import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -80,7 +81,7 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() {
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, singleCase);
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, singleCase, Map.of("messageType", "LIBRA_COURT_CASE"));
 
         await()
             .atMost(10, TimeUnit.SECONDS)
@@ -107,7 +108,7 @@ public class SqsMessageReceiverIntTest {
 
         var orgJson = Files.readString(Paths.get(BASE_PATH +"/libra/case-org.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson);
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE"));
 
         await()
             .atMost(5, TimeUnit.SECONDS)

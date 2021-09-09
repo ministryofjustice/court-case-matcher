@@ -41,8 +41,8 @@ class MessageParserTest {
     @Import(MessagingConfig.class)
     class CaseJsonMessageParser {
 
-        @Qualifier("caseJsonParser")
         @Autowired
+        @Qualifier("libraJsonParser")
         public MessageParser<LibraCase> messageParser;
 
         @DisplayName("Parse a valid message")

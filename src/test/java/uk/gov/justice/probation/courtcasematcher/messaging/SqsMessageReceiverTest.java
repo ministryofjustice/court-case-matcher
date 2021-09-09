@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,7 +35,9 @@ class SqsMessageReceiverTest {
     @Mock
     private CourtCaseExtractor caseExtractor;
 
-    private CourtCase courtCase = CourtCase.builder().build();
+    private CourtCase libraCourtCase = CourtCase.builder()
+            .source(DataSource.LIBRA)
+            .build();
     private SqsMessageReceiver sqsMessageReceiver;
 
     @BeforeAll
@@ -47,17 +51,33 @@ class SqsMessageReceiverTest {
         sqsMessageReceiver = new SqsMessageReceiver(caseProcessor, telemetryService, "queueName", caseExtractor);
     }
 
-    @DisplayName("Given a valid JSON message then track and process")
+    @DisplayName("Given a valid Libra JSON message then track and process")
     @Test
-    void givenMessage_whenReceived_ThenTrackAndProcess() throws Exception {
+    void givenLibraMessage_whenReceived_ThenTrackAndProcess() throws Exception {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
-        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(courtCase);
+        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(libraCourtCase);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId");
 
         verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackCaseMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor).process(courtCase, MESSAGE_ID);
+        verify(caseProcessor).process(libraCourtCase, MESSAGE_ID);
+        verify(operation).close();
+    }
+
+    @DisplayName("Given a valid Common Platform JSON message then track and process")
+    @Test
+    void givenCommonPlatformMessage_whenReceived_ThenDontProcess() throws Exception {
+        when(telemetryService.withOperation("operationId")).thenReturn(operation);
+        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(CourtCase.builder()
+                .source(DataSource.COMMON_PLATFORM)
+                .build());
+
+        sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId");
+
+        verify(telemetryService).withOperation("operationId");
+        verify(telemetryService).trackCaseMessageReceivedEvent(MESSAGE_ID);
+        verify(caseProcessor, never()).process(libraCourtCase, MESSAGE_ID);
         verify(operation).close();
     }
 
@@ -76,8 +96,8 @@ class SqsMessageReceiverTest {
     void givenExceptionThrown_whenProcessCase_thenThrow() {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
         final var runtimeException = new RuntimeException("Bang");
-        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(courtCase);
-        doThrow(runtimeException).when(caseProcessor).process(courtCase, MESSAGE_ID);
+        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(libraCourtCase);
+        doThrow(runtimeException).when(caseProcessor).process(libraCourtCase, MESSAGE_ID);
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId"))

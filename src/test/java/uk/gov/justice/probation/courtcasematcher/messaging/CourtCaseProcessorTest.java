@@ -1,9 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,10 +15,6 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-import javax.validation.Validator;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -38,9 +30,6 @@ import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantTy
 class CourtCaseProcessorTest {
     private static final long MATCHER_THREAD_TIMEOUT = 4000;
     private static final String MESSAGE_ID = "messageId";
-    private static String caseWrappedJson;
-    @Mock
-    private Validator validator;
 
     @Mock
     private TelemetryService telemetryService;
@@ -52,24 +41,9 @@ class CourtCaseProcessorTest {
     private MatcherService matcherService;
 
     private CourtCaseProcessor messageProcessor;
-    private CourtCaseExtractor caseExtractor;
-
-    @BeforeAll
-    static void beforeAll() throws IOException {
-        final String basePath = "src/test/resources/messages/libra";
-        caseWrappedJson = Files.readString(Paths.get(basePath +"/case-sns-metadata.json"));
-    }
 
     @BeforeEach
     void beforeEach() {
-        var objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.registerModule(new JavaTimeModule());
-
-        caseExtractor = new CourtCaseExtractor(
-                new MessageParser<>(objectMapper, validator),
-                new MessageParser<>(objectMapper, validator));
-
         messageProcessor = new CourtCaseProcessor(telemetryService,
                 courtCaseService,
                 matcherService
@@ -86,8 +60,7 @@ class CourtCaseProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(any(CourtCase.class))).thenReturn(Mono.just(searchResult));
 
-        final var aCase = caseExtractor.extractCourtCase(caseWrappedJson, MESSAGE_ID);
-        messageProcessor.process(aCase, MESSAGE_ID);
+        messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(telemetryService).trackOffenderMatchEvent(eq(courtCase), eq(matchResponse));
@@ -105,8 +78,7 @@ class CourtCaseProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
 
-        final var aCase = caseExtractor.extractCourtCase(caseWrappedJson, MESSAGE_ID);
-        messageProcessor.process(aCase, MESSAGE_ID);
+        messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(telemetryService).trackOffenderMatchFailureEvent(eq(courtCase));
@@ -122,8 +94,7 @@ class CourtCaseProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
 
-        final var aCase = caseExtractor.extractCourtCase(caseWrappedJson, MESSAGE_ID);
-        messageProcessor.process(aCase, MESSAGE_ID);
+        messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
