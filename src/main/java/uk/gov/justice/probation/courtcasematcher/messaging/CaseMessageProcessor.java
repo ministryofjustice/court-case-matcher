@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -11,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
-import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
@@ -42,31 +39,16 @@ public class CaseMessageProcessor {
     private final MatcherService matcherService;
 
     @Autowired
-    @Qualifier("caseJsonParser")
-    private final MessageParser<LibraCase> parser;
-
-    @Autowired
-    @Qualifier("snsMessageWrapperJsonParser")
-    private final MessageParser<SnsMessageContainer> snsMessageWrapperJsonParser;
+    private final CaseExtractor caseExtractor;
 
     public void process(String payload, String messageId) {
         try {
-            var snsMessageContainer = extractSnsMessage(payload);
-            log.debug("Extracted message ID {} from SNS message of type %s. Incoming message ID was {} ", snsMessageContainer.getMessageId(), snsMessageContainer.getMessageType(), messageId);
-            final var courtCase = extractDomainCase(snsMessageContainer);
+            final CourtCase courtCase = caseExtractor.extractCourtCase(payload, messageId);
             matchAndSaveCase(courtCase, messageId);
         }
         catch (Exception ex) {
             logAndRethrow(payload, ex);
         }
-    }
-
-    SnsMessageContainer extractSnsMessage(String payload) throws JsonProcessingException {
-        return snsMessageWrapperJsonParser.parseMessage(payload, SnsMessageContainer.class);
-    }
-
-    private CourtCase extractDomainCase(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
-        return parser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain();
     }
 
     private void matchAndSaveCase(CourtCase aCase, String messageId) {

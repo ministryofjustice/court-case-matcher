@@ -1,0 +1,49 @@
+package uk.gov.justice.probation.courtcasematcher.messaging;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
+import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class CaseExtractorTest {
+    private static final String MESSAGE_ID = "messageId";
+    private static final String MESSAGE_STRING = "messageString";
+    private static final String CASE_NO = "123456";
+    private static final String MESSAGE_CONTAINER_STRING = "message container string";
+
+    @Mock
+    private MessageParser<SnsMessageContainer> snsContainerParser;
+    @Mock
+    private MessageParser<LibraCase> libraParser;
+
+    private CaseExtractor caseExtractor;
+    private final SnsMessageContainer snsMessageContainer = SnsMessageContainer.builder().message(MESSAGE_STRING).build();
+    private final LibraCase libraCase = LibraCase.builder().caseNo(CASE_NO).build();
+
+    @BeforeEach
+    public void setUp() {
+        caseExtractor = new CaseExtractor(
+                snsContainerParser,
+                libraParser
+        );
+    }
+
+    @Test
+    void whenLibraCaseReceived_thenParseAndReturnCase() throws JsonProcessingException {
+        when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(snsMessageContainer);
+        when(libraParser.parseMessage(MESSAGE_STRING, LibraCase.class)).thenReturn(libraCase);
+
+        var snsMessageContainer = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+
+        assertThat(snsMessageContainer).isNotNull();
+        assertThat(snsMessageContainer.getCaseNo()).isEqualTo(CASE_NO);
+    }
+}
