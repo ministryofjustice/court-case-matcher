@@ -9,6 +9,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -22,12 +23,12 @@ public class CommonPlatformHearing {
     @NotNull
     @Valid
     private final CourtCentre courtCentre;
-    @NotNull
+    @NotEmpty
     @Valid
     private final List<HearingDay> hearingDays;
     @NotNull
     private final JurisdictionType jurisdictionType;
-    @NotNull
+    @NotEmpty
     @Valid
     private final List<ProsecutionCase> prosecutionCases;
 
