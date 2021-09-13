@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +14,6 @@ import java.util.List;
 @NoArgsConstructor(access=AccessLevel.PRIVATE, force = true)
 @AllArgsConstructor
 public class CommonPlatformHearing {
-    @JsonProperty("id")
     private final String id;
     private final CourtCentre courtCentre;
     private final List<HearingDay> hearingDays;

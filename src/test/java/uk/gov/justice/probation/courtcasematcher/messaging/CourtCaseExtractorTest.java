@@ -47,7 +47,7 @@ class CourtCaseExtractorTest {
     private final CommonPlatformHearing commonPlatformHearing = CommonPlatformHearing.builder().id(CASE_ID).build();
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         caseExtractor = new CourtCaseExtractor(
                 snsContainerParser,
                 libraParser,
@@ -94,7 +94,7 @@ class CourtCaseExtractorTest {
     }
 
     @Test
-    public void whenNoneTypeReceived_thenThrow() throws JsonProcessingException {
+    void whenNoneTypeReceived_thenThrow() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.NONE))
                 .build());
@@ -105,7 +105,7 @@ class CourtCaseExtractorTest {
     }
 
     @Test
-    public void givenInputIsInvalid_whenParsingMessageContainer_thenThrow() throws JsonProcessingException {
+    void givenInputIsInvalid_whenParsingMessageContainer_thenThrow() throws JsonProcessingException {
         final Set<? extends ConstraintViolation<?>> constraintViolations = Set.of(aViolation);
         final var violationException = new ConstraintViolationException("Validation failed", constraintViolations);
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenThrow(violationException);
@@ -118,7 +118,7 @@ class CourtCaseExtractorTest {
     }
 
     @Test
-    public void givenInputIsInvalid_whenParsingLibraCase_thenThrow() throws JsonProcessingException {
+    void givenInputIsInvalid_whenParsingLibraCase_thenThrow() throws JsonProcessingException {
         final var constraintViolations = Set.of(aViolation);
         final var violationException = new ConstraintViolationException("Validation failed", constraintViolations);
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
@@ -134,7 +134,7 @@ class CourtCaseExtractorTest {
     }
 
     @Test
-    public void givenJsonProcessingExceptionIsThrown_whenParsingCase_thenThrow() throws JsonProcessingException {
+    void givenJsonProcessingExceptionIsThrown_whenParsingCase_thenThrow() throws JsonProcessingException {
         final var jsonProcessingException = new TestJsonProcessingException("💥");
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenThrow(jsonProcessingException);
 
