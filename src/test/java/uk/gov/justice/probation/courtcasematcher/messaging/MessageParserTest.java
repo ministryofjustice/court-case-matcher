@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -77,6 +80,31 @@ class MessageParserTest {
             checkHearing(aHearing, List.of(defendant1(), legalEntityDefendant()));
         }
 
+        @Test
+        void whenInvalidCase_ThenThrow() throws IOException {
+            var path = "src/test/resources/messages/common-platform/hearing-invalid.json";
+            var content = Files.readString(Paths.get(path));
+
+            var thrown = catchThrowable(() -> messageParser.parseMessage(content, CommonPlatformHearing.class));
+
+            var ex = (ConstraintViolationException) thrown;
+            assertThat(ex.getConstraintViolations()).hasSize(9);
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("courtCentre.roomName", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearingDays[0].sittingDay", "must not be null"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("jurisdictionType", "must not be null"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].id", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].id", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].offences[0].wording", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].personDefendant.personDetails.lastName", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].personDefendant.personDetails.address.address1", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[1].legalEntityDefendant.organisation.name", "must not be blank"));
+        }
+
+        private Predicate<ConstraintViolation<?>> validationError(String path, String message) {
+            return cv -> cv.getMessage().equals(message)
+                    && cv.getPropertyPath().toString().equals(path);
+        }
+
         private void checkHearing(CommonPlatformHearing actual, List<Defendant> defendants) {
             assertThat(actual).isNotNull();
             assertThat(actual.getId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
@@ -116,13 +144,13 @@ class MessageParserTest {
                     .pncId(null)
                     .croNumber(null)
                     .offences(List.of(Offence.builder()
-                                    .id(null)
+                                    .id("50474F6F-65FC-48C7-AA83-16277B55B3BA")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
                                     .build(),
                             Offence.builder()
-                                    .id(null)
+                                    .id("7103C6BD-5805-4EF8-B524-D34B9ADD43D1")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
@@ -182,13 +210,13 @@ class MessageParserTest {
                     .pncId(null)
                     .croNumber(null)
                     .offences(List.of(Offence.builder()
-                                    .id(null)
+                                    .id("1391ADC2-7A43-48DC-8523-3D28B9DCD2B7")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
                                     .build(),
                             Offence.builder()
-                                    .id(null)
+                                    .id("19C08FB0-363B-4EB1-938D-76EF751E5D66")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
