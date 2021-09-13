@@ -2,15 +2,13 @@
   "courtCentre": {
     "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
     "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
-    "roomName": "Crown Court 3-1",
     "code": "B10JQ00"
   },
   "hearingDays": [
     {
       "listedDurationMinutes": 60,
-      "listingSequence": 0,
-      "sittingDay": "2021-09-08T09:00:00.000Z"
-    } ,
+      "listingSequence": 0
+    },
     {
       "listedDurationMinutes": 30,
       "listingSequence": 1,
@@ -18,12 +16,10 @@
     }
   ],
   "id": "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
-  "jurisdictionType": "CROWN",
   "prosecutionCases": [
     {
       "defendants": [
         {
-          "id": "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199",
           "pncId": "2004/0012345U",
           "croNumber": "12345ABCDEF",
           "offences": [
@@ -31,7 +27,7 @@
               "id": "a63d9020-aa6b-4997-92fd-72a692b036de",
               "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
               "offenceTitle": "Wound / inflict grievous bodily harm without intent",
-              "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith"
+              "wording": ""
             },
             {
               "id": "ea1c2cf1-f155-483b-a908-81158a9b2f9b",
@@ -43,7 +39,6 @@
           "personDefendant": {
             "personDetails": {
               "address": {
-                "address1": "13 Wind Street",
                 "address2": "Swansea",
                 "address3": "Wales",
                 "address4": "UK",
@@ -51,10 +46,9 @@
                 "postcode": "SA1 1FU"
               },
               "dateOfBirth": "1983-02-28",
-              "firstName": "Norbert",
+              "firstName": "Mario",
               "middleName": "Forester",
               "gender": "MALE",
-              "lastName": "McCullough",
               "title": "Mr"
             }
           },
@@ -64,13 +58,13 @@
           "id": "903c4c54-f667-4770-8fdf-1adbb5957c25",
           "offences": [
             {
-              "id": "50474F6F-65FC-48C7-AA83-16277B55B3BA",
+              "id": "1391ADC2-7A43-48DC-8523-3D28B9DCD2B7",
               "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
               "offenceTitle": "Wound / inflict grievous bodily harm without intent",
               "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith"
             },
             {
-              "id": "7103C6BD-5805-4EF8-B524-D34B9ADD43D1",
+              "id": "19C08FB0-363B-4EB1-938D-76EF751E5D66",
               "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
               "offenceTitle": "Wound / inflict grievous bodily harm without intent",
               "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith"
@@ -78,13 +72,13 @@
           ],
           "legalEntityDefendant": {
             "organisation": {
-              "name": "An Organisation"
+              "name": ""
             }
           },
           "prosecutionCaseId": "b7417f11-49d8-482d-b516-ba4135d38d0d"
         }
       ],
-      "id": "b7417f11-49d8-482d-b516-ba4135d38d0d"
+      "id": ""
     }
   ]
 }

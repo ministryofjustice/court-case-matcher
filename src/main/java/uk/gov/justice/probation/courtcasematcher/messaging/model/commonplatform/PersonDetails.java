@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 
 @Data
@@ -16,8 +18,11 @@ public class PersonDetails {
     private final String title;
     private final String firstName;
     private final String middleName;
+    @NotBlank
     private final String lastName;
     private final LocalDate dateOfBirth;
+    @NotBlank
     private final String gender;
+    @Valid
     private final Address address;
 }
