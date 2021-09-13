@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CommonPlatformHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 
@@ -31,8 +32,14 @@ public class MessagingConfig {
         return objectMapper;
     }
 
-    @Bean(name = "caseJsonParser")
-    public MessageParser<LibraCase> caseJsonParser() {
+    @Bean
+    public MessageParser<LibraCase> libraJsonParser() {
+        return new MessageParser<>(objectMapper(), validator());
+    }
+
+
+    @Bean
+    public MessageParser<CommonPlatformHearing> commonPlatformJsonParser() {
         return new MessageParser<>(objectMapper(), validator());
     }
 

@@ -1,20 +1,12 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
-import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
@@ -23,13 +15,8 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-import javax.validation.Validator;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collections;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -40,12 +27,9 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
-class CaseMessageProcessorTest {
+class CourtCaseProcessorTest {
     private static final long MATCHER_THREAD_TIMEOUT = 4000;
-    private static String caseWrappedJsonInvalid;
-    private static String caseWrappedJson;
-    @Mock
-    private Validator validator;
+    private static final String MESSAGE_ID = "messageId";
 
     @Mock
     private TelemetryService telemetryService;
@@ -56,33 +40,15 @@ class CaseMessageProcessorTest {
     @Mock
     private MatcherService matcherService;
 
-    @InjectMocks
-    private CaseMessageProcessor messageProcessor;
-
-    @BeforeAll
-    static void beforeAll() throws IOException {
-        final String basePath = "src/test/resources/messages/libra";
-        caseWrappedJson = Files.readString(Paths.get(basePath +"/case-sns-metadata.json"));
-        caseWrappedJsonInvalid = Files.readString(Paths.get(basePath +"/case-sns-metadata-invalid.json"));
-    }
+    private CourtCaseProcessor messageProcessor;
 
     @BeforeEach
     void beforeEach() {
-        var objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.registerModule(new JavaTimeModule());
-        ReflectionTestUtils.setField(messageProcessor, "parser", new MessageParser<LibraCase>(objectMapper, validator));
-        ReflectionTestUtils.setField(messageProcessor, "snsMessageWrapperJsonParser", new MessageParser<SnsMessageContainer>(objectMapper, validator));
-    }
+        messageProcessor = new CourtCaseProcessor(telemetryService,
+                courtCaseService,
+                matcherService
+        );
 
-    @DisplayName("Receive a valid unmatched case for person then match and save")
-    @Test
-    void whenValidMessageReceivedForPerson_ThenMatchAndSave1() {
-
-        var snsMessageContainer=  messageProcessor.extractMessage(caseWrappedJson);
-
-        assertThat(snsMessageContainer.getMessageId()).isEqualTo("5bc08be0-16e9-5da9-b9ec-d2c870a59bad");
-        assertThat(snsMessageContainer.getMessage()).contains("\"caseNo\": \"1600032981\"");
     }
 
     @DisplayName("Receive a valid unmatched case for person then match and save")
@@ -94,9 +60,9 @@ class CaseMessageProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(any(CourtCase.class))).thenReturn(Mono.just(searchResult));
 
-        messageProcessor.process(caseWrappedJson, "messageId");
+        messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq("messageId"));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(telemetryService).trackOffenderMatchEvent(eq(courtCase), eq(matchResponse));
         verify(courtCaseService).createCase(eq(courtCase), eq(searchResult));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
@@ -112,9 +78,9 @@ class CaseMessageProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
 
-        messageProcessor.process(caseWrappedJson, "messageId");
+        messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq("messageId"));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(telemetryService).trackOffenderMatchFailureEvent(eq(courtCase));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).createCase(eq(courtCase), eq(errorSearchResult));
@@ -128,24 +94,17 @@ class CaseMessageProcessorTest {
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
 
-        messageProcessor.process(caseWrappedJson, "messageId");
+        messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq("messageId"));
+        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCase));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
-    @DisplayName("Given invalid case JSON then throw runtime exception")
     @Test
-    void givenInvalidCaseJson_thenThrowRuntimeException() {
-        assertThrows(RuntimeException.class, () -> messageProcessor.process("{\"courtCode\": }", "messageId"));
-    }
-
-    @DisplayName("Given invalid case JSON then throw runtime exception")
-    @Test
-    void givenMissingMessageContent_thenThrowRuntimeException() {
-        assertThrows(RuntimeException.class, () -> messageProcessor.process(caseWrappedJsonInvalid, "messageId"));
+    void givenNullCourtCase_thenThrowRuntimeException() {
+        assertThrows(RuntimeException.class, () -> messageProcessor.process(null, MESSAGE_ID));
     }
 }

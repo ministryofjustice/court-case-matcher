@@ -3,13 +3,12 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
-import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
@@ -26,40 +25,34 @@ import java.util.Optional;
 @Service
 @Qualifier("caseMessageProcessor")
 @Slf4j
-public class CaseMessageProcessor implements MessageProcessor {
+public class CourtCaseProcessor {
 
     @Autowired
+    @NonNull
     private final TelemetryService telemetryService;
 
     @Autowired
+    @NonNull
     private final CourtCaseService courtCaseService;
 
     @Autowired
+    @NonNull
     private final MatcherService matcherService;
 
-    @Autowired
-    @Qualifier("caseJsonParser")
-    private final MessageParser<LibraCase> parser;
-
-    @Autowired
-    @Qualifier("snsMessageWrapperJsonParser")
-    private final MessageParser<SnsMessageContainer> snsMessageWrapperJsonParser;
-
-    @Override
-    public void process(String payload, String messageId) {
+    public void process(CourtCase courtCase, String messageId) {
         try {
-            var snsMessageContainer = extractMessage(payload);
-            log.debug("Extracted message ID {} from SNS message. Incoming message ID was {} ", snsMessageContainer.getMessageId(), messageId);
-            saveCase(parser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain(), messageId);
+            matchAndSaveCase(courtCase, messageId);
         }
         catch (Exception ex) {
-            var failEvent = handleException(ex, payload);
-            logErrors(log, failEvent);
-            throw new RuntimeException(failEvent.getFailureMessage(), ex);
+            log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
+            throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
-    public void postCaseEvent(final CourtCase courtCase) {
+    private void matchAndSaveCase(CourtCase aCase, String messageId) {
+        telemetryService.trackCourtCaseEvent(aCase, messageId);
+        final var courtCase = courtCaseService.getCourtCase(aCase)
+                .block();
         if (courtCase.shouldMatchToOffender()) {
             applyMatch(courtCase);
         }
@@ -68,16 +61,6 @@ public class CaseMessageProcessor implements MessageProcessor {
         }
     }
 
-    SnsMessageContainer extractMessage(String snsMessageContainer) {
-        try {
-            return snsMessageWrapperJsonParser.parseMessage(snsMessageContainer, SnsMessageContainer.class);
-        }
-        catch (Exception ex) {
-            var failEvent = handleException(ex, snsMessageContainer);
-            logErrors(log, failEvent);
-            throw new RuntimeException(failEvent.getFailureMessage(), ex);
-        }
-    }
 
     private void applyMatch(final CourtCase courtCase) {
 
@@ -107,15 +90,4 @@ public class CaseMessageProcessor implements MessageProcessor {
             .orElse(Mono.just(courtCase))
             .subscribe(courtCaseService::saveCourtCase);
     }
-
-    @Override
-    public TelemetryService getTelemetryService() {
-        return telemetryService;
-    }
-
-    @Override
-    public CourtCaseService getCourtCaseService() {
-        return courtCaseService;
-    }
-
 }
