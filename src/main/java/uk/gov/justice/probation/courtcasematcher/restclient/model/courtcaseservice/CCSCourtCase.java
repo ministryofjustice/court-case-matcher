@@ -9,11 +9,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -72,22 +74,25 @@ public class CCSCourtCase implements Serializable {
                 .breach(domain.getBreach())
                 .caseId(domain.getCaseId())
                 .caseNo(domain.getCaseNo())
+
+
                 .courtCode(domain.getCourtCode())
-                .courtRoom(domain.getCourtRoom())
+                .courtRoom(domain.getFirstHearingDay().map(HearingDay::getCourtRoom).orElse(null))
+                .sessionStartTime(domain.getFirstHearingDay().map(HearingDay::getSessionStartTime).orElse(null))
+                .listNo(domain.getFirstHearingDay().map(HearingDay::getListNo).orElse(null))
+
                 .crn(domain.getCrn())
                 .cro(domain.getCro())
                 .pnc(domain.getPnc())
                 .preSentenceActivity(domain.isPreSentenceActivity())
                 .previouslyKnownTerminationDate(domain.getPreviouslyKnownTerminationDate())
                 .probationStatusActual(domain.getProbationStatus())
-                .sessionStartTime(domain.getSessionStartTime())
                 .suspendedSentenceOrder(domain.getSuspendedSentenceOrder())
                 .defendantDob(domain.getDefendantDob())
                 .defendantName(CaseMapper.nameFrom(domain.getDefendantName(), domain.getName()))
                 .defendantType(CCSDefendantType.of(domain.getDefendantType()))
                 .defendantSex(domain.getDefendantSex())
                 .isNew(domain.isNew())
-                .listNo(domain.getListNo())
                 .nationality1(domain.getNationality1())
                 .nationality2(domain.getNationality2())
 
@@ -113,22 +118,26 @@ public class CCSCourtCase implements Serializable {
                 .awaitingPsr(isAwaitingPsr())
                 .breach(getBreach())
                 .caseNo(getCaseNo())
-                .courtCode(getCourtCode())
-                .courtRoom(getCourtRoom())
+
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                            .courtCode(getCourtCode())
+                            .courtRoom(getCourtRoom())
+                                .sessionStartTime(getSessionStartTime())
+                            .listNo(getListNo())
+                        .build()))
+
                 .crn(getCrn())
                 .cro(getCro())
                 .pnc(getPnc())
                 .preSentenceActivity(isPreSentenceActivity())
                 .previouslyKnownTerminationDate(getPreviouslyKnownTerminationDate())
                 .probationStatus(getProbationStatusActual())
-                .sessionStartTime(getSessionStartTime())
                 .suspendedSentenceOrder(getSuspendedSentenceOrder())
                 .defendantDob(getDefendantDob())
                 .defendantName(getDefendantName())
                 .defendantType(getDefendantType().asDomain())
                 .defendantSex(getDefendantSex())
                 .isNew(isNew())
-                .listNo(getListNo())
                 .nationality1(getNationality1())
                 .nationality2(getNationality2())
 

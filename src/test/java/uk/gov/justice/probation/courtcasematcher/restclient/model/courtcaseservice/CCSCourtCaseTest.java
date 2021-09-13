@@ -14,8 +14,12 @@ class CCSCourtCaseTest {
         final var courtCaseRequest = CCSCourtCase.of(courtCase);
 
         assertThat(courtCaseRequest).usingRecursiveComparison()
-                .ignoringFields("probationStatusActual")
+                .ignoringFields("probationStatusActual", "hearingDays", "courtCode", "courtRoom", "listNo", "sessionStartTime")
                 .isEqualTo(courtCase);
+        assertThat(courtCaseRequest.getCourtCode()).isEqualTo(courtCase.getCourtCode());
+        assertThat(courtCaseRequest.getCourtRoom()).isEqualTo(courtCase.getCourtRoom());
+        assertThat(courtCaseRequest.getListNo()).isEqualTo(courtCase.getListNo());
+        assertThat(courtCaseRequest.getSessionStartTime()).isEqualTo(courtCase.getSessionStartTime());
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,12 +27,9 @@ public class CCSExtendedCase {
                 .caseNo(courtCase.getCaseNo())
                 .courtCode(courtCase.getCourtCode())
                 .source(CCSDataSource.of(courtCase.getSource()))
-                .hearingDays(Collections.singletonList(CCSHearingDay.builder()
-                        .courtCode(courtCase.getCourtCode())
-                        .courtRoom(courtCase.getCourtRoom())
-                        .sessionStartTime(courtCase.getSessionStartTime())
-                        .listNo(courtCase.getListNo())
-                        .build()))
+                .hearingDays(courtCase.getHearingDays().stream()
+                        .map((HearingDay courtCase1) -> CCSHearingDay.of(courtCase1))
+                        .collect(Collectors.toList()))
                 .defendants(Collections.singletonList(CCSDefendant.builder()
                         .defendantId(courtCase.getDefendantId())
                         .name(CCSName.of(courtCase.getName()))

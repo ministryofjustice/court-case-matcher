@@ -25,7 +25,7 @@ public class CommonPlatformHearing {
     private final CourtCentre courtCentre;
     @NotEmpty
     @Valid
-    private final List<HearingDay> hearingDays;
+    private final List<CPHearingDay> hearingDays;
     @NotNull
     private final JurisdictionType jurisdictionType;
     @NotEmpty

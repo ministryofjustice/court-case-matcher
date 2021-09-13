@@ -20,12 +20,14 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -69,7 +71,12 @@ class EventListenerTest {
     @DisplayName("Ensure that successful events are logged and counted")
     @Test
     void testSuccessEvent() {
-        CourtCase courtCaseApi = CourtCase.builder().caseNo("123").courtCode("SHF").build();
+        CourtCase courtCaseApi = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("SHF")
+                        .build()))
+                .caseNo("123")
+                .build();
 
         eventListener.courtCaseEvent(CourtCaseSuccessEvent.builder().courtCase(courtCaseApi).build());
 

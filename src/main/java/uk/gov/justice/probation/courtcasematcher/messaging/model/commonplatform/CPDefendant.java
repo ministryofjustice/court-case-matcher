@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class Defendant {
+public class CPDefendant {
     @NotBlank
     private final String id;
     private final String pncId;

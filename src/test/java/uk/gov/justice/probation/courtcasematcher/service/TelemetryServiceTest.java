@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
@@ -69,11 +70,13 @@ class TelemetryServiceTest {
     static void beforeEach() {
 
         courtCase = CourtCase.builder()
-                .courtCode(COURT_CODE)
-                .courtRoom(COURT_ROOM)
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .courtRoom(COURT_ROOM)
+                        .sessionStartTime(DATE_OF_HEARING.atStartOfDay())
+                        .build()))
                 .caseNo(CASE_NO)
                 .pnc(PNC)
-                .sessionStartTime(DATE_OF_HEARING.atStartOfDay())
                 .build();
     }
 
@@ -115,9 +118,9 @@ class TelemetryServiceTest {
     void whenExactMatch_thenRecord() {
         Match match = buildMatch(CRN);
         MatchResponse response = MatchResponse.builder()
-            .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
-            .matches(List.of(match))
-            .build();
+                .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
+                .matches(List.of(match))
+                .build();
 
         telemetryService.trackOffenderMatchEvent(courtCase, response);
 
@@ -126,13 +129,13 @@ class TelemetryServiceTest {
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(7);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(MATCHES_KEY, "1"),
-            entry(MATCHED_BY_KEY, OffenderSearchMatchType.ALL_SUPPLIED.name()),
-            entry(CRNS_KEY, CRN),
-            entry(PNC_KEY, PNC)
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(MATCHES_KEY, "1"),
+                entry(MATCHED_BY_KEY, OffenderSearchMatchType.ALL_SUPPLIED.name()),
+                entry(CRNS_KEY, CRN),
+                entry(PNC_KEY, PNC)
         );
     }
 
@@ -141,9 +144,9 @@ class TelemetryServiceTest {
     void whenPartialMatchEvent_thenRecord() {
         List<Match> matches = buildMatches(List.of(CRN, "X123454"));
         MatchResponse response = MatchResponse.builder()
-            .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
-            .matches(matches)
-            .build();
+                .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
+                .matches(matches)
+                .build();
 
         telemetryService.trackOffenderMatchEvent(courtCase, response);
 
@@ -152,13 +155,13 @@ class TelemetryServiceTest {
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(7);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(MATCHES_KEY, "2"),
-            entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
-            entry(CRNS_KEY, CRN + "," + "X123454"),
-            entry(PNC_KEY, PNC)
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(MATCHES_KEY, "2"),
+                entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
+                entry(CRNS_KEY, CRN + "," + "X123454"),
+                entry(PNC_KEY, PNC)
         );
     }
 
@@ -166,9 +169,9 @@ class TelemetryServiceTest {
     @Test
     void whenPartialToSingleOffenderMatchEvent_thenRecord() {
         MatchResponse response = MatchResponse.builder()
-            .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
-            .matches(List.of(buildMatch(CRN)))
-            .build();
+                .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
+                .matches(List.of(buildMatch(CRN)))
+                .build();
 
         telemetryService.trackOffenderMatchEvent(courtCase, response);
 
@@ -177,13 +180,13 @@ class TelemetryServiceTest {
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(7);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(MATCHES_KEY, "1"),
-            entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
-            entry(CRNS_KEY, CRN),
-            entry(PNC_KEY, PNC)
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(MATCHES_KEY, "1"),
+                entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
+                entry(CRNS_KEY, CRN),
+                entry(PNC_KEY, PNC)
         );
     }
 
@@ -191,8 +194,8 @@ class TelemetryServiceTest {
     @Test
     void whenNoMatchEvent_thenRecord() {
         MatchResponse response = MatchResponse.builder()
-            .matchedBy(OffenderSearchMatchType.NOTHING)
-            .build();
+                .matchedBy(OffenderSearchMatchType.NOTHING)
+                .build();
 
         telemetryService.trackOffenderMatchEvent(courtCase, response);
 
@@ -201,10 +204,10 @@ class TelemetryServiceTest {
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(4);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(PNC_KEY, PNC)
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(PNC_KEY, PNC)
         );
     }
 
@@ -219,10 +222,10 @@ class TelemetryServiceTest {
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(4);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(PNC_KEY, PNC)
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(PNC_KEY, PNC)
         );
     }
 
@@ -238,11 +241,11 @@ class TelemetryServiceTest {
 
         assertThat(properties).hasSize(5);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(COURT_ROOM_KEY, COURT_ROOM),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(SQS_MESSAGE_ID_KEY, "messageId")
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(COURT_ROOM_KEY, COURT_ROOM),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(SQS_MESSAGE_ID_KEY, "messageId")
         );
     }
 
@@ -258,13 +261,12 @@ class TelemetryServiceTest {
 
         assertThat(properties).hasSize(4);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(COURT_ROOM_KEY, COURT_ROOM),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05")
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(COURT_ROOM_KEY, COURT_ROOM),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05")
         );
     }
-
 
 
     @DisplayName("Record the event when a court case is received as JSON and messageId is not null")
@@ -272,9 +274,14 @@ class TelemetryServiceTest {
     void whenCourtCaseReceivedFromJson_andMessageIdIsNull_thenRecord() {
 
         var sessionStartTime = LocalDateTime.of(DATE_OF_HEARING, LocalTime.of(9, 30, 34));
-        var caseJson = CourtCase.builder().caseNo(CASE_NO).courtCode(COURT_CODE).courtRoom(COURT_ROOM)
-            .sessionStartTime(sessionStartTime)
-            .build();
+        var caseJson = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .courtRoom(COURT_ROOM)
+                        .sessionStartTime(sessionStartTime)
+                        .build()))
+                .caseNo(CASE_NO)
+                .build();
 
         telemetryService.trackCourtCaseEvent(caseJson, "messageId");
 
@@ -283,13 +290,14 @@ class TelemetryServiceTest {
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(5);
         assertThat(properties).contains(
-            entry(COURT_CODE_KEY, COURT_CODE),
-            entry(COURT_ROOM_KEY, COURT_ROOM),
-            entry(CASE_NO_KEY, CASE_NO),
-            entry(HEARING_DATE_KEY, "2020-11-05"),
-            entry(SQS_MESSAGE_ID_KEY, "messageId")
+                entry(COURT_CODE_KEY, COURT_CODE),
+                entry(COURT_ROOM_KEY, COURT_ROOM),
+                entry(CASE_NO_KEY, CASE_NO),
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(SQS_MESSAGE_ID_KEY, "messageId")
         );
     }
+
     @Nested
     public class WithOperationTest {
 
@@ -319,14 +327,14 @@ class TelemetryServiceTest {
     private Match buildMatch(String crn) {
         return Match.builder()
                 .offender(Offender.builder()
-                    .otherIds(OtherIds.builder().crn(crn).build())
-                    .build())
+                        .otherIds(OtherIds.builder().crn(crn).build())
+                        .build())
                 .build();
     }
 
     private List<Match> buildMatches(List<String> crns) {
         return crns.stream()
-            .map(this::buildMatch)
-            .collect(Collectors.toList());
+                .map(this::buildMatch)
+                .collect(Collectors.toList());
     }
 }

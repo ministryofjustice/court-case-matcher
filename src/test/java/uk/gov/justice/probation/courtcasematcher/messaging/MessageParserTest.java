@@ -12,10 +12,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.probation.courtcasematcher.application.MessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Address;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CommonPlatformHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CourtCentre;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Defendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.JurisdictionType;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.LegalEntityDefendant;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Offence;
@@ -105,7 +105,7 @@ class MessageParserTest {
                     && cv.getPropertyPath().toString().equals(path);
         }
 
-        private void checkHearing(CommonPlatformHearing actual, List<Defendant> defendants) {
+        private void checkHearing(CommonPlatformHearing actual, List<CPDefendant> defendants) {
             assertThat(actual).isNotNull();
             assertThat(actual.getId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
             assertThat(actual.getCourtCentre()).isEqualTo(
@@ -117,12 +117,12 @@ class MessageParserTest {
                             .build()
             );
             assertThat(actual.getHearingDays()).containsExactly(
-                    HearingDay.builder()
+                    CPHearingDay.builder()
                             .listedDurationMinutes(60)
                             .listingSequence(0)
                             .sittingDay(LocalDateTime.of(2021, 9, 8, 9, 0))
                             .build(),
-                    HearingDay.builder()
+                    CPHearingDay.builder()
                             .listedDurationMinutes(30)
                             .listingSequence(1)
                             .sittingDay(LocalDateTime.of(2021, 9, 9, 10, 30))
@@ -137,8 +137,8 @@ class MessageParserTest {
                             .build());
             assertThat(actual.getJurisdictionType()).isEqualTo(JurisdictionType.CROWN);
         }
-        private Defendant legalEntityDefendant() {
-            return Defendant.builder()
+        private CPDefendant legalEntityDefendant() {
+            return CPDefendant.builder()
                     .id("903c4c54-f667-4770-8fdf-1adbb5957c25")
                     .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
                     .pncId(null)
@@ -164,8 +164,8 @@ class MessageParserTest {
                     .build();
         }
 
-        private Defendant defendant1() {
-            return Defendant.builder()
+        private CPDefendant defendant1() {
+            return CPDefendant.builder()
                     .id("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")
                     .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
                     .pncId("2004/0012345U")
@@ -203,8 +203,8 @@ class MessageParserTest {
                     .build();
         }
 
-        private Defendant defendant2() {
-            return Defendant.builder()
+        private CPDefendant defendant2() {
+            return CPDefendant.builder()
                     .id("903c4c54-f667-4770-8fdf-1adbb5957c25")
                     .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
                     .pncId(null)

@@ -1,7 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,59 +19,33 @@ import java.util.Optional;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CourtCase implements Serializable {
 
     private final String caseId;
-
-    private final String defendantId;
-
+    private List<Defendant> defendants;
+    private List<HearingDay> hearingDays;
     @Setter(AccessLevel.NONE)
     private final String caseNo;
 
-    @Setter(AccessLevel.NONE)
-    private final String courtCode;
-
-    private final String courtRoom;
-
-    private final LocalDateTime sessionStartTime;
-
+    // TODO: These fields should be migrated to Defendant
+    private final String defendantId;
     private final String probationStatus;
-
     private final List<Offence> offences;
-
     private final String crn;
-
     private final String cro;
-
     private final String pnc;
-
     private final Name name;
-
     private final String defendantName;
-
     private final Address defendantAddress;
-
     private final LocalDate defendantDob;
-
     private final DefendantType defendantType;
-
     private final String defendantSex;
-
-    private final String listNo;
-
     private final String nationality1;
-
     private final String nationality2;
-
     private final Boolean breach;
-
     private final LocalDate previouslyKnownTerminationDate;
-
     private final Boolean suspendedSentenceOrder;
-
     private final boolean preSentenceActivity;
-
     private final boolean awaitingPsr;
 
     @JsonIgnore
@@ -93,6 +66,37 @@ public class CourtCase implements Serializable {
 
 
     public LocalDate getDateOfHearing() {
-        return sessionStartTime != null ? sessionStartTime.toLocalDate() : null;
+        return getFirstHearingDay()
+                .map(hearingDay -> hearingDay.getSessionStartTime().toLocalDate())
+                .orElse(null);
+    }
+
+    public String getCourtCode() {
+        return getFirstHearingDay()
+                .map(HearingDay::getCourtCode)
+                .orElseThrow();
+    }
+
+    public Optional<HearingDay> getFirstHearingDay() {
+        return Optional.ofNullable(hearingDays)
+                .flatMap(days -> days.stream().findFirst());
+    }
+
+    public String getCourtRoom() {
+        return getFirstHearingDay()
+                .map(HearingDay::getCourtRoom)
+                .orElse(null);
+    }
+
+    public LocalDateTime getSessionStartTime() {
+        return getFirstHearingDay()
+                .map(HearingDay::getSessionStartTime)
+                .orElse(null);
+    }
+
+    public String getListNo() {
+        return getFirstHearingDay()
+                .map(HearingDay::getListNo)
+                .orElse(null);
     }
 }

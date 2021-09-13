@@ -20,5 +20,5 @@ public class ProsecutionCase {
     private final String id;
     @NotNull
     @Valid
-    private final List<Defendant> defendants;
+    private final List<CPDefendant> defendants;
 }

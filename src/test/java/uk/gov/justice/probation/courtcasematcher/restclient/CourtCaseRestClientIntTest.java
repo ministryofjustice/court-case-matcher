@@ -16,9 +16,11 @@ import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
@@ -78,7 +80,9 @@ public class CourtCaseRestClientIntTest {
     void whenRestClientThrows500OnPut_ThenThrow() {
         final var aCase = aCourtCaseBuilderWithAllFields()
                 .caseId(CASE_ID_SERVER_ERROR)
-                .courtCode("X500")
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("X500")
+                        .build()))
                 .build();
 
         assertThatExceptionOfType(RuntimeException.class)

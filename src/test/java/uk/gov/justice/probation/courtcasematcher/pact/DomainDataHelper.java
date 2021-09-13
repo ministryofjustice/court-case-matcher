@@ -4,6 +4,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
@@ -61,12 +62,15 @@ public class DomainDataHelper {
 
     public static CourtCase.CourtCaseBuilder aMinimalCourtCaseBuilder() {
         return CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("B10JQ")
+                        .courtRoom("ROOM 1")
+                        .sessionStartTime(LocalDateTime.of(2021, 8, 26, 9, 0))
+                        .listNo("1")
+                        .build()))
                 .source(DataSource.LIBRA)
                 .caseId(CASE_ID)
                 .defendantId(DEFENDANT_ID)
-                .courtCode("B10JQ")
-                .courtRoom("ROOM 1")
-                .sessionStartTime(LocalDateTime.of(2021, 8, 26, 9, 0))
                 .offences(Collections.singletonList(Offence.builder()
                         .offenceTitle("offence title")
                         .offenceSummary("offence summary")
@@ -83,6 +87,6 @@ public class DomainDataHelper {
                         .build())
                 .defendantDob(LocalDate.of(1986, 11, 28))
                 .defendantType(DefendantType.PERSON)
-                .listNo("1");
+                ;
     }
 }

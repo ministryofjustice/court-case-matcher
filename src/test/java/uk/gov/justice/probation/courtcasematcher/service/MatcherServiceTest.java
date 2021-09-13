@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
@@ -51,8 +52,10 @@ class MatcherServiceTest {
                                                 .build();
 
     private static final CourtCase COURT_CASE = CourtCase.builder()
+            .hearingDays(Collections.singletonList(HearingDay.builder()
+                    .courtCode(COURT_CODE)
+                    .build()))
         .caseNo(CASE_NO)
-        .courtCode(COURT_CODE)
         .name(DEF_NAME)
         .defendantDob(DEF_DOB)
         .defendantName(DEF_NAME.getFullName())
