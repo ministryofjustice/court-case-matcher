@@ -58,10 +58,6 @@ public class CCSCourtCase implements Serializable {
     @JsonIgnore
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
 
-    @JsonIgnore
-    // TODO: This is no longer used, delete
-    private final boolean isNew;
-
     public boolean isPerson() {
         return Optional.ofNullable(defendantType).map(defType -> defType == CCSDefendantType.PERSON).orElse(false);
     }
@@ -93,7 +89,6 @@ public class CCSCourtCase implements Serializable {
                 .defendantName(CaseMapper.nameFrom(firstDefendant.getName()))
                 .defendantType(CCSDefendantType.of(firstDefendant.getType()))
                 .defendantSex(firstDefendant.getSex())
-                .isNew(domain.isNew())
 
                 .name(Optional.ofNullable(firstDefendant.getName())
                         .map(CCSName::of)
@@ -114,7 +109,6 @@ public class CCSCourtCase implements Serializable {
                 .source(Optional.ofNullable(source).map(CCSDataSource::asDomain).orElse(null))
                 .caseId(getCaseId())
                 .caseNo(getCaseNo())
-                .isNew(isNew())
 
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(getCourtCode())

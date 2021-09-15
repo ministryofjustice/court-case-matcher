@@ -33,10 +33,6 @@ public class CourtCase implements Serializable {
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;
 
-    @JsonIgnore
-    // TODO: This is no longer used, delete
-    private final boolean isNew;
-
     private final DataSource source;
 
     public boolean shouldMatchToOffender() {

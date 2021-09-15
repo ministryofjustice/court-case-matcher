@@ -59,7 +59,6 @@ public class CaseMapper {
                         .offences(Optional.ofNullable(aLibraCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()))
                         .build()))
                 .source(DataSource.LIBRA)
-                .isNew(true)
                 .caseNo(aLibraCase.getCaseNo())
 
                 .build();
