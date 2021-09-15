@@ -49,9 +49,10 @@ public class CourtCaseRestClient implements CourtCaseRepository {
             return legacyCourtCaseRestClient.putCourtCase(courtCase);
         }
 
-        final var caseId = courtCase.getCaseId();
+        final var extendedCase = CCSExtendedCase.of(courtCase);
+        final var caseId = extendedCase.getCaseId();
         final String path = String.format(courtCasePutTemplate, caseId);
-        return restHelper.putObject(path, CCSExtendedCase.of(courtCase), CCSExtendedCase.class)
+        return restHelper.putObject(path, extendedCase, CCSExtendedCase.class)
                 .retrieve()
                 .toBodilessEntity()
                 .retryWhen(restHelper.buildRetrySpec(

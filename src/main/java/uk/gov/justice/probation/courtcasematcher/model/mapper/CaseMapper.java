@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,7 +39,6 @@ public class CaseMapper {
 
     public static CourtCase newFromLibraCase(LibraCase aLibraCase) {
         return CourtCase.builder()
-                .caseId(UUID.randomUUID().toString()) // TODO: Move this to rest client POJO
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(aLibraCase.getCourtCode())
                         .courtRoom(aLibraCase.getCourtRoom())
@@ -48,7 +46,6 @@ public class CaseMapper {
                         .listNo(aLibraCase.getListNo())
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
-                        .defendantId(UUID.randomUUID().toString()) // TODO: Move this to rest client POJO
                         .name(Optional.ofNullable(aLibraCase.getName()).map(LibraName::asDomain).orElse(null))
                         .address(Optional.ofNullable(aLibraCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
                         .dateOfBirth(aLibraCase.getDefendantDob())

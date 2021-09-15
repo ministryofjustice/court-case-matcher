@@ -1,10 +1,10 @@
 {
   "request": {
     "method": "PUT",
-    "urlPattern": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended",
+    "urlPattern": "/case/[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}/extended",
     "bodyPatterns": [
       {
-        "matches" : ".*caseId.*D517D32D-3C80-41E8-846E-D274DC2B94A5.*"
+        "doesNotMatch" : ".*caseId.*(D517D32D\\-3C80\\-41E8\\-846E\\-D274DC2B94A5|771F1C21\\-D2CA\\-4235\\-8659\\-5C3C7D7C58B6).*"
       }
     ]
   },

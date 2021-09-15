@@ -278,21 +278,6 @@ class CaseMapperTest {
             assertThat(actual.getSource()).isEqualTo(LIBRA);
         }
 
-        @DisplayName("Generate UUIDs")
-        @Test
-        void givenLibraCase_whenNewFromLibraCase_thenGenerateIdsAndSource() {
-            var nullCase = LibraCase.builder()
-                    .courtCode(COURT_CODE)
-                    .courtRoom("00")
-                    .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
-                    .caseNo("123")
-                    .build();
-            final var actual = CaseMapper.newFromLibraCase(nullCase);
-            assertThat(actual.getCaseId()).hasSameSizeAs(A_UUID);
-            assertThat(actual.getFirstDefendant().getDefendantId()).hasSameSizeAs(A_UUID);
-            assertThat(actual.getSource()).isEqualTo(LIBRA);
-        }
-
 
         @DisplayName("Map from a new case with offences")
         @Test
