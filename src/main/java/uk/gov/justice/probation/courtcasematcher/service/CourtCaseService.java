@@ -61,7 +61,7 @@ public class CourtCaseService {
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
-        return offenderSearchRestClient.search(courtCase.getCrn())
+        return offenderSearchRestClient.search(courtCase.getFirstDefendant().getCrn())
             .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
             .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
             .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))

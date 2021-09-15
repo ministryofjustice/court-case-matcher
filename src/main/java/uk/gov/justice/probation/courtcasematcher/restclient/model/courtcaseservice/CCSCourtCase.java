@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 
@@ -47,8 +48,6 @@ public class CCSCourtCase implements Serializable {
     private final CCSDefendantType defendantType;
     private final String defendantSex;
     private final String listNo;
-    private final String nationality1;
-    private final String nationality2;
     private final Boolean breach;
     private final LocalDate previouslyKnownTerminationDate;
     private final Boolean suspendedSentenceOrder;
@@ -60,18 +59,20 @@ public class CCSCourtCase implements Serializable {
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
 
     @JsonIgnore
+    // TODO: This is no longer used, delete
     private final boolean isNew;
 
     public boolean isPerson() {
         return Optional.ofNullable(defendantType).map(defType -> defType == CCSDefendantType.PERSON).orElse(false);
     }
 
-    public static CCSCourtCase of(CourtCase domain){
+    public static CCSCourtCase of(CourtCase domain) {
+        final var firstDefendant = domain.getFirstDefendant();
         return CCSCourtCase.builder()
                 .source(CCSDataSource.of(domain.getSource()))
-                .defendantId(domain.getDefendantId())
-                .awaitingPsr(domain.isAwaitingPsr())
-                .breach(domain.getBreach())
+                .defendantId(firstDefendant.getDefendantId())
+                .awaitingPsr(firstDefendant.getAwaitingPsr())
+                .breach(firstDefendant.getBreach())
                 .caseId(domain.getCaseId())
                 .caseNo(domain.getCaseNo())
 
@@ -81,28 +82,26 @@ public class CCSCourtCase implements Serializable {
                 .sessionStartTime(domain.getFirstHearingDay().map(HearingDay::getSessionStartTime).orElse(null))
                 .listNo(domain.getFirstHearingDay().map(HearingDay::getListNo).orElse(null))
 
-                .crn(domain.getCrn())
-                .cro(domain.getCro())
-                .pnc(domain.getPnc())
-                .preSentenceActivity(domain.isPreSentenceActivity())
-                .previouslyKnownTerminationDate(domain.getPreviouslyKnownTerminationDate())
-                .probationStatusActual(domain.getProbationStatus())
-                .suspendedSentenceOrder(domain.getSuspendedSentenceOrder())
-                .defendantDob(domain.getDefendantDob())
-                .defendantName(CaseMapper.nameFrom(domain.getDefendantName(), domain.getName()))
-                .defendantType(CCSDefendantType.of(domain.getDefendantType()))
-                .defendantSex(domain.getDefendantSex())
+                .crn(firstDefendant.getCrn())
+                .cro(firstDefendant.getCro())
+                .pnc(firstDefendant.getPnc())
+                .preSentenceActivity(firstDefendant.getPreSentenceActivity())
+                .previouslyKnownTerminationDate(firstDefendant.getPreviouslyKnownTerminationDate())
+                .probationStatusActual(firstDefendant.getProbationStatus())
+                .suspendedSentenceOrder(firstDefendant.getSuspendedSentenceOrder())
+                .defendantDob(firstDefendant.getDateOfBirth())
+                .defendantName(CaseMapper.nameFrom(firstDefendant.getName()))
+                .defendantType(CCSDefendantType.of(firstDefendant.getType()))
+                .defendantSex(firstDefendant.getSex())
                 .isNew(domain.isNew())
-                .nationality1(domain.getNationality1())
-                .nationality2(domain.getNationality2())
 
-                .name(Optional.ofNullable(domain.getName())
+                .name(Optional.ofNullable(firstDefendant.getName())
                         .map(CCSName::of)
                         .orElse(null))
-                .defendantAddress(Optional.ofNullable(domain.getDefendantAddress())
+                .defendantAddress(Optional.ofNullable(firstDefendant.getAddress())
                         .map(CCSAddress::of)
                         .orElse(null))
-                .offences(Optional.ofNullable(domain.getOffences())
+                .offences(Optional.ofNullable(firstDefendant.getOffences())
                         .map(offences -> offences.stream()
                                 .map(CCSOffence::of)
                                 .collect(Collectors.toList()))
@@ -114,44 +113,44 @@ public class CCSCourtCase implements Serializable {
         return CourtCase.builder()
                 .source(Optional.ofNullable(source).map(CCSDataSource::asDomain).orElse(null))
                 .caseId(getCaseId())
-                .defendantId(getDefendantId())
-                .awaitingPsr(isAwaitingPsr())
-                .breach(getBreach())
                 .caseNo(getCaseNo())
+                .isNew(isNew())
 
                 .hearingDays(Collections.singletonList(HearingDay.builder()
-                            .courtCode(getCourtCode())
-                            .courtRoom(getCourtRoom())
-                                .sessionStartTime(getSessionStartTime())
-                            .listNo(getListNo())
+                        .courtCode(getCourtCode())
+                        .courtRoom(getCourtRoom())
+                        .sessionStartTime(getSessionStartTime())
+                        .listNo(getListNo())
                         .build()))
 
-                .crn(getCrn())
-                .cro(getCro())
-                .pnc(getPnc())
-                .preSentenceActivity(isPreSentenceActivity())
-                .previouslyKnownTerminationDate(getPreviouslyKnownTerminationDate())
-                .probationStatus(getProbationStatusActual())
-                .suspendedSentenceOrder(getSuspendedSentenceOrder())
-                .defendantDob(getDefendantDob())
-                .defendantName(getDefendantName())
-                .defendantType(getDefendantType().asDomain())
-                .defendantSex(getDefendantSex())
-                .isNew(isNew())
-                .nationality1(getNationality1())
-                .nationality2(getNationality2())
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .defendantId(getDefendantId())
+                        .awaitingPsr(isAwaitingPsr())
+                        .breach(getBreach())
+                        .crn(getCrn())
+                        .cro(getCro())
+                        .pnc(getPnc())
+                        .preSentenceActivity(isPreSentenceActivity())
+                        .previouslyKnownTerminationDate(getPreviouslyKnownTerminationDate())
+                        .probationStatus(getProbationStatusActual())
+                        .suspendedSentenceOrder(getSuspendedSentenceOrder())
+                        .dateOfBirth(getDefendantDob())
+                        .name(getName().asDomain())
+                        .type(getDefendantType().asDomain())
+                        .sex(getDefendantSex())
 
-                .name(Optional.ofNullable(getName())
-                        .map(CCSName::asDomain)
-                        .orElse(null))
-                .defendantAddress(Optional.ofNullable(getDefendantAddress())
-                        .map(CCSAddress::asDomain)
-                        .orElse(null))
-                .offences(Optional.ofNullable(getOffences())
-                        .map(offences -> offences.stream()
-                                .map(CCSOffence::asDomain)
-                                .collect(Collectors.toList()))
-                        .orElse(null))
+                        .name(Optional.ofNullable(getName())
+                                .map(CCSName::asDomain)
+                                .orElse(null))
+                        .address(Optional.ofNullable(getDefendantAddress())
+                                .map(CCSAddress::asDomain)
+                                .orElse(null))
+                        .offences(Optional.ofNullable(getOffences())
+                                .map(offences -> offences.stream()
+                                        .map(CCSOffence::asDomain)
+                                        .collect(Collectors.toList()))
+                                .orElse(null))
+                        .build()))
 
                 .build();
     }

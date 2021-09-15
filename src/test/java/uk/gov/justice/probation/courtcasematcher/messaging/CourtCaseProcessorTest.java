@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
@@ -61,7 +62,10 @@ class CourtCaseProcessorTest {
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
-                .defendantType(PERSON).build();
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .build()))
+                .build();
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(any(CourtCase.class))).thenReturn(Mono.just(searchResult));
 
@@ -81,7 +85,10 @@ class CourtCaseProcessorTest {
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
-                .defendantType(PERSON).build();
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .build()))
+                .build();
         var matchResponse = MatchResponse.builder().matchedBy(OffenderSearchMatchType.NOTHING).matches(Collections.emptyList()).build();
         var errorSearchResult = SearchResult.builder().matchResponse(matchResponse).build();
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
@@ -103,7 +110,11 @@ class CourtCaseProcessorTest {
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
-                .defendantType(PERSON).crn("X320741").build();
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .crn("X320741")
+                        .build()))
+                .build();
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
 

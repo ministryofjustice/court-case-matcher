@@ -56,8 +56,6 @@ class CourtCaseRestClientPactTest {
                     offence.integerType("sequenceNumber");
                 }));
                 defendant.stringValue("type", "PERSON");
-                defendant.booleanType("preSentenceActivity");
-                defendant.booleanType("awaitingPsr");
                 defendant.stringType("defendantId");
             })));
             rootObject.array("hearingDays", (array) -> array.object((hearingDay) -> {
@@ -114,7 +112,7 @@ class CourtCaseRestClientPactTest {
                     offence.integerType("sequenceNumber");
                 }));
                 defendant.stringType("probationStatus");
-                defendant.stringType("type", "PERSON");
+                defendant.stringType("type", "ORGANISATION");
                 defendant.stringType("crn");
                 defendant.stringType("cro");
                 defendant.stringType("pnc");

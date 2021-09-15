@@ -64,7 +64,7 @@ public class CourtCaseProcessor {
 
     private void applyMatch(final CourtCase courtCase) {
 
-        log.info("Matching offender and saving case no {} for court {}, pnc {}", courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getPnc());
+        log.info("Matching offender and saving case no {} for court {}, pnc {}", courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getFirstDefendant().getPnc());
 
         final var searchResult = matcherService.getSearchResponse(courtCase)
                 .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
@@ -82,9 +82,9 @@ public class CourtCaseProcessor {
     }
 
     private void updateAndSave(final CourtCase courtCase) {
-        log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getCrn(), courtCase.getCourtCode());
+        log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getFirstDefendant().getCrn(), courtCase.getCourtCode());
 
-        Optional.ofNullable(courtCase.getCrn())
+        Optional.ofNullable(courtCase.getFirstDefendant().getCrn())
             .map(crn -> courtCaseService.updateProbationStatusDetail(courtCase)
                 .onErrorReturn(courtCase))
             .orElse(Mono.just(courtCase))

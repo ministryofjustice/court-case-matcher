@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
@@ -76,7 +77,9 @@ class TelemetryServiceTest {
                         .sessionStartTime(DATE_OF_HEARING.atStartOfDay())
                         .build()))
                 .caseNo(CASE_NO)
-                .pnc(PNC)
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .pnc(PNC)
+                        .build()))
                 .build();
     }
 

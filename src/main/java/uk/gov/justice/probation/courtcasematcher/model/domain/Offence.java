@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Offence {
+    private final String id;
 
     private final String offenceTitle;
 

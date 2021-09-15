@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +49,7 @@ public class MatchRequest {
         @Value("${offender-search.use-dob-with-pnc:false}")
         private boolean useDobWithPnc;
 
-        public MatchRequest buildFrom(String pnc, uk.gov.justice.probation.courtcasematcher.model.domain.Name fullName, LocalDate dateOfBirth) throws IllegalArgumentException {
+        public MatchRequest buildFrom(String pnc, Name fullName, LocalDate dateOfBirth) throws IllegalArgumentException {
             if (fullName == null || StringUtils.isBlank(fullName.getSurname())) {
                 log.error(ERROR_NO_NAME);
                 throw new IllegalArgumentException(ERROR_NO_NAME);
@@ -71,9 +72,9 @@ public class MatchRequest {
         }
 
         public MatchRequest buildFrom(CourtCase courtCase) throws IllegalArgumentException {
-            uk.gov.justice.probation.courtcasematcher.model.domain.Name defendantName = Optional.ofNullable(courtCase.getName())
-                    .orElseGet(() -> nameHelper.getNameFromFields(courtCase.getDefendantName()));
-            return buildFrom(courtCase.getPnc(), defendantName, courtCase.getDefendantDob());
+            final var defendantName = Optional.ofNullable(courtCase.getFirstDefendant().getName())
+                    .orElse(null);
+            return buildFrom(courtCase.getFirstDefendant().getPnc(), defendantName, courtCase.getFirstDefendant().getDateOfBirth());
         }
     }
 }
