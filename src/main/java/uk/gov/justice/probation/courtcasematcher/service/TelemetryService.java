@@ -70,6 +70,7 @@ public class TelemetryService {
     }
 
     public void trackCourtCaseEvent(CourtCase aCase, String messageId) {
+        // TODO: Add source to properties
 
         Map<String, String> properties = new HashMap<>(5);
         ofNullable(aCase.getCourtCode())

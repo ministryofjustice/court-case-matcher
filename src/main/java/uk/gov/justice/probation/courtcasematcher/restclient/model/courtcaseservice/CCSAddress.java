@@ -21,7 +21,7 @@ public class CCSAddress {
     private final String line5;
     private final String postcode;
 
-    public static CCSAddress of(uk.gov.justice.probation.courtcasematcher.model.domain.Address defendantAddress) {
+    public static CCSAddress of(Address defendantAddress) {
         return CCSAddress.builder()
                 .line1(defendantAddress.getLine1())
                 .line2(defendantAddress.getLine2())

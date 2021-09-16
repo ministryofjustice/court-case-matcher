@@ -9,6 +9,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -51,7 +53,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 public class SqsMessageReceiverIntTest {
 
     private static final String BASE_PATH = "src/test/resources/messages";
-    private static String singleCase;
+    private static String hearing;
 
     @Autowired
     private TelemetryService telemetryService;
@@ -63,7 +65,7 @@ public class SqsMessageReceiverIntTest {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        singleCase = Files.readString(Paths.get(BASE_PATH +"/libra/case.json"));
+        hearing = Files.readString(Paths.get(BASE_PATH + "/libra/case.json"));
         MOCK_SERVER.start();
     }
 
@@ -77,23 +79,84 @@ public class SqsMessageReceiverIntTest {
     @Autowired
     private NotificationMessagingTemplate notificationMessagingTemplate;
 
+    @Nested
+    class CommonPlatformReceiverTest {
+        @Test
+        public void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
+            hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
+
+            notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING"));
+
+            await()
+                    .atMost(10, TimeUnit.SECONDS)
+                    .until(() -> countPutRequestsTo("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended") == 1);
+
+            MOCK_SERVER.verify(
+                    putRequestedFor(urlMatching("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended"))
+                            // Values from incoming case
+                            .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                            .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
+                            .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("0")))
+                            .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
+                            .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
+                            // Values from offender search
+                            .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
+            );
+
+            verify(telemetryService).withOperation(nullable(String.class));
+            verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
+            verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
+            verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
+            verifyNoMoreInteractions(telemetryService);
+        }
+
+        @Test
+        public void givenNewCase_whenReceivePayloadForOrganisation_thenSendNewCase() throws IOException {
+
+            var orgJson = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
+
+            notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING"));
+
+            await()
+                    .atMost(10, TimeUnit.SECONDS)
+                    .until(() -> countPutRequestsTo("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended") == 1);
+
+            MOCK_SERVER.verify(
+                    putRequestedFor(urlMatching("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended"))
+                            .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                            .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
+                            .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
+                            .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                            .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
+                            .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
+            );
+
+            verify(telemetryService).withOperation(nullable(String.class));
+            verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
+            verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
+            verify(telemetryService, never()).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
+            verifyNoMoreInteractions(telemetryService);
+        }
+
+
+    }
 
     @Test
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() {
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, singleCase, Map.of("messageType", "LIBRA_COURT_CASE"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE"));
 
         await()
-            .atMost(10, TimeUnit.SECONDS)
-            .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
 
         MOCK_SERVER.verify(
-            putRequestedFor(urlMatching("/case/.*/extended"))
-                .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
-                .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
-                .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032981")))
-                .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
-                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
+                putRequestedFor(urlMatching("/case/.*/extended"))
+                        .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
+                        .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
+                        .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032981")))
+                        .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
+                        .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
@@ -106,20 +169,20 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase() throws IOException {
 
-        var orgJson = Files.readString(Paths.get(BASE_PATH +"/libra/case-org.json"));
+        var orgJson = Files.readString(Paths.get(BASE_PATH + "/libra/case-org.json"));
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE"));
 
         await()
-            .atMost(5, TimeUnit.SECONDS)
-            .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
+                .atMost(5, TimeUnit.SECONDS)
+                .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
 
         MOCK_SERVER.verify(
-            putRequestedFor(urlMatching("/case/.*/extended"))
-                .withRequestBody(matchingJsonPath("caseId", equalTo("A0884637-5A70-4622-88E9-7324949B8E7A")))
-                .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("07")))
-                .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("ORGANISATION")))
-                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("51EB661C-6CDF-46B2-ACF3-95098CF41154")))
+                putRequestedFor(urlMatching("/case/.*/extended"))
+                        .withRequestBody(matchingJsonPath("caseId", equalTo("A0884637-5A70-4622-88E9-7324949B8E7A")))
+                        .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("07")))
+                        .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("ORGANISATION")))
+                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("51EB661C-6CDF-46B2-ACF3-95098CF41154")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
@@ -152,19 +215,19 @@ public class SqsMessageReceiverIntTest {
         @Bean
         public AmazonSQSAsync amazonSQSAsync() {
             return AmazonSQSAsyncClientBuilder
-                .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
-                .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
-                .build();
+                    .standard()
+                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
+                    .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
+                    .build();
         }
 
         @Bean
         public AmazonSNS amazonSNSClient() {
             return AmazonSNSClientBuilder
-                .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
-                .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
-                .build();
+                    .standard()
+                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
+                    .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
+                    .build();
         }
 
         @Bean

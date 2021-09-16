@@ -31,9 +31,13 @@ public class CourtCaseService {
     private OffenderSearchRestClient offenderSearchRestClient;
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {
+        if (aCase.getCaseNo() == null) {
+            log.warn(String.format("caseNo not available for %s case with id '%s'. Skipping check for existing case.", aCase.getSource(), aCase.getCaseId()));
+            return Mono.just(aCase);
+        }
         return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
-            .map(existing -> CaseMapper.merge(aCase, existing))
-            .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
+                .map(existing -> CaseMapper.merge(aCase, existing))
+                .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
     }
 
     public void createCase(CourtCase courtCase, SearchResult searchResult) {
@@ -56,16 +60,20 @@ public class CourtCaseService {
         try {
             courtCaseRepository.putCourtCase(courtCase).block();
         } finally {
-            courtCaseRepository.postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase.getGroupedOffenderMatches()).block();
+            if (courtCase.getCaseNo() != null) {
+                courtCaseRepository.postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase.getGroupedOffenderMatches()).block();
+            } else {
+                log.warn(String.format("caseNo not available for %s case with id '%s'. Skipping POST matches.", courtCase.getSource(), courtCase.getCaseId()));
+            }
         }
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
         return offenderSearchRestClient.search(courtCase.getFirstDefendant().getCrn())
-            .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
-            .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
-            .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))
-            .switchIfEmpty(Mono.just(courtCase));
+                .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
+                .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
+                .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))
+                .switchIfEmpty(Mono.just(courtCase));
     }
 
 }
