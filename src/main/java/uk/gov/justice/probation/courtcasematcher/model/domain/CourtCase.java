@@ -1,14 +1,13 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import reactor.util.StringUtils;
+import lombok.With;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -16,83 +15,85 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.util.StringUtils.hasText;
+
 @Data
 @Builder
+@With
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CourtCase implements Serializable {
 
     private final String caseId;
-
-    private final String defendantId;
-
     @Setter(AccessLevel.NONE)
     private final String caseNo;
-
-    @Setter(AccessLevel.NONE)
-    private final String courtCode;
-
-    private final String courtRoom;
-
-    private final LocalDateTime sessionStartTime;
-
-    private final String probationStatus;
-
-    private final List<Offence> offences;
-
-    private final String crn;
-
-    private final String cro;
-
-    private final String pnc;
-
-    private final Name name;
-
-    private final String defendantName;
-
-    private final Address defendantAddress;
-
-    private final LocalDate defendantDob;
-
-    private final DefendantType defendantType;
-
-    private final String defendantSex;
-
-    private final String listNo;
-
-    private final String nationality1;
-
-    private final String nationality2;
-
-    private final Boolean breach;
-
-    private final LocalDate previouslyKnownTerminationDate;
-
-    private final Boolean suspendedSentenceOrder;
-
-    private final boolean preSentenceActivity;
-
-    private final boolean awaitingPsr;
+    private List<Defendant> defendants;
+    private List<HearingDay> hearingDays;
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;
 
-    @JsonIgnore
-    private final boolean isNew;
-
     private final DataSource source;
 
-    public boolean isPerson() {
-        return Optional.ofNullable(defendantType).map(defType -> defType == DefendantType.PERSON).orElse(false);
-    }
-
     public boolean shouldMatchToOffender() {
-        return isPerson() && !StringUtils.hasText(crn);
+        return Optional.ofNullable(defendants)
+                .map(defs -> getFirstDefendant())
+                .filter(defendant -> defendant.getType() == DefendantType.PERSON)
+                .filter(defendant -> !hasText(defendant.getCrn()))
+                .isPresent();
     }
 
 
     public LocalDate getDateOfHearing() {
-        return sessionStartTime != null ? sessionStartTime.toLocalDate() : null;
+        return getFirstHearingDay()
+                .map(hearingDay -> hearingDay.getSessionStartTime().toLocalDate())
+                .orElse(null);
+    }
+
+    public String getCourtCode() {
+        return getFirstHearingDay()
+                .map(HearingDay::getCourtCode)
+                .orElseThrow();
+    }
+
+
+    /**
+     @deprecated This method is used as a shim for simplifying the process of refactoring to introduce multiple
+     hearing days. It will be removed as soon as refactoring is complete to handle these cases.
+     */
+    @Deprecated(forRemoval = true)
+    public Optional<HearingDay> getFirstHearingDay() {
+        return Optional.ofNullable(hearingDays)
+                .flatMap(days -> days.stream().findFirst());
+    }
+
+    public String getCourtRoom() {
+        return getFirstHearingDay()
+                .map(HearingDay::getCourtRoom)
+                .orElse(null);
+    }
+
+    public LocalDateTime getSessionStartTime() {
+        return getFirstHearingDay()
+                .map(HearingDay::getSessionStartTime)
+                .orElse(null);
+    }
+
+    public String getListNo() {
+        return getFirstHearingDay()
+                .map(HearingDay::getListNo)
+                .orElse(null);
+    }
+
+    /**
+    @deprecated This method is used as a shim for simplifying the process of refactoring to introduce multiple
+    defendants. It will be removed as soon as refactoring is complete to handle these cases.
+     */
+    @Deprecated(forRemoval = true)
+    public Defendant getFirstDefendant() {
+        if (defendants == null || defendants.isEmpty()) {
+            throw new IllegalStateException("Defendant array is null or empty");
+        }
+        return defendants.get(0);
     }
 }

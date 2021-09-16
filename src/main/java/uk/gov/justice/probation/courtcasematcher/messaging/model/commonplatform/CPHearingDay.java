@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class HearingDay {
+public class CPHearingDay {
     @NotNull
     private final Integer listedDurationMinutes;
     private final Integer listingSequence;

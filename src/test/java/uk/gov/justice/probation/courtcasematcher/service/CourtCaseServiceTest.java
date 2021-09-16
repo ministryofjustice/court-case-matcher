@@ -8,7 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
@@ -52,8 +54,10 @@ class CourtCaseServiceTest {
     @Test
     void saveCourtCase() {
         final var courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .build()))
                 .caseNo(CASE_NO)
-                .courtCode(COURT_CODE)
                 .groupedOffenderMatches(matches)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
@@ -71,10 +75,15 @@ class CourtCaseServiceTest {
         var aCase = buildCase();
 
         CourtCase courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .courtRoom("2")
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                                .defendantId("9E27A145-E847-4AAB-9FF9-B88912520D14")
+                        .build()))
                 .caseId(Long.toString(CASE_ID))
                 .caseNo(CASE_NO)
-                .courtCode(COURT_CODE)
-                .courtRoom("2")
                 .build();
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
@@ -104,11 +113,13 @@ class CourtCaseServiceTest {
     void givenSearchResponse_whenCreateCourtCase_thenPutCase() {
         MatchResponse matchResponse = MatchResponse.builder().build();
         final var courtCase = CourtCase.builder()
-                            .caseId(Long.toString(CASE_ID))
-                            .caseNo(CASE_NO)
-                            .courtCode(COURT_CODE)
-                            .groupedOffenderMatches(matches)
-                            .build();
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .build()))
+                .caseId(Long.toString(CASE_ID))
+                .caseNo(CASE_NO)
+                .groupedOffenderMatches(matches)
+                .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
         when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
@@ -123,17 +134,19 @@ class CourtCaseServiceTest {
     void givenSearchResponse_whenCreateCourtCaseFails_thenPostMatches() {
         MatchResponse matchResponse = MatchResponse.builder().build();
         final var courtCase = CourtCase.builder()
-                            .caseId(Long.toString(CASE_ID))
-                            .caseNo(CASE_NO)
-                            .courtCode(COURT_CODE)
-                            .groupedOffenderMatches(matches)
-                            .build();
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .build()))
+                .caseId(Long.toString(CASE_ID))
+                .caseNo(CASE_NO)
+                .groupedOffenderMatches(matches)
+                .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenThrow(new RuntimeException("bang!"));
         when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, matches)).thenReturn(Mono.empty());
 
         assertThatExceptionOfType(RuntimeException.class)
-            .isThrownBy(() -> courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build()))
-            .withMessage("bang!");
+                .isThrownBy(() -> courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build()))
+                .withMessage("bang!");
 
         verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
@@ -142,7 +155,13 @@ class CourtCaseServiceTest {
     @DisplayName("Save a court case without a search response.")
     @Test
     void givenNoSearchResponse_whenCreateCourtCase_thenReturn() {
-        final var courtCase = CourtCase.builder().caseId(Long.toString(CASE_ID)).caseNo(CASE_NO).courtCode(COURT_CODE).build();
+        final var courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .build()))
+                .caseId(Long.toString(CASE_ID))
+                .caseNo(CASE_NO)
+                .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
         when(courtCaseRepo.postMatches(COURT_CODE, CASE_NO, null)).thenReturn(Mono.empty());
 
@@ -158,26 +177,30 @@ class CourtCaseServiceTest {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
         var courtCase = CourtCase.builder()
-                .crn(CRN)
-                .courtCode(COURT_CODE)
                 .caseNo(CASE_NO)
-                .probationStatus("PREVIOUSLY_KNOWN")
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .crn(CRN)
+                        .probationStatus("PREVIOUSLY_KNOWN")
+                        .build()))
                 .build();
         var probationStatusDetail = ProbationStatusDetail.builder()
-                                                                    .status("CURRENT")
-                                                                    .preSentenceActivity(true)
-                                                                    .previouslyKnownTerminationDate(localDate)
-                                                                    .build();
+                .status("CURRENT")
+                .preSentenceActivity(true)
+                .previouslyKnownTerminationDate(localDate)
+                .build();
         var searchResponse = SearchResponse.builder().probationStatusDetail(probationStatusDetail).build();
 
         when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.just(new SearchResponses(List.of(searchResponse))));
 
         var courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
-        assertThat(courtCaseResult.getProbationStatus()).isEqualTo("CURRENT");
-        assertThat(courtCaseResult.getPreviouslyKnownTerminationDate()).isEqualTo(localDate);
-        assertThat(courtCaseResult.getBreach()).isNull();
-        assertThat(courtCaseResult.isPreSentenceActivity()).isTrue();
+        assertThat(courtCaseResult.getFirstDefendant().getProbationStatus()).isEqualTo("CURRENT");
+        assertThat(courtCaseResult.getFirstDefendant().getPreviouslyKnownTerminationDate()).isEqualTo(localDate);
+        assertThat(courtCaseResult.getFirstDefendant().getBreach()).isNull();
+        assertThat(courtCaseResult.getFirstDefendant().getPreSentenceActivity()).isTrue();
         verify(offenderSearchRestClient).search(CRN);
     }
 
@@ -187,10 +210,14 @@ class CourtCaseServiceTest {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
         var courtCase = CourtCase.builder()
-                .crn(CRN)
-                .courtCode(COURT_CODE)
                 .caseNo(CASE_NO)
-                .probationStatus("PREVIOUSLY_KNOWN")
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .crn(CRN)
+                        .probationStatus("PREVIOUSLY_KNOWN")
+                        .build()))
                 .build();
         var probationStatusDetail = ProbationStatusDetail.builder()
                 .status("CURRENT")
@@ -205,10 +232,10 @@ class CourtCaseServiceTest {
 
         var courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
-        assertThat(courtCaseResult.getProbationStatus()).isEqualTo("PREVIOUSLY_KNOWN");
-        assertThat(courtCaseResult.getPreviouslyKnownTerminationDate()).isNull();
-        assertThat(courtCaseResult.getBreach()).isNull();
-        assertThat(courtCaseResult.isPreSentenceActivity()).isFalse();
+        assertThat(courtCaseResult.getFirstDefendant().getProbationStatus()).isEqualTo("PREVIOUSLY_KNOWN");
+        assertThat(courtCaseResult.getFirstDefendant().getPreviouslyKnownTerminationDate()).isNull();
+        assertThat(courtCaseResult.getFirstDefendant().getBreach()).isNull();
+        assertThat(courtCaseResult.getFirstDefendant().getPreSentenceActivity()).isNull();
         verify(offenderSearchRestClient).search(CRN);
     }
 
@@ -216,7 +243,11 @@ class CourtCaseServiceTest {
     @Test
     void givenFailedCallToRestClient_whenUpdateProbationStatus_thenReturnInput() {
 
-        CourtCase courtCase = CourtCase.builder().crn(CRN).build();
+        CourtCase courtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .crn(CRN)
+                        .build()))
+                .build();
         when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.empty());
 
         CourtCase courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
@@ -227,10 +258,14 @@ class CourtCaseServiceTest {
 
     private CourtCase buildCase() {
         return CourtCase.builder()
-            .courtCode(COURT_CODE)
-            .courtRoom(COURT_ROOM)
-            .caseNo(CASE_NO)
-            .caseId(CASE_ID.toString())
-            .build();
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .courtRoom(COURT_ROOM)
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .build()))
+                .caseNo(CASE_NO)
+                .caseId(CASE_ID.toString())
+                .build();
     }
 }

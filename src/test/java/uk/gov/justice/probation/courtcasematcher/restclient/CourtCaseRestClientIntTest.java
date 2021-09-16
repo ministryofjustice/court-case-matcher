@@ -16,13 +16,16 @@ import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.never;
@@ -72,13 +75,29 @@ public class CourtCaseRestClientIntTest {
         );
     }
 
+    @Test
+    public void whenCaseIdIsNull_thenItsSuccessful() {
+        final var courtCase = aCourtCaseBuilderWithAllFields()
+                .caseId(null)
+                .build();
+        final var voidMono = client.putCourtCase(courtCase);
+        assertThat(voidMono.blockOptional()).isEmpty();
+
+        MOCK_SERVER.findAllUnmatchedRequests();
+        MOCK_SERVER.verify(
+                putRequestedFor(urlMatching("/case/[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}/extended"))
+
+        );
+    }
 
 
     @Test
     void whenRestClientThrows500OnPut_ThenThrow() {
         final var aCase = aCourtCaseBuilderWithAllFields()
                 .caseId(CASE_ID_SERVER_ERROR)
-                .courtCode("X500")
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("X500")
+                        .build()))
                 .build();
 
         assertThatExceptionOfType(RuntimeException.class)

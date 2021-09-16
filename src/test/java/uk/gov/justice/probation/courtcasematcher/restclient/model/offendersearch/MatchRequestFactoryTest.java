@@ -7,14 +7,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MatchRequestFactoryTest {
@@ -25,7 +27,7 @@ class MatchRequestFactoryTest {
     private static final String FORENAME_2 = "forename2";
     private static final String FORENAME_3 = "forename3";
     private static final String TITLE = "Mr";
-    private static final uk.gov.justice.probation.courtcasematcher.model.domain.Name COMPLETE_NAME = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
+    private static final Name COMPLETE_NAME = Name.builder()
             .forename1(FORENAME_1)
             .forename2(FORENAME_2)
             .forename3(FORENAME_3)
@@ -114,7 +116,7 @@ class MatchRequestFactoryTest {
     @DisplayName("Given minimal input of surname only then request is built.")
     @Test
     public void givenMinimalValuesProvided_thenBuildValidRequest() {
-        final var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
+        final var name = Name.builder()
                 .surname(SURNAME)
                 .build();
 
@@ -128,7 +130,7 @@ class MatchRequestFactoryTest {
     @DisplayName("Given no surname then exception is thrown.")
     @Test
     public void givenNoSurnameProvided_shouldThrowException() {
-        final var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder()
+        final var name = Name.builder()
                 .build();
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> factory.buildFrom(null, name, DATE_OF_BIRTH));
@@ -138,9 +140,11 @@ class MatchRequestFactoryTest {
     @Test
     public void givenNameIsProvidedAndFalseFlagToUseDob_whenBuildFromCourtCase_thenBuildRequestWithNoDOB() {
         final var courtCase = CourtCase.builder()
-                .name(COMPLETE_NAME)
-                .pnc(PNC)
-                .defendantDob(DATE_OF_BIRTH)
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .name(COMPLETE_NAME)
+                        .pnc(PNC)
+                        .dateOfBirth(DATE_OF_BIRTH)
+                        .build()))
                 .build();
         final var matchRequest = factory.buildFrom(courtCase);
         assertThat(matchRequest.getPncNumber()).isEqualTo(PNC);
@@ -153,12 +157,14 @@ class MatchRequestFactoryTest {
     @DisplayName("Given a valid court case then build a request which includes DOB.")
     @Test
     public void givenNameIsProvided_whenBuildFromCourtCase_thenBuildValidRequest() {
-        factory.setUseDobWithPnc(true);
         final var courtCase = CourtCase.builder()
-            .name(COMPLETE_NAME)
-            .pnc(PNC)
-            .defendantDob(DATE_OF_BIRTH)
-            .build();
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .name(COMPLETE_NAME)
+                        .pnc(PNC)
+                        .dateOfBirth(DATE_OF_BIRTH)
+                        .build()))
+                .build();
+        factory.setUseDobWithPnc(true);
         final var matchRequest = factory.buildFrom(courtCase);
         assertThat(matchRequest.getPncNumber()).isEqualTo(PNC);
         assertThat(matchRequest.getFirstName()).isEqualTo(String.format("%s %s %s", FORENAME_1, FORENAME_2, FORENAME_3));
@@ -167,20 +173,16 @@ class MatchRequestFactoryTest {
         verifyNoMoreInteractions(nameHelper);
     }
 
-    @DisplayName("Given no complex name provided then fall back to name helper to construct.")
+    @DisplayName("Given no complex name provided then throw")
     @Test
-    public void givenNoNameProvided_whenBuildFromCourtCase_thenBuildValidRequest() {
-        when(nameHelper.getNameFromFields(DEFENDANT_NAME)).thenReturn(COMPLETE_NAME);
-
+    public void givenNoNameProvided_whenBuildFromCourtCase_thenThrowException() {
         final var courtCase = CourtCase.builder()
-                .defendantName(DEFENDANT_NAME)
-                .defendantDob(DATE_OF_BIRTH)
+                .defendants(Collections.singletonList(Defendant.builder()
+                    .name(null)
+                    .dateOfBirth(DATE_OF_BIRTH)
+                        .build()))
                 .build();
-        final var matchRequest = factory.buildFrom(courtCase);
-        assertThat(matchRequest.getPncNumber()).isNull();
-        assertThat(matchRequest.getFirstName()).isEqualTo(String.format("%s %s %s", FORENAME_1, FORENAME_2, FORENAME_3));
-        assertThat(matchRequest.getSurname()).isEqualTo(SURNAME);
-        assertThat(matchRequest.getDateOfBirth()).isEqualTo(DATE_OF_BIRTH.format(DateTimeFormatter.ISO_DATE));
-        verifyNoMoreInteractions(nameHelper);
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> factory.buildFrom(courtCase));
     }
 }

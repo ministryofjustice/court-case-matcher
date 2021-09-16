@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
@@ -56,7 +58,14 @@ class CourtCaseProcessorTest {
     void whenValidMessageReceivedForPerson_ThenMatchAndSave() {
         var matchResponse = MatchResponse.builder().build();
         var searchResult = SearchResult.builder().matchResponse(matchResponse).build();
-        var courtCase = CourtCase.builder().defendantType(PERSON).build();
+        var courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("SHF")
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .build()))
+                .build();
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.getSearchResponse(any(CourtCase.class))).thenReturn(Mono.just(searchResult));
 
@@ -72,7 +81,14 @@ class CourtCaseProcessorTest {
     @DisplayName("Given an error in matcher, track that failure and save with no matches")
     @Test
     void givenErrorInMatcherService_whenReceiveCase_thenSave() {
-        var courtCase = CourtCase.builder().defendantType(PERSON).build();
+        var courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("SHF")
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .build()))
+                .build();
         var matchResponse = MatchResponse.builder().matchedBy(OffenderSearchMatchType.NOTHING).matches(Collections.emptyList()).build();
         var errorSearchResult = SearchResult.builder().matchResponse(matchResponse).build();
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
@@ -90,7 +106,15 @@ class CourtCaseProcessorTest {
     @DisplayName("Receive a case which does not need matching, then update detail and save")
     @Test
     void whenValidMessageReceivedForMatchedCase_ThenUpdateAndSave() {
-        var courtCase = CourtCase.builder().defendantType(PERSON).crn("X320741").build();
+        var courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("SHF")
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .crn("X320741")
+                        .build()))
+                .build();
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
 

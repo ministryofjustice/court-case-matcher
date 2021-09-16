@@ -13,9 +13,40 @@ class CCSCourtCaseTest {
 
         final var courtCaseRequest = CCSCourtCase.of(courtCase);
 
-        assertThat(courtCaseRequest).usingRecursiveComparison()
-                .ignoringFields("probationStatusActual")
-                .isEqualTo(courtCase);
+        assertThat(courtCaseRequest.getCourtCode()).isEqualTo(courtCase.getCourtCode());
+        assertThat(courtCaseRequest.getCourtRoom()).isEqualTo(courtCase.getCourtRoom());
+        assertThat(courtCaseRequest.getCaseId()).isEqualTo(courtCase.getCaseId());
+        assertThat(courtCaseRequest.getCaseNo()).isEqualTo(courtCase.getCaseNo());
+
+        assertThat(courtCaseRequest.getListNo()).isEqualTo(courtCase.getListNo());
+        assertThat(courtCaseRequest.getSessionStartTime()).isEqualTo(courtCase.getSessionStartTime());
+
+        final var firstDefendant = courtCase.getFirstDefendant();
+        assertThat(courtCaseRequest.getDefendantId()).isEqualTo(firstDefendant.getDefendantId());
+        assertThat(courtCaseRequest.getProbationStatusActual()).isEqualTo(firstDefendant.getProbationStatus());
+        assertThat(courtCaseRequest.getOffences()).usingRecursiveComparison().isEqualTo(firstDefendant.getOffences());
+        assertThat(courtCaseRequest.getCrn()).isEqualTo(firstDefendant.getCrn());
+        assertThat(courtCaseRequest.getCro()).isEqualTo(firstDefendant.getCro());
+        assertThat(courtCaseRequest.getPnc()).isEqualTo(firstDefendant.getPnc());
+        assertThat(courtCaseRequest.getName()).usingRecursiveComparison().isEqualTo(firstDefendant.getName());
+        assertThat(courtCaseRequest.getDefendantName()).isEqualTo(firstDefendant.getName().getFullName());
+        assertThat(courtCaseRequest.getDefendantAddress()).isEqualTo(CCSAddress.builder()
+                        .line1("line1")
+                        .line2("line2")
+                        .line3("line3")
+                        .line4("line4")
+                        .line5("line5")
+                        .postcode("S1 1AB")
+                .build());
+        assertThat(courtCaseRequest.getDefendantDob()).isEqualTo(firstDefendant.getDateOfBirth());
+        assertThat(courtCaseRequest.getDefendantType()).isEqualTo(CCSDefendantType.ORGANISATION);
+        assertThat(courtCaseRequest.getDefendantSex()).isEqualTo(firstDefendant.getSex());
+        assertThat(courtCaseRequest.getBreach()).isEqualTo(firstDefendant.getBreach());
+        assertThat(courtCaseRequest.getPreviouslyKnownTerminationDate()).isEqualTo(firstDefendant.getPreviouslyKnownTerminationDate());
+        assertThat(courtCaseRequest.getSuspendedSentenceOrder()).isEqualTo(firstDefendant.getSuspendedSentenceOrder());
+        assertThat(courtCaseRequest.isPreSentenceActivity()).isEqualTo(firstDefendant.getPreSentenceActivity());
+        assertThat(courtCaseRequest.isAwaitingPsr()).isEqualTo(firstDefendant.getAwaitingPsr());
+        assertThat(courtCaseRequest.getSource()).isEqualTo(CCSDataSource.LIBRA);
     }
 
     @Test

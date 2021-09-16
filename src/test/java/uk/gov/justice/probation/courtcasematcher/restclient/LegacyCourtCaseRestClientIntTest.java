@@ -29,10 +29,13 @@ import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -69,22 +72,29 @@ public class LegacyCourtCaseRestClientIntTest {
     private static final int WEB_CLIENT_TIMEOUT_MS = 10000;
 
     private static final GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
-        .matches(Collections.singletonList(OffenderMatch.builder()
-            .matchType(MatchType.NAME_DOB)
-            .matchIdentifiers(MatchIdentifiers.builder()
-                .crn("X123456")
-                .cro("E1324/11")
-                .pnc("PNC")
-                .build())
-            .build()))
-        .build();
+            .matches(Collections.singletonList(OffenderMatch.builder()
+                    .matchType(MatchType.NAME_DOB)
+                    .matchIdentifiers(MatchIdentifiers.builder()
+                            .crn("X123456")
+                            .cro("E1324/11")
+                            .pnc("PNC")
+                            .build())
+                    .build()))
+            .build();
 
     private static final CourtCase A_CASE = CourtCase.builder()
-        .caseId("1246257")
-        .caseNo(CASE_NO)
-        .courtCode(COURT_CODE)
-        .groupedOffenderMatches(matches)
-        .build();
+            .hearingDays(Collections.singletonList(HearingDay.builder()
+                    .courtCode(COURT_CODE)
+                    .build()))
+            .defendants(Collections.singletonList(Defendant.builder()
+                    .awaitingPsr(true)
+                    .preSentenceActivity(false)
+                    .name(Name.builder().build())
+                    .build()))
+            .caseId("1246257")
+            .caseNo(CASE_NO)
+            .groupedOffenderMatches(matches)
+            .build();
 
     @Mock
     private Appender<ILoggingEvent> mockAppender;
@@ -115,43 +125,47 @@ public class LegacyCourtCaseRestClientIntTest {
 
         LocalDateTime startTime = LocalDateTime.of(2020, Month.JANUARY, 13, 9, 0, 0);
         Address address = Address.builder()
-            .line1("27")
-            .line2("Elm Place")
-            .line3("Bangor")
-            .postcode("ad21 5dr")
-            .build();
+                .line1("27")
+                .line2("Elm Place")
+                .line3("Bangor")
+                .postcode("ad21 5dr")
+                .build();
 
         Offence offenceApi = Offence.builder()
-            .offenceSummary("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Person.")
-            .offenceTitle("Theft from a shop")
-            .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
-            .build();
+                .offenceSummary("On 01/01/2016 at Town, stole Article, to the value of £100.00, belonging to Person.")
+                .offenceTitle("Theft from a shop")
+                .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
+                .build();
 
         CourtCase expected = CourtCase.builder()
-            .caseId("1246257")
-            .crn("X320741")
-            .pnc("D/1234560BC")
-            .listNo("2nd")
-            .courtCode("B10JQ")
-            .courtRoom("1")
-            .sessionStartTime(startTime)
-            .probationStatus("CURRENT")
-            .breach(Boolean.TRUE)
-            .suspendedSentenceOrder(Boolean.FALSE)
-            .caseNo(CASE_NO)
-            .defendantAddress(address)
-            .defendantDob(LocalDate.of(1977, Month.DECEMBER, 11))
-            .name(uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().title("Mr")
-                .forename1("Dylan")
-                .forename2("Adam")
-                .surname("ARMSTRONG")
-                .build())
-            .defendantType(DefendantType.PERSON)
-            .defendantSex("M")
-            .nationality1("British")
-            .nationality2("Czech")
-            .offences(Collections.singletonList(offenceApi))
-            .build();
+                .caseId("1246257")
+                .caseNo(CASE_NO)
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .listNo("2nd")
+                        .courtCode("B10JQ")
+                        .courtRoom("1")
+                        .sessionStartTime(startTime)
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .crn("X320741")
+                        .pnc("D/1234560BC")
+                        .probationStatus("CURRENT")
+                        .breach(Boolean.TRUE)
+                        .suspendedSentenceOrder(Boolean.FALSE)
+                        .address(address)
+                        .dateOfBirth(LocalDate.of(1977, Month.DECEMBER, 11))
+                        .name(Name.builder().title("Mr")
+                                .forename1("Dylan")
+                                .forename2("Adam")
+                                .surname("ARMSTRONG")
+                                .build())
+                        .type(DefendantType.PERSON)
+                        .sex("M")
+                        .offences(Collections.singletonList(offenceApi))
+                        .awaitingPsr(false)
+                        .preSentenceActivity(false)
+                        .build()))
+                .build();
 
         Optional<CourtCase> optional = restClient.getCourtCase(COURT_CODE, "123456").blockOptional();
 
@@ -183,17 +197,24 @@ public class LegacyCourtCaseRestClientIntTest {
 
         var unknownCourtCode = "XXX";
         var courtCaseApi = CourtCase.builder()
-            .caseNo("12345")
-            .courtCode(unknownCourtCode)
-            .build();
+                .caseNo("12345")
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(unknownCourtCode)
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .awaitingPsr(true)
+                        .preSentenceActivity(false)
+                        .name(Name.builder().build())
+                        .build()))
+                .build();
 
         assertThatExceptionOfType(WebClientResponseException.class)
-            .isThrownBy(() -> restClient.putCourtCase(courtCaseApi).block())
-            .withMessage("404 Not Found from PUT http://localhost:8090/court/XXX/case/12345");
+                .isThrownBy(() -> restClient.putCourtCase(courtCaseApi).block())
+                .withMessage("404 Not Found from PUT http://localhost:8090/court/XXX/case/12345");
 
         var notFoundException = createException(HttpStatus.NOT_FOUND).getClass();
         var failureEventMatcher
-            = FailureEventMatcher.builder().throwableClass(notFoundException).build();
+                = FailureEventMatcher.builder().throwableClass(notFoundException).build();
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(argThat(failureEventMatcher));
         MOCK_SERVER.verify(1,
                 putRequestedFor(urlEqualTo("/court/XXX/case/12345"))
@@ -203,9 +224,16 @@ public class LegacyCourtCaseRestClientIntTest {
     @Test
     void whenRestClientThrows500OnPut_ThenThrow() {
         final var aCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("X500")
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .awaitingPsr(true)
+                        .preSentenceActivity(false)
+                        .name(Name.builder().build())
+                        .build()))
                 .caseId("1246257")
                 .caseNo(CASE_NO)
-                .courtCode("X500")
                 .groupedOffenderMatches(matches)
                 .build();
 
@@ -214,7 +242,7 @@ public class LegacyCourtCaseRestClientIntTest {
                 .withMessage("Retries exhausted: 1/1");
 
         var retryExhaustedException = Exceptions.retryExhausted("Message", new IllegalArgumentException()).getClass();
-        var failureEventMatcher= FailureEventMatcher.builder().throwableClass(retryExhaustedException).build();
+        var failureEventMatcher = FailureEventMatcher.builder().throwableClass(retryExhaustedException).build();
         verify(eventBus, timeout(WEB_CLIENT_TIMEOUT_MS)).post(argThat(failureEventMatcher));
     }
 
@@ -236,28 +264,28 @@ public class LegacyCourtCaseRestClientIntTest {
     void givenUnknownCourt_whenPostOffenderMatches_thenNoRetryAndLogNotFoundError() {
 
         GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
-            .matches(Collections.singletonList(OffenderMatch.builder()
-                .matchType(MatchType.NAME_DOB)
-                .matchIdentifiers(MatchIdentifiers.builder()
-                    .crn("X99999")
-                    .cro("E1324/11")
-                    .pnc("PNC")
-                    .build())
-                .build()))
-            .build();
+                .matches(Collections.singletonList(OffenderMatch.builder()
+                        .matchType(MatchType.NAME_DOB)
+                        .matchIdentifiers(MatchIdentifiers.builder()
+                                .crn("X99999")
+                                .cro("E1324/11")
+                                .pnc("PNC")
+                                .build())
+                        .build()))
+                .build();
 
         assertThatExceptionOfType(WebClientResponseException.class)
-            .isThrownBy(() -> restClient.postMatches("XXX", CASE_NO, matches).block())
-            .withMessage("404 Not Found from POST http://localhost:8090/court/XXX/case/12345/grouped-offender-matches");
+                .isThrownBy(() -> restClient.postMatches("XXX", CASE_NO, matches).block())
+                .withMessage("404 Not Found from POST http://localhost:8090/court/XXX/case/12345/grouped-offender-matches");
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
         assertThat(events).hasSizeGreaterThanOrEqualTo(1);
         String className = events.stream()
-            .filter(ev -> ev.getLevel() == Level.ERROR)
-            .findFirst()
-            .map(event -> event.getThrowableProxy().getClassName())
-            .orElse(null);
+                .filter(ev -> ev.getLevel() == Level.ERROR)
+                .findFirst()
+                .map(event -> event.getThrowableProxy().getClassName())
+                .orElse(null);
         assertThat(className).contains("WebClientResponseException$NotFound");
     }
 
@@ -273,10 +301,10 @@ public class LegacyCourtCaseRestClientIntTest {
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
         assertThat(events).hasSizeGreaterThanOrEqualTo(1);
         String className = events.stream()
-            .filter(ev -> ev.getLevel() == Level.ERROR)
-            .findFirst()
-            .map(event -> event.getThrowableProxy().getClassName())
-            .orElse(null);
+                .filter(ev -> ev.getLevel() == Level.ERROR)
+                .findFirst()
+                .map(event -> event.getThrowableProxy().getClassName())
+                .orElse(null);
         assertThat(className).contains("reactor.core.Exceptions$RetryExhaustedException");
     }
 

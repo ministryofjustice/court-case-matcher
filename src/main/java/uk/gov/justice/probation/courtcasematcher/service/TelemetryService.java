@@ -95,7 +95,7 @@ public class TelemetryService {
         ofNullable(courtCase.getSessionStartTime())
             .map(date -> date.format(DateTimeFormatter.ISO_DATE))
             .ifPresent((date) -> properties.put(HEARING_DATE_KEY, date));
-        ofNullable(courtCase.getPnc())
+        ofNullable(courtCase.getFirstDefendant().getPnc())
             .ifPresent((pnc) -> properties.put(PNC_KEY, pnc));
         return properties;
     }
@@ -105,13 +105,6 @@ public class TelemetryService {
         ofNullable(messageID)
             .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageID));
         telemetryClient.trackEvent(TelemetryEventType.COURT_CASE_MESSAGE_RECEIVED.eventName, properties, Collections.emptyMap());
-    }
-
-    public void trackCourtListMessageEvent(String messageID) {
-        Map<String, String> properties = new HashMap<>(MAX_PROPERTY_COUNT);
-        ofNullable(messageID)
-            .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageID));
-        telemetryClient.trackEvent(TelemetryEventType.COURT_LIST_MESSAGE_RECEIVED.eventName, properties, Collections.emptyMap());
     }
 
     public AutoCloseable withOperation(String operationId) {
