@@ -20,7 +20,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.Optional;
 
 @Getter
 @Builder
@@ -72,9 +71,7 @@ public class MatchRequest {
         }
 
         public MatchRequest buildFrom(CourtCase courtCase) throws IllegalArgumentException {
-            final var defendantName = Optional.ofNullable(courtCase.getFirstDefendant().getName())
-                    .orElse(null);
-            return buildFrom(courtCase.getFirstDefendant().getPnc(), defendantName, courtCase.getFirstDefendant().getDateOfBirth());
+            return buildFrom(courtCase.getFirstDefendant().getPnc(), courtCase.getFirstDefendant().getName(), courtCase.getFirstDefendant().getDateOfBirth());
         }
     }
 }
