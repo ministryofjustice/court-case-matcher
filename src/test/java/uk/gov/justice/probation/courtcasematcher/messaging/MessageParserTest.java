@@ -11,18 +11,18 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.probation.courtcasematcher.application.MessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Address;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPAddress;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCourtCentre;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CommonPlatformHearing;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CourtCentre;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.JurisdictionType;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.LegalEntityDefendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Offence;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.Organisation;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.PersonDefendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.PersonDetails;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.ProsecutionCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPJurisdictionType;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOffence;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPPersonDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPPersonDetails;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
@@ -58,14 +58,14 @@ class MessageParserTest {
 
         @Autowired
         @Qualifier("commonPlatformJsonParser")
-        public MessageParser<CommonPlatformHearing> messageParser;
+        public MessageParser<CPHearing> messageParser;
 
         @Test
         void whenValidCase_ThenReturn() throws IOException {
             var path = "src/test/resources/messages/common-platform/hearing.json";
             var content = Files.readString(Paths.get(path));
 
-            var aHearing = messageParser.parseMessage(content, CommonPlatformHearing.class);
+            var aHearing = messageParser.parseMessage(content, CPHearing.class);
 
             final var defendants = List.of(defendant1(), defendant2());
             checkHearing(aHearing, defendants);
@@ -76,7 +76,7 @@ class MessageParserTest {
             var path = "src/test/resources/messages/common-platform/hearing-with-legal-entity-defendant.json";
             var content = Files.readString(Paths.get(path));
 
-            var aHearing = messageParser.parseMessage(content, CommonPlatformHearing.class);
+            var aHearing = messageParser.parseMessage(content, CPHearing.class);
             checkHearing(aHearing, List.of(defendant1(), legalEntityDefendant()));
         }
 
@@ -85,7 +85,7 @@ class MessageParserTest {
             var path = "src/test/resources/messages/common-platform/hearing-invalid.json";
             var content = Files.readString(Paths.get(path));
 
-            var thrown = catchThrowable(() -> messageParser.parseMessage(content, CommonPlatformHearing.class));
+            var thrown = catchThrowable(() -> messageParser.parseMessage(content, CPHearing.class));
 
             var ex = (ConstraintViolationException) thrown;
             assertThat(ex.getConstraintViolations()).hasSize(9);
@@ -105,11 +105,11 @@ class MessageParserTest {
                     && cv.getPropertyPath().toString().equals(path);
         }
 
-        private void checkHearing(CommonPlatformHearing actual, List<CPDefendant> defendants) {
+        private void checkHearing(CPHearing actual, List<CPDefendant> defendants) {
             assertThat(actual).isNotNull();
             assertThat(actual.getId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
             assertThat(actual.getCourtCentre()).isEqualTo(
-                    CourtCentre.builder()
+                    CPCourtCentre.builder()
                             .id("9b583616-049b-30f9-a14f-028a53b7cfe8")
                             .roomId("7cb09222-49e1-3622-a5a6-ad253d2b3c39")
                             .roomName("Crown Court 3-1")
@@ -131,11 +131,11 @@ class MessageParserTest {
             assertThat(actual.getProsecutionCases()).hasSize(1);
             assertThat(actual.getProsecutionCases().get(0))
                     .usingRecursiveComparison()
-                    .isEqualTo(ProsecutionCase.builder()
+                    .isEqualTo(CPProsecutionCase.builder()
                             .id("b7417f11-49d8-482d-b516-ba4135d38d0d")
                             .defendants(defendants)
                             .build());
-            assertThat(actual.getJurisdictionType()).isEqualTo(JurisdictionType.CROWN);
+            assertThat(actual.getJurisdictionType()).isEqualTo(CPJurisdictionType.CROWN);
         }
         private CPDefendant legalEntityDefendant() {
             return CPDefendant.builder()
@@ -143,21 +143,21 @@ class MessageParserTest {
                     .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
                     .pncId(null)
                     .croNumber(null)
-                    .offences(List.of(Offence.builder()
+                    .offences(List.of(CPOffence.builder()
                                     .id("50474F6F-65FC-48C7-AA83-16277B55B3BA")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
                                     .build(),
-                            Offence.builder()
+                            CPOffence.builder()
                                     .id("7103C6BD-5805-4EF8-B524-D34B9ADD43D1")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
                                     .build()))
                     .personDefendant(null)
-                    .legalEntityDefendant(LegalEntityDefendant.builder()
-                            .organisation(Organisation.builder()
+                    .legalEntityDefendant(CPLegalEntityDefendant.builder()
+                            .organisation(CPOrganisation.builder()
                                     .name("An Organisation")
                                     .build())
                             .build())
@@ -170,21 +170,21 @@ class MessageParserTest {
                     .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
                     .pncId("2004/0012345U")
                     .croNumber("12345ABCDEF")
-                    .offences(List.of(Offence.builder()
+                    .offences(List.of(CPOffence.builder()
                                     .id("a63d9020-aa6b-4997-92fd-72a692b036de")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
                                     .build(),
-                            Offence.builder()
+                            CPOffence.builder()
                                     .id("ea1c2cf1-f155-483b-a908-81158a9b2f9b")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
                                     .build()))
-                    .personDefendant(PersonDefendant.builder()
-                            .personDetails(PersonDetails.builder()
-                                    .address(Address.builder()
+                    .personDefendant(CPPersonDefendant.builder()
+                            .personDetails(CPPersonDetails.builder()
+                                    .address(CPAddress.builder()
                                             .address1("13 Wind Street")
                                             .address2("Swansea")
                                             .address3("Wales")
@@ -209,21 +209,21 @@ class MessageParserTest {
                     .prosecutionCaseId("b7417f11-49d8-482d-b516-ba4135d38d0d")
                     .pncId(null)
                     .croNumber(null)
-                    .offences(List.of(Offence.builder()
+                    .offences(List.of(CPOffence.builder()
                                     .id("1391ADC2-7A43-48DC-8523-3D28B9DCD2B7")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith")
                                     .build(),
-                            Offence.builder()
+                            CPOffence.builder()
                                     .id("19C08FB0-363B-4EB1-938D-76EF751E5D66")
                                     .offenceLegislation("Contrary to section 20 of the Offences Against the    Person Act 1861.")
                                     .offenceTitle("Wound / inflict grievous bodily harm without intent")
                                     .wording("on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith")
                                     .build()))
-                    .personDefendant(PersonDefendant.builder()
-                            .personDetails(PersonDetails.builder()
-                                    .address(Address.builder()
+                    .personDefendant(CPPersonDefendant.builder()
+                            .personDetails(CPPersonDetails.builder()
+                                    .address(CPAddress.builder()
                                             .address1("14 Tottenham Court Road")
                                             .address2("London Road")
                                             .address3("England")

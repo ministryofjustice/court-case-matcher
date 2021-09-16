@@ -7,7 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CommonPlatformHearing;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCourtCentre;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.MessageAttributes;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
@@ -15,6 +21,7 @@ import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
+import java.util.Collections;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -34,7 +41,7 @@ class CourtCaseExtractorTest {
     @Mock
     private MessageParser<LibraCase> libraParser;
     @Mock
-    private MessageParser<CommonPlatformHearing> commonPlatformParser;
+    private MessageParser<CPHearing> commonPlatformParser;
     @Mock
     private ConstraintViolation<String> aViolation;
     @Mock
@@ -44,7 +51,21 @@ class CourtCaseExtractorTest {
     private final SnsMessageContainer.SnsMessageContainerBuilder messageContainerBuilder = SnsMessageContainer.builder()
             .message(MESSAGE_STRING);
     private final LibraCase libraCase = LibraCase.builder().caseNo(CASE_NO).build();
-    private final CommonPlatformHearing commonPlatformHearing = CommonPlatformHearing.builder().id(CASE_ID).build();
+    private final CPHearing commonPlatformHearing = CPHearing.builder()
+            .courtCentre(CPCourtCentre.builder()
+                    .code("12345")
+                    .build())
+            .hearingDays(Collections.singletonList(CPHearingDay.builder().build()))
+            .prosecutionCases(Collections.singletonList(CPProsecutionCase.builder()
+                            .id(CASE_ID)
+                            .defendants(Collections.singletonList(CPDefendant.builder()
+                                            .legalEntityDefendant(CPLegalEntityDefendant.builder()
+                                                    .organisation(CPOrganisation.builder().build())
+                                                    .build())
+                                            .offences(Collections.emptyList())
+                                    .build()))
+                    .build()))
+            .build();
 
     @BeforeEach
     void setUp() {
@@ -74,7 +95,7 @@ class CourtCaseExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING))
                 .build());
-        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CommonPlatformHearing.class)).thenReturn(commonPlatformHearing);
+        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearing.class)).thenReturn(commonPlatformHearing);
 
         var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 

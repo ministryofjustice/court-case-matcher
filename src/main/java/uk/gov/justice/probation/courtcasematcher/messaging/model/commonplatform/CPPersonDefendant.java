@@ -13,8 +13,8 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class LegalEntityDefendant {
+public class CPPersonDefendant {
     @NotNull
     @Valid
-    private final Organisation organisation;
+    private final CPPersonDetails personDetails;
 }
