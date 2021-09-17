@@ -3,6 +3,8 @@ package uk.gov.justice.probation.courtcasematcher.service;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,6 +28,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +41,9 @@ class CourtCaseServiceTest {
     private static final String CASE_NO = "1234567890";
     private static final String CRN = "X340741";
     private static final Long CASE_ID = 321344L;
+
+    @Captor
+    private ArgumentCaptor<CourtCase> courtCaseCaptor;
 
     @Mock
     private CourtCaseRepository courtCaseRepo;
@@ -67,6 +74,29 @@ class CourtCaseServiceTest {
 
         verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postMatches(COURT_CODE, CASE_NO, matches);
+    }
+
+    @DisplayName("Save court case with no caseNo or caseId.")
+    @Test
+    void givenNoCaseNoOrId_saveCourtCaseWithCaseId() {
+        final var courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .build()))
+                .groupedOffenderMatches(matches)
+                .build();
+        when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
+        when(courtCaseRepo.postMatches(eq(COURT_CODE), notNull(), eq(matches))).thenReturn(Mono.empty());
+
+        courtCaseService.saveCourtCase(courtCase);
+
+        verify(courtCaseRepo).putCourtCase(notNull());
+
+        final var capturedCase = courtCaseCaptor.getValue();
+        assertThat(capturedCase.getCaseId()).hasSameSizeAs("9E27A145-E847-4AAB-9FF9-B88912520D14");
+        assertThat(capturedCase.getCaseNo()).isEqualTo(capturedCase.getCaseId());
+
+        verify(courtCaseRepo).postMatches(COURT_CODE, capturedCase.getCaseNo(), matches);
     }
 
     @DisplayName("Incoming gateway case which is merged with the existing.")

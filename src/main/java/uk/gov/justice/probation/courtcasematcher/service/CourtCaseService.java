@@ -16,6 +16,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -57,14 +58,17 @@ public class CourtCaseService {
     }
 
     public void saveCourtCase(CourtCase courtCase) {
+        // TODO: This is temporary, to be replaced with call to postOffenderMatches using caseId as primary key
+        CourtCase updatedCase = courtCase;
+        if(courtCase.getCaseNo() == null) {
+            final var caseId = UUID.randomUUID().toString();
+            updatedCase = courtCase.withCaseId(caseId)
+                    .withCaseNo(caseId);
+        }
         try {
-            courtCaseRepository.putCourtCase(courtCase).block();
+            courtCaseRepository.putCourtCase(updatedCase).block();
         } finally {
-            if (courtCase.getCaseNo() != null) {
-                courtCaseRepository.postMatches(courtCase.getCourtCode(), courtCase.getCaseNo(), courtCase.getGroupedOffenderMatches()).block();
-            } else {
-                log.warn(String.format("caseNo not available for %s case with id '%s'. Skipping POST matches.", courtCase.getSource(), courtCase.getCaseId()));
-            }
+            courtCaseRepository.postMatches(updatedCase.getCourtCode(), updatedCase.getCaseNo(), updatedCase.getGroupedOffenderMatches()).block();
         }
     }
 

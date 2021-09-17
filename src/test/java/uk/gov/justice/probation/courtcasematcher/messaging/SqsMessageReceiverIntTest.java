@@ -43,7 +43,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -95,7 +94,9 @@ public class SqsMessageReceiverIntTest {
                     putRequestedFor(urlMatching("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended"))
                             // Values from incoming case
                             .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                            .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                             .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
+                            .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
                             .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("0")))
                             .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
                             .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
@@ -124,9 +125,11 @@ public class SqsMessageReceiverIntTest {
             MOCK_SERVER.verify(
                     putRequestedFor(urlMatching("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended"))
                             .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                            .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                             .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
                             .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
                             .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                            .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
                             .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                             .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
             );
@@ -134,7 +137,7 @@ public class SqsMessageReceiverIntTest {
             verify(telemetryService).withOperation(nullable(String.class));
             verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
             verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
-            verify(telemetryService, never()).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
+            verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
             verifyNoMoreInteractions(telemetryService);
         }
 
