@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Month;
 import java.util.List;
 import java.util.function.Predicate;
@@ -47,9 +46,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 @DisplayName("Message Parser Test")
 @Profile("test")
 class MessageParserTest {
-
-    private static final LocalDate HEARING_DATE = LocalDate.of(2020, Month.FEBRUARY, 20);
-    private static final LocalTime START_TIME = LocalTime.of(9, 1);
 
     @Nested
     @DisplayName("Common Platform Json")
