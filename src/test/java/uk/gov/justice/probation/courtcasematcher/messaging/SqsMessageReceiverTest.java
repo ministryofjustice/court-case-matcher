@@ -17,7 +17,6 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +36,10 @@ class SqsMessageReceiverTest {
 
     private CourtCase libraCourtCase = CourtCase.builder()
             .source(DataSource.LIBRA)
+            .build();
+
+    private CourtCase commonPlatformCourtCase = CourtCase.builder()
+            .source(DataSource.COMMON_PLATFORM)
             .build();
     private SqsMessageReceiver sqsMessageReceiver;
 
@@ -67,7 +70,7 @@ class SqsMessageReceiverTest {
 
     @DisplayName("Given a valid Common Platform JSON message then track and process")
     @Test
-    void givenCommonPlatformMessage_whenReceived_ThenDontProcess() throws Exception {
+    void givenCommonPlatformMessage_whenReceived_ThenProcess() throws Exception {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
         when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(CourtCase.builder()
                 .source(DataSource.COMMON_PLATFORM)
@@ -77,7 +80,7 @@ class SqsMessageReceiverTest {
 
         verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackCaseMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor, never()).process(libraCourtCase, MESSAGE_ID);
+        verify(caseProcessor).process(commonPlatformCourtCase, MESSAGE_ID);
         verify(operation).close();
     }
 

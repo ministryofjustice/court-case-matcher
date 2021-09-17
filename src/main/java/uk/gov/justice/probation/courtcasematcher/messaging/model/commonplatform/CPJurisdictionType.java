@@ -1,6 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
-public enum JurisdictionType {
+public enum CPJurisdictionType {
     CROWN,
     MAGISTRATES;
 }

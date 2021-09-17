@@ -7,12 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @Data
 @Builder
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @AllArgsConstructor
-public class CourtCentre {
+public class CPCourtCentre {
     @NotBlank
     private final String id;
     @NotBlank
@@ -20,5 +21,10 @@ public class CourtCentre {
     @NotBlank
     private final String roomName;
     @NotBlank
+    @Size(min = 5)
     private final String code;
+
+    public String getNormalisedCode() {
+        return code.substring(0,5);
+    }
 }

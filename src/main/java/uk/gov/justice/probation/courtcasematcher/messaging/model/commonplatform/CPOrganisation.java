@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import javax.validation.constraints.NotBlank;
 
@@ -12,7 +13,13 @@ import javax.validation.constraints.NotBlank;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class Organisation {
+public class CPOrganisation {
     @NotBlank
     private final String name;
+
+    public Name asName() {
+        return Name.builder()
+                .surname(name)
+                .build();
+    }
 }

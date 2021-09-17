@@ -6,6 +6,7 @@ import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -37,6 +38,7 @@ public class CCSExtendedCaseTest {
         assertThat(actual.getCaseId()).isNotBlank().isEqualTo(courtCase.getCaseId());
         assertThat(actual.getCaseNo()).isEqualTo(courtCase.getCaseNo());
         assertThat(actual.getCourtCode()).isEqualTo(courtCase.getCourtCode());
+        assertThat(actual.getSource()).isEqualTo(CCSDataSource.LIBRA);
 
         assertThat(actual.getHearingDays()).asList().containsExactly(CCSHearingDay.builder()
                 .courtCode("B10JQ")
@@ -82,5 +84,23 @@ public class CCSExtendedCaseTest {
         assertThat(actualFirstDefendant.getSuspendedSentenceOrder()).isEqualTo(firstDefendant.getSuspendedSentenceOrder());
         assertThat(actualFirstDefendant.getAwaitingPsr()).isEqualTo(firstDefendant.getAwaitingPsr());
         assertThat(actualFirstDefendant.getBreach()).isEqualTo(firstDefendant.getBreach());
+    }
+
+    @Test
+    public void shouldMapMultipleDefendants() {
+        final var aCase = DomainDataHelper.aCourtCaseWithAllFields();
+        final var courtCase = aCase
+                .withCaseId(null)
+                .withDefendants(List.of(
+                        aCase.getFirstDefendant()
+                                .withDefendantId("1234"),
+                        aCase.getFirstDefendant()
+                                .withDefendantId("5678")
+                ));
+
+        final var actual = CCSExtendedCase.of(courtCase);
+
+        assertThat(actual.getDefendants().get(0).getDefendantId()).isEqualTo("1234");
+        assertThat(actual.getDefendants().get(1).getDefendantId()).isEqualTo("5678");
     }
 }

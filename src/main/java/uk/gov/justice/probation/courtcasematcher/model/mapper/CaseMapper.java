@@ -9,7 +9,6 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase.CourtCaseBuilder;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
@@ -61,15 +60,6 @@ public class CaseMapper {
                 .build();
     }
 
-    private static CourtCase.CourtCaseBuilder newBuilderFromCourtCase(CourtCase courtCase) {
-        return CourtCase.builder()
-                .caseId(courtCase.getCaseId())
-                .caseNo(courtCase.getCaseNo())
-                .hearingDays(courtCase.getHearingDays())
-                .defendants(courtCase.getDefendants())
-                ;
-    }
-
     private static List<Offence> fromOffences(List<LibraOffence> offences) {
         return Optional.ofNullable(offences)
                 .map(offs -> offs.stream()
@@ -98,17 +88,15 @@ public class CaseMapper {
     }
 
     public static CourtCase merge(CourtCase incomingCase, CourtCase existingCourtCase) {
-        return CourtCase.builder()
-                .hearingDays(incomingCase.getHearingDays())
+        return existingCourtCase
+                .withHearingDays(incomingCase.getHearingDays())
 
                 // PK fields
-                .caseNo(existingCourtCase.getCaseNo())
-                .caseId(Optional.ofNullable(existingCourtCase.getCaseId()).orElse(incomingCase.getCaseId()))
+                .withCaseNo(existingCourtCase.getCaseNo())
+                .withCaseId(Optional.ofNullable(existingCourtCase.getCaseId()).orElse(incomingCase.getCaseId()))
 
                 // Fields to be updated from incoming
-                .defendants(mergeDefendants(incomingCase.getDefendants(), existingCourtCase.getDefendants(), incomingCase.getSource()))
-
-                .build();
+                .withDefendants(mergeDefendants(incomingCase.getDefendants(), existingCourtCase.getDefendants(), incomingCase.getSource()));
     }
 
     private static List<Defendant> mergeDefendants(List<Defendant> incoming, List<Defendant> existingDefendants, DataSource source) {
@@ -146,8 +134,7 @@ public class CaseMapper {
     public static CourtCase merge(ProbationStatusDetail probationStatusDetail, CourtCase existingCourtCase) {
         final var firstDefendant = existingCourtCase.getFirstDefendant();
 
-        return CourtCase.builder()
-                .defendants(Collections.singletonList(firstDefendant
+        return existingCourtCase.withDefendants(Collections.singletonList(firstDefendant
                         .withBreach(probationStatusDetail.getInBreach())
                         .withPreSentenceActivity(probationStatusDetail.isPreSentenceActivity())
                         .withPreviouslyKnownTerminationDate(probationStatusDetail.getPreviouslyKnownTerminationDate())
@@ -155,25 +142,24 @@ public class CaseMapper {
                         .withAwaitingPsr(probationStatusDetail.isAwaitingPsr())
                 ))
                 // PK fields
-                .caseNo(existingCourtCase.getCaseNo())
+                .withCaseNo(existingCourtCase.getCaseNo())
                 // Fields to be retained
-                .hearingDays(existingCourtCase.getHearingDays())
-                .caseId(String.valueOf(existingCourtCase.getCaseId()))
-                .build();
+                .withHearingDays(existingCourtCase.getHearingDays())
+                .withCaseId(String.valueOf(existingCourtCase.getCaseId()));
     }
 
     public static CourtCase newFromCourtCaseWithMatches(CourtCase incomingCase, MatchDetails matchDetails) {
 
-        CourtCaseBuilder courtCaseBuilder = newBuilderFromCourtCase(incomingCase)
-                .groupedOffenderMatches(buildGroupedOffenderMatch(matchDetails.getMatches(), matchDetails.getMatchType()));
+        var newCase = incomingCase
+                .withGroupedOffenderMatches(buildGroupedOffenderMatch(matchDetails.getMatches(), matchDetails.getMatchType()));
 
         if (matchDetails.isExactMatch()) {
             var offender = matchDetails.getMatches().get(0).getOffender();
             // TODO: This currently assumes a single defendant - needs updating to handle multiples
             var defendant = incomingCase.getFirstDefendant();
             var probationStatus = offender.getProbationStatus();
-            courtCaseBuilder
-                    .defendants(Collections.singletonList(defendant
+            newCase = newCase
+                    .withDefendants(Collections.singletonList(defendant
                             .withBreach(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getInBreach).orElse(null))
                             .withPreviouslyKnownTerminationDate(
                                     Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getPreviouslyKnownTerminationDate).orElse(null))
@@ -183,11 +169,10 @@ public class CaseMapper {
                             .withCrn(offender.getOtherIds().getCrn())
                             .withCro(offender.getOtherIds().getCroNumber())
                             .withPnc(offender.getOtherIds().getPncNumber())
-                    ))
-                    .build();
+                    ));
         }
 
-        return courtCaseBuilder.build();
+        return newCase;
     }
 
     private static GroupedOffenderMatches buildGroupedOffenderMatch(List<Match> matches, MatchType matchType) {

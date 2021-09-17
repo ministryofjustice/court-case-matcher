@@ -106,6 +106,7 @@ class CaseMapperTest {
             var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
 
             assertThat(courtCaseNew).isNotSameAs(courtCase);
+            assertThat(courtCaseNew.getSource()).isEqualTo(courtCase.getSource());
             assertThat(courtCaseNew.getFirstDefendant().getCrn()).isNull();
             assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(0);
             assertThat(courtCaseNew.getCaseId()).isEqualTo(courtCase.getCaseId());

@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 
 import java.time.format.DateTimeFormatter;
@@ -19,12 +20,14 @@ import static java.util.Optional.ofNullable;
 public class TelemetryService {
 
     private static final int MAX_PROPERTY_COUNT = 8;
+    static final String SOURCE_KEY = "source";
     static final String COURT_CODE_KEY = "courtCode";
     static final String COURT_ROOM_KEY = "courtRoom";
     static final String CASE_NO_KEY = "caseNo";
+    static final String CASE_ID_KEY = "caseId";
     static final String MATCHED_BY_KEY = "matchedBy";
     static final String MATCHES_KEY = "matches";
-    static final String PNC_KEY = "pnc";
+    static final String PNCS_KEY = "pncs";
     static final String CRNS_KEY = "crns";
     static final String HEARING_DATE_KEY = "hearingDate";
     static final String SQS_MESSAGE_ID_KEY = "sqsMessageId";
@@ -82,6 +85,10 @@ public class TelemetryService {
             .ifPresent((caseNo) -> properties.put(CASE_NO_KEY, caseNo));
         ofNullable(messageId)
                 .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageId));
+        ofNullable(aCase.getCaseId())
+                .ifPresent((caseId) -> properties.put(CASE_ID_KEY, caseId));
+        ofNullable(aCase.getSource())
+                .ifPresent((source) -> properties.put(SOURCE_KEY, source.name()));
 
         telemetryClient.trackEvent(TelemetryEventType.COURT_CASE_RECEIVED.eventName, properties, Collections.emptyMap());
     }
@@ -95,8 +102,16 @@ public class TelemetryService {
         ofNullable(courtCase.getSessionStartTime())
             .map(date -> date.format(DateTimeFormatter.ISO_DATE))
             .ifPresent((date) -> properties.put(HEARING_DATE_KEY, date));
-        ofNullable(courtCase.getFirstDefendant().getPnc())
-            .ifPresent((pnc) -> properties.put(PNC_KEY, pnc));
+        ofNullable(courtCase.getDefendants())
+                .map(defendants -> defendants.stream()
+                        .map(Defendant::getPnc)
+                        .collect(Collectors.joining(","))
+                )
+                .ifPresent((pncs) -> properties.put(PNCS_KEY, pncs));
+        ofNullable(courtCase.getCaseId())
+                .ifPresent((caseId) -> properties.put(CASE_ID_KEY, caseId));
+        ofNullable(courtCase.getSource())
+                .ifPresent((source) -> properties.put(SOURCE_KEY, source.name()));
         return properties;
     }
 

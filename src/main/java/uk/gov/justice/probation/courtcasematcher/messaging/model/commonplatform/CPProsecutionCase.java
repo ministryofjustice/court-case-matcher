@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class ProsecutionCase {
+public class CPProsecutionCase {
     @NotBlank
     private final String id;
     @NotNull

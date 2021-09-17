@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
@@ -36,6 +37,7 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_ID_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_NO_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_CODE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_ROOM_KEY;
@@ -43,7 +45,8 @@ import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_DATE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHED_BY_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHES_KEY;
-import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNC_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNCS_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SOURCE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SQS_MESSAGE_ID_KEY;
 
 @DisplayName("Exercise TelemetryService")
@@ -52,6 +55,7 @@ class TelemetryServiceTest {
 
     private static final String COURT_CODE = "B10JQ01";
     private static final String CASE_NO = "1234567890";
+    private static final String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
     private static final String CRN = "D12345";
     private static final String PNC = "PNC/123";
     private static final String COURT_ROOM = "01";
@@ -80,6 +84,8 @@ class TelemetryServiceTest {
                 .defendants(Collections.singletonList(Defendant.builder()
                         .pnc(PNC)
                         .build()))
+                .source(DataSource.COMMON_PLATFORM)
+                .caseId(CASE_ID)
                 .build();
     }
 
@@ -130,7 +136,7 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCOffenderExactMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertThat(properties).hasSize(7);
+        assertThat(properties).hasSize(9);
         assertThat(properties).contains(
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(CASE_NO_KEY, CASE_NO),
@@ -138,7 +144,9 @@ class TelemetryServiceTest {
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.ALL_SUPPLIED.name()),
                 entry(CRNS_KEY, CRN),
-                entry(PNC_KEY, PNC)
+                entry(PNCS_KEY, PNC),
+                entry(SOURCE_KEY, "COMMON_PLATFORM"),
+                entry(CASE_ID_KEY, CASE_ID)
         );
     }
 
@@ -156,7 +164,7 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertThat(properties).hasSize(7);
+        assertThat(properties).hasSize(9);
         assertThat(properties).contains(
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(CASE_NO_KEY, CASE_NO),
@@ -164,7 +172,9 @@ class TelemetryServiceTest {
                 entry(MATCHES_KEY, "2"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
                 entry(CRNS_KEY, CRN + "," + "X123454"),
-                entry(PNC_KEY, PNC)
+                entry(PNCS_KEY, PNC),
+                entry(SOURCE_KEY, "COMMON_PLATFORM"),
+                entry(CASE_ID_KEY, CASE_ID)
         );
     }
 
@@ -181,7 +191,7 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertThat(properties).hasSize(7);
+        assertThat(properties).hasSize(9);
         assertThat(properties).contains(
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(CASE_NO_KEY, CASE_NO),
@@ -189,7 +199,9 @@ class TelemetryServiceTest {
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
                 entry(CRNS_KEY, CRN),
-                entry(PNC_KEY, PNC)
+                entry(PNCS_KEY, PNC),
+                entry(SOURCE_KEY, "COMMON_PLATFORM"),
+                entry(CASE_ID_KEY, CASE_ID)
         );
     }
 
@@ -205,12 +217,14 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCOffenderNoMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertThat(properties).hasSize(4);
+        assertThat(properties).hasSize(6);
         assertThat(properties).contains(
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(CASE_NO_KEY, CASE_NO),
                 entry(HEARING_DATE_KEY, "2020-11-05"),
-                entry(PNC_KEY, PNC)
+                entry(PNCS_KEY, PNC),
+                entry(SOURCE_KEY, "COMMON_PLATFORM"),
+                entry(CASE_ID_KEY, CASE_ID)
         );
     }
 
@@ -223,12 +237,14 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCOffenderMatchError"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertThat(properties).hasSize(4);
+        assertThat(properties).hasSize(6);
         assertThat(properties).contains(
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(CASE_NO_KEY, CASE_NO),
                 entry(HEARING_DATE_KEY, "2020-11-05"),
-                entry(PNC_KEY, PNC)
+                entry(PNCS_KEY, PNC),
+                entry(SOURCE_KEY, "COMMON_PLATFORM"),
+                entry(CASE_ID_KEY, CASE_ID)
         );
     }
 
@@ -242,13 +258,15 @@ class TelemetryServiceTest {
 
         Map<String, String> properties = propertiesCaptor.getValue();
 
-        assertThat(properties).hasSize(5);
+        assertThat(properties).hasSize(7);
         assertThat(properties).contains(
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(COURT_ROOM_KEY, COURT_ROOM),
                 entry(CASE_NO_KEY, CASE_NO),
                 entry(HEARING_DATE_KEY, "2020-11-05"),
-                entry(SQS_MESSAGE_ID_KEY, "messageId")
+                entry(SQS_MESSAGE_ID_KEY, "messageId"),
+                entry(SOURCE_KEY, "COMMON_PLATFORM"),
+                entry(CASE_ID_KEY, CASE_ID)
         );
     }
 
@@ -262,12 +280,14 @@ class TelemetryServiceTest {
 
         Map<String, String> properties = propertiesCaptor.getValue();
 
-        assertThat(properties).hasSize(4);
+        assertThat(properties).hasSize(6);
         assertThat(properties).contains(
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(COURT_ROOM_KEY, COURT_ROOM),
                 entry(CASE_NO_KEY, CASE_NO),
-                entry(HEARING_DATE_KEY, "2020-11-05")
+                entry(HEARING_DATE_KEY, "2020-11-05"),
+                entry(SOURCE_KEY, "COMMON_PLATFORM"),
+                entry(CASE_ID_KEY, CASE_ID)
         );
     }
 

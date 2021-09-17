@@ -68,7 +68,10 @@ public class CourtCaseProcessor {
 
         final var searchResult = matcherService.getSearchResponse(courtCase)
                 .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
-                .doOnError(throwable -> telemetryService.trackOffenderMatchFailureEvent(courtCase))
+                .doOnError(throwable -> {
+                    log.error(throwable.getMessage());
+                    telemetryService.trackOffenderMatchFailureEvent(courtCase);
+                })
                 .onErrorResume(throwable -> Mono.just(SearchResult.builder()
                         .matchResponse(
                                 MatchResponse.builder()

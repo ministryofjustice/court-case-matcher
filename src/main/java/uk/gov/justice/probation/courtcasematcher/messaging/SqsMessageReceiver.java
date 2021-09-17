@@ -13,7 +13,6 @@ import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import javax.validation.constraints.NotEmpty;
@@ -53,9 +52,7 @@ public class SqsMessageReceiver {
             telemetryService.trackCaseMessageReceivedEvent(messageId);
             final var courtCase = courtCaseExtractor.extractCourtCase(message, messageId);
 
-            if (courtCase.getSource() == DataSource.LIBRA) {
-                courtCaseProcessor.process(courtCase, messageId);
-            }
+            courtCaseProcessor.process(courtCase, messageId);
         }
     }
 }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
 import javax.validation.constraints.NotBlank;
 
@@ -12,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class Offence {
+public class CPOffence {
     @NotBlank
     private final String id;
     @NotBlank
@@ -21,4 +22,13 @@ public class Offence {
     private final String offenceTitle;
     @NotBlank
     private final String wording;
+
+    public Offence asDomain() {
+        return Offence.builder()
+                .id(id)
+                .act(offenceLegislation)
+                .offenceTitle(offenceTitle)
+                .offenceSummary(wording)
+                .build();
+    }
 }

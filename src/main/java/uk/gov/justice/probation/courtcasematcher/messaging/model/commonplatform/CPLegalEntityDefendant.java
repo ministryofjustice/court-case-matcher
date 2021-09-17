@@ -6,18 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class Address {
-    @NotBlank
-    private final String address1;
-    private final String address2;
-    private final String address3;
-    private final String address4;
-    private final String address5;
-    private final String postcode;
+public class CPLegalEntityDefendant {
+    @NotNull
+    @Valid
+    private final CPOrganisation organisation;
 }
