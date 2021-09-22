@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/defendant/8E07B58D-3ED3-440E-9CC2-2BC94EDBC5AF/grouped-offender-matches",
+    "bodyPatterns": [
+      {
+        "matches" : ".*X123456.*"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "Location": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/defendant/8E07B58D-3ED3-440E-9CC2-2BC94EDBC5AF/grouped-offender-matches/4"
+    }
+  }
+}

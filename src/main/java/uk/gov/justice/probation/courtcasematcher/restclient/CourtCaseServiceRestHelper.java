@@ -62,7 +62,7 @@ public class CourtCaseServiceRestHelper {
         return spec.attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId("offender-search-client"));
     }
 
-    WebClient.RequestHeadersSpec<?> postObject(String path, CCSGroupedOffenderMatchesRequest request, Class<CCSGroupedOffenderMatchesRequest> elementClass, LegacyCourtCaseRestClient courtCaseRestClient) {
+    WebClient.RequestHeadersSpec<?> postObject(String path, CCSGroupedOffenderMatchesRequest request, Class<CCSGroupedOffenderMatchesRequest> elementClass) {
         WebClient.RequestHeadersSpec<?> spec = webClient
             .post()
             .uri(uriBuilder -> uriBuilder.path(path).build())

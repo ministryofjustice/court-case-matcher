@@ -124,12 +124,18 @@ public class LegacyCourtCaseRestClient implements CourtCaseRepository {
             .then();
     }
 
+    @Override
+    public Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
+        // The legacy client will never implement this (?)
+        return null;
+    }
+
     private WebClient.RequestHeadersSpec<?> put(String path, CCSCourtCase CCSCourtCase) {
         return courtCaseServiceRestHelper.putObject(path, CCSCourtCase, CCSCourtCase.class);
     }
 
     private WebClient.RequestHeadersSpec<?> post(String path, CCSGroupedOffenderMatchesRequest request) {
-        return courtCaseServiceRestHelper.postObject(path, request, CCSGroupedOffenderMatchesRequest.class, this);
+        return courtCaseServiceRestHelper.postObject(path, request, CCSGroupedOffenderMatchesRequest.class);
     }
 
     private void handlePutError(Throwable throwable, String courtCode, String caseNo) {
