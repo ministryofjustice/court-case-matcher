@@ -11,4 +11,6 @@ public interface CourtCaseRepository {
     Mono<Void> putCourtCase(CourtCase courtCase);
 
     Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches);
+
+    Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches);
 }

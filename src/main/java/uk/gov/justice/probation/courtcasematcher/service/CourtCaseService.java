@@ -59,6 +59,7 @@ public class CourtCaseService {
 
     public void saveCourtCase(CourtCase courtCase) {
         // TODO: This is temporary, to be replaced with call to postOffenderMatches using caseId as primary key
+        // Unclear which bit is temporary - the IF statement or the postMatches bit ?
         CourtCase updatedCase = courtCase;
         if(courtCase.getCaseNo() == null) {
             final var caseId = UUID.randomUUID().toString();
@@ -68,7 +69,7 @@ public class CourtCaseService {
         try {
             courtCaseRepository.putCourtCase(updatedCase).block();
         } finally {
-            courtCaseRepository.postMatches(updatedCase.getCourtCode(), updatedCase.getCaseNo(), updatedCase.getGroupedOffenderMatches()).block();
+            courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getFirstDefendant().getDefendantId(), updatedCase.getGroupedOffenderMatches()).block();
         }
     }
 

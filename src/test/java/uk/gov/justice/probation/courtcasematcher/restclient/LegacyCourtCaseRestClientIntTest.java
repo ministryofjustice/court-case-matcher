@@ -69,7 +69,7 @@ public class LegacyCourtCaseRestClientIntTest {
     private static final String COURT_CODE = "B10JQ";
     private static final String CASE_NO = "12345";
     private static final String NEW_CASE_NO = "1600032981";
-    private static final int WEB_CLIENT_TIMEOUT_MS = 10000;
+    static final int WEB_CLIENT_TIMEOUT_MS = 10000;
 
     private static final GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
             .matches(Collections.singletonList(OffenderMatch.builder()
@@ -247,7 +247,7 @@ public class LegacyCourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenPostOffenderMatches_thenMakeRestCallToCourtCaseService() {
+    void whenPostMatches_thenMakeRestCallToCourtCaseService() {
 
         restClient.postMatches(COURT_CODE, "666666", matches).block();
 
@@ -261,9 +261,9 @@ public class LegacyCourtCaseRestClientIntTest {
     }
 
     @Test
-    void givenUnknownCourt_whenPostOffenderMatches_thenNoRetryAndLogNotFoundError() {
+    void givenUnknownCourt_whenPostMatches_thenNoRetryAndLogNotFoundError() {
 
-        GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
+        final var matches = GroupedOffenderMatches.builder()
                 .matches(Collections.singletonList(OffenderMatch.builder()
                         .matchType(MatchType.NAME_DOB)
                         .matchIdentifiers(MatchIdentifiers.builder()
