@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,7 +62,7 @@ class CourtCaseServiceTest {
             .matches(Collections.emptyList())
             .build();
 
-    @DisplayName("Save court case")
+    @DisplayName("Save court case. This must be existing because it has a case no and a case id.")
     @Test
     void whenSaveCourtCase() {
         final var courtCase = CourtCase.builder()
@@ -83,7 +84,7 @@ class CourtCaseServiceTest {
         verify(courtCaseRepo).postOffenderMatches(CASE_ID, DEFENDANT_UUID_1, matches);
     }
 
-    @DisplayName("Save court case with no caseNo or caseId.")
+    @DisplayName("Save court case with no caseNo but with a caseId. Indicates a new CP case.")
     @Test
     void givenNoCaseNoOrId_whenSaveCourtCaseWithCaseId() {
         final var courtCase = CourtCase.builder()
@@ -91,10 +92,37 @@ class CourtCaseServiceTest {
                         .courtCode(COURT_CODE)
                         .build()))
                 .defendants(List.of(DEFENDANT))
+                .caseId(CASE_ID)
                 .groupedOffenderMatches(matches)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
-        when(courtCaseRepo.postOffenderMatches(notNull(), eq(DEFENDANT_UUID_1), eq(matches))).thenReturn(Mono.empty());
+        when(courtCaseRepo.postOffenderMatches(CASE_ID, DEFENDANT_UUID_1, matches)).thenReturn(Mono.empty());
+
+        courtCaseService.saveCourtCase(courtCase);
+
+        verify(courtCaseRepo).putCourtCase(notNull());
+
+        final var capturedCase = courtCaseCaptor.getValue();
+        assertThat(capturedCase.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(capturedCase.getCaseNo()).isEqualTo(capturedCase.getCaseId());
+
+        verify(courtCaseRepo).postOffenderMatches(CASE_ID, DEFENDANT_UUID_1, matches);
+        verifyNoMoreInteractions(courtCaseRepo);
+    }
+
+    @DisplayName("Save court case with no caseId but with a caseNo and no defendant ID. Indicates a new LIBRA case.")
+    @Test
+    void givenNoCaseButHaveCaseNo_whenSaveCourtCaseWithCaseIdRetainCaseNo() {
+        final var courtCase = CourtCase.builder()
+            .hearingDays(Collections.singletonList(HearingDay.builder()
+                .courtCode(COURT_CODE)
+                .build()))
+            .defendants(List.of(Defendant.builder().build()))
+            .groupedOffenderMatches(matches)
+            .caseNo(CASE_NO)
+            .build();
+        when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
+        when(courtCaseRepo.postOffenderMatches(notNull(), notNull(), eq(matches))).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
@@ -102,9 +130,11 @@ class CourtCaseServiceTest {
 
         final var capturedCase = courtCaseCaptor.getValue();
         assertThat(capturedCase.getCaseId()).hasSameSizeAs(CASE_ID);
-        assertThat(capturedCase.getCaseNo()).isEqualTo(capturedCase.getCaseId());
+        assertThat(capturedCase.getFirstDefendant().getDefendantId()).hasSameSizeAs(DEFENDANT_UUID_1);
+        assertThat(capturedCase.getCaseNo()).isEqualTo(CASE_NO);
 
-        verify(courtCaseRepo).postOffenderMatches(notNull(), eq(DEFENDANT_UUID_1), eq(matches));
+        verify(courtCaseRepo).postOffenderMatches(notNull(), notNull(), eq(matches));
+        verifyNoMoreInteractions(courtCaseRepo);
     }
 
     @DisplayName("Incoming gateway case which is merged with the existing.")
