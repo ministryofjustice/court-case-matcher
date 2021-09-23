@@ -15,6 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestCl
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -59,16 +60,23 @@ public class CourtCaseService {
 
     public void saveCourtCase(CourtCase courtCase) {
         // TODO: This is temporary, to be replaced with call to postOffenderMatches using caseId as primary key
-        // Unclear which bit is temporary - the IF statement or the postMatches bit ?
         CourtCase updatedCase = courtCase;
-        if(courtCase.getCaseNo() == null) {
-            final var caseId = UUID.randomUUID().toString();
-            updatedCase = courtCase.withCaseId(caseId)
-                    .withCaseNo(caseId);
+        // TODO - this may be temporary. At this point new LIBRA cases will have no case or defendant ID and we need to assign
+        // NULL case ID indicates a new LIBRA case. We need to assign case ID
+        if (courtCase.getCaseId() == null) {
+            updatedCase = assignUuids(courtCase);
         }
+        else if (courtCase.getCaseNo() == null) {
+            // Retain the case ID if there is one
+            final var caseId = courtCase.getCaseId() != null ? courtCase.getCaseId() : UUID.randomUUID().toString();
+            updatedCase = courtCase.withCaseId(caseId)
+                .withCaseNo(caseId);
+        }
+
         try {
             courtCaseRepository.putCourtCase(updatedCase).block();
         } finally {
+            // TODO - need to post matches for multiple defendants. Matching not yet done for multiple defendants
             courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getFirstDefendant().getDefendantId(), updatedCase.getGroupedOffenderMatches()).block();
         }
     }
@@ -79,6 +87,27 @@ public class CourtCaseService {
                 .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
                 .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))
                 .switchIfEmpty(Mono.just(courtCase));
+    }
+
+    CourtCase assignUuids(CourtCase courtCase) {
+        // Apply the new case ID
+        final var caseId = UUID.randomUUID().toString();
+        var updatedCase = courtCase.withCaseId(caseId);
+
+        // We want to retain the LIBRA case no if present
+        if (courtCase.getCaseNo() == null) {
+            updatedCase = updatedCase.withCaseNo(caseId);
+        }
+
+        // Assign defendant ID
+        var defendant = courtCase.getFirstDefendant();
+        if (defendant.getDefendantId() == null) {
+            final var defendantId = UUID.randomUUID().toString();
+            defendant = defendant.withDefendantId(defendantId);
+            updatedCase = updatedCase.withDefendants(List.of(defendant));
+        }
+
+        return updatedCase;
     }
 
 }
