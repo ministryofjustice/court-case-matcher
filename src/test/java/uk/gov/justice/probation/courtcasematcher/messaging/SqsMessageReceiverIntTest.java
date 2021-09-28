@@ -79,8 +79,9 @@ public class SqsMessageReceiverIntTest {
     @Autowired
     private NotificationMessagingTemplate notificationMessagingTemplate;
 
+    // TODO: UnWIP
     @Nested
-    class CommonPlatformReceiverTest {
+    class CommonPlatformReceiverTestWIP {
         @Test
         public void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
             hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
