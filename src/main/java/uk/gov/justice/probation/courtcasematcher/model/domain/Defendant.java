@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +34,6 @@ public class Defendant {
     private Boolean awaitingPsr;
     private Boolean breach;
 
-    // TODO: Add groupedOffenderMatches
-    //    @JsonIgnore
-    //    private final GroupedOffenderMatches groupedOffenderMatches;
+    @JsonIgnore
+    private final GroupedOffenderMatches groupedOffenderMatches;
 }

@@ -25,6 +25,8 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
@@ -45,11 +47,13 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.CASE_ID;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.DEFENDANT_ID;
+import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.DEFENDANT_ID_2;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.aCourtCaseBuilderWithAllFields;
 import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyCourtCaseRestClientIntTest.WEB_CLIENT_TIMEOUT_MS;
 
@@ -173,38 +177,30 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenPostOffenderMatches_thenMakeRestCallToCourtCaseService() {
+    void whenPostDefendantMatches_thenMakeRestCallToCourtCaseService() {
 
-        final var matches = GroupedOffenderMatches.builder()
-            .matches(Collections.singletonList(OffenderMatch.builder()
-                .matchType(MatchType.NAME_DOB)
-                .matchIdentifiers(MatchIdentifiers.builder()
-                    .crn("X123456")
-                    .cro("E1324/11")
-                    .pnc("PNC")
-                    .build())
-                .build()))
-            .build();
+        final List<Defendant> defendants = buildDefendants();
 
-        client.postOffenderMatches(CASE_ID, DEFENDANT_ID, matches).block();
+        client.postDefendantMatches(CASE_ID, defendants).block();
 
-        verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS)).doAppend(captorLoggingEvent.capture());
+        verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
-        Assertions.assertThat(events).hasSizeGreaterThanOrEqualTo(1);
+        Assertions.assertThat(events).hasSizeGreaterThanOrEqualTo(2);
 
         MOCK_SERVER.verify(
             postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, DEFENDANT_ID)))
         );
+
+        MOCK_SERVER.verify(
+            postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, DEFENDANT_ID_2)))
+        );
     }
 
     @Test
-    void whenRestClientThrows500OnPostOffenderMatches_ThenRetryAndLogRetryExhaustedError() {
-        final var matches = GroupedOffenderMatches.builder()
-            .matches(Collections.emptyList())
-            .build();
+    void whenRestClientThrows500OnPostDefendantMatches_ThenRetryAndLogRetryExhaustedError() {
 
         assertThatExceptionOfType(RuntimeException.class)
-            .isThrownBy(() -> client.postOffenderMatches("X500", DEFENDANT_ID, matches).block())
+            .isThrownBy(() -> client.postDefendantMatches("X500", buildDefendants()).block())
             .withMessage("Retries exhausted: 1/1");
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS).atLeast(1)).doAppend(captorLoggingEvent.capture());
@@ -220,10 +216,57 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenRestClientCalledWithNull_ThenFailureEvent() {
+    void whenRestClientCalledWithNullOffenderMatches_ThenFailureEvent() {
+        final var defendants = List.of(
+                Defendant.builder()
+                        .type(DefendantType.PERSON)
+                        .defendantId(DEFENDANT_ID)
+                        .groupedOffenderMatches(null)
+                        .build()
+        );
 
-        client.postOffenderMatches(CASE_ID, DEFENDANT_ID, null).block();
-
-        verify(mockAppender, never()).doAppend(captorLoggingEvent.capture());
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> client.postDefendantMatches(CASE_ID, defendants).block())
+                .withMessage(String.format("No matches present for defendantId %s", DEFENDANT_ID))
+        ;
     }
+
+    private List<Defendant> buildDefendants() {
+        final var matches1 = GroupedOffenderMatches.builder()
+                .matches(Collections.singletonList(OffenderMatch.builder()
+                        .matchType(MatchType.NAME_DOB)
+                        .matchIdentifiers(MatchIdentifiers.builder()
+                                .crn("X123456")
+                                .cro("E1324/11")
+                                .pnc("PNC")
+                                .build())
+                        .build()))
+                .build();
+
+        final var matches2 = GroupedOffenderMatches.builder()
+                .matches(Collections.singletonList(OffenderMatch.builder()
+                        .matchType(MatchType.NAME_DOB)
+                        .matchIdentifiers(MatchIdentifiers.builder()
+                                .crn("X123457")
+                                .cro("E1324/12")
+                                .pnc("PNC2")
+                                .build())
+                        .build()))
+                .build();
+
+        final var defendants = List.of(
+                Defendant.builder()
+                        .type(DefendantType.PERSON)
+                        .defendantId(DEFENDANT_ID)
+                        .groupedOffenderMatches(matches1)
+                        .build(),
+                Defendant.builder()
+                        .type(DefendantType.PERSON)
+                        .defendantId(DEFENDANT_ID_2)
+                        .groupedOffenderMatches(matches2)
+                        .build()
+        );
+        return defendants;
+    }
+
 }

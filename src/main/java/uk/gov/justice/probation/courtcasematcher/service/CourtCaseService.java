@@ -64,19 +64,18 @@ public class CourtCaseService {
         // New LIBRA cases will have no case or defendant ID and we need to assign
         if (courtCase.getCaseId() == null) {
             updatedCase = assignUuids(courtCase);
-        }
-        else if (courtCase.getCaseNo() == null) {
+        } else if (courtCase.getCaseNo() == null) {
             // Retain the case ID if there is one
             final var caseId = courtCase.getCaseId() != null ? courtCase.getCaseId() : UUID.randomUUID().toString();
             updatedCase = courtCase.withCaseId(caseId)
-                .withCaseNo(caseId);
+                    .withCaseNo(caseId);
         }
 
         try {
             courtCaseRepository.putCourtCase(updatedCase).block();
         } finally {
-            // TODO - Stream over defendants and post for each
-            courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getFirstDefendant().getDefendantId(), updatedCase.getGroupedOffenderMatches()).block();
+            courtCaseRepository.postDefendantMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
+                    .block();
         }
     }
 

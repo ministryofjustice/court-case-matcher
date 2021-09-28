@@ -24,7 +24,6 @@ public class CCSExtendedCase {
     private CCSDataSource source;
 
     public static CCSExtendedCase of(CourtCase courtCase) {
-        final var firstDefendant = courtCase.getFirstDefendant();
         return CCSExtendedCase.builder()
                 .caseId(Optional.ofNullable(courtCase.getCaseId())
                         .orElseGet(CCSExtendedCase::generateUUID))

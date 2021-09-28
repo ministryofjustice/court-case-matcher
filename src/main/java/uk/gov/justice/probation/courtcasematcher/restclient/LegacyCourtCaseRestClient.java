@@ -17,6 +17,7 @@ import reactor.tuple.Tuple2;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.event.CourtCaseSuccessEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
@@ -125,8 +126,7 @@ public class LegacyCourtCaseRestClient implements CourtCaseRepository {
     }
 
     @Override
-    public Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
-        // The legacy client will never implement this (?)
+    public Mono<Void> postDefendantMatches(String caseId, List<Defendant> defendants) {
         return null;
     }
 
