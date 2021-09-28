@@ -176,7 +176,7 @@ task integrationTest(type: Test) {
     }
 
     filter {
-        includeTestsMatching '*IntTest'
+        includeTestsMatching '*IntTest*'
         excludeTestsMatching '*WIP*'
     }
 }
