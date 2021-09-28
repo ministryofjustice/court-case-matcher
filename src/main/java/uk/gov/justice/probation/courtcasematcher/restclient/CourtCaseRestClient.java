@@ -12,7 +12,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.tuple.Tuple2;
-import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
@@ -34,9 +33,6 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     private static final String ERROR_MSG_FORMAT_RETRY_POST_MATCHES = "Retry error from POST of the offender matches for case id %s for defendant id %s, at attempt %s of %s.";
 
     @Autowired
-    private FeatureFlags featureFlags;
-
-    @Autowired
     private LegacyCourtCaseRestClient legacyCourtCaseRestClient;
 
     @Autowired
@@ -55,14 +51,6 @@ public class CourtCaseRestClient implements CourtCaseRepository {
 
     @Override
     public Mono<Void> putCourtCase(CourtCase courtCase) {
-        final var useLegacy = Optional.ofNullable(featureFlags.getFlags())
-                .map(map -> map.get("use-legacy-court-case-rest-client"))
-                .orElse(false);
-
-        if (useLegacy) {
-            return legacyCourtCaseRestClient.putCourtCase(courtCase);
-        }
-
         final var extendedCase = CCSExtendedCase.of(courtCase);
         final var caseId = extendedCase.getCaseId();
         final String path = String.format(courtCasePutTemplate, caseId);
@@ -74,11 +62,6 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                         (attemptNo, maxAttempts) -> String.format("Retry failed for caseId %s at attempt %s of %s", caseId, attemptNo, maxAttempts))
                 )
                 .then();
-    }
-
-    @Override
-    public Mono<Void> postMatches(String courtCode, String caseNo, GroupedOffenderMatches offenderMatches) {
-        return legacyCourtCaseRestClient.postMatches(courtCode, caseNo, offenderMatches);
     }
 
     private Mono<Void> postDefendantMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
@@ -109,5 +92,4 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                 .flatMap(defendant -> postDefendantMatches(caseId, defendant.getDefendantId(), defendant.getGroupedOffenderMatches()))
                 .then();
     }
-
 }

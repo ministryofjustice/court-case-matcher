@@ -37,7 +37,6 @@ import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
@@ -45,7 +44,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -89,7 +87,6 @@ class CourtCaseRestClientIntTest {
         MockitoAnnotations.openMocks(this);
         Logger logger = (Logger) getLogger(LoggerFactory.getLogger(CourtCaseRestClient.class).getName());
         logger.addAppender(mockAppender);
-        when(featureFlags.getFlags()).thenReturn(Map.of("use-legacy-court-case-rest-client", false));
     }
 
     @Test
@@ -135,45 +132,12 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenPostMatches_thenDelegateToLegacyClient() {
-        final var offenderMatches = GroupedOffenderMatches.builder().build();
-        when(legacyClient.postMatches("court code", "case no", offenderMatches)).thenReturn(mono);
-
-        final var actualMono = client.postMatches("court code", "case no", offenderMatches);
-
-        assertThat(actualMono).isEqualTo(mono);
-    }
-
-    @Test
     void getCourtCase_delegatesToLegacyClient() {
         when(legacyClient.getCourtCase("court code", "case no")).thenReturn(courtCaseMono);
 
         final var actualMono = client.getCourtCase("court code", "case no");
 
         assertThat(actualMono).isEqualTo(courtCaseMono);
-    }
-
-    @Test
-    void givenFeatureEnabled_putCourtCase_delegatesToLegacyClient() {
-        when(featureFlags.getFlags()).thenReturn(Map.of("use-legacy-court-case-rest-client", true));
-        final var courtCase = aCourtCaseBuilderWithAllFields()
-                .build();
-        when(legacyClient.putCourtCase(courtCase)).thenReturn(mono);
-        final var actual = client.putCourtCase(courtCase);
-
-        verify(legacyClient).putCourtCase(courtCase);
-        assertThat(actual).isEqualTo(mono);
-    }
-
-    @Test
-    void givenFeaturesNull_whenPutCourtCase_delegatesToLegacyClient() {
-        when(featureFlags.getFlags()).thenReturn(null);
-        final var courtCase = aCourtCaseBuilderWithAllFields()
-                .build();
-        when(legacyClient.putCourtCase(courtCase)).thenReturn(mono);
-        final var actual = client.putCourtCase(courtCase);
-
-        verify(legacyClient, never()).putCourtCase(courtCase);
     }
 
     @Test
