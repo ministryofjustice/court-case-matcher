@@ -63,9 +63,11 @@ public class CourtCaseProcessor {
 
 
     private void applyMatch(final CourtCase courtCase) {
+        // TODO: Stream over defendants, add matches to defendant, pass to court case service for creation
 
         log.info("Matching offender and saving case no {} for court {}, pnc {}", courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getFirstDefendant().getPnc());
 
+        // TODO: Move responsibility for matching down into matcher service, rename method to enrichWithMatches or similar
         final var searchResult = matcherService.getSearchResponse(courtCase)
                 .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
                 .doOnError(throwable -> {

@@ -43,6 +43,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -101,13 +102,16 @@ public class SqsMessageReceiverIntTest {
                             .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
                             .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
                             // Values from offender search
+                            .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
                             .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
+                            .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
+                            .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("X346205")))
             );
 
             verify(telemetryService).withOperation(nullable(String.class));
             verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
             verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
-            verify(telemetryService).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
+            verify(telemetryService, times(2)).trackOffenderMatchEvent(any(CourtCase.class), any(MatchResponse.class));
             verifyNoMoreInteractions(telemetryService);
         }
 

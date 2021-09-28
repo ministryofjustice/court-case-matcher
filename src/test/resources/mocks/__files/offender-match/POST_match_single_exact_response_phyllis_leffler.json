@@ -1,0 +1,73 @@
+{
+  "matches": [
+    {
+      "offender": {
+        "offenderId": 2500371167,
+        "title": "Miss",
+        "firstName": "Phyllis",
+        "surname": "Leffler",
+        "dateOfBirth": "1997-02-28",
+        "gender": "Female",
+        "otherIds": {
+          "crn": "X346205"
+        },
+        "probationStatus": {
+          "status": "CURRENT",
+          "inBreach": true,
+          "preSentenceActivity": false,
+          "awaitingPsr": true,
+          "previouslyKnownTerminationDate": "2020-02-02"
+        },
+        "contactDetails": {},
+        "offenderProfile": {
+          "offenderLanguages": {},
+          "previousConviction": {}
+        },
+        "offenderManagers": [
+          {
+            "trustOfficer": {
+              "forenames": "Unallocated Staff(N07)",
+              "surname": "Staff"
+            },
+            "staff": {
+              "forenames": "Unallocated Staff(N07)",
+              "surname": "Staff"
+            },
+            "partitionArea": "National Data",
+            "softDeleted": false,
+            "team": {
+              "description": "Unallocated Team(N07)",
+              "district": {
+                "code": "N07NPSA",
+                "description": "N07 Division"
+              },
+              "borough": {
+                "code": "N07100",
+                "description": "N07 Cluster 1"
+              }
+            },
+            "probationArea": {
+              "code": "N07",
+              "description": "NPS London",
+              "nps": true
+            },
+            "fromDate": "1900-01-01",
+            "active": true,
+            "allocationReason": {
+              "code": "IN1",
+              "description": "Initial Allocation"
+            }
+          }
+        ],
+        "softDeleted": false,
+        "currentDisposal": "1",
+        "partitionArea": "National Data",
+        "currentRestriction": false,
+        "restrictionMessage": "This is a restricted offender record. Please contact a system administrator",
+        "currentExclusion": false,
+        "exclusionMessage": "You are excluded from viewing this offender record. Please contact a system administrator"
+      }
+    }
+  ],
+  "matchedBy": "ALL_SUPPLIED"
+}

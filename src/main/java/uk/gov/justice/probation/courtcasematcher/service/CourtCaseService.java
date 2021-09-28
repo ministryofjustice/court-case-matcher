@@ -43,6 +43,7 @@ public class CourtCaseService {
     }
 
     public void createCase(CourtCase courtCase, SearchResult searchResult) {
+        // TODO: Remove search result and mapping from here, this needs to happen after matching and for each defendant
         final var updatedCase = Optional.ofNullable(searchResult)
                 .map(result -> {
                     var response = result.getMatchResponse();
@@ -59,10 +60,8 @@ public class CourtCaseService {
     }
 
     public void saveCourtCase(CourtCase courtCase) {
-        // TODO: This is temporary, to be replaced with call to postOffenderMatches using caseId as primary key
         CourtCase updatedCase = courtCase;
-        // TODO - this may be temporary. At this point new LIBRA cases will have no case or defendant ID and we need to assign
-        // NULL case ID indicates a new LIBRA case. We need to assign case ID
+        // New LIBRA cases will have no case or defendant ID and we need to assign
         if (courtCase.getCaseId() == null) {
             updatedCase = assignUuids(courtCase);
         }
@@ -76,7 +75,7 @@ public class CourtCaseService {
         try {
             courtCaseRepository.putCourtCase(updatedCase).block();
         } finally {
-            // TODO - need to post matches for multiple defendants. Matching not yet done for multiple defendants
+            // TODO - Stream over defendants and post for each
             courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getFirstDefendant().getDefendantId(), updatedCase.getGroupedOffenderMatches()).block();
         }
     }

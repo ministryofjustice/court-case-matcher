@@ -32,4 +32,8 @@ public class Defendant {
     private Boolean suspendedSentenceOrder;
     private Boolean awaitingPsr;
     private Boolean breach;
+
+    // TODO: Add groupedOffenderMatches
+    //    @JsonIgnore
+    //    private final GroupedOffenderMatches groupedOffenderMatches;
 }

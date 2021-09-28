@@ -26,12 +26,12 @@ public class CourtCase implements Serializable {
 
     private final String caseId;
 
-    // TODO - should caseNo be deprecated now ?
     @Setter(AccessLevel.NONE)
     private final String caseNo;
     private List<Defendant> defendants;
     private List<HearingDay> hearingDays;
 
+    // TODO: Remove groupedOffenderMatches
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;
 

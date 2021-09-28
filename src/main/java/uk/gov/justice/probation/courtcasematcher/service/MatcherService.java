@@ -24,7 +24,9 @@ public class MatcherService {
     @Autowired
     private final MatchRequest.Factory matchRequestFactory;
 
+    // TODO: Change return type to CourtCase
     public Mono<SearchResult> getSearchResponse(CourtCase courtCase) {
+        // TODO: Stream over courtCase.getDefendants()
         final MatchRequest matchRequest;
         try {
             matchRequest = matchRequestFactory.buildFrom(courtCase);
