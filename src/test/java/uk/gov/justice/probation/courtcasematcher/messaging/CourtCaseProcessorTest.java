@@ -10,9 +10,6 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -56,8 +53,6 @@ class CourtCaseProcessorTest {
     @DisplayName("Receive a valid unmatched case for person then match and save")
     @Test
     void whenValidMessageReceivedForPerson_ThenMatchAndSave() {
-        var matchResponse = MatchResponse.builder().build();
-        var searchResult = SearchResult.builder().matchResponse(matchResponse).build();
         var courtCase = CourtCase.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
@@ -66,14 +61,15 @@ class CourtCaseProcessorTest {
                         .type(PERSON)
                         .build()))
                 .build();
+        var updatedCourtCase = CourtCase.builder().build();
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
-        when(matcherService.getSearchResponse(any(CourtCase.class))).thenReturn(Mono.just(searchResult));
+        when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
-        verify(telemetryService).trackOffenderMatchEvent(eq(courtCase), eq(matchResponse));
-        verify(courtCaseService).createCase(eq(courtCase), eq(searchResult));
+
+        verify(courtCaseService).saveCourtCase(eq(updatedCourtCase));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
@@ -81,6 +77,7 @@ class CourtCaseProcessorTest {
     @DisplayName("Given an error in matcher, track that failure and save with no matches")
     @Test
     void givenErrorInMatcherService_whenReceiveCase_thenSave() {
+        // TODO: This error handling to move into matcher service
         var courtCase = CourtCase.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
@@ -89,17 +86,17 @@ class CourtCaseProcessorTest {
                         .type(PERSON)
                         .build()))
                 .build();
-        var matchResponse = MatchResponse.builder().matchedBy(OffenderSearchMatchType.NOTHING).matches(Collections.emptyList()).build();
-        var errorSearchResult = SearchResult.builder().matchResponse(matchResponse).build();
+
         when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
-        when(matcherService.getSearchResponse(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
+        when(matcherService.matchDefendants(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(telemetryService).trackOffenderMatchFailureEvent(eq(courtCase));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
-        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).createCase(eq(courtCase), eq(errorSearchResult));
+
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
@@ -124,7 +121,7 @@ class CourtCaseProcessorTest {
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCase));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
-        verifyNoMoreInteractions(courtCaseService, telemetryService);
+        verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 
     @Test

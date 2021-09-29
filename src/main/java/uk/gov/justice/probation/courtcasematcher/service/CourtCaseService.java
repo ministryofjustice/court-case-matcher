@@ -9,14 +9,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.MatchDetails;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -42,23 +38,6 @@ public class CourtCaseService {
                 .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
     }
 
-    public void createCase(CourtCase courtCase, SearchResult searchResult) {
-        // TODO: Remove search result and mapping from here, this needs to happen after matching and for each defendant
-        final var updatedCase = Optional.ofNullable(searchResult)
-                .map(result -> {
-                    var response = result.getMatchResponse();
-                    log.debug("Save court case with search response for case {}, court {}",
-                            courtCase.getCaseNo(), courtCase.getCourtCode());
-                    return CaseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
-                            .matchType(OffenderSearchMatchType.domainMatchTypeOf(result))
-                            .matches(response.getMatches())
-                            .exactMatch(response.isExactMatch())
-                            .build());
-                })
-                .orElse(courtCase);
-        saveCourtCase(updatedCase);
-    }
-
     public void saveCourtCase(CourtCase courtCase) {
         CourtCase updatedCase = courtCase;
         // New LIBRA cases will have no case or defendant ID and we need to assign
@@ -72,7 +51,8 @@ public class CourtCaseService {
         }
 
         try {
-            courtCaseRepository.putCourtCase(updatedCase).block();
+            courtCaseRepository.putCourtCase(updatedCase)
+                    .block();
         } finally {
             courtCaseRepository.postDefendantMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
                     .block();

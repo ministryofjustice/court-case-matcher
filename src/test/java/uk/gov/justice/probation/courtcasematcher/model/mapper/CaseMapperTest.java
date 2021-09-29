@@ -24,7 +24,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,7 +61,6 @@ class CaseMapperTest {
     public static final String CRN = "CRN123";
     public static final String CRO = "CRO456";
     public static final String PNC = "PNC789";
-    private static final String A_UUID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
     private static final String DEFENDANT_ID = "9E27A145-E847-4AAB-9FF9-B88912520D14";
     private static final String DEFENDANT_ID_2 = "F01ADD33-C534-44A6-BD7B-F2AAD0FB750C";
     private static final String CASE_ID = "8CC06F57-F5F7-4858-A9BF-035F7D6AC60F";
@@ -90,32 +88,32 @@ class CaseMapperTest {
 
     }
 
-    @DisplayName("New from an existing CourtCase, adding MatchDetails")
+    @DisplayName("New from an existing Defendant, adding match details")
     @Nested
-    class NewFromCourtCaseWithMatches {
+    class NewFromDefendantWithMatches {
 
-        @DisplayName("Map a court case to a new court case when search response has yielded no matches")
+        @DisplayName("Map a defendant to a new defendant when search response has yielded no matches")
         @Test
-        void givenNoMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithEmptyListOfMatches() {
+        void givenNoMatches_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithEmptyListOfMatches() {
 
-            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
+            var defendant = CaseMapper.newFromLibraCase(aLibraCase)
+                    .getDefendants()
+                    .get(0);
             var matchResponse = MatchResponse.builder()
                     .matchedBy(OffenderSearchMatchType.NOTHING)
                     .build();
 
-            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var newDefendant = CaseMapper.updateDefendantWithMatches(defendant, matchResponse);
 
-            assertThat(courtCaseNew).isNotSameAs(courtCase);
-            assertThat(courtCaseNew.getSource()).isEqualTo(courtCase.getSource());
-            assertThat(courtCaseNew.getFirstDefendant().getCrn()).isNull();
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(0);
-            assertThat(courtCaseNew.getCaseId()).isEqualTo(courtCase.getCaseId());
-            assertThat(courtCaseNew.getFirstDefendant().getDefendantId()).isEqualTo(courtCase.getFirstDefendant().getDefendantId());
+            assertThat(newDefendant).isNotSameAs(defendant);
+            assertThat(newDefendant.getCrn()).isNull();
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(0);
+            assertThat(newDefendant.getDefendantId()).isEqualTo(defendant.getDefendantId());
         }
 
-        @DisplayName("Map a court case to a new court case when search response has yielded a single match")
+        @DisplayName("Map a defendant to a new defendant when search response has yielded a single match")
         @Test
-        void givenSingleMatch_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatch() {
+        void givenSingleMatch_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithSingleMatch() {
             var match = Match.builder()
                     .offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
@@ -123,31 +121,32 @@ class CaseMapperTest {
                             .build())
                     .build();
 
-            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
+            var defendant = CaseMapper.newFromLibraCase(aLibraCase)
+                    .getDefendants()
+                    .get(0);
             var matchResponse = MatchResponse.builder()
                     .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                     .matches(List.of(match))
                     .build();
 
-            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            final var newDefendant = CaseMapper.updateDefendantWithMatches(defendant, matchResponse);
 
-            assertThat(courtCaseNew).isNotSameAs(courtCase);
-            final var firstDefendant = courtCaseNew.getFirstDefendant();
-            assertThat(firstDefendant.getCrn()).isEqualTo(CRN);
-            assertThat(firstDefendant.getPnc()).isEqualTo(PNC);
-            assertThat(firstDefendant.getProbationStatus()).isEqualTo("CURRENT");
-            assertThat(firstDefendant.getPreviouslyKnownTerminationDate()).isNull();
-            assertThat(firstDefendant.getBreach()).isNull();
-            assertThat(firstDefendant.getPreSentenceActivity()).isTrue();
-            assertThat(firstDefendant.getAwaitingPsr()).isTrue();
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
+            assertThat(newDefendant).isNotSameAs(defendant);
+            assertThat(newDefendant.getCrn()).isEqualTo(CRN);
+            assertThat(newDefendant.getPnc()).isEqualTo(PNC);
+            assertThat(newDefendant.getProbationStatus()).isEqualTo("CURRENT");
+            assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
+            assertThat(newDefendant.getBreach()).isNull();
+            assertThat(newDefendant.getPreSentenceActivity()).isTrue();
+            assertThat(newDefendant.getAwaitingPsr()).isTrue();
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
             OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
-        @DisplayName("Map a court case to a new court case when search response has yielded a single non-exact match")
+        @DisplayName("Map a defendant to a new defendant when search response has yielded a single non-exact match")
         @Test
-        void givenSingleMatchOnNameButNonExact_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatchButNoCrn() {
+        void givenSingleMatchOnNameButNonExact_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithSingleMatchButNoCrn() {
             var previouslyKnownTerminationDate = LocalDate.of(2016, Month.DECEMBER, 25);
             var match = Match.builder().offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
@@ -160,58 +159,60 @@ class CaseMapperTest {
                             .build())
                     .build();
 
-            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
+            var defendant = CaseMapper.newFromLibraCase(aLibraCase)
+                    .getDefendants()
+                    .get(0);
             var matchResponse = MatchResponse.builder()
                     .matchedBy(OffenderSearchMatchType.NAME)
                     .matches(List.of(match))
                     .build();
 
-            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var newDefendant = CaseMapper.updateDefendantWithMatches(defendant, matchResponse);
 
-            assertThat(courtCaseNew).isNotSameAs(courtCase);
-            final var firstDefendant = courtCaseNew.getFirstDefendant();
-            assertThat(firstDefendant.getCrn()).isNull();
+            assertThat(newDefendant).isNotSameAs(defendant);
+            assertThat(newDefendant.getCrn()).isNull();
             // The new probation status details are all ignored because match is non-exact
-            assertThat(firstDefendant.getProbationStatus()).isNull();
-            assertThat(firstDefendant.getBreach()).isNull();
-            assertThat(firstDefendant.getPreviouslyKnownTerminationDate()).isNull();
-            assertThat(firstDefendant.getPreSentenceActivity()).isNull();
-            assertThat(firstDefendant.getAwaitingPsr()).isNull();
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
+            assertThat(newDefendant.getProbationStatus()).isNull();
+            assertThat(newDefendant.getBreach()).isNull();
+            assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
+            assertThat(newDefendant.getPreSentenceActivity()).isNull();
+            assertThat(newDefendant.getAwaitingPsr()).isNull();
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
             var expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, PNC);
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(expectedOffenderMatch);
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(expectedOffenderMatch);
         }
 
-        @DisplayName("Map a court case to a new court case when search response has yielded a single match but null probation status")
+        @DisplayName("Map a defendant to a new defendant when search response has yielded a single match but null probation status")
         @Test
-        void givenSingleMatchWithNoProbationStatus_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithSingleMatch() {
+        void givenSingleMatchWithNoProbationStatus_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithSingleMatch() {
             var match = Match.builder().offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
                             .build())
                     .build();
 
-            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
+            var defendant = CaseMapper.newFromLibraCase(aLibraCase)
+                    .getDefendants()
+                    .get(0);
             var matchResponse = MatchResponse.builder()
                     .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
                     .matches(List.of(match))
                     .build();
 
-            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var newDefendant = CaseMapper.updateDefendantWithMatches(defendant, matchResponse);
 
-            assertThat(courtCaseNew).isNotSameAs(courtCase);
-            final var firstDefendant = courtCaseNew.getFirstDefendant();
-            assertThat(firstDefendant.getCrn()).isEqualTo(CRN);
-            assertThat(firstDefendant.getProbationStatus()).isNull();
-            assertThat(firstDefendant.getBreach()).isNull();
-            assertThat(firstDefendant.getPreviouslyKnownTerminationDate()).isNull();
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(1);
+            assertThat(newDefendant).isNotSameAs(defendant);
+            assertThat(newDefendant.getCrn()).isEqualTo(CRN);
+            assertThat(newDefendant.getProbationStatus()).isNull();
+            assertThat(newDefendant.getBreach()).isNull();
+            assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
             var offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
-        @DisplayName("Map a court case to a new court case when search response has yielded multiple matches")
+        @DisplayName("Map a defendant to a new defendant when search response has yielded multiple matches")
         @Test
-        void givenMultipleMatches_whenMapNewFromCaseAndSearchResponse_thenCreateNewCaseWithListOfMatches() {
+        void givenMultipleMatches_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithListOfMatches() {
             var match1 = Match.builder().offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
                             .build())
@@ -221,34 +222,25 @@ class CaseMapperTest {
                             .build())
                     .build();
 
-            var courtCase = CaseMapper.newFromLibraCase(aLibraCase);
+            var defendant = CaseMapper.newFromLibraCase(aLibraCase)
+                    .getDefendants()
+                    .get(0);
             var matchResponse = MatchResponse.builder()
                     .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
                     .matches(List.of(match1, match2))
                     .build();
 
-            var courtCaseNew = CaseMapper.newFromCourtCaseWithMatches(courtCase, buildMatchDetails(matchResponse));
+            var newDefendant = CaseMapper.updateDefendantWithMatches(defendant, matchResponse);
 
-            assertThat(courtCaseNew).isNotSameAs(courtCase);
-            final var firstDefendant = courtCaseNew.getFirstDefendant();
-            assertThat(firstDefendant.getCrn()).isNull();
-            assertThat(firstDefendant.getProbationStatus()).isNull();
-            assertThat(firstDefendant.getBreach()).isNull();
-            assertThat(firstDefendant.getPreviouslyKnownTerminationDate()).isNull();
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).hasSize(2);
+            assertThat(newDefendant).isNotSameAs(defendant);
+            assertThat(newDefendant.getCrn()).isNull();
+            assertThat(newDefendant.getProbationStatus()).isNull();
+            assertThat(newDefendant.getBreach()).isNull();
+            assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(2);
             var offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, PNC);
             var offenderMatch2 = buildOffenderMatch(MatchType.PARTIAL_NAME, "CRN1", null, null);
-            assertThat(courtCaseNew.getGroupedOffenderMatches().getMatches()).containsExactlyInAnyOrder(offenderMatch1, offenderMatch2);
-        }
-
-        private MatchDetails buildMatchDetails(MatchResponse matchResponse) {
-            return MatchDetails.builder()
-                    .matchType(OffenderSearchMatchType.domainMatchTypeOf(SearchResult.builder()
-                            .matchResponse(matchResponse)
-                            .build()))
-                    .matches(matchResponse.getMatches())
-                    .exactMatch(matchResponse.isExactMatch())
-                    .build();
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactlyInAnyOrder(offenderMatch1, offenderMatch2);
         }
 
         private OffenderMatch buildOffenderMatch(MatchType matchType, String crn, String cro, String pnc) {

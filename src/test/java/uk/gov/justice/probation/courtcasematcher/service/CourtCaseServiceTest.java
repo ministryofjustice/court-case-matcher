@@ -20,7 +20,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestCl
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -73,7 +72,6 @@ class CourtCaseServiceTest {
                 .caseNo(CASE_NO)
                 .caseId(CASE_ID)
                 .defendants(defendants)
-                .groupedOffenderMatches(matches)
                 .source(DataSource.LIBRA)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
@@ -94,7 +92,6 @@ class CourtCaseServiceTest {
                         .build()))
                 .defendants(defendants)
                 .caseId(CASE_ID)
-                .groupedOffenderMatches(matches)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
         when(courtCaseRepo.postDefendantMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
@@ -119,7 +116,6 @@ class CourtCaseServiceTest {
                 .courtCode(COURT_CODE)
                 .build()))
             .defendants(List.of(Defendant.builder().build()))
-            .groupedOffenderMatches(matches)
             .caseNo(CASE_NO)
             .build();
         when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
@@ -175,28 +171,6 @@ class CourtCaseServiceTest {
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
     }
 
-    @DisplayName("Save a court case with a search response.")
-    @Test
-    void givenSearchResponse_whenCreateCourtCase_thenPutCase() {
-
-        final var matchResponse = MatchResponse.builder().build();
-        final var courtCase = CourtCase.builder()
-                .hearingDays(Collections.singletonList(HearingDay.builder()
-                        .courtCode(COURT_CODE)
-                        .build()))
-                .defendants(defendants)
-                .caseId(CASE_ID)
-                .caseNo(CASE_NO)
-                .groupedOffenderMatches(matches)
-                .build();
-        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
-        when(courtCaseRepo.postDefendantMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
-
-        courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build());
-
-        verify(courtCaseRepo).putCourtCase(courtCase);
-        verify(courtCaseRepo).postDefendantMatches(CASE_ID, defendants);
-    }
 
     @DisplayName("Save a search responses even if case put fails.")
     @Test
@@ -209,34 +183,13 @@ class CourtCaseServiceTest {
                 .defendants(defendants)
                 .caseId(CASE_ID)
                 .caseNo(CASE_NO)
-                .groupedOffenderMatches(matches)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenThrow(new RuntimeException("bang!"));
         when(courtCaseRepo.postDefendantMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> courtCaseService.createCase(courtCase, SearchResult.builder().matchResponse(matchResponse).build()))
+                .isThrownBy(() -> courtCaseService.saveCourtCase(courtCase))
                 .withMessage("bang!");
-
-        verify(courtCaseRepo).putCourtCase(courtCase);
-        verify(courtCaseRepo).postDefendantMatches(CASE_ID, defendants);
-    }
-
-    @DisplayName("Save a court case without a search response.")
-    @Test
-    void givenNoSearchResponse_whenCreateCourtCase_thenReturn() {
-        final var courtCase = CourtCase.builder()
-                .hearingDays(Collections.singletonList(HearingDay.builder()
-                        .courtCode(COURT_CODE)
-                        .build()))
-                .defendants(defendants)
-                .caseId(CASE_ID)
-                .caseNo(CASE_NO)
-                .build();
-        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
-        when(courtCaseRepo.postDefendantMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
-
-        courtCaseService.createCase(courtCase, null);
 
         verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postDefendantMatches(CASE_ID, defendants);

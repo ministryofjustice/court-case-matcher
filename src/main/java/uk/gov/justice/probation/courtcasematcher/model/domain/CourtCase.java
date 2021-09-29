@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,8 +13,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import static org.springframework.util.StringUtils.hasText;
 
 @Data
 @Builder
@@ -31,20 +28,12 @@ public class CourtCase implements Serializable {
     private List<Defendant> defendants;
     private List<HearingDay> hearingDays;
 
-    // TODO: Remove groupedOffenderMatches
-    @JsonIgnore
-    private final GroupedOffenderMatches groupedOffenderMatches;
-
     private final DataSource source;
 
     public boolean shouldMatchToOffender() {
-        return Optional.ofNullable(defendants)
-                .map(defs -> getFirstDefendant())
-                .filter(defendant -> defendant.getType() == DefendantType.PERSON)
-                .filter(defendant -> !hasText(defendant.getCrn()))
-                .isPresent();
+        return defendants.stream()
+                .anyMatch(Defendant::shouldMatchToOffender);
     }
-
 
     public LocalDate getDateOfHearing() {
         return getFirstHearingDay()

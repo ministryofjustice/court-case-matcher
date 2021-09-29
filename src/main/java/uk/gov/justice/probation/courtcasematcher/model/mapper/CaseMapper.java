@@ -21,6 +21,8 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
 
 import java.util.Collections;
 import java.util.List;
@@ -148,34 +150,38 @@ public class CaseMapper {
                 .withCaseId(String.valueOf(existingCourtCase.getCaseId()));
     }
 
-    public static CourtCase newFromCourtCaseWithMatches(CourtCase incomingCase, MatchDetails matchDetails) {
+    public static Defendant updateDefendantWithMatches(Defendant defendant, MatchResponse matchResponse) {
+        final var matchType = Optional.ofNullable(matchResponse)
+                .map(MatchResponse::getMatchedBy)
+                .map(foo -> foo.asDomain(Optional.ofNullable(defendant.getPnc()).isPresent()))
+                .orElse(MatchType.UNKNOWN);
 
-        var newCase = incomingCase
-                .withGroupedOffenderMatches(buildGroupedOffenderMatch(matchDetails.getMatches(), matchDetails.getMatchType()));
+        var newDefendant = defendant
+                .withGroupedOffenderMatches(buildGroupedOffenderMatch(matchResponse.getMatches(), matchType));
 
-        if (matchDetails.isExactMatch()) {
-            var offender = matchDetails.getMatches().get(0).getOffender();
-            // TODO: This currently assumes a single defendant - needs updating to handle multiples
-            var defendant = incomingCase.getFirstDefendant();
+        if (matchResponse.isExactMatch()) {
+            var offender = matchResponse.getMatches().get(0).getOffender();
             var probationStatus = offender.getProbationStatus();
-            newCase = newCase
-                    .withDefendants(Collections.singletonList(defendant
-                            .withBreach(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getInBreach).orElse(null))
-                            .withPreviouslyKnownTerminationDate(
-                                    Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getPreviouslyKnownTerminationDate).orElse(null))
-                            .withProbationStatus(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
-                            .withPreSentenceActivity(probationStatus != null && probationStatus.isPreSentenceActivity())
-                            .withAwaitingPsr(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isAwaitingPsr).orElse(false))
-                            .withCrn(offender.getOtherIds().getCrn())
-                            .withCro(offender.getOtherIds().getCroNumber())
-                            .withPnc(offender.getOtherIds().getPncNumber())
-                    ));
+            newDefendant = buildDefendant(offender, newDefendant, probationStatus);
         }
 
-        return newCase;
+        return newDefendant;
     }
 
-    private static GroupedOffenderMatches buildGroupedOffenderMatch(List<Match> matches, MatchType matchType) {
+    private static Defendant buildDefendant(Offender offender, Defendant defendant, ProbationStatusDetail probationStatus) {
+        return defendant
+                .withBreach(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getInBreach).orElse(null))
+                .withPreviouslyKnownTerminationDate(
+                        Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getPreviouslyKnownTerminationDate).orElse(null))
+                .withProbationStatus(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getStatus).orElse(null))
+                .withPreSentenceActivity(probationStatus != null && probationStatus.isPreSentenceActivity())
+                .withAwaitingPsr(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isAwaitingPsr).orElse(false))
+                .withCrn(offender.getOtherIds().getCrn())
+                .withCro(offender.getOtherIds().getCroNumber())
+                .withPnc(offender.getOtherIds().getPncNumber());
+    }
+
+    public static GroupedOffenderMatches buildGroupedOffenderMatch(List<Match> matches, MatchType matchType) {
 
         if (matches == null || matches.isEmpty()) {
             return GroupedOffenderMatches.builder().matches(Collections.emptyList()).build();

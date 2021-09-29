@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
@@ -40,9 +39,6 @@ public class MatchRequest {
     @AllArgsConstructor
     public static class Factory {
         private static final String ERROR_NO_NAME = "No surname provided";
-
-        @Autowired
-        private NameHelper nameHelper;
 
         @Setter
         @Value("${offender-search.use-dob-with-pnc:false}")
@@ -70,8 +66,8 @@ public class MatchRequest {
             return builder.build();
         }
 
-        public MatchRequest buildFrom(CourtCase courtCase) throws IllegalArgumentException {
-            return buildFrom(courtCase.getFirstDefendant().getPnc(), courtCase.getFirstDefendant().getName(), courtCase.getFirstDefendant().getDateOfBirth());
+        public MatchRequest buildFrom(Defendant firstDefendant) throws IllegalArgumentException {
+            return buildFrom(firstDefendant.getPnc(), firstDefendant.getName(), firstDefendant.getDateOfBirth());
         }
     }
 }

@@ -8,9 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
+
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -24,33 +27,36 @@ public class MatcherService {
     @Autowired
     private final MatchRequest.Factory matchRequestFactory;
 
-    // TODO: Change return type to CourtCase
-    public Mono<SearchResult> getSearchResponse(CourtCase courtCase) {
-        // TODO: Stream over courtCase.getDefendants()
-        final MatchRequest matchRequest;
-        try {
-            matchRequest = matchRequestFactory.buildFrom(courtCase);
-        } catch (Exception e) {
-            log.warn(String.format("Unable to create MatchRequest for caseNo: %s, courtCode: %s", courtCase.getCaseNo(), courtCase.getCourtCode()), e);
-            throw e;
-        }
-        return Mono.defer(() -> Mono.just(matchRequest))
+    public Mono<CourtCase> matchDefendants(CourtCase courtCase) {
+
+        return Mono.just(courtCase.getDefendants()
+                        .stream()
+                        .map(this::matchDefendant)
+                        .map(Mono::block)
+                        .collect(Collectors.toList())
+                )
+                .map(courtCase::withDefendants)
+                ;
+        // TODO: Add events back in
+//        matcherService.getSearchResponse(courtCase)
+//                .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
+//                .doOnError(throwable -> {
+//                    log.error(throwable.getMessage());
+//                    telemetryService.trackOffenderMatchFailureEvent(courtCase);
+//                })
+    }
+
+    private Mono<Defendant> matchDefendant(Defendant defendant) {
+        return Mono.just(defendant)
+                .map(firstDefendant -> matchRequestFactory.buildFrom(firstDefendant))
+                .doOnError(e ->
+                        log.warn(String.format("Unable to create MatchRequest for defendantId: %s", defendant.getDefendantId()), e))
                 .flatMap(offenderSearchRestClient::match)
-                .map(searchResponse -> {
-                    log.info(String.format("Match results for caseNo: %s, courtCode: %s - matchedBy: %s, matchCount: %s",
-                            courtCase.getCaseNo(), courtCase.getCourtCode(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size()));
-                    return searchResponse;
-                })
-                .doOnSuccess((data) -> {
-                    if (data == null) {
-                        log.info(String.format("Match results for caseNo: %s, courtCode: %s - Empty response from OffenderSearchRestClient",
-                                courtCase.getCaseNo(), courtCase.getCourtCode()));
-                    }
-                })
-                .map(searchResponse -> SearchResult.builder()
-                        .matchResponse(searchResponse)
-                        .matchRequest(matchRequest)
-                        .build());
+
+                .doOnSuccess(searchResponse -> log.info(String.format("Match results for defendantId: %s - matchedBy: %s, matchCount: %s",
+                        defendant.getDefendantId(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size())))
+                .map(matchResponse -> CaseMapper.updateDefendantWithMatches(defendant, matchResponse))
+                ;
     }
 
 }

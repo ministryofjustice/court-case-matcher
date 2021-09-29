@@ -10,6 +10,9 @@ import lombok.With;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
+import static org.springframework.util.StringUtils.hasText;
 
 @Data
 @Builder
@@ -36,4 +39,11 @@ public class Defendant {
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;
+
+    public boolean shouldMatchToOffender() {
+        return Optional.of(this)
+                .filter(defendant -> defendant.getType() == DefendantType.PERSON)
+                .filter(defendant -> !hasText(defendant.getCrn()))
+                .isPresent();
+    }
 }
