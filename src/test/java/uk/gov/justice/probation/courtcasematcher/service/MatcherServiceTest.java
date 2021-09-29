@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
@@ -39,7 +40,9 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -68,12 +71,14 @@ class MatcherServiceTest {
             .build();
 
     private static final CourtCase COURT_CASE;
+
     static {
         final var defendant1 = Defendant.builder()
                 .defendantId("id1")
                 .name(DEF_NAME)
                 .dateOfBirth(DEF_DOB)
                 .pnc(PNC)
+                .type(DefendantType.PERSON)
                 .build();
 
         final var defendant2 = Defendant.builder()
@@ -81,12 +86,15 @@ class MatcherServiceTest {
                 .name(DEF_NAME_2)
                 .dateOfBirth(DEF_DOB_2)
                 .pnc(PNC_2)
+                .type(DefendantType.PERSON)
                 .build();
 
         COURT_CASE = DomainDataHelper.aCourtCaseBuilderWithAllFields()
                 .defendants(List.of(defendant1, defendant2))
                 .build();
     }
+    private static final Defendant FIRST_DEFENDANT = COURT_CASE.getDefendants().get(0);
+    private static final Defendant SECOND_DEFENDANT = COURT_CASE.getDefendants().get(1);
 
     private final OtherIds otherIds = OtherIds.builder()
             .crn(CRN)
@@ -123,6 +131,12 @@ class MatcherServiceTest {
             .matchedBy(OffenderSearchMatchType.NOTHING)
             .matches(Collections.emptyList())
             .build();
+    private final MatchRequest matchRequest1 = MatchRequest.builder()
+            .pncNumber("1")
+            .build();
+    private final MatchRequest matchRequest2 = MatchRequest.builder()
+            .pncNumber("2")
+            .build();
 
     @Mock
     private OffenderSearchRestClient offenderSearchRestClient;
@@ -132,12 +146,8 @@ class MatcherServiceTest {
 
     @Mock
     private MatchRequest.Factory matchRequestFactory;
-
     @Mock
-    private MatchRequest matchRequest1;
-
-    @Mock
-    private MatchRequest matchRequest2;
+    private TelemetryService telemetryService;
 
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
@@ -151,13 +161,13 @@ class MatcherServiceTest {
         Logger logger = (Logger) getLogger(LoggerFactory.getLogger(MatcherService.class).getName());
         logger.addAppender(mockAppender);
 
-        matcherService = new MatcherService(offenderSearchRestClient, matchRequestFactory);
+        matcherService = new MatcherService(offenderSearchRestClient, matchRequestFactory, telemetryService);
     }
 
     @Test
     void givenIncomingDefendantDoesNotMatchAnOffender_whenMatchCalled_thenLog() {
-        when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(0))).thenReturn(matchRequest1);
-        when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(1))).thenReturn(matchRequest2);
+        when(matchRequestFactory.buildFrom(FIRST_DEFENDANT)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(SECOND_DEFENDANT)).thenReturn(matchRequest2);
         when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(noMatches));
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
 
@@ -176,8 +186,8 @@ class MatcherServiceTest {
 
     @Test
     void givenException_whenBuildingMatchRequest_thenLog() {
-        final var courtCase = COURT_CASE.withDefendants(singletonList(COURT_CASE.getDefendants().get(0)));
-        when(matchRequestFactory.buildFrom(courtCase.getDefendants().get(0)))
+        final var courtCase = COURT_CASE.withDefendants(singletonList(FIRST_DEFENDANT));
+        when(matchRequestFactory.buildFrom(FIRST_DEFENDANT))
                 .thenThrow(new IllegalArgumentException("This is the reason"));
 
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -189,12 +199,13 @@ class MatcherServiceTest {
                 .contains("Unable to create MatchRequest for defendantId: id1");
         assertThat(loggingEvent.getThrowableProxy().getClassName()).isEqualTo("java.lang.IllegalArgumentException");
         assertThat(loggingEvent.getThrowableProxy().getMessage()).isEqualTo("This is the reason");
+        verify(telemetryService).trackOffenderMatchFailureEvent(FIRST_DEFENDANT, courtCase);
     }
 
     @Test
     void givenMatchesToMultipleOffenders_whenMatchCalled_thenReturn() {
-        when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(0))).thenReturn(matchRequest1);
-        when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(1))).thenReturn(matchRequest2);
+        when(matchRequestFactory.buildFrom(FIRST_DEFENDANT)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(SECOND_DEFENDANT)).thenReturn(matchRequest2);
         when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(multipleExactMatches));
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
 
@@ -207,12 +218,15 @@ class MatcherServiceTest {
         assertThat(groupedOffenderMatches.getMatches().get(0).getMatchIdentifiers().getCrn()).isSameAs(CRN);
         assertThat(groupedOffenderMatches.getMatches().get(1).getMatchType()).isSameAs(MatchType.NAME_DOB_PNC);
         assertThat(groupedOffenderMatches.getMatches().get(1).getMatchIdentifiers().getCrn()).isSameAs(CRN);
+
+        verify(telemetryService).trackOffenderMatchEvent(FIRST_DEFENDANT, COURT_CASE, multipleExactMatches);
+        verify(telemetryService).trackOffenderMatchEvent(SECOND_DEFENDANT, COURT_CASE, noMatches);
     }
 
     @Test
     void givenMatchesToSingleOffender_whenSearchResponse_thenReturnWithProbationStatus() {
-        when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(0))).thenReturn(matchRequest1);
-        when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(1))).thenReturn(matchRequest2);
+        when(matchRequestFactory.buildFrom(FIRST_DEFENDANT)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(SECOND_DEFENDANT)).thenReturn(matchRequest2);
         when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(singleExactMatch));
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(singleExactMatch));
 
@@ -244,6 +258,20 @@ class MatcherServiceTest {
         assertThat(updatedCase).isNotNull();
         assertThat(updatedCase.getDefendants().get(0).getGroupedOffenderMatches().getMatches()).isEmpty();
         assertThat(updatedCase.getDefendants().get(1).getGroupedOffenderMatches().getMatches()).isEmpty();
+
+        verify(telemetryService).trackOffenderMatchEvent(FIRST_DEFENDANT, COURT_CASE, noMatches);
+        verify(telemetryService).trackOffenderMatchEvent(SECOND_DEFENDANT, COURT_CASE, noMatches);
+    }
+
+    @Test
+    void givenDefendantShouldNotMatch_whenSearchResponse_thenDontSearch() {
+        final var mockDefendant = mock(Defendant.class);
+        when(mockDefendant.shouldMatchToOffender()).thenReturn(false);
+        var courtCase = COURT_CASE.withDefendants(singletonList(mockDefendant));
+        var updatedCase = matcherService.matchDefendants(courtCase).block();
+
+        assertThat(updatedCase).isEqualTo(courtCase);
+        verifyNoMoreInteractions(offenderSearchRestClient, telemetryService);
     }
 
     private LoggingEvent captureLogEvent(int index) {

@@ -74,32 +74,6 @@ class CourtCaseProcessorTest {
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
-    @DisplayName("Given an error in matcher, track that failure and save with no matches")
-    @Test
-    void givenErrorInMatcherService_whenReceiveCase_thenSave() {
-        // TODO: This error handling to move into matcher service
-        var courtCase = CourtCase.builder()
-                .hearingDays(Collections.singletonList(HearingDay.builder()
-                        .courtCode("SHF")
-                        .build()))
-                .defendants(Collections.singletonList(Defendant.builder()
-                        .type(PERSON)
-                        .build()))
-                .build();
-
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
-        when(matcherService.matchDefendants(courtCase)).thenReturn(Mono.error(new IllegalArgumentException()));
-
-        messageProcessor.process(courtCase, MESSAGE_ID);
-
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
-        verify(telemetryService).trackOffenderMatchFailureEvent(eq(courtCase));
-        verify(courtCaseService).getCourtCase(any(CourtCase.class));
-
-        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
-        verifyNoMoreInteractions(courtCaseService, telemetryService);
-    }
-
     @DisplayName("Receive a case which does not need matching, then update detail and save")
     @Test
     void whenValidMessageReceivedForMatchedCase_ThenUpdateAndSave() {

@@ -12,8 +12,8 @@ import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
-import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -77,13 +77,14 @@ public class CourtCaseService {
             updatedCase = updatedCase.withCaseNo(caseId);
         }
 
-        // Assign defendant ID
-        var defendant = courtCase.getFirstDefendant();
-        if (defendant.getDefendantId() == null) {
-            final var defendantId = UUID.randomUUID().toString();
-            defendant = defendant.withDefendantId(defendantId);
-            updatedCase = updatedCase.withDefendants(List.of(defendant));
-        }
+        // Assign defendant IDs
+        final var updatedDefendants = courtCase.getDefendants()
+                .stream()
+                .map(defendant -> defendant.withDefendantId(
+                        defendant.getDefendantId() == null ? UUID.randomUUID().toString() : defendant.getDefendantId()
+                ))
+                .collect(Collectors.toList());
+        updatedCase = updatedCase.withDefendants(updatedDefendants);
 
         return updatedCase;
     }

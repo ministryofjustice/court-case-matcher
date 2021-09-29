@@ -27,7 +27,7 @@ public class TelemetryService {
     static final String CASE_ID_KEY = "caseId";
     static final String MATCHED_BY_KEY = "matchedBy";
     static final String MATCHES_KEY = "matches";
-    static final String PNCS_KEY = "pncs";
+    static final String PNC_KEY = "pnc";
     static final String CRNS_KEY = "crns";
     static final String HEARING_DATE_KEY = "hearingDate";
     static final String SQS_MESSAGE_ID_KEY = "sqsMessageId";
@@ -38,16 +38,23 @@ public class TelemetryService {
         telemetryClient.trackEvent(eventType.eventName);
     }
 
-    public void trackOffenderMatchFailureEvent(CourtCase courtCase) {
-        telemetryClient.trackEvent(TelemetryEventType.OFFENDER_MATCH_ERROR.eventName, getCourtCaseProperties(courtCase), Collections.emptyMap());
+    public void trackOffenderMatchFailureEvent(Defendant defendant, CourtCase courtCase) {
+        final var properties = getCourtCaseProperties(courtCase);
+
+        ofNullable(defendant.getPnc())
+                .ifPresent((pnc) -> properties.put(PNC_KEY, pnc));
+        telemetryClient.trackEvent(TelemetryEventType.OFFENDER_MATCH_ERROR.eventName, properties, Collections.emptyMap());
     }
 
-    public void trackOffenderMatchEvent(CourtCase courtCase, MatchResponse matchResponse) {
+    public void trackOffenderMatchEvent(Defendant defendant, CourtCase courtCase, MatchResponse matchResponse) {
         if (matchResponse == null) {
             return;
         }
 
         Map<String, String> properties = getCourtCaseProperties(courtCase);
+
+        ofNullable(defendant.getPnc())
+                .ifPresent((pnc) -> properties.put(PNC_KEY, pnc));
 
         int matchCount = matchResponse.getMatchCount();
         ofNullable(matchResponse.getMatchedBy())
@@ -102,12 +109,6 @@ public class TelemetryService {
         ofNullable(courtCase.getSessionStartTime())
             .map(date -> date.format(DateTimeFormatter.ISO_DATE))
             .ifPresent((date) -> properties.put(HEARING_DATE_KEY, date));
-        ofNullable(courtCase.getDefendants())
-                .map(defendants -> defendants.stream()
-                        .map(Defendant::getPnc)
-                        .collect(Collectors.joining(","))
-                )
-                .ifPresent((pncs) -> properties.put(PNCS_KEY, pncs));
         ofNullable(courtCase.getCaseId())
                 .ifPresent((caseId) -> properties.put(CASE_ID_KEY, caseId));
         ofNullable(courtCase.getSource())

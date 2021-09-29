@@ -62,10 +62,6 @@ public class CourtCaseProcessor {
         log.info("Matching offender and saving case no {} for court {}, pnc {}", courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getFirstDefendant().getPnc());
 
         matcherService.matchDefendants(courtCase)
-                .doOnError(throwable -> {
-                    log.error(throwable.getMessage());
-                    telemetryService.trackOffenderMatchFailureEvent(courtCase);
-                })
                 .onErrorReturn(courtCase)
                 .doOnSuccess(courtCaseService::saveCourtCase)
                 .block();

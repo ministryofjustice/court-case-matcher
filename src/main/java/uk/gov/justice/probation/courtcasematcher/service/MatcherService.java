@@ -26,27 +26,22 @@ public class MatcherService {
 
     @Autowired
     private final MatchRequest.Factory matchRequestFactory;
+    @Autowired
+    private TelemetryService telemetryService;
 
     public Mono<CourtCase> matchDefendants(CourtCase courtCase) {
 
         return Mono.just(courtCase.getDefendants()
                         .stream()
-                        .map(this::matchDefendant)
+                        .map(defendant -> defendant.shouldMatchToOffender() ? matchDefendant(defendant, courtCase) : Mono.just(defendant))
                         .map(Mono::block)
                         .collect(Collectors.toList())
                 )
                 .map(courtCase::withDefendants)
                 ;
-        // TODO: Add events back in
-//        matcherService.getSearchResponse(courtCase)
-//                .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
-//                .doOnError(throwable -> {
-//                    log.error(throwable.getMessage());
-//                    telemetryService.trackOffenderMatchFailureEvent(courtCase);
-//                })
     }
 
-    private Mono<Defendant> matchDefendant(Defendant defendant) {
+    private Mono<Defendant> matchDefendant(Defendant defendant, CourtCase courtCase) {
         return Mono.just(defendant)
                 .map(firstDefendant -> matchRequestFactory.buildFrom(firstDefendant))
                 .doOnError(e ->
@@ -55,6 +50,11 @@ public class MatcherService {
 
                 .doOnSuccess(searchResponse -> log.info(String.format("Match results for defendantId: %s - matchedBy: %s, matchCount: %s",
                         defendant.getDefendantId(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size())))
+                .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(defendant, courtCase, result))
+                .doOnError(throwable -> {
+                    log.error(throwable.getMessage());
+                    telemetryService.trackOffenderMatchFailureEvent(defendant, courtCase);
+                })
                 .map(matchResponse -> CaseMapper.updateDefendantWithMatches(defendant, matchResponse))
                 ;
     }

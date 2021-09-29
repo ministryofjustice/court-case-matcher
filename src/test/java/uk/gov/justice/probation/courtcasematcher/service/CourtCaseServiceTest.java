@@ -115,7 +115,7 @@ class CourtCaseServiceTest {
             .hearingDays(Collections.singletonList(HearingDay.builder()
                 .courtCode(COURT_CODE)
                 .build()))
-            .defendants(List.of(Defendant.builder().build()))
+            .defendants(List.of(Defendant.builder().build(), Defendant.builder().build()))
             .caseNo(CASE_NO)
             .build();
         when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
@@ -128,6 +128,7 @@ class CourtCaseServiceTest {
         final var capturedCase = courtCaseCaptor.getValue();
         assertThat(capturedCase.getCaseId()).hasSameSizeAs(CASE_ID);
         assertThat(capturedCase.getDefendants().get(0).getDefendantId()).hasSameSizeAs(DEFENDANT_UUID_1);
+        assertThat(capturedCase.getDefendants().get(1).getDefendantId()).hasSameSizeAs(DEFENDANT_UUID_1);
         assertThat(capturedCase.getCaseNo()).isEqualTo(CASE_NO);
 
         verify(courtCaseRepo).postDefendantMatches(notNull(), notNull());
