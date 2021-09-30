@@ -11,7 +11,6 @@ import lombok.Setter;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -57,52 +56,6 @@ public class CCSCourtCase implements Serializable {
 
     @JsonIgnore
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
-
-    public boolean isPerson() {
-        return Optional.ofNullable(defendantType).map(defType -> defType == CCSDefendantType.PERSON).orElse(false);
-    }
-
-    public static CCSCourtCase of(CourtCase domain) {
-        final var firstDefendant = domain.getFirstDefendant();
-        return CCSCourtCase.builder()
-                .source(CCSDataSource.of(domain.getSource()))
-                .defendantId(firstDefendant.getDefendantId())
-                .awaitingPsr(firstDefendant.getAwaitingPsr())
-                .breach(firstDefendant.getBreach())
-                .caseId(domain.getCaseId())
-                .caseNo(domain.getCaseNo())
-
-
-                .courtCode(domain.getCourtCode())
-                .courtRoom(domain.getFirstHearingDay().map(HearingDay::getCourtRoom).orElse(null))
-                .sessionStartTime(domain.getFirstHearingDay().map(HearingDay::getSessionStartTime).orElse(null))
-                .listNo(domain.getFirstHearingDay().map(HearingDay::getListNo).orElse(null))
-
-                .crn(firstDefendant.getCrn())
-                .cro(firstDefendant.getCro())
-                .pnc(firstDefendant.getPnc())
-                .preSentenceActivity(firstDefendant.getPreSentenceActivity())
-                .previouslyKnownTerminationDate(firstDefendant.getPreviouslyKnownTerminationDate())
-                .probationStatusActual(firstDefendant.getProbationStatus())
-                .suspendedSentenceOrder(firstDefendant.getSuspendedSentenceOrder())
-                .defendantDob(firstDefendant.getDateOfBirth())
-                .defendantName(CaseMapper.nameFrom(firstDefendant.getName()))
-                .defendantType(CCSDefendantType.of(firstDefendant.getType()))
-                .defendantSex(firstDefendant.getSex())
-
-                .name(Optional.ofNullable(firstDefendant.getName())
-                        .map(CCSName::of)
-                        .orElse(null))
-                .defendantAddress(Optional.ofNullable(firstDefendant.getAddress())
-                        .map(CCSAddress::of)
-                        .orElse(null))
-                .offences(Optional.ofNullable(firstDefendant.getOffences())
-                        .map(offences -> offences.stream()
-                                .map(CCSOffence::of)
-                                .collect(Collectors.toList()))
-                        .orElse(null))
-                .build();
-    }
 
     public CourtCase asDomain() {
         return CourtCase.builder()

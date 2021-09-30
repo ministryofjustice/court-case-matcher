@@ -133,21 +133,13 @@ public class CaseMapper {
                 .findFirst();
     }
 
-    public static CourtCase merge(ProbationStatusDetail probationStatusDetail, CourtCase existingCourtCase) {
-        final var firstDefendant = existingCourtCase.getFirstDefendant();
-
-        return existingCourtCase.withDefendants(Collections.singletonList(firstDefendant
+    public static Defendant merge(ProbationStatusDetail probationStatusDetail, Defendant existingDefendant) {
+        return existingDefendant
                         .withBreach(probationStatusDetail.getInBreach())
                         .withPreSentenceActivity(probationStatusDetail.isPreSentenceActivity())
                         .withPreviouslyKnownTerminationDate(probationStatusDetail.getPreviouslyKnownTerminationDate())
                         .withProbationStatus(probationStatusDetail.getStatus())
-                        .withAwaitingPsr(probationStatusDetail.isAwaitingPsr())
-                ))
-                // PK fields
-                .withCaseNo(existingCourtCase.getCaseNo())
-                // Fields to be retained
-                .withHearingDays(existingCourtCase.getHearingDays())
-                .withCaseId(String.valueOf(existingCourtCase.getCaseId()));
+                        .withAwaitingPsr(probationStatusDetail.isAwaitingPsr());
     }
 
     public static Defendant updateDefendantWithMatches(Defendant defendant, MatchResponse matchResponse) {

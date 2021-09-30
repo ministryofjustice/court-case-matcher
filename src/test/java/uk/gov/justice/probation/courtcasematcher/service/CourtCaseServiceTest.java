@@ -17,7 +17,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
 
@@ -46,6 +45,7 @@ class CourtCaseServiceTest {
     private static final Defendant DEFENDANT = Defendant.builder().defendantId(DEFENDANT_UUID_1).build();
     private static final Defendant DEFENDANT_2 = Defendant.builder().defendantId(DEFENDANT_UUID_2).build();
     private static final List<Defendant> defendants = List.of(DEFENDANT, DEFENDANT_2);
+    private static final String CRN_2 = "CRN_2";
 
     @Captor
     private ArgumentCaptor<CourtCase> courtCaseCaptor;
@@ -176,7 +176,6 @@ class CourtCaseServiceTest {
     @DisplayName("Save a search responses even if case put fails.")
     @Test
     void givenSearchResponse_whenCreateCourtCaseFails_thenPostMatches() {
-        final var matchResponse = MatchResponse.builder().build();
         final var courtCase = CourtCase.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
@@ -206,28 +205,51 @@ class CourtCaseServiceTest {
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .build()))
-                .defendants(Collections.singletonList(Defendant.builder()
+                .defendants(List.of(Defendant.builder()
                         .crn(CRN)
                         .defendantId(DEFENDANT_UUID_1)
                         .probationStatus("PREVIOUSLY_KNOWN")
-                        .build()))
+                        .build(),
+                        Defendant.builder()
+                                .crn(CRN_2)
+                                .defendantId(DEFENDANT_UUID_2)
+                                .probationStatus("NOT_SENTENCED")
+                                .build()
+                ))
                 .build();
         var probationStatusDetail = ProbationStatusDetail.builder()
                 .status("CURRENT")
                 .preSentenceActivity(true)
+                .build();
+        var probationStatusDetail2 = ProbationStatusDetail.builder()
+                .status("PREVIOUSLY_KNOWN")
+                .preSentenceActivity(false)
+                .awaitingPsr(true)
+                .inBreach(true)
                 .previouslyKnownTerminationDate(localDate)
                 .build();
         var searchResponse = SearchResponse.builder().probationStatusDetail(probationStatusDetail).build();
+        var searchResponse2 = SearchResponse.builder().probationStatusDetail(probationStatusDetail2).build();
 
         when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.just(new SearchResponses(List.of(searchResponse))));
+        when(offenderSearchRestClient.search(CRN_2)).thenReturn(Mono.just(new SearchResponses(List.of(searchResponse2))));
 
         var courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
-        assertThat(courtCaseResult.getDefendants().get(0).getProbationStatus()).isEqualTo("CURRENT");
-        assertThat(courtCaseResult.getDefendants().get(0).getPreviouslyKnownTerminationDate()).isEqualTo(localDate);
-        assertThat(courtCaseResult.getDefendants().get(0).getBreach()).isNull();
-        assertThat(courtCaseResult.getDefendants().get(0).getPreSentenceActivity()).isTrue();
+        final var firstDefendant = courtCaseResult.getDefendants().get(0);
+        assertThat(firstDefendant.getProbationStatus()).isEqualTo("CURRENT");
+        assertThat(firstDefendant.getPreviouslyKnownTerminationDate()).isNull();
+        assertThat(firstDefendant.getBreach()).isNull();
+        assertThat(firstDefendant.getPreSentenceActivity()).isTrue();
+
+        final var secondDefendant = courtCaseResult.getDefendants().get(1);
+        assertThat(secondDefendant.getProbationStatus()).isEqualTo("PREVIOUSLY_KNOWN");
+        assertThat(secondDefendant.getPreSentenceActivity()).isFalse();
+        assertThat(secondDefendant.getAwaitingPsr()).isTrue();
+        assertThat(secondDefendant.getPreviouslyKnownTerminationDate()).isEqualTo(localDate);
+
         verify(offenderSearchRestClient).search(CRN);
+        verify(offenderSearchRestClient).search(CRN_2);
     }
 
     @DisplayName("Given more than one SearchResponse from offender search, ignore and keep probation status as-is")
@@ -278,7 +300,7 @@ class CourtCaseServiceTest {
 
         CourtCase courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
-        assertThat(courtCaseResult).isSameAs(courtCase);
+        assertThat(courtCaseResult).isEqualTo(courtCase);
         verify(offenderSearchRestClient).search(CRN);
     }
 

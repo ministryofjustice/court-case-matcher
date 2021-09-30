@@ -14,8 +14,6 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-import java.util.Optional;
-
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Service
@@ -59,8 +57,6 @@ public class CourtCaseProcessor {
 
 
     private void applyMatches(final CourtCase courtCase) {
-        log.info("Matching offender and saving case no {} for court {}, pnc {}", courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getFirstDefendant().getPnc());
-
         matcherService.matchDefendants(courtCase)
                 .onErrorReturn(courtCase)
                 .doOnSuccess(courtCaseService::saveCourtCase)
@@ -68,12 +64,10 @@ public class CourtCaseProcessor {
     }
 
     private void updateAndSave(final CourtCase courtCase) {
-        log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getFirstDefendant().getCrn(), courtCase.getCourtCode());
+        log.info("Upsert caseId {}", courtCase.getCaseId());
 
-        Optional.ofNullable(courtCase.getFirstDefendant().getCrn())
-            .map(crn -> courtCaseService.updateProbationStatusDetail(courtCase)
-                .onErrorReturn(courtCase))
-            .orElse(Mono.just(courtCase))
-            .subscribe(courtCaseService::saveCourtCase);
+        courtCaseService.updateProbationStatusDetail(courtCase)
+                .onErrorResume(t -> Mono.just(courtCase))
+                .subscribe(courtCaseService::saveCourtCase);
     }
 }

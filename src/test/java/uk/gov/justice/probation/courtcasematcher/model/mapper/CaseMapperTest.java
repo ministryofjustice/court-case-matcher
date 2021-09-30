@@ -299,7 +299,7 @@ class CaseMapperTest {
 
             var courtCase = CaseMapper.newFromLibraCase(aCase);
 
-            final var firstDefendant = courtCase.getFirstDefendant();
+            final var firstDefendant = courtCase.getDefendants().get(0);
             assertThat(firstDefendant.getOffences()).hasSize(2);
             var offence = firstDefendant.getOffences().get(0);
             assertThat(offence.getSequenceNumber()).isEqualTo(1);
@@ -403,7 +403,7 @@ class CaseMapperTest {
         void givenCaseFromJson_whenMergeWithExistingCase_ThenUpdateExistingCase() {
 
             final var updatedLibraCase = libraCase.withDefendants(singletonList(
-                    libraCase.getFirstDefendant()
+                    libraCase.getDefendants().get(0)
                             .withDateOfBirth(null)
             ));
 
@@ -428,7 +428,7 @@ class CaseMapperTest {
             var courtCase = CaseMapper.merge(libraCase, existingCourtCase);
 
             assertThat(courtCase.getCaseId()).isEqualTo(existingCaseId);
-            assertThat(courtCase.getFirstDefendant().getDefendantId()).isEqualTo(existingDefendantId);
+            assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(existingDefendantId);
 
         }
 
@@ -481,15 +481,15 @@ class CaseMapperTest {
             var courtCase = CaseMapper.merge(libraCase, existingCourtCase);
 
             assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
-            assertThat(courtCase.getFirstDefendant().getDefendantId()).isEqualTo(DEFENDANT_ID);
-            assertThat(courtCase.getFirstDefendant().getCrn()).isEqualTo("expected crn");
+            assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(DEFENDANT_ID);
+            assertThat(courtCase.getDefendants().get(0).getCrn()).isEqualTo("expected crn");
         }
 
         private void assertLibraCourtCase(CourtCase courtCase) {
             // Fields that stay the same on existing value
             assertThat(courtCase.getCourtCode()).isEqualTo(COURT_CODE);
             assertThat(courtCase.getCaseNo()).isEqualTo("12345");
-            final var firstDefendant = courtCase.getFirstDefendant();
+            final var firstDefendant = courtCase.getDefendants().get(0);
             assertThat(firstDefendant.getProbationStatus()).isEqualTo("CURRENT");
             assertThat(firstDefendant.getBreach()).isTrue();
             assertThat(firstDefendant.getSuspendedSentenceOrder()).isTrue();
@@ -523,17 +523,7 @@ class CaseMapperTest {
         @Test
         void whenMergeWithExistingCase_ThenUpdateExistingCase() {
 
-            var existingCourtCase = CourtCase.builder()
-                    .hearingDays(singletonList(HearingDay.builder()
-                            .courtCode(COURT_CODE)
-                            .listNo("999st")
-                            .courtRoom("4")
-                            .sessionStartTime(LocalDateTime.of(2020, Month.JANUARY, 3, 9, 10, 0))
-                            .build()))
-
-                    .caseId(CASE_ID)
-                    .caseNo("12345")
-                    .defendants(singletonList(Defendant.builder()
+            var existingDefendant = Defendant.builder()
                             .defendantId(DEFENDANT_ID)
                             .breach(Boolean.TRUE)
                             .suspendedSentenceOrder(Boolean.TRUE)
@@ -560,11 +550,9 @@ class CaseMapperTest {
                             .breach(false)
                             .awaitingPsr(false)
                             .previouslyKnownTerminationDate(LocalDate.of(2001, Month.AUGUST, 26))
-                            .build()))
                     .build();
 
-            final var existingCourtCaseFirstDefendant = existingCourtCase.getFirstDefendant();
-            var nextPrevKnownTermDate = existingCourtCaseFirstDefendant.getPreviouslyKnownTerminationDate().plusDays(1);
+            var nextPrevKnownTermDate = existingDefendant.getPreviouslyKnownTerminationDate().plusDays(1);
             var probationStatusDetail = ProbationStatusDetail.builder()
                     .preSentenceActivity(true)
                     .inBreach(Boolean.TRUE)
@@ -573,38 +561,31 @@ class CaseMapperTest {
                     .awaitingPsr(true)
                     .build();
 
-            var courtCase = CaseMapper.merge(probationStatusDetail, existingCourtCase);
+            var updatedDefendant = CaseMapper.merge(probationStatusDetail, existingDefendant);
 
-            assertThat(courtCase).isNotSameAs(existingCourtCase);
+            assertThat(updatedDefendant).isNotSameAs(existingDefendant);
 
             // Fields that are updated
-            final var firstDefendant = courtCase.getFirstDefendant();
-            assertThat(firstDefendant.getProbationStatus()).isEqualTo("CURRENT");
-            assertThat(firstDefendant.getPreviouslyKnownTerminationDate()).isEqualTo(nextPrevKnownTermDate);
-            assertThat(firstDefendant.getBreach()).isTrue();
-            assertThat(firstDefendant.getPreSentenceActivity()).isTrue();
-            assertThat(firstDefendant.getAwaitingPsr()).isTrue();
+            assertThat(updatedDefendant.getProbationStatus()).isEqualTo("CURRENT");
+            assertThat(updatedDefendant.getPreviouslyKnownTerminationDate()).isEqualTo(nextPrevKnownTermDate);
+            assertThat(updatedDefendant.getBreach()).isTrue();
+            assertThat(updatedDefendant.getPreSentenceActivity()).isTrue();
+            assertThat(updatedDefendant.getAwaitingPsr()).isTrue();
             // Fields that stay the same on existing value
-            assertThat(courtCase.getCaseId()).isEqualTo(existingCourtCase.getCaseId());
-            assertThat(firstDefendant.getDefendantId()).isEqualTo(existingCourtCaseFirstDefendant.getDefendantId());
-            assertThat(courtCase.getCaseNo()).isEqualTo(existingCourtCase.getCaseNo());
-            assertThat(courtCase.getCourtCode()).isEqualTo(existingCourtCase.getCourtCode());
-            assertThat(courtCase.getCourtRoom()).isEqualTo(existingCourtCase.getCourtRoom());
-            assertThat(firstDefendant.getCrn()).isEqualTo(existingCourtCaseFirstDefendant.getCrn());
-            assertThat(firstDefendant.getCro()).isEqualTo(existingCourtCaseFirstDefendant.getCro());
-            assertThat(firstDefendant.getAddress()).isEqualTo(existingCourtCaseFirstDefendant.getAddress());
-            assertThat(firstDefendant.getDateOfBirth()).isEqualTo(existingCourtCaseFirstDefendant.getDateOfBirth());
-            assertThat(firstDefendant.getName()).isEqualTo(existingCourtCaseFirstDefendant.getName());
-            assertThat(firstDefendant.getSex()).isEqualTo(existingCourtCaseFirstDefendant.getSex());
-            assertThat(firstDefendant.getType()).isSameAs(existingCourtCaseFirstDefendant.getType());
-            assertThat(courtCase.getListNo()).isEqualTo(existingCourtCase.getListNo());
-            assertThat(firstDefendant.getName()).isEqualTo(existingCourtCaseFirstDefendant.getName());
-            assertThat(firstDefendant.getPnc()).isEqualTo(existingCourtCaseFirstDefendant.getPnc());
-            assertThat(courtCase.getSessionStartTime()).isEqualTo(existingCourtCase.getSessionStartTime());
-            assertThat(firstDefendant.getSuspendedSentenceOrder()).isEqualTo(existingCourtCaseFirstDefendant.getSuspendedSentenceOrder());
-            assertThat(firstDefendant.getOffences()).hasSize(1);
-            assertThat(firstDefendant.getOffences().get(0).getOffenceTitle()).isEqualTo("title");
-            assertThat(firstDefendant.getOffences().get(0).getSequenceNumber()).isEqualTo(1);
+            assertThat(updatedDefendant.getDefendantId()).isEqualTo(existingDefendant.getDefendantId());
+            assertThat(updatedDefendant.getCrn()).isEqualTo(existingDefendant.getCrn());
+            assertThat(updatedDefendant.getCro()).isEqualTo(existingDefendant.getCro());
+            assertThat(updatedDefendant.getAddress()).isEqualTo(existingDefendant.getAddress());
+            assertThat(updatedDefendant.getDateOfBirth()).isEqualTo(existingDefendant.getDateOfBirth());
+            assertThat(updatedDefendant.getName()).isEqualTo(existingDefendant.getName());
+            assertThat(updatedDefendant.getSex()).isEqualTo(existingDefendant.getSex());
+            assertThat(updatedDefendant.getType()).isSameAs(existingDefendant.getType());
+            assertThat(updatedDefendant.getName()).isEqualTo(existingDefendant.getName());
+            assertThat(updatedDefendant.getPnc()).isEqualTo(existingDefendant.getPnc());
+            assertThat(updatedDefendant.getSuspendedSentenceOrder()).isEqualTo(existingDefendant.getSuspendedSentenceOrder());
+            assertThat(updatedDefendant.getOffences()).hasSize(1);
+            assertThat(updatedDefendant.getOffences().get(0).getOffenceTitle()).isEqualTo("title");
+            assertThat(updatedDefendant.getOffences().get(0).getSequenceNumber()).isEqualTo(1);
         }
     }
 

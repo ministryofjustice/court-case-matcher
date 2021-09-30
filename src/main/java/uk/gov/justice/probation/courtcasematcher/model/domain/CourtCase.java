@@ -75,16 +75,4 @@ public class CourtCase implements Serializable {
                 .map(HearingDay::getListNo)
                 .orElse(null);
     }
-
-    /**
-    @deprecated This method is used as a shim for simplifying the process of refactoring to introduce multiple
-    defendants. It will be removed as soon as refactoring is complete to handle these cases.
-     */
-    @Deprecated(forRemoval = true)
-    public Defendant getFirstDefendant() {
-        if (defendants == null || defendants.isEmpty()) {
-            throw new IllegalStateException("Defendant array is null or empty");
-        }
-        return defendants.get(0);
-    }
 }

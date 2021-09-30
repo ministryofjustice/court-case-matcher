@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
@@ -60,11 +61,21 @@ public class CourtCaseService {
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
-        return offenderSearchRestClient.search(courtCase.getFirstDefendant().getCrn())
+        final var updatedDefendants = courtCase.getDefendants()
+                .stream()
+                .map(defendant -> defendant.getCrn() != null ? updateDefendant(defendant) : Mono.just(defendant))
+                .map(Mono::block)
+                .collect(Collectors.toList());
+
+        return Mono.just(courtCase.withDefendants(updatedDefendants));
+    }
+
+    private Mono<Defendant> updateDefendant(Defendant defendant) {
+        return offenderSearchRestClient.search(defendant.getCrn())
                 .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
                 .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
-                .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))
-                .switchIfEmpty(Mono.just(courtCase));
+                .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, defendant))
+                .defaultIfEmpty(defendant);
     }
 
     CourtCase assignUuids(CourtCase courtCase) {
