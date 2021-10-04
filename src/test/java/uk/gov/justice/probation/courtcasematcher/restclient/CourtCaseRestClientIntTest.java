@@ -22,7 +22,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
@@ -66,13 +65,9 @@ class CourtCaseRestClientIntTest {
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
     @Mock
-    private Mono<Void> mono;
-    @Mock
     private Mono<CourtCase> courtCaseMono;
     @MockBean
     private LegacyCourtCaseRestClient legacyClient;
-    @MockBean
-    private FeatureFlags featureFlags;
 
     @Autowired
     private CourtCaseRestClient client;
@@ -145,7 +140,7 @@ class CourtCaseRestClientIntTest {
 
         final List<Defendant> defendants = buildDefendants();
 
-        client.postDefendantMatches(CASE_ID, defendants).block();
+        client.postOffenderMatches(CASE_ID, defendants).block();
 
         verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
         List<LoggingEvent> events = captorLoggingEvent.getAllValues();
@@ -164,7 +159,7 @@ class CourtCaseRestClientIntTest {
     void whenRestClientThrows500OnPostDefendantMatches_ThenRetryAndLogRetryExhaustedError() {
 
         assertThatExceptionOfType(RuntimeException.class)
-            .isThrownBy(() -> client.postDefendantMatches("X500", buildDefendants()).block())
+            .isThrownBy(() -> client.postOffenderMatches("X500", buildDefendants()).block())
             .withMessage("Retries exhausted: 1/1");
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS).atLeast(1)).doAppend(captorLoggingEvent.capture());
@@ -190,7 +185,7 @@ class CourtCaseRestClientIntTest {
         );
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> client.postDefendantMatches(CASE_ID, defendants).block())
+                .isThrownBy(() -> client.postOffenderMatches(CASE_ID, defendants).block())
                 .withMessage(String.format("No matches present for defendantId %s", DEFENDANT_ID))
         ;
     }
@@ -218,7 +213,7 @@ class CourtCaseRestClientIntTest {
                         .build()))
                 .build();
 
-        final var defendants = List.of(
+        return List.of(
                 Defendant.builder()
                         .type(DefendantType.PERSON)
                         .defendantId(DEFENDANT_ID)
@@ -230,7 +225,6 @@ class CourtCaseRestClientIntTest {
                         .groupedOffenderMatches(matches2)
                         .build()
         );
-        return defendants;
     }
 
 }

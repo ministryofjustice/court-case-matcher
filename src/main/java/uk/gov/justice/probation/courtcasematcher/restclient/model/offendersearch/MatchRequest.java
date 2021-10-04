@@ -66,8 +66,8 @@ public class MatchRequest {
             return builder.build();
         }
 
-        public MatchRequest buildFrom(Defendant firstDefendant) throws IllegalArgumentException {
-            return buildFrom(firstDefendant.getPnc(), firstDefendant.getName(), firstDefendant.getDateOfBirth());
+        public MatchRequest buildFrom(Defendant defendant) throws IllegalArgumentException {
+            return buildFrom(defendant.getPnc(), defendant.getName(), defendant.getDateOfBirth());
         }
     }
 }

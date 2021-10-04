@@ -55,7 +55,7 @@ public class CourtCaseService {
             courtCaseRepository.putCourtCase(updatedCase)
                     .block();
         } finally {
-            courtCaseRepository.postDefendantMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
+            courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
                     .block();
         }
     }

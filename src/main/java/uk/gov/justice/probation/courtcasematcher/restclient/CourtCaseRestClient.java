@@ -64,7 +64,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                 .then();
     }
 
-    private Mono<Void> postDefendantMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
+    private Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
         return Mono.justOrEmpty(offenderMatches)
 
             .map(matches -> Tuple2.of(String.format(matchesPostTemplate, caseId, defendantId), CCSGroupedOffenderMatchesRequest.of(matches)))
@@ -77,19 +77,18 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                     .map(HttpEntity::getHeaders)
                     .map((HttpHeaders headers) -> headers.getFirst(HttpHeaders.LOCATION))
                     .orElse("[NOT FOUND]")))
-            .doOnError(throwable -> log.error(String.format(ERR_MSG_FORMAT_POST_MATCHES, caseId, defendantId, Optional.ofNullable(offenderMatches).map(GroupedOffenderMatches::getMatches).map(
-                List::size)), throwable))
+            .doOnError(throwable -> log.error(String.format(ERR_MSG_FORMAT_POST_MATCHES, caseId), throwable))
             .then();
     }
 
     @Override
-    public Mono<Void> postDefendantMatches(String caseId, List<Defendant> defendants) {
+    public Mono<Void> postOffenderMatches(String caseId, List<Defendant> defendants) {
         return Flux.fromStream(defendants.stream())
                 .doOnNext(defendant -> Optional.ofNullable(defendant.getGroupedOffenderMatches())
                         .map(GroupedOffenderMatches::getMatches)
                         .filter(offenderMatches -> !offenderMatches.isEmpty())
                         .orElseThrow(() -> new IllegalStateException(String.format("No matches present for defendantId %s", defendant.getDefendantId()))))
-                .flatMap(defendant -> postDefendantMatches(caseId, defendant.getDefendantId(), defendant.getGroupedOffenderMatches()))
+                .flatMap(defendant -> postOffenderMatches(caseId, defendant.getDefendantId(), defendant.getGroupedOffenderMatches()))
                 .then();
     }
 }

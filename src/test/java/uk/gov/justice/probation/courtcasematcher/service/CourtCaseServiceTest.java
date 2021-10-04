@@ -75,12 +75,12 @@ class CourtCaseServiceTest {
                 .source(DataSource.LIBRA)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
-        when(courtCaseRepo.postDefendantMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
+        when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
         verify(courtCaseRepo).putCourtCase(courtCase);
-        verify(courtCaseRepo).postDefendantMatches(CASE_ID, defendants);
+        verify(courtCaseRepo).postOffenderMatches(CASE_ID, defendants);
     }
 
     @DisplayName("Save court case with no caseNo but with a caseId. Indicates a new CP case.")
@@ -94,7 +94,7 @@ class CourtCaseServiceTest {
                 .caseId(CASE_ID)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
-        when(courtCaseRepo.postDefendantMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
+        when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
@@ -104,7 +104,7 @@ class CourtCaseServiceTest {
         assertThat(capturedCase.getCaseId()).isEqualTo(CASE_ID);
         assertThat(capturedCase.getCaseNo()).isEqualTo(capturedCase.getCaseId());
 
-        verify(courtCaseRepo).postDefendantMatches(CASE_ID, defendants);
+        verify(courtCaseRepo).postOffenderMatches(CASE_ID, defendants);
         verifyNoMoreInteractions(courtCaseRepo);
     }
 
@@ -119,7 +119,7 @@ class CourtCaseServiceTest {
             .caseNo(CASE_NO)
             .build();
         when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
-        when(courtCaseRepo.postDefendantMatches(notNull(), notNull())).thenReturn(Mono.empty());
+        when(courtCaseRepo.postOffenderMatches(notNull(), notNull())).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
@@ -131,7 +131,7 @@ class CourtCaseServiceTest {
         assertThat(capturedCase.getDefendants().get(1).getDefendantId()).hasSameSizeAs(DEFENDANT_UUID_1);
         assertThat(capturedCase.getCaseNo()).isEqualTo(CASE_NO);
 
-        verify(courtCaseRepo).postDefendantMatches(notNull(), notNull());
+        verify(courtCaseRepo).postOffenderMatches(notNull(), notNull());
         verifyNoMoreInteractions(courtCaseRepo);
     }
 
@@ -185,14 +185,14 @@ class CourtCaseServiceTest {
                 .caseNo(CASE_NO)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenThrow(new RuntimeException("bang!"));
-        when(courtCaseRepo.postDefendantMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
+        when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> courtCaseService.saveCourtCase(courtCase))
                 .withMessage("bang!");
 
         verify(courtCaseRepo).putCourtCase(courtCase);
-        verify(courtCaseRepo).postDefendantMatches(CASE_ID, defendants);
+        verify(courtCaseRepo).postOffenderMatches(CASE_ID, defendants);
     }
 
     @DisplayName("Fetch and update probation status")
