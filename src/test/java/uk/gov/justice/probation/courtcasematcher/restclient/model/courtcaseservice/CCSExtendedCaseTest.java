@@ -19,7 +19,7 @@ public class CCSExtendedCaseTest {
         final var courtCase = aCase
                 .withCaseId(null)
                 .withDefendants(Collections.singletonList(
-                        aCase.getFirstDefendant()
+                        aCase.getDefendants().get(0)
                                 .withDefendantId(null)
                 ));
         final var actual = CCSExtendedCase.of(courtCase);
@@ -46,7 +46,7 @@ public class CCSExtendedCaseTest {
                 .sessionStartTime(LocalDateTime.of(2021, 8, 26, 9, 0))
                 .listNo("1")
                 .build());
-        final var firstDefendant = courtCase.getFirstDefendant();
+        final var firstDefendant = courtCase.getDefendants().get(0);
         final var actualFirstDefendant = actual.getDefendants().get(0);
 
         assertThat(actualFirstDefendant.getDefendantId()).isNotBlank().isEqualTo(firstDefendant.getDefendantId());
@@ -92,9 +92,9 @@ public class CCSExtendedCaseTest {
         final var courtCase = aCase
                 .withCaseId(null)
                 .withDefendants(List.of(
-                        aCase.getFirstDefendant()
+                        aCase.getDefendants().get(0)
                                 .withDefendantId("1234"),
-                        aCase.getFirstDefendant()
+                        aCase.getDefendants().get(0)
                                 .withDefendantId("5678")
                 ));
 

@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "url": "/case/X500/defendant/8E07B58D-3ED3-440E-9CC2-2BC94EDBC5AF/grouped-offender-matches",
+    "urlPattern": "/case/X500/defendant/.*/grouped-offender-matches",
     "bodyPatterns": [
     ]
   },

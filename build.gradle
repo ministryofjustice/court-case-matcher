@@ -93,7 +93,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    implementation group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
     implementation 'org.springframework.boot:spring-boot-starter-artemis'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.5'
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8'
@@ -177,7 +176,7 @@ task integrationTest(type: Test) {
     }
 
     filter {
-        includeTestsMatching '*IntTest'
+        includeTestsMatching '*IntTest*'
         excludeTestsMatching '*WIP*'
     }
 }

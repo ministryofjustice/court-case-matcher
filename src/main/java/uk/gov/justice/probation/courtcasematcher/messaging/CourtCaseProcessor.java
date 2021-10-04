@@ -10,15 +10,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
-
-import java.util.Collections;
-import java.util.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
@@ -54,7 +48,7 @@ public class CourtCaseProcessor {
         final var courtCase = courtCaseService.getCourtCase(aCase)
                 .block();
         if (courtCase.shouldMatchToOffender()) {
-            applyMatch(courtCase);
+            applyMatches(courtCase);
         }
         else {
             updateAndSave(courtCase);
@@ -62,35 +56,18 @@ public class CourtCaseProcessor {
     }
 
 
-    private void applyMatch(final CourtCase courtCase) {
-
-        log.info("Matching offender and saving case no {} for court {}, pnc {}", courtCase.getCaseNo(), courtCase.getCourtCode(), courtCase.getFirstDefendant().getPnc());
-
-        final var searchResult = matcherService.getSearchResponse(courtCase)
-                .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(courtCase, result.getMatchResponse()))
-                .doOnError(throwable -> {
-                    log.error(throwable.getMessage());
-                    telemetryService.trackOffenderMatchFailureEvent(courtCase);
-                })
-                .onErrorResume(throwable -> Mono.just(SearchResult.builder()
-                        .matchResponse(
-                                MatchResponse.builder()
-                                        .matchedBy(OffenderSearchMatchType.NOTHING)
-                                        .matches(Collections.emptyList())
-                                        .build())
-                        .build()))
+    private void applyMatches(final CourtCase courtCase) {
+        matcherService.matchDefendants(courtCase)
+                .onErrorReturn(courtCase)
+                .doOnSuccess(courtCaseService::saveCourtCase)
                 .block();
-
-        courtCaseService.createCase(courtCase, searchResult);
     }
 
     private void updateAndSave(final CourtCase courtCase) {
-        log.info("Upsert case no {} with crn {} for court {}", courtCase.getCaseNo(), courtCase.getFirstDefendant().getCrn(), courtCase.getCourtCode());
+        log.info("Upsert caseId {}", courtCase.getCaseId());
 
-        Optional.ofNullable(courtCase.getFirstDefendant().getCrn())
-            .map(crn -> courtCaseService.updateProbationStatusDetail(courtCase)
-                .onErrorReturn(courtCase))
-            .orElse(Mono.just(courtCase))
-            .subscribe(courtCaseService::saveCourtCase);
+        courtCaseService.updateProbationStatusDetail(courtCase)
+                .onErrorResume(t -> Mono.just(courtCase))
+                .subscribe(courtCaseService::saveCourtCase);
     }
 }

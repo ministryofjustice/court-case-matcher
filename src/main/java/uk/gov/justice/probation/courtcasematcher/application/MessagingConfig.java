@@ -3,7 +3,6 @@ package uk.gov.justice.probation.courtcasematcher.application;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.eventbus.EventBus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -52,10 +51,4 @@ public class MessagingConfig {
     public Validator validator() {
         return Validation.buildDefaultValidatorFactory().getValidator();
     }
-
-    @Bean
-    public EventBus eventBus() {
-        return new EventBus();
-    }
-
 }

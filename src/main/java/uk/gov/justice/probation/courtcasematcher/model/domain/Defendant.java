@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,9 @@ import lombok.With;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
+import static org.springframework.util.StringUtils.hasText;
 
 @Data
 @Builder
@@ -32,4 +36,14 @@ public class Defendant {
     private Boolean suspendedSentenceOrder;
     private Boolean awaitingPsr;
     private Boolean breach;
+
+    @JsonIgnore
+    private final GroupedOffenderMatches groupedOffenderMatches;
+
+    public boolean shouldMatchToOffender() {
+        return Optional.of(this)
+                .filter(defendant -> defendant.getType() == DefendantType.PERSON)
+                .filter(defendant -> !hasText(defendant.getCrn()))
+                .isPresent();
+    }
 }

@@ -45,7 +45,7 @@ import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_DATE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHED_BY_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHES_KEY;
-import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNCS_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNC_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SOURCE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SQS_MESSAGE_ID_KEY;
 
@@ -58,6 +58,9 @@ class TelemetryServiceTest {
     private static final String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
     private static final String CRN = "D12345";
     private static final String PNC = "PNC/123";
+    private static final Defendant DEFENDANT = Defendant.builder()
+            .pnc(PNC)
+            .build();
     private static final String COURT_ROOM = "01";
     private static final LocalDate DATE_OF_HEARING = LocalDate.of(2020, Month.NOVEMBER, 5);
     private static CourtCase courtCase;
@@ -131,7 +134,7 @@ class TelemetryServiceTest {
                 .matches(List.of(match))
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderExactMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -144,7 +147,7 @@ class TelemetryServiceTest {
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.ALL_SUPPLIED.name()),
                 entry(CRNS_KEY, CRN),
-                entry(PNCS_KEY, PNC),
+                entry(PNC_KEY, PNC),
                 entry(SOURCE_KEY, "COMMON_PLATFORM"),
                 entry(CASE_ID_KEY, CASE_ID)
         );
@@ -159,7 +162,7 @@ class TelemetryServiceTest {
                 .matches(matches)
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -172,7 +175,7 @@ class TelemetryServiceTest {
                 entry(MATCHES_KEY, "2"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
                 entry(CRNS_KEY, CRN + "," + "X123454"),
-                entry(PNCS_KEY, PNC),
+                entry(PNC_KEY, PNC),
                 entry(SOURCE_KEY, "COMMON_PLATFORM"),
                 entry(CASE_ID_KEY, CASE_ID)
         );
@@ -186,7 +189,7 @@ class TelemetryServiceTest {
                 .matches(List.of(buildMatch(CRN)))
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -199,7 +202,7 @@ class TelemetryServiceTest {
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
                 entry(CRNS_KEY, CRN),
-                entry(PNCS_KEY, PNC),
+                entry(PNC_KEY, PNC),
                 entry(SOURCE_KEY, "COMMON_PLATFORM"),
                 entry(CASE_ID_KEY, CASE_ID)
         );
@@ -212,7 +215,7 @@ class TelemetryServiceTest {
                 .matchedBy(OffenderSearchMatchType.NOTHING)
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderNoMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -222,7 +225,7 @@ class TelemetryServiceTest {
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(CASE_NO_KEY, CASE_NO),
                 entry(HEARING_DATE_KEY, "2020-11-05"),
-                entry(PNCS_KEY, PNC),
+                entry(PNC_KEY, PNC),
                 entry(SOURCE_KEY, "COMMON_PLATFORM"),
                 entry(CASE_ID_KEY, CASE_ID)
         );
@@ -232,7 +235,10 @@ class TelemetryServiceTest {
     @Test
     void whenMatchEventFails_thenRecord() {
 
-        telemetryService.trackOffenderMatchFailureEvent(courtCase);
+        final Defendant defendant = Defendant.builder()
+                .pnc(PNC)
+                .build();
+        telemetryService.trackOffenderMatchFailureEvent(defendant, courtCase);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderMatchError"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -242,7 +248,7 @@ class TelemetryServiceTest {
                 entry(COURT_CODE_KEY, COURT_CODE),
                 entry(CASE_NO_KEY, CASE_NO),
                 entry(HEARING_DATE_KEY, "2020-11-05"),
-                entry(PNCS_KEY, PNC),
+                entry(PNC_KEY, PNC),
                 entry(SOURCE_KEY, "COMMON_PLATFORM"),
                 entry(CASE_ID_KEY, CASE_ID)
         );

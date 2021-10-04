@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,8 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.util.StringUtils.hasText;
-
 @Data
 @Builder
 @With
@@ -26,25 +23,17 @@ public class CourtCase implements Serializable {
 
     private final String caseId;
 
-    // TODO - should caseNo be deprecated now ?
     @Setter(AccessLevel.NONE)
     private final String caseNo;
     private List<Defendant> defendants;
     private List<HearingDay> hearingDays;
 
-    @JsonIgnore
-    private final GroupedOffenderMatches groupedOffenderMatches;
-
     private final DataSource source;
 
     public boolean shouldMatchToOffender() {
-        return Optional.ofNullable(defendants)
-                .map(defs -> getFirstDefendant())
-                .filter(defendant -> defendant.getType() == DefendantType.PERSON)
-                .filter(defendant -> !hasText(defendant.getCrn()))
-                .isPresent();
+        return defendants.stream()
+                .anyMatch(Defendant::shouldMatchToOffender);
     }
-
 
     public LocalDate getDateOfHearing() {
         return getFirstHearingDay()
@@ -85,17 +74,5 @@ public class CourtCase implements Serializable {
         return getFirstHearingDay()
                 .map(HearingDay::getListNo)
                 .orElse(null);
-    }
-
-    /**
-    @deprecated This method is used as a shim for simplifying the process of refactoring to introduce multiple
-    defendants. It will be removed as soon as refactoring is complete to handle these cases.
-     */
-    @Deprecated(forRemoval = true)
-    public Defendant getFirstDefendant() {
-        if (defendants == null || defendants.isEmpty()) {
-            throw new IllegalStateException("Defendant array is null or empty");
-        }
-        return defendants.get(0);
     }
 }

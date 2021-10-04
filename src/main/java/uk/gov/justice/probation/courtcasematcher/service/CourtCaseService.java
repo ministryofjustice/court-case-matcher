@@ -8,16 +8,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.MatchDetails;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResult;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -42,51 +39,43 @@ public class CourtCaseService {
                 .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
     }
 
-    public void createCase(CourtCase courtCase, SearchResult searchResult) {
-        final var updatedCase = Optional.ofNullable(searchResult)
-                .map(result -> {
-                    var response = result.getMatchResponse();
-                    log.debug("Save court case with search response for case {}, court {}",
-                            courtCase.getCaseNo(), courtCase.getCourtCode());
-                    return CaseMapper.newFromCourtCaseWithMatches(courtCase, MatchDetails.builder()
-                            .matchType(OffenderSearchMatchType.domainMatchTypeOf(result))
-                            .matches(response.getMatches())
-                            .exactMatch(response.isExactMatch())
-                            .build());
-                })
-                .orElse(courtCase);
-        saveCourtCase(updatedCase);
-    }
-
     public void saveCourtCase(CourtCase courtCase) {
-        // TODO: This is temporary, to be replaced with call to postOffenderMatches using caseId as primary key
         CourtCase updatedCase = courtCase;
-        // TODO - this may be temporary. At this point new LIBRA cases will have no case or defendant ID and we need to assign
-        // NULL case ID indicates a new LIBRA case. We need to assign case ID
+        // New LIBRA cases will have no case or defendant ID and we need to assign
         if (courtCase.getCaseId() == null) {
             updatedCase = assignUuids(courtCase);
-        }
-        else if (courtCase.getCaseNo() == null) {
+        } else if (courtCase.getCaseNo() == null) {
             // Retain the case ID if there is one
             final var caseId = courtCase.getCaseId() != null ? courtCase.getCaseId() : UUID.randomUUID().toString();
             updatedCase = courtCase.withCaseId(caseId)
-                .withCaseNo(caseId);
+                    .withCaseNo(caseId);
         }
 
         try {
-            courtCaseRepository.putCourtCase(updatedCase).block();
+            courtCaseRepository.putCourtCase(updatedCase)
+                    .block();
         } finally {
-            // TODO - need to post matches for multiple defendants. Matching not yet done for multiple defendants
-            courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getFirstDefendant().getDefendantId(), updatedCase.getGroupedOffenderMatches()).block();
+            courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
+                    .block();
         }
     }
 
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
-        return offenderSearchRestClient.search(courtCase.getFirstDefendant().getCrn())
+        final var updatedDefendants = courtCase.getDefendants()
+                .stream()
+                .map(defendant -> defendant.getCrn() != null ? updateDefendant(defendant) : Mono.just(defendant))
+                .map(Mono::block)
+                .collect(Collectors.toList());
+
+        return Mono.just(courtCase.withDefendants(updatedDefendants));
+    }
+
+    private Mono<Defendant> updateDefendant(Defendant defendant) {
+        return offenderSearchRestClient.search(defendant.getCrn())
                 .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
                 .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
-                .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, courtCase))
-                .switchIfEmpty(Mono.just(courtCase));
+                .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, defendant))
+                .defaultIfEmpty(defendant);
     }
 
     CourtCase assignUuids(CourtCase courtCase) {
@@ -99,13 +88,14 @@ public class CourtCaseService {
             updatedCase = updatedCase.withCaseNo(caseId);
         }
 
-        // Assign defendant ID
-        var defendant = courtCase.getFirstDefendant();
-        if (defendant.getDefendantId() == null) {
-            final var defendantId = UUID.randomUUID().toString();
-            defendant = defendant.withDefendantId(defendantId);
-            updatedCase = updatedCase.withDefendants(List.of(defendant));
-        }
+        // Assign defendant IDs
+        final var updatedDefendants = courtCase.getDefendants()
+                .stream()
+                .map(defendant -> defendant.withDefendantId(
+                        defendant.getDefendantId() == null ? UUID.randomUUID().toString() : defendant.getDefendantId()
+                ))
+                .collect(Collectors.toList());
+        updatedCase = updatedCase.withDefendants(updatedDefendants);
 
         return updatedCase;
     }

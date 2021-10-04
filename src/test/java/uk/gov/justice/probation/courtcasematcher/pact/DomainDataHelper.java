@@ -15,6 +15,7 @@ import java.util.Collections;
 
 public class DomainDataHelper {
     public static final String DEFENDANT_ID = "8E07B58D-3ED3-440E-9CC2-2BC94EDBC5AF";
+    public static final String DEFENDANT_ID_2 = "903c4c54-f667-4770-8fdf-1adbb5957c25";
     public static String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
 
     public static CourtCase aCourtCaseWithAllFields() {

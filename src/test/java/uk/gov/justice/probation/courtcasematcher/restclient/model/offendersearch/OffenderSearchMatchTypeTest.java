@@ -14,40 +14,18 @@ class OffenderSearchMatchTypeTest {
     @Test
     @DisplayName("Direct equivalent match type")
     void givenSameMatchType_whenMatch_ThenReturn() {
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.NAME))).isSameAs(MatchType.NAME);
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.PARTIAL_NAME))).isSameAs(MatchType.PARTIAL_NAME);
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.PARTIAL_NAME_DOB_LENIENT))).isSameAs(MatchType.PARTIAL_NAME_DOB_LENIENT);
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.NOTHING))).isSameAs(MatchType.NOTHING);
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.EXTERNAL_KEY))).isSameAs(MatchType.EXTERNAL_KEY);
+        assertThat(OffenderSearchMatchType.NAME.asDomain(true)).isSameAs(MatchType.NAME);
+        assertThat(OffenderSearchMatchType.PARTIAL_NAME.asDomain(true)).isSameAs(MatchType.PARTIAL_NAME);
+        assertThat(OffenderSearchMatchType.PARTIAL_NAME_DOB_LENIENT.asDomain(true)).isSameAs(MatchType.PARTIAL_NAME_DOB_LENIENT);
+        assertThat(OffenderSearchMatchType.NOTHING.asDomain(true)).isSameAs(MatchType.NOTHING);
+        assertThat(OffenderSearchMatchType.EXTERNAL_KEY.asDomain(true)).isSameAs(MatchType.EXTERNAL_KEY);
     }
 
     @Test
     @DisplayName("Mapping all supplied variations to their equivalent")
     void toUpperCase_ShouldGenerateTheExpectedUppercaseValue() {
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.ALL_SUPPLIED, MatchRequest.builder()
-                .pncNumber(null)
-                .build()
-        ))).isSameAs(MatchType.NAME_DOB);
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.ALL_SUPPLIED, MatchRequest.builder()
-                .pncNumber("PNC")
-                .build()
-        ))).isSameAs(MatchType.NAME_DOB_PNC);
-        assertThat(OffenderSearchMatchType.domainMatchTypeOf(buildSearchResult(OffenderSearchMatchType.ALL_SUPPLIED_ALIAS))).isSameAs(MatchType.NAME_DOB_ALIAS);
+        assertThat(OffenderSearchMatchType.ALL_SUPPLIED.asDomain(false)).isSameAs(MatchType.NAME_DOB);
+        assertThat(OffenderSearchMatchType.ALL_SUPPLIED.asDomain(true)).isSameAs(MatchType.NAME_DOB_PNC);
+        assertThat(OffenderSearchMatchType.ALL_SUPPLIED_ALIAS.asDomain(true)).isSameAs(MatchType.NAME_DOB_ALIAS);
     }
-
-    private SearchResult buildSearchResult(OffenderSearchMatchType name) {
-        return buildSearchResult(name, MatchRequest.builder()
-                .pncNumber("something")
-                .build());
-    }
-
-    private SearchResult buildSearchResult(OffenderSearchMatchType name, MatchRequest matchRequest) {
-        return SearchResult.builder()
-                .matchResponse(MatchResponse.builder()
-                        .matchedBy(name)
-                        .build())
-                .matchRequest(matchRequest)
-                .build();
-    }
-
 }

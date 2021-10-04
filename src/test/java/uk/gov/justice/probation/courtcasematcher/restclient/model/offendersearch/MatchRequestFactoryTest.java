@@ -4,19 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class MatchRequestFactoryTest {
@@ -35,16 +31,13 @@ class MatchRequestFactoryTest {
             .title(TITLE)
             .build();
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1980, 1, 1);
-    private static final String DEFENDANT_NAME = "defendantName";
 
-    @Mock
-    private NameHelper nameHelper;
 
     private MatchRequest.Factory factory;
 
     @BeforeEach
     public void setUp() {
-        factory = new MatchRequest.Factory(nameHelper, false);
+        factory = new MatchRequest.Factory(false);
     }
 
     @DisplayName("Given flag to use DOB with PNC, then DOB and PNC are in the request.")
@@ -138,51 +131,43 @@ class MatchRequestFactoryTest {
 
     @DisplayName("Given a valid court case but flag indicates not to include DOB then build a request.")
     @Test
-    public void givenNameIsProvidedAndFalseFlagToUseDob_whenBuildFromCourtCase_thenBuildRequestWithNoDOB() {
-        final var courtCase = CourtCase.builder()
-                .defendants(Collections.singletonList(Defendant.builder()
-                        .name(COMPLETE_NAME)
-                        .pnc(PNC)
-                        .dateOfBirth(DATE_OF_BIRTH)
-                        .build()))
+    public void givenNameIsProvidedAndFalseFlagToUseDob_whenBuildFromDefendant_thenBuildRequestWithNoDOB() {
+        final var defendant = Defendant.builder()
+                .name(COMPLETE_NAME)
+                .pnc(PNC)
+                .dateOfBirth(DATE_OF_BIRTH)
                 .build();
-        final var matchRequest = factory.buildFrom(courtCase);
+        final var matchRequest = factory.buildFrom(defendant);
         assertThat(matchRequest.getPncNumber()).isEqualTo(PNC);
         assertThat(matchRequest.getFirstName()).isEqualTo(String.format("%s %s %s", FORENAME_1, FORENAME_2, FORENAME_3));
         assertThat(matchRequest.getSurname()).isEqualTo(SURNAME);
         assertThat(matchRequest.getDateOfBirth()).isNull();
-        verifyNoMoreInteractions(nameHelper);
     }
 
     @DisplayName("Given a valid court case then build a request which includes DOB.")
     @Test
     public void givenNameIsProvided_whenBuildFromCourtCase_thenBuildValidRequest() {
-        final var courtCase = CourtCase.builder()
-                .defendants(Collections.singletonList(Defendant.builder()
-                        .name(COMPLETE_NAME)
-                        .pnc(PNC)
-                        .dateOfBirth(DATE_OF_BIRTH)
-                        .build()))
+        final var defendant = Defendant.builder()
+                .name(COMPLETE_NAME)
+                .pnc(PNC)
+                .dateOfBirth(DATE_OF_BIRTH)
                 .build();
         factory.setUseDobWithPnc(true);
-        final var matchRequest = factory.buildFrom(courtCase);
+        final var matchRequest = factory.buildFrom(defendant);
         assertThat(matchRequest.getPncNumber()).isEqualTo(PNC);
         assertThat(matchRequest.getFirstName()).isEqualTo(String.format("%s %s %s", FORENAME_1, FORENAME_2, FORENAME_3));
         assertThat(matchRequest.getSurname()).isEqualTo(SURNAME);
         assertThat(matchRequest.getDateOfBirth()).isEqualTo(DATE_OF_BIRTH.format(DateTimeFormatter.ISO_DATE));
-        verifyNoMoreInteractions(nameHelper);
     }
 
     @DisplayName("Given no complex name provided then throw")
     @Test
     public void givenNoNameProvided_whenBuildFromCourtCase_thenThrowException() {
-        final var courtCase = CourtCase.builder()
-                .defendants(Collections.singletonList(Defendant.builder()
-                    .name(null)
-                    .dateOfBirth(DATE_OF_BIRTH)
-                        .build()))
+        final var defendant = Defendant.builder()
+                .name(null)
+                .dateOfBirth(DATE_OF_BIRTH)
                 .build();
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> factory.buildFrom(courtCase));
+                .isThrownBy(() -> factory.buildFrom(defendant));
     }
 }
