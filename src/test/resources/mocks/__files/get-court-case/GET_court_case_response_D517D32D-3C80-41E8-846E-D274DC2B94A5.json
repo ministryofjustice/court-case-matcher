@@ -1,0 +1,93 @@
+{
+  "caseNo": "D517D32D-3C80-41E8-846E-D274DC2B94A5",
+  "caseId": "D517D32D-3C80-41E8-846E-D274DC2B94A5",
+  "courtCode": "B10JQ",
+  "defendants": [
+    {
+      "address": {
+        "line1": "Address 1",
+        "line2": "Address 2",
+        "line3": "Address 3",
+        "line4": "Address 4",
+        "line5": "Address 5",
+        "postcode": "CF4 8BK"
+      },
+      "awaitingPsr": true,
+      "breach": true,
+      "crn": "X346204",
+      "cro": "ACRO",
+      "dateOfBirth": "1975-04-03",
+      "name": {
+        "forename1": "Arthur",
+        "forename2": "Ponsonby",
+        "forename3": "Dude",
+        "surname": "Morgan",
+        "title": "Mr"
+      },
+      "offences": [
+        {
+          "act": "Theft act",
+          "offenceSummary": "Did a theft",
+          "offenceTitle": "Thievery"
+        }
+      ],
+      "pnc": "pncpncpnc",
+      "preSentenceActivity": true,
+      "previouslyKnownTerminationDate": "2019-05-03",
+      "probationStatus": "PREVIOUSLY_KNOWN",
+      "sex": "M",
+      "suspendedSentenceOrder": true,
+      "type": "PERSON",
+      "defendantId": "8E07B58D-3ED3-440E-9CC2-2BC94EDBC5AF"
+    },
+    {
+      "address": {
+        "line1": "Address 1",
+        "line2": "Address 2",
+        "line3": "Address 3",
+        "line4": "Address 4",
+        "line5": "Address 5",
+        "postcode": "CF4 8BK"
+      },
+      "awaitingPsr": true,
+      "breach": true,
+      "crn": "X346224",
+      "cro": "ACRO",
+      "dateOfBirth": "1975-04-03",
+      "name": {
+        "forename1": "John",
+        "surname": "Marston",
+        "title": "Mr"
+      },
+      "offences": [
+        {
+          "act": "Theft act",
+          "offenceSummary": "Did a theft",
+          "offenceTitle": "Thievery"
+        }
+      ],
+      "pnc": "pncpncpnc",
+      "preSentenceActivity": true,
+      "previouslyKnownTerminationDate": "2019-05-03",
+      "probationStatus": "PREVIOUSLY_KNOWN",
+      "sex": "M",
+      "suspendedSentenceOrder": true,
+      "type": "PERSON",
+      "defendantId": "903c4c54-f667-4770-8fdf-1adbb5957c25"
+    }
+  ],
+  "hearingDays": [
+    {
+      "courtCode": "B10JQ",
+      "courtRoom": "4",
+      "listNo": "4",
+      "sessionStartTime": "2021-08-16T10:16:51.361Z"
+    },
+    {
+      "courtCode": "B10JQ",
+      "courtRoom": "3",
+      "listNo": "3",
+      "sessionStartTime": "2021-08-17T10:16:51.361Z"
+    }
+  ]
+}

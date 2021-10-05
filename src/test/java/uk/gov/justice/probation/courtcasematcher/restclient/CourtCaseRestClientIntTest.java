@@ -37,6 +37,7 @@ import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 import java.util.Collections;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -82,6 +83,20 @@ class CourtCaseRestClientIntTest {
         MockitoAnnotations.openMocks(this);
         Logger logger = (Logger) getLogger(LoggerFactory.getLogger(CourtCaseRestClient.class).getName());
         logger.addAppender(mockAppender);
+    }
+
+    @Test
+    void whenGetCourtCaseById_thenItsSuccessful() {
+        final var courtCase = client.getCourtCase(CASE_ID).block();
+
+        assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(DEFENDANT_ID);
+        assertThat(courtCase.getDefendants().get(1).getDefendantId()).isEqualTo(DEFENDANT_ID_2);
+
+        MOCK_SERVER.findAllUnmatchedRequests();
+        MOCK_SERVER.verify(
+                getRequestedFor(urlEqualTo(String.format("/case/%s/extended", CASE_ID)))
+        );
     }
 
     @Test

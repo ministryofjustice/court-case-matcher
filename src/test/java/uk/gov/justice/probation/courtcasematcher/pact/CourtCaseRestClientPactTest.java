@@ -6,18 +6,24 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
-import org.junit.jupiter.api.Disabled;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+
 import static au.com.dius.pact.consumer.dsl.LambdaDsl.newJsonBody;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.CASE_ID;
 
@@ -29,8 +35,27 @@ import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.CA
 @PactDirectory(value = "build/pacts")
 class CourtCaseRestClientPactTest {
 
+    private static final String BASE_MOCK_PATH = "src/test/resources/mocks/__files/";
+
     @Autowired
     private CourtCaseRestClient restClient;
+
+    @Pact(provider="court-case-service", consumer="court-case-matcher")
+    public RequestResponsePact getCourtCaseByIdPact(PactDslWithProvider builder) throws IOException {
+
+        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8);
+
+        return builder
+                .given("a case exists for court B10JQ and case number D517D32D-3C80-41E8-846E-D274DC2B94A5")
+                .uponReceiving("a request for a case by case number")
+                .path("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended")
+                .method("GET")
+                .willRespondWith()
+                .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .body(body)
+                .status(200)
+                .toPact();
+    }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
     public RequestResponsePact putMinimalCourtCaseByIdPact(PactDslWithProvider builder) {
@@ -79,7 +104,6 @@ class CourtCaseRestClientPactTest {
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    @Disabled
     public RequestResponsePact putCourtCaseWithAllFieldsByIdPact(PactDslWithProvider builder) {
 
 
@@ -143,6 +167,13 @@ class CourtCaseRestClientPactTest {
                 .willRespondWith()
                 .status(201)
                 .toPact();
+    }
+
+    @PactTestFor(pactMethod = "getCourtCaseByIdPact")
+    @Test
+    void getCourtCaseById() throws IOException {
+        final var courtCase = restClient.getCourtCase(DomainDataHelper.aMinimalValidCourtCase().getCaseId()).block();
+        assertThat(courtCase.getCaseId()).isEqualTo("D517D32D-3C80-41E8-846E-D274DC2B94A5");
     }
 
     @PactTestFor(pactMethod = "putMinimalCourtCaseByIdPact")

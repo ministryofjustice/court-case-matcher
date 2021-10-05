@@ -44,6 +44,11 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Value("${court-case-service.matches-by-case-defendant-post-url-template}")
     private String matchesPostTemplate;
 
+
+    public Mono<CourtCase> getCourtCase(String caseId) {
+        return Mono.empty();
+    }
+
     @Override
     public Mono<CourtCase> getCourtCase(String courtCode, String caseNo) throws WebClientResponseException {
         return legacyCourtCaseRestClient.getCourtCase(courtCode, caseNo);
