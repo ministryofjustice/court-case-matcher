@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
@@ -96,6 +97,31 @@ class CourtCaseRestClientIntTest {
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
                 getRequestedFor(urlEqualTo(String.format("/case/%s/extended", CASE_ID)))
+        );
+    }
+
+    @Test
+    void givenNotFound_whenGetCourtCaseById_thenReturnEmpty() {
+        final var courtCase = client.getCourtCase("NOT_FOUND").blockOptional();
+
+        assertThat(courtCase).isEmpty();
+
+        MOCK_SERVER.findAllUnmatchedRequests();
+        MOCK_SERVER.verify(
+                getRequestedFor(urlEqualTo(String.format("/case/%s/extended", "NOT_FOUND")))
+        );
+    }
+
+    @Test
+    void givenError_whenGetCourtCaseById_thenReturnEmpty() {
+
+        assertThatExceptionOfType(WebClientResponseException.class)
+                .isThrownBy(()-> client.getCourtCase("SERVER_ERROR").block())
+                .withMessageContaining("INTERNAL_SERVER_ERROR");
+
+        MOCK_SERVER.findAllUnmatchedRequests();
+        MOCK_SERVER.verify(
+                getRequestedFor(urlEqualTo(String.format("/case/%s/extended", "SERVER_ERROR")))
         );
     }
 

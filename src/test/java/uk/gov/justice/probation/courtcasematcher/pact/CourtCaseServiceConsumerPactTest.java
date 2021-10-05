@@ -49,23 +49,6 @@ class CourtCaseServiceConsumerPactTest {
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public RequestResponsePact getCourtCaseByIdPact(PactDslWithProvider builder) throws IOException {
-
-        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8);
-
-        return builder
-            .given("a case exists for court B10JQ and case number D517D32D-3C80-41E8-846E-D274DC2B94A5")
-            .uponReceiving("a request for a case by case number")
-            .path("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5")
-            .method("GET")
-            .willRespondWith()
-            .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
-            .body(body)
-            .status(200)
-            .toPact();
-    }
-
-    @Pact(provider="court-case-service", consumer="court-case-matcher")
     public RequestResponsePact putCourtCasePact(PactDslWithProvider builder) {
 
         PactDslJsonBody addressPart = new PactDslJsonBody()
@@ -123,17 +106,6 @@ class CourtCaseServiceConsumerPactTest {
     void getCourtCase(MockServer mockServer) throws IOException {
         var httpResponse = Request
             .Get(mockServer.getUrl() + "/court/B10JQ/case/1600028913")
-            .execute()
-            .returnResponse();
-
-        assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(200);
-    }
-
-    @PactTestFor(pactMethod = "getCourtCaseByIdPact")
-    @Test
-    void getCourtCaseById(MockServer mockServer) throws IOException {
-        var httpResponse = Request
-            .Get(mockServer.getUrl() + "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5")
             .execute()
             .returnResponse();
 

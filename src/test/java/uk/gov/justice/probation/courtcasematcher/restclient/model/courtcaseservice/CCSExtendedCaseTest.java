@@ -103,4 +103,13 @@ public class CCSExtendedCaseTest {
         assertThat(actual.getDefendants().get(0).getDefendantId()).isEqualTo("1234");
         assertThat(actual.getDefendants().get(1).getDefendantId()).isEqualTo("5678");
     }
+
+    @Test
+    public void shouldMapBack() {
+        final var original = DomainDataHelper.aCourtCaseWithAllFields();
+
+        final var actual = CCSExtendedCase.of(original).asDomain();
+
+        assertThat(actual).isEqualTo(original);
+    }
 }

@@ -2,6 +2,7 @@
   "caseNo": "D517D32D-3C80-41E8-846E-D274DC2B94A5",
   "caseId": "D517D32D-3C80-41E8-846E-D274DC2B94A5",
   "courtCode": "B10JQ",
+  "source": "LIBRA",
   "defendants": [
     {
       "address": {
@@ -81,13 +82,13 @@
       "courtCode": "B10JQ",
       "courtRoom": "4",
       "listNo": "4",
-      "sessionStartTime": "2021-08-16T10:16:51.361Z"
+      "sessionStartTime": "2021-08-16T10:16:51"
     },
     {
       "courtCode": "B10JQ",
       "courtRoom": "3",
       "listNo": "3",
-      "sessionStartTime": "2021-08-17T10:16:51.361Z"
+      "sessionStartTime": "2021-08-17T10:16:51"
     }
   ]
 }
