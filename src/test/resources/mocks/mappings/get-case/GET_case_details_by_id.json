@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"
+  }
+}

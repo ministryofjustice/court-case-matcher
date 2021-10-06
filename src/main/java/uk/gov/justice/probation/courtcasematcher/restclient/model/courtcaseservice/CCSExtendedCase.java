@@ -1,12 +1,13 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,8 @@ import java.util.stream.Collectors;
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class CCSExtendedCase {
     private String caseId;
     private String caseNo;
@@ -26,7 +29,7 @@ public class CCSExtendedCase {
     public static CCSExtendedCase of(CourtCase courtCase) {
         return CCSExtendedCase.builder()
                 .caseId(Optional.ofNullable(courtCase.getCaseId())
-                        .orElseGet(CCSExtendedCase::generateUUID))
+                        .orElseGet(() -> UUID.randomUUID().toString()))
                 .caseNo(courtCase.getCaseNo())
                 .courtCode(courtCase.getCourtCode())
                 .courtCode(courtCase.getCourtCode())
@@ -35,39 +38,24 @@ public class CCSExtendedCase {
                         .map(CCSHearingDay::of)
                         .collect(Collectors.toList()))
                 .defendants(courtCase.getDefendants().stream()
-                        .map(CCSExtendedCase::getDefendant)
+                        .map(CCSDefendant::of)
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    public static CCSDefendant getDefendant(Defendant defendant) {
-        return CCSDefendant.builder()
-                .defendantId(Optional.ofNullable(defendant.getDefendantId())
-                        .orElseGet(CCSExtendedCase::generateUUID))
-                .name(CCSName.of(defendant.getName()))
-                .dateOfBirth(defendant.getDateOfBirth())
-                .address(Optional.ofNullable(defendant.getAddress()).map(CCSAddress::of).orElse(null))
-                .type(CCSDefendantType.of(defendant.getType()))
-                .probationStatus(defendant.getProbationStatus())
-                .offences(Optional.of(defendant)
-                        .map(Defendant::getOffences)
-                        .orElse(Collections.emptyList())
-                        .stream()
-                        .map(CCSOffence::of)
-                        .collect(Collectors.toList()))
-                .crn(defendant.getCrn())
-                .pnc(defendant.getPnc())
-                .cro(defendant.getCro())
-                .preSentenceActivity(defendant.getPreSentenceActivity())
-                .suspendedSentenceOrder(defendant.getSuspendedSentenceOrder())
-                .sex(defendant.getSex())
-                .previouslyKnownTerminationDate(defendant.getPreviouslyKnownTerminationDate())
-                .awaitingPsr(defendant.getAwaitingPsr())
-                .breach(defendant.getBreach())
+    public CourtCase asDomain() {
+        return CourtCase.builder()
+                .caseId(caseId)
+                .caseNo(caseNo)
+                .source(source.asDomain())
+                .hearingDays(hearingDays.stream()
+                        .map(CCSHearingDay::asDomain)
+                        .collect(Collectors.toList())
+                )
+                .defendants(defendants.stream()
+                        .map(CCSDefendant::asDomain)
+                        .collect(Collectors.toList())
+                )
                 .build();
-    }
-
-    private static String generateUUID() {
-        return UUID.randomUUID().toString();
     }
 }

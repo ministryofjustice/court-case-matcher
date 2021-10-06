@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/case/SERVER_ERROR/extended"
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

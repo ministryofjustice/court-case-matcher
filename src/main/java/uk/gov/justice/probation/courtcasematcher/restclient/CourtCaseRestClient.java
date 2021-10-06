@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,9 +18,11 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
+import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSExtendedCase;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,11 +42,34 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Autowired
     private CourtCaseServiceRestHelper restHelper;
 
+    @Value("${court-case-service.case-get-url-template-extended}")
+    private String courtCaseGetByIdTemplate;
+
     @Value("${court-case-service.case-put-url-template-extended}")
     private String courtCasePutTemplate;
 
     @Value("${court-case-service.matches-by-case-defendant-post-url-template}")
     private String matchesPostTemplate;
+
+
+    public Mono<CourtCase> getCourtCase(String caseId) {
+        final String path = String.format(courtCaseGetByIdTemplate, caseId);
+
+        // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
+        return restHelper.get(path)
+                .retrieve()
+                .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, caseId))
+
+                .bodyToMono(CCSExtendedCase.class)
+                .map(courtCaseResponse -> {
+                    log.debug("GET succeeded for retrieving the case for path {}", path);
+                    return courtCaseResponse.asDomain();
+                })
+                .onErrorResume(CourtCaseNotFoundException.class, (e) -> {
+                    // This is normal in the context of CCM, don't log
+                    return Mono.empty();
+                });
+    }
 
     @Override
     public Mono<CourtCase> getCourtCase(String courtCode, String caseNo) throws WebClientResponseException {
@@ -90,5 +117,22 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                         .orElseThrow(() -> new IllegalStateException(String.format("No matches present for defendantId %s", defendant.getDefendantId()))))
                 .flatMap(defendant -> postOffenderMatches(caseId, defendant.getDefendantId(), defendant.getGroupedOffenderMatches()))
                 .then();
+    }
+
+    private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String caseId) {
+        final HttpStatus httpStatus = clientResponse.statusCode();
+        // This is expected for new cases
+        if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
+            log.info("Failed to get case for caseId {}", caseId);
+            return Mono.error(new CourtCaseNotFoundException(caseId));
+        }
+        else if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
+            log.error("HTTP status {} to to GET the case from court case service", httpStatus);
+        }
+        throw WebClientResponseException.create(httpStatus.value(),
+                httpStatus.name(),
+                clientResponse.headers().asHttpHeaders(),
+                clientResponse.toString().getBytes(),
+                StandardCharsets.UTF_8);
     }
 }

@@ -8,6 +8,8 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import java.util.List;
 
 public interface CourtCaseRepository {
+    Mono<CourtCase> getCourtCase(String caseId);
+
     Mono<CourtCase> getCourtCase(String courtCode, String caseNo) throws WebClientResponseException;
 
     Mono<Void> putCourtCase(CourtCase courtCase);
