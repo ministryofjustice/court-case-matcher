@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
@@ -34,7 +34,7 @@ public class CourtCaseExtractor {
     @Autowired
     @NonNull
     @Qualifier("commonPlatformJsonParser")
-    final MessageParser<CPHearing> commonPlatformParser;
+    final MessageParser<CPHearingEvent> commonPlatformParser;
 
 
     CourtCase extractCourtCase(String payload, String messageId) {
@@ -44,7 +44,7 @@ public class CourtCaseExtractor {
 
             return switch (snsMessageContainer.getMessageType()){
                 case LIBRA_COURT_CASE -> libraParser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain();
-                case COMMON_PLATFORM_HEARING -> commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearing.class).asDomain();
+                case COMMON_PLATFORM_HEARING -> commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class).asDomain();
                 default -> throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
             };
 

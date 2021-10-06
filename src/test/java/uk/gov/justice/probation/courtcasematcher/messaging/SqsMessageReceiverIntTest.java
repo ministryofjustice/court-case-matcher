@@ -84,8 +84,9 @@ public class SqsMessageReceiverIntTest {
 
     @Nested
     class CommonPlatformReceiverTest {
+
         @Test
-        public void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
+        void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
             hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
 
             notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING"));

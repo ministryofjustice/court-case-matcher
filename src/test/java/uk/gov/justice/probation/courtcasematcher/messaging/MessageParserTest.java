@@ -16,6 +16,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPJurisdictionType;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOffence;
@@ -54,17 +55,17 @@ class MessageParserTest {
 
         @Autowired
         @Qualifier("commonPlatformJsonParser")
-        public MessageParser<CPHearing> messageParser;
+        public MessageParser<CPHearingEvent> messageParser;
 
         @Test
         void whenValidCase_ThenReturn() throws IOException {
             var path = "src/test/resources/messages/common-platform/hearing.json";
             var content = Files.readString(Paths.get(path));
 
-            var aHearing = messageParser.parseMessage(content, CPHearing.class);
+            var aHearingEvent = messageParser.parseMessage(content, CPHearingEvent.class);
 
             final var defendants = List.of(defendant1(), defendant2());
-            checkHearing(aHearing, defendants);
+            checkHearing(aHearingEvent.getHearing(), defendants);
         }
 
         @Test
@@ -72,8 +73,8 @@ class MessageParserTest {
             var path = "src/test/resources/messages/common-platform/hearing-with-legal-entity-defendant.json";
             var content = Files.readString(Paths.get(path));
 
-            var aHearing = messageParser.parseMessage(content, CPHearing.class);
-            checkHearing(aHearing, List.of(defendant1(), legalEntityDefendant()));
+            var aHearingEvent = messageParser.parseMessage(content, CPHearingEvent.class);
+            checkHearing(aHearingEvent.getHearing(), List.of(defendant1(), legalEntityDefendant()));
         }
 
         @Test
@@ -81,19 +82,19 @@ class MessageParserTest {
             var path = "src/test/resources/messages/common-platform/hearing-invalid.json";
             var content = Files.readString(Paths.get(path));
 
-            var thrown = catchThrowable(() -> messageParser.parseMessage(content, CPHearing.class));
+            var thrown = catchThrowable(() -> messageParser.parseMessage(content, CPHearingEvent.class));
 
             var ex = (ConstraintViolationException) thrown;
             assertThat(ex.getConstraintViolations()).hasSize(9);
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("courtCentre.roomName", "must not be blank"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearingDays[0].sittingDay", "must not be null"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("jurisdictionType", "must not be null"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].id", "must not be blank"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].id", "must not be blank"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].offences[0].wording", "must not be blank"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].personDefendant.personDetails.lastName", "must not be blank"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[0].personDefendant.personDetails.address.address1", "must not be blank"));
-            assertThat(ex.getConstraintViolations()).anyMatch(validationError("prosecutionCases[0].defendants[1].legalEntityDefendant.organisation.name", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.courtCentre.roomName", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.hearingDays[0].sittingDay", "must not be null"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.jurisdictionType", "must not be null"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.prosecutionCases[0].id", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.prosecutionCases[0].defendants[0].id", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.prosecutionCases[0].defendants[0].offences[0].wording", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.prosecutionCases[0].defendants[0].personDefendant.personDetails.lastName", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.prosecutionCases[0].defendants[0].personDefendant.personDetails.address.address1", "must not be blank"));
+            assertThat(ex.getConstraintViolations()).anyMatch(validationError("hearing.prosecutionCases[0].defendants[1].legalEntityDefendant.organisation.name", "must not be blank"));
         }
 
         private Predicate<ConstraintViolation<?>> validationError(String path, String message) {
@@ -247,7 +248,7 @@ class MessageParserTest {
 
         @Autowired
         @Qualifier("libraJsonParser")
-        public MessageParser<LibraCase> messageParser;
+        private MessageParser<LibraCase> messageParser;
 
         @DisplayName("Parse a valid message")
         @Test

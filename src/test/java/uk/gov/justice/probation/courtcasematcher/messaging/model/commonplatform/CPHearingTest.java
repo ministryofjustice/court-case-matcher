@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
@@ -13,10 +14,14 @@ import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.
 class CPHearingTest {
 
     @Test
-    public void mapToDomain() {
+    void mapToDomain() {
         final var commonPlatformHearing = buildHearing();
         final var courtCase = commonPlatformHearing.asDomain();
 
+        applyAssertions(courtCase);
+    }
+
+    static void applyAssertions(CourtCase courtCase) {
         assertThat(courtCase.getCaseId()).isEqualTo("E4631566-6479-4EBA-BFFA-DD599147FBAB");
         assertThat(courtCase.getCaseNo()).isNull();
         assertThat(courtCase.getCourtCode()).isEqualTo("B10JQ");
@@ -28,11 +33,11 @@ class CPHearingTest {
         assertThat(firstDefendant.getPnc()).isEqualTo("pncid");
         assertThat(firstDefendant.getSex()).isEqualTo("gender");
         assertThat(firstDefendant.getName()).isEqualTo(Name.builder()
-                .title("title")
-                .forename1("firstname")
-                .forename2("middlename")
-                .surname("lastname")
-                .build());
+            .title("title")
+            .forename1("firstname")
+            .forename2("middlename")
+            .surname("lastname")
+            .build());
         assertThat(firstDefendant.getDateOfBirth()).isEqualTo(LocalDate.of(2000, 1, 1));
         assertThat(firstDefendant.getOffences().get(0).getId()).isEqualTo("7AA4F55F-F104-4D07-9732-FEB679230E49");
         assertThat(firstDefendant.getOffences().get(1).getId()).isEqualTo("43AE14D2-6980-49DD-803B-B6A77E7D438E");
@@ -42,12 +47,12 @@ class CPHearingTest {
         assertThat(secondDefendant.getCro()).isNull();
         assertThat(secondDefendant.getPnc()).isNull();
         assertThat(secondDefendant.getName()).isEqualTo(Name.builder()
-                .surname("organisationname")
-                .build());
+            .surname("organisationname")
+            .build());
         assertThat(secondDefendant.getOffences().get(0).getId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
     }
 
-    private CPHearing buildHearing() {
+    static CPHearing buildHearing() {
         return CPHearing.builder()
                 .id("F40CF1F4-B226-44C8-A377-494AEC9F4EBE")
                 .jurisdictionType(CPJurisdictionType.MAGISTRATES) // Note: Not currently mapped to anything
@@ -79,7 +84,7 @@ class CPHearingTest {
                 .build();
     }
 
-    private CPDefendant buildPersonDefendant() {
+    static CPDefendant buildPersonDefendant() {
         return CPDefendant.builder()
                 .id("92673716-9B4F-40B2-A3E5-B398750328E9")
                 .croNumber("cro")
@@ -110,7 +115,7 @@ class CPHearingTest {
                 ).build();
     }
 
-    private CPDefendant buildOrganisationDefendant() {
+    static CPDefendant buildOrganisationDefendant() {
         return CPDefendant.builder()
                 .id("80F2F0CB-11F3-4A65-B587-A9808BC74C02")
                 .prosecutionCaseId("E4631566-6479-4EBA-BFFA-DD599147FBAB")
