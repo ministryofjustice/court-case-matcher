@@ -11,6 +11,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
@@ -41,7 +42,7 @@ class CourtCaseExtractorTest {
     @Mock
     private MessageParser<LibraCase> libraParser;
     @Mock
-    private MessageParser<CPHearing> commonPlatformParser;
+    private MessageParser<CPHearingEvent> commonPlatformParser;
     @Mock
     private ConstraintViolation<String> aViolation;
     @Mock
@@ -51,20 +52,22 @@ class CourtCaseExtractorTest {
     private final SnsMessageContainer.SnsMessageContainerBuilder messageContainerBuilder = SnsMessageContainer.builder()
             .message(MESSAGE_STRING);
     private final LibraCase libraCase = LibraCase.builder().caseNo(CASE_NO).build();
-    private final CPHearing commonPlatformHearing = CPHearing.builder()
-            .courtCentre(CPCourtCentre.builder()
-                    .code("12345")
-                    .build())
-            .hearingDays(Collections.singletonList(CPHearingDay.builder().build()))
-            .prosecutionCases(Collections.singletonList(CPProsecutionCase.builder()
-                            .id(CASE_ID)
-                            .defendants(Collections.singletonList(CPDefendant.builder()
-                                            .legalEntityDefendant(CPLegalEntityDefendant.builder()
-                                                    .organisation(CPOrganisation.builder().build())
-                                                    .build())
-                                            .offences(Collections.emptyList())
-                                    .build()))
-                    .build()))
+    private final CPHearingEvent commonPlatformHearingEvent = CPHearingEvent.builder()
+            .hearing(CPHearing.builder()
+                            .courtCentre(CPCourtCentre.builder()
+                                            .code("12345")
+                                            .build())
+                            .hearingDays(Collections.singletonList(CPHearingDay.builder().build()))
+                            .prosecutionCases(Collections.singletonList(CPProsecutionCase.builder()
+                                                .id(CASE_ID)
+                                                .defendants(Collections.singletonList(CPDefendant.builder()
+                                                        .legalEntityDefendant(CPLegalEntityDefendant.builder()
+                                                        .organisation(CPOrganisation.builder().build())
+                                                        .build())
+                                                .offences(Collections.emptyList())
+                                                .build()))
+                                .build()))
+                            .build())
             .build();
 
     @BeforeEach
@@ -91,11 +94,11 @@ class CourtCaseExtractorTest {
     }
 
     @Test
-    void whenCommonPlatformHearingReceived_thenParseAndReturnCase() throws JsonProcessingException {
+    void whenCommonPlatformHearingEventReceived_thenParseAndReturnCase() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING))
                 .build());
-        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearing.class)).thenReturn(commonPlatformHearing);
+        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
         var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
