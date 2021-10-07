@@ -129,7 +129,7 @@ class MessageParserTest {
             assertThat(actual.getProsecutionCases().get(0))
                     .usingRecursiveComparison()
                     .isEqualTo(CPProsecutionCase.builder()
-                            .id("D517D32D-3C80-41E8-846E-D274DC2B94A5")
+                            .id("D2B61C8A-0684-4764-B401-F0A788BC7CCF")
                             .defendants(defendants)
                             .build());
             assertThat(actual.getJurisdictionType()).isEqualTo(CPJurisdictionType.CROWN);
@@ -137,7 +137,7 @@ class MessageParserTest {
         private CPDefendant legalEntityDefendant() {
             return CPDefendant.builder()
                     .id("903c4c54-f667-4770-8fdf-1adbb5957c25")
-                    .prosecutionCaseId("D517D32D-3C80-41E8-846E-D274DC2B94A5")
+                    .prosecutionCaseId("D2B61C8A-0684-4764-B401-F0A788BC7CCF")
                     .pncId(null)
                     .croNumber(null)
                     .offences(List.of(CPOffence.builder()
@@ -164,7 +164,7 @@ class MessageParserTest {
         private CPDefendant defendant1() {
             return CPDefendant.builder()
                     .id("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")
-                    .prosecutionCaseId("D517D32D-3C80-41E8-846E-D274DC2B94A5")
+                    .prosecutionCaseId("D2B61C8A-0684-4764-B401-F0A788BC7CCF")
                     .pncId("2004/0012345U")
                     .croNumber("12345ABCDEF")
                     .offences(List.of(CPOffence.builder()
@@ -203,7 +203,7 @@ class MessageParserTest {
         private CPDefendant defendant2() {
             return CPDefendant.builder()
                     .id("903c4c54-f667-4770-8fdf-1adbb5957c25")
-                    .prosecutionCaseId("D517D32D-3C80-41E8-846E-D274DC2B94A5")
+                    .prosecutionCaseId("D2B61C8A-0684-4764-B401-F0A788BC7CCF")
                     .pncId(null)
                     .croNumber(null)
                     .offences(List.of(CPOffence.builder()
