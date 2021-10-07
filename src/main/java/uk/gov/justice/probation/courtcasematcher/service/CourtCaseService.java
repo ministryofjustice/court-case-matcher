@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
@@ -30,9 +31,10 @@ public class CourtCaseService {
     private OffenderSearchRestClient offenderSearchRestClient;
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {
-        if (aCase.getCaseNo() == null) {
-            log.warn(String.format("caseNo not available for %s case with id '%s'. Skipping check for existing case.", aCase.getSource(), aCase.getCaseId()));
-            return Mono.just(aCase);
+        if (aCase.getSource() == DataSource.COMMON_PLATFORM) {
+            return courtCaseRepository.getCourtCase(aCase.getCaseId())
+                    .map(existing -> CaseMapper.merge(aCase, existing))
+                    .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
         }
         return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
                 .map(existing -> CaseMapper.merge(aCase, existing))

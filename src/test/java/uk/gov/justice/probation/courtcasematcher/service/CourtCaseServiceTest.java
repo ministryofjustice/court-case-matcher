@@ -135,10 +135,11 @@ class CourtCaseServiceTest {
         verifyNoMoreInteractions(courtCaseRepo);
     }
 
-    @DisplayName("Incoming gateway case which is merged with the existing.")
+    @DisplayName("Incoming Libra case which is merged with the existing.")
     @Test
-    void givenExistingCase_whenGetCourtCase_thenMergeAndReturn() {
-        final var aCase = buildCaseNoMatches();
+    void givenExistingLibraCase_whenGetCourtCase_thenMergeAndReturn() {
+        final var aCase = buildCaseNoMatches()
+                .withSource(DataSource.LIBRA);
 
         final var courtCase = CourtCase.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
@@ -148,6 +149,7 @@ class CourtCaseServiceTest {
                 .defendants(defendants)
                 .caseId(CASE_ID)
                 .caseNo(CASE_NO)
+                .source(DataSource.LIBRA)
                 .build();
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
@@ -158,10 +160,34 @@ class CourtCaseServiceTest {
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
     }
 
+    @DisplayName("Incoming Common Platform case which is merged with the existing.")
+    @Test
+    void givenExistingCommonPlatformCase_whenGetCourtCase_thenMergeAndReturn() {
+        final var aCase = buildCaseNoMatches();
+
+        final var courtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode(COURT_CODE)
+                        .courtRoom("2")
+                        .build()))
+                .defendants(defendants)
+                .caseId(CASE_ID)
+                .source(DataSource.COMMON_PLATFORM)
+                .build();
+
+        when(courtCaseRepo.getCourtCase(CASE_ID)).thenReturn(Mono.just(courtCase));
+
+        final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
+
+        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
+        verify(courtCaseRepo).getCourtCase(CASE_ID);
+    }
+
     @DisplayName("Get court case which is new, return a transformed copy.")
     @Test
     void givenNewCase_whenGetCourtCase_thenReturn() {
-        var aCase = buildCaseNoMatches();
+        var aCase = buildCaseNoMatches()
+                .withSource(DataSource.LIBRA);
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
 
