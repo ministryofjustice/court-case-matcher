@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPattern": "/case/D2B61C8A-0684-4764-B401-F0A788BC7CCF/extended",
+    "bodyPatterns": [
+      {
+        "matches" : ".*caseId.*D2B61C8A-0684-4764-B401-F0A788BC7CCF.*"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "put-court-case/PUT_case_details_body.json"
+  }
+}
