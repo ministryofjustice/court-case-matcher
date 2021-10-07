@@ -93,7 +93,6 @@ public class CourtCaseRestClient implements CourtCaseRepository {
 
     private Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
         return Mono.justOrEmpty(offenderMatches)
-
             .map(matches -> Tuple2.of(String.format(matchesPostTemplate, caseId, defendantId), CCSGroupedOffenderMatchesRequest.of(matches)))
             .flatMap(tuple2 -> restHelper.postObject(tuple2.getT1(), tuple2.getT2(), CCSGroupedOffenderMatchesRequest.class)
                 .retrieve()
@@ -111,10 +110,6 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Override
     public Mono<Void> postOffenderMatches(String caseId, List<Defendant> defendants) {
         return Flux.fromStream(defendants.stream())
-                .doOnNext(defendant -> Optional.ofNullable(defendant.getGroupedOffenderMatches())
-                        .map(GroupedOffenderMatches::getMatches)
-                        .filter(offenderMatches -> !offenderMatches.isEmpty())
-                        .orElseThrow(() -> new IllegalStateException(String.format("No matches present for defendantId %s", defendant.getDefendantId()))))
                 .flatMap(defendant -> postOffenderMatches(caseId, defendant.getDefendantId(), defendant.getGroupedOffenderMatches()))
                 .then();
     }

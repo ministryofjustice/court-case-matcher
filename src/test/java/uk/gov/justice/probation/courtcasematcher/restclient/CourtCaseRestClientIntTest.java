@@ -132,10 +132,10 @@ class CourtCaseRestClientIntTest {
         final var voidMono = client.putCourtCase(courtCase);
         assertThat(voidMono.blockOptional()).isEmpty();
 
-        MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
                 putRequestedFor(urlEqualTo(String.format("/case/%s/extended", CASE_ID)))
         );
+        assertThat(MOCK_SERVER.findAllUnmatchedRequests().size()).isEqualTo(0);
     }
 
     @Test
@@ -146,7 +146,6 @@ class CourtCaseRestClientIntTest {
         final var voidMono = client.putCourtCase(courtCase);
         assertThat(voidMono.blockOptional()).isEmpty();
 
-        MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
                 putRequestedFor(urlMatching("/case/[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}/extended"))
 
@@ -216,7 +215,7 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenRestClientCalledWithNullOffenderMatches_ThenFailureEvent() {
+    void whenRestClientCalledWithNullOffenderMatches_ThenDoNotPost() {
         final var defendants = List.of(
                 Defendant.builder()
                         .type(DefendantType.PERSON)
@@ -225,10 +224,30 @@ class CourtCaseRestClientIntTest {
                         .build()
         );
 
-        assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> client.postOffenderMatches(CASE_ID, defendants).block())
-                .withMessage(String.format("No matches present for defendantId %s", DEFENDANT_ID))
-        ;
+        client.postOffenderMatches(CASE_ID, defendants).block();
+
+        MOCK_SERVER.verify(0,
+                postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, DEFENDANT_ID)))
+        );
+        assertThat(MOCK_SERVER.findAllUnmatchedRequests().size()).isEqualTo(0);
+    }
+
+    @Test
+    void whenRestClientCalledWithEmptyOffenderMatches_ThenPost() {
+        final var defendants = List.of(
+                Defendant.builder()
+                        .type(DefendantType.PERSON)
+                        .defendantId("FE6E58E3-D3F1-4721-AB47-69741940847E")
+                        .groupedOffenderMatches(GroupedOffenderMatches.builder()
+                                .matches(Collections.emptyList())
+                                .build())
+                        .build()
+        );
+        client.postOffenderMatches(CASE_ID, defendants).block();
+
+        MOCK_SERVER.verify(
+                postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, "FE6E58E3-D3F1-4721-AB47-69741940847E")))
+        );
     }
 
     private List<Defendant> buildDefendants() {
