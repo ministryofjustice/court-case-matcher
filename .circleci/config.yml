@@ -157,7 +157,7 @@ jobs:
           keys:
             - gradle-{{ checksum "build.gradle" }}
             - gradle-
-      - run: PACTCONSUMER_VERSION=$CIRCLE_BRANCH ./gradlew -Dpact.writer.overwrite=true test pactPublish
+      - run: PACTCONSUMER_VERSION=$CIRCLE_SHA1 PACTCONSUMER_TAGS=$CIRCLE_BRANCH ./gradlew -Dpact.writer.overwrite=true test pactPublish
 
   build_docker:
     executor: deployer
