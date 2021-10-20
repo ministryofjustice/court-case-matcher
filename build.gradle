@@ -93,7 +93,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    implementation 'org.springframework.boot:spring-boot-starter-artemis'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.0'
@@ -129,7 +128,6 @@ dependencies {
     testImplementation "io.rest-assured:xml-path:$restAssuredVersion"
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.31.0"
     testImplementation 'org.mockito:mockito-core:4.0.0'
-    testImplementation 'org.apache.activemq:artemis-junit:2.18.0'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation("com.github.tomakehurst:wiremock:2.27.2")
@@ -200,7 +198,7 @@ pact {
         pactBrokerPassword = System.getenv("PACTBROKER_AUTH_PASSWORD")
         pactDirectory = 'build/pacts'
         consumerVersion = System.getenv("PACTCONSUMER_VERSION")
-        tags  = System.getenv("PACTCONSUMER_TAGS").split(",")
+        tags  = (System.getenv("PACTCONSUMER_TAGS") ?: "main").split(",")
     }
 }
 
