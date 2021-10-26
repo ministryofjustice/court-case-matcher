@@ -1,14 +1,12 @@
 package uk.gov.justice.probation.courtcasematcher.health;
 
 import io.restassured.RestAssured;
-import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.jms.JmsHealthIndicator;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -30,12 +28,6 @@ import static org.mockito.ArgumentMatchers.any;
 public class HealthCheckTest {
 
     @Autowired
-    public ActiveMQConnectionFactory jmsConnectionFactory;
-
-    @Autowired
-    public JmsHealthIndicator jmsHealthIndicator;
-
-    @Autowired
     private SqsCheck sqsCheck;
 
     @LocalServerPort
@@ -54,7 +46,6 @@ public class HealthCheckTest {
 
     @Test
     public void testUp() {
-        Mockito.when(jmsHealthIndicator.getHealth(any(Boolean.class))).thenReturn(Health.up().build());
         Mockito.when(sqsCheck.getHealth(any(Boolean.class))).thenReturn(Mono.just(Health.up().build()));
 
         String response = given()
@@ -65,15 +56,14 @@ public class HealthCheckTest {
             .extract().response().asString();
 
         assertThatJson(response).node("status").isEqualTo("UP");
-        assertThatJson(response).node("components.jms.status").isEqualTo("UP");
+        assertThatJson(response).node("components.sqsCheck.status").isEqualTo("UP");
         assertThatJson(response).node("components.offenderSearch.status").isEqualTo("UP");
         assertThatJson(response).node("components.courtCaseService.status").isEqualTo("UP");
         assertThatJson(response).node("components.nomisAuth.status").isEqualTo("UP");
     }
 
     @Test
-    public void whenJmsDown_thenDownWithStatus503() {
-        Mockito.when(jmsHealthIndicator.getHealth(any(Boolean.class))).thenReturn(Health.down().build());
+    public void whenSQSDown_thenDownWithStatus503() {
         Mockito.when(sqsCheck.getHealth(any(Boolean.class))).thenReturn(Mono.just(Health.down().build()));
         String response = given()
             .when()
@@ -83,7 +73,7 @@ public class HealthCheckTest {
             .extract().response().asString();
 
         assertThatJson(response).node("status").isEqualTo("DOWN");
-        assertThatJson(response).node("components.jms.status").isEqualTo("DOWN");
+        assertThatJson(response).node("components.sqsCheck.status").isEqualTo("DOWN");
         assertThatJson(response).node("components.offenderSearch.status").isEqualTo("UP");
         assertThatJson(response).node("components.courtCaseService.status").isEqualTo("UP");
         assertThatJson(response).node("components.nomisAuth.status").isEqualTo("UP");
