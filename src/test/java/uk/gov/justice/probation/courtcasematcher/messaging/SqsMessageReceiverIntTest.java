@@ -94,7 +94,6 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("0")))
-                        .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
@@ -133,7 +132,6 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("0")))
-                        .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
                         .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
@@ -194,7 +192,6 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032981")))
-                        .withRequestBody(matchingJsonPath("courtCode", equalTo("B10JQ")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
         );
 

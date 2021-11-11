@@ -62,7 +62,6 @@ class CourtCaseRestClientPactTest {
 
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
-            rootObject.stringType("courtCode");
             rootObject.stringValue("source", "LIBRA");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
@@ -110,7 +109,6 @@ class CourtCaseRestClientPactTest {
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
             rootObject.stringType("caseNo");
-            rootObject.stringType("courtCode");
             rootObject.stringValue("source", "LIBRA");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
@@ -171,7 +169,7 @@ class CourtCaseRestClientPactTest {
 
     @PactTestFor(pactMethod = "getCourtCaseByIdPact")
     @Test
-    void getCourtCaseById() throws IOException {
+    void getCourtCaseById() {
         final var courtCase = restClient.getCourtCase(DomainDataHelper.aMinimalValidCourtCase().getCaseId()).block();
         assertThat(courtCase.getCaseId()).isEqualTo("D517D32D-3C80-41E8-846E-D274DC2B94A5");
     }
