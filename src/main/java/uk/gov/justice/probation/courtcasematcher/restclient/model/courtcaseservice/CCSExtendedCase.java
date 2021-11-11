@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class CCSExtendedCase {
     private String caseId;
     private String caseNo;
-    private String courtCode;
     private List<CCSDefendant> defendants;
     private List<CCSHearingDay> hearingDays;
     private CCSDataSource source;
@@ -31,8 +30,6 @@ public class CCSExtendedCase {
                 .caseId(Optional.ofNullable(courtCase.getCaseId())
                         .orElseGet(() -> UUID.randomUUID().toString()))
                 .caseNo(courtCase.getCaseNo())
-                .courtCode(courtCase.getCourtCode())
-                .courtCode(courtCase.getCourtCode())
                 .source(CCSDataSource.of(courtCase.getSource()))
                 .hearingDays(courtCase.getHearingDays().stream()
                         .map(CCSHearingDay::of)
