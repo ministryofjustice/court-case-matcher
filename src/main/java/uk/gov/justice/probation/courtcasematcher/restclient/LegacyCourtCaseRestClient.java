@@ -64,10 +64,12 @@ public class LegacyCourtCaseRestClient {
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
             log.error("HTTP status {} to to GET the case from court case service", httpStatus);
         }
-        throw WebClientResponseException.create(httpStatus.value(),
-            httpStatus.name(),
-            clientResponse.headers().asHttpHeaders(),
-            clientResponse.toString().getBytes(),
-            StandardCharsets.UTF_8);
+        final var exception = WebClientResponseException.create(httpStatus.value(),
+                httpStatus.name(),
+                clientResponse.headers().asHttpHeaders(),
+                clientResponse.toString().getBytes(),
+                StandardCharsets.UTF_8);
+        log.error("Unexpected response code {} getting case number {} and court code {}", httpStatus, caseNo, courtCode, exception);
+        throw exception;
     }
 }
