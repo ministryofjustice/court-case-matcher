@@ -170,4 +170,18 @@ class MatchRequestFactoryTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> factory.buildFrom(defendant));
     }
+
+    @DisplayName("Given nulls and empty string, isBlank is true.")
+    @Test
+    public void givenBlankString_thenTrue() {
+        assertThat(MatchRequest.isBlank(null)).isTrue();
+        assertThat(MatchRequest.isBlank("")).isTrue();
+        assertThat(MatchRequest.isBlank("  ")).isTrue();
+    }
+
+    @DisplayName("Given nulls and empty string, isBlank is true.")
+    @Test
+    public void givenNonBlankString_thenFalse() {
+        assertThat(MatchRequest.isBlank("ABC")).isFalse();
+    }
 }
