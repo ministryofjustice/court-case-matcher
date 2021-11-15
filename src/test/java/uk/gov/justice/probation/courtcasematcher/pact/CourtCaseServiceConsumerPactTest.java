@@ -5,6 +5,7 @@ import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
+import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
 import org.apache.commons.io.FileUtils;
@@ -28,7 +29,7 @@ class CourtCaseServiceConsumerPactTest {
     private static final String BASE_MOCK_PATH = "src/test/resources/mocks/__files/";
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public RequestResponsePact getCourtCasePact(PactDslWithProvider builder) throws IOException {
+    public V4Pact getCourtCasePact(PactDslWithProvider builder) throws IOException {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
 
@@ -41,7 +42,7 @@ class CourtCaseServiceConsumerPactTest {
             .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
             .body(body)
             .status(200)
-            .toPact();
+            .toPact(V4Pact.class);
     }
 
 
