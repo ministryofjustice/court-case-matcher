@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
@@ -19,6 +18,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Builder
@@ -45,7 +45,7 @@ public class MatchRequest {
         private boolean useDobWithPnc;
 
         public MatchRequest buildFrom(String pnc, Name fullName, LocalDate dateOfBirth) throws IllegalArgumentException {
-            if (fullName == null || StringUtils.isBlank(fullName.getSurname())) {
+            if (fullName == null || isBlank(fullName.getSurname())) {
                 log.error(ERROR_NO_NAME);
                 throw new IllegalArgumentException(ERROR_NO_NAME);
             }
@@ -54,13 +54,13 @@ public class MatchRequest {
                                                 .pncNumber(pnc)
                                                 .surname(fullName.getSurname());
             if (!Objects.isNull(dateOfBirth)) {
-                if (useDobWithPnc || StringUtils.isBlank(pnc)) {
+                if (useDobWithPnc || isBlank(pnc)) {
                     builder.dateOfBirth(dateOfBirth.format(DateTimeFormatter.ISO_DATE));
                 }
             }
 
             String forenames = fullName.getForenames();
-            if (!StringUtils.isBlank(forenames)) {
+            if (!isBlank(forenames)) {
                 builder.firstName(forenames);
             }
             return builder.build();
@@ -69,5 +69,9 @@ public class MatchRequest {
         public MatchRequest buildFrom(Defendant defendant) throws IllegalArgumentException {
             return buildFrom(defendant.getPnc(), defendant.getName(), defendant.getDateOfBirth());
         }
+    }
+
+    public static boolean isBlank(String string) {
+        return Optional.ofNullable(string).map(String::isBlank).orElse(true);
     }
 }
