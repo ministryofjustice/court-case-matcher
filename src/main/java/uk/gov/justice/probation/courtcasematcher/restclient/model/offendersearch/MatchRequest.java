@@ -69,8 +69,6 @@ public class MatchRequest {
         public MatchRequest buildFrom(Defendant defendant) throws IllegalArgumentException {
             return buildFrom(defendant.getPnc(), defendant.getName(), defendant.getDateOfBirth());
         }
-
-
     }
 
     public static boolean isBlank(String string) {
