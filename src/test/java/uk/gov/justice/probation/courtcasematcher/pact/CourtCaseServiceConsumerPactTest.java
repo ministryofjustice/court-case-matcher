@@ -28,7 +28,7 @@ class CourtCaseServiceConsumerPactTest {
     private static final String BASE_MOCK_PATH = "src/test/resources/mocks/__files/";
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public RequestResponsePact getCourtCasePact(PactDslWithProvider builder) throws IOException {
+    public au.com.dius.pact.core.model.V4Pact getCourtCasePact(PactDslWithProvider builder) throws IOException {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
 
@@ -41,7 +41,7 @@ class CourtCaseServiceConsumerPactTest {
             .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
             .body(body)
             .status(200)
-            .toPact();
+            .toPact(au.com.dius.pact.core.model.V4Pact.class);
     }
 
 
