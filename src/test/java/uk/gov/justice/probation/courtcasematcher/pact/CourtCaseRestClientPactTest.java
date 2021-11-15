@@ -4,6 +4,7 @@ import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
+import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
 import org.apache.commons.io.FileUtils;
@@ -41,7 +42,7 @@ class CourtCaseRestClientPactTest {
     private CourtCaseRestClient restClient;
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public RequestResponsePact getCourtCaseByIdPact(PactDslWithProvider builder) throws IOException {
+    public V4Pact getCourtCaseByIdPact(PactDslWithProvider builder) throws IOException {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8);
 
@@ -54,11 +55,11 @@ class CourtCaseRestClientPactTest {
                 .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
                 .body(body)
                 .status(200)
-                .toPact();
+                .toPact(V4Pact.class);
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public RequestResponsePact putMinimalCourtCaseByIdPact(PactDslWithProvider builder) {
+    public V4Pact putMinimalCourtCaseByIdPact(PactDslWithProvider builder) {
 
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
@@ -99,11 +100,11 @@ class CourtCaseRestClientPactTest {
                 .body(body)
                 .willRespondWith()
                 .status(201)
-                .toPact();
+                .toPact(V4Pact.class);
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public RequestResponsePact putCourtCaseWithAllFieldsByIdPact(PactDslWithProvider builder) {
+    public V4Pact putCourtCaseWithAllFieldsByIdPact(PactDslWithProvider builder) {
 
 
         final var body = newJsonBody((rootObject) -> {
@@ -164,7 +165,7 @@ class CourtCaseRestClientPactTest {
                 .method("PUT")
                 .willRespondWith()
                 .status(201)
-                .toPact();
+                .toPact(V4Pact.class);
     }
 
     @PactTestFor(pactMethod = "getCourtCaseByIdPact")
