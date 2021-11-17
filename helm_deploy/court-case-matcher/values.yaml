@@ -1,0 +1,51 @@
+generic-service:
+  nameOverride: court-case-matcher
+
+  image:
+    repository: docker.io/mojdigitalstudio/court-case-matcher
+    tag: app_version    # override at deployment time
+    pullPolicy: Always
+    port: 8080
+
+  ingress:
+    enabled: true
+    modsecurity_enabled: true
+    path: /
+    tlsSecretName: ""
+
+  env:
+    JAVA_OPTS: "-Xmx512m"
+    SERVER_PORT: 8080
+    APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=$(APPINSIGHTS_INSTRUMENTATIONKEY)"
+
+  namespace_secrets:
+    court-case-matcher-queue-credentials:
+      AWS_SQS_COURT_CASE_MATCHER_ENDPOINT_URL: sqs_id
+      AWS_SQS_COURT_CASE_MATCHER_QUEUE_NAME: sqs_name
+      AWS_SQS_COURT_CASE_MATCHER_ACCESS_KEY_ID: access_key_id
+      AWS_SQS_COURT_CASE_MATCHER_SECRET_ACCESS_KEY: secret_access_key
+    court-case-matcher-secrets:
+      OFFENDER_SEARCH_CLIENT_ID: nomis-oauth-client-id
+      OFFENDER_SEARCH_CLIENT_SECRET: nomis-oauth-client-secret
+      APPINSIGHTS_INSTRUMENTATIONKEY: APPINSIGHTS_INSTRUMENTATIONKEY
+
+  allowlist:
+  office: "217.33.148.210/32"
+  health-kick: "35.177.252.195/32"
+  mojvpn: "81.134.202.29/32"
+  cloudplatform-live1-1: "35.178.209.113/32"
+  cloudplatform-live1-2: "3.8.51.207/32"
+  cloudplatform-live1-3: "35.177.252.54/32"
+
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/ping
+      port: 8080
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/ping
+      port: 8080
+
+generic-prometheus-alerts:
+  targetApplication: court-case-matcher
+  alertSeverity: prepare-a-case

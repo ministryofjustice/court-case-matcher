@@ -27,3 +27,5 @@
 
 *secrets*.yaml
 !secrets-example.yaml
+/helm_deploy/court-case-matcher/charts/
+/helm_deploy/court-case-matcher/Chart.lock
