@@ -63,7 +63,7 @@ class CourtCaseRestClientPactTest {
 
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
-            rootObject.stringValue("source", "LIBRA");
+            rootObject.stringValue("source", "COMMON_PLATFORM");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
                     addressObj.stringType("line1");
@@ -80,6 +80,7 @@ class CourtCaseRestClientPactTest {
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
                 }));
+                defendant.stringType("sex");
                 defendant.stringValue("type", "PERSON");
                 defendant.stringType("defendantId");
             })));
@@ -106,11 +107,10 @@ class CourtCaseRestClientPactTest {
     @Pact(provider="court-case-service", consumer="court-case-matcher")
     public V4Pact putCourtCaseWithAllFieldsByIdPact(PactDslWithProvider builder) {
 
-
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
             rootObject.stringType("caseNo");
-            rootObject.stringValue("source", "LIBRA");
+            rootObject.stringValue("source", "COMMON_PLATFORM");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
                     addressObj.stringType("line1");

@@ -73,7 +73,7 @@ public class DomainDataHelper {
     public static CourtCase.CourtCaseBuilder aMinimalCourtCaseBuilder() {
         return CourtCase.builder()
                 .caseId(CASE_ID)
-                .source(DataSource.LIBRA)
+                .source(DataSource.COMMON_PLATFORM)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("B10JQ")
                         .courtRoom("ROOM 1")
@@ -98,6 +98,7 @@ public class DomainDataHelper {
                                 .build())
                         .dateOfBirth(LocalDate.of(1986, 11, 28))
                         .type(DefendantType.PERSON)
+                        .sex("M")
                         .build()))
                 ;
     }
