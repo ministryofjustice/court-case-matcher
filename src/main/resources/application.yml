@@ -68,7 +68,7 @@ web:
   client:
     connect-timeout-ms: 20000
     read-timeout-ms: 20000
-    write-timeout-ms: 5000
+    write-timeout-ms: 20000
 
 # Libra feed has today's case list and another case list for this many days hence. e.g. 25th and 28th July
 case-feed-future-date-offset: 3
