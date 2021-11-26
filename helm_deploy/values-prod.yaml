@@ -1,19 +1,43 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
 
-generic-service:
-  autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 6
-  env:
-    SPRING_PROFILES_ACTIVE: prod,instrumented
+minReplicaCount: 2
+maxReplicaCount: 6
 
-  ingress:
-    host: court-case-matcher.apps.live-1.cloud-platform.service.justice.gov.uk
+image:
+  repository: docker.io/mojdigitalstudio/court-case-matcher
+  tag: latest
+  pullPolicy: Always
+  port: 8080
 
-  resources:
-    limits:
-      cpu: 5000m
-      memory: 1200Mi
-    requests:
-      cpu: 500m
-      memory: 700Mi
+ingress:
+  controller: nginx
+  enabled: true
+  enable_whitelist: true
+  hosts:
+    - host: court-case-matcher.apps.live-1.cloud-platform.service.justice.gov.uk
+      cert_secret: court-case-matcher-cert
+  path: /
+
+env:
+  JAVA_OPTS: "-Xmx512m"
+
+spring:
+  profile: prod,instrumented
+
+whitelist:
+  office: "217.33.148.210/32"
+  health-kick: "35.177.252.195/32"
+  mojvpn: "81.134.202.29/32"
+  cloudplatform-live1-1: "35.178.209.113/32"
+  cloudplatform-live1-2: "3.8.51.207/32"
+  cloudplatform-live1-3: "35.177.252.54/32"
+
+resources:
+  cpu:
+    limit: 1000m
+    request: 100m
+  memory:
+    limit: 1000Mi
+    request: 500Mi
+

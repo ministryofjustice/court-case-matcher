@@ -24,6 +24,27 @@ commands:
             # confirm setup is ok
             kubectl config use-context circleci
             kubectl -n "${KUBE_ENV_NAMESPACE}" get pods
+  deploy_to_env:
+    parameters:
+      env:
+        type: string
+    steps:
+      - setup
+      - checkout:
+          path: ~/git
+      - attach_workspace:
+          at: ~/app
+      - deploy:
+          name: Deploy to << parameters.env >>
+          command: |
+            APP_VERSION=$(cat ~/app/app_version.txt)
+            helm upgrade court-case-matcher ~/git/helm_deploy/court-case-matcher/. \
+              --install --wait --reset-values --timeout 360s \
+              --namespace=${KUBE_ENV_NAMESPACE} \
+              --description="${APP_VERSION} - ${CIRCLE_BUILD_URL}" \
+              --values ~/git/helm_deploy/values-<< parameters.env >>.yaml \
+              --values - \
+              --set image.tag="${APP_VERSION}"
 executors:
   deployer:
     docker:
@@ -55,7 +76,7 @@ orbs:
   helm: circleci/helm@1.1.2
   snyk: snyk/snyk@0.0.10
   dps: ministryofjustice/dps@1.2.1
-  hmpps: ministryofjustice/hmpps@3.11.11
+  hmpps: ministryofjustice/hmpps@2.3
   slack: circleci/slack@4.4.2
 
 jobs:
@@ -189,6 +210,23 @@ jobs:
           monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/latest'
           organization: 'digital-probation-services'
+
+  deploy_dev:
+    executor: deployer
+    steps:
+      - deploy_to_env:
+          env: "dev"
+  deploy_preprod:
+    executor: deployer
+    steps:
+      - deploy_to_env:
+          env: "preprod"
+  deploy_prod:
+    executor: deployer
+    steps:
+      - deploy_to_env:
+          env: "prod"
+
 workflows:
   version: 2
   scheduled:
@@ -223,35 +261,25 @@ workflows:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
-      - hmpps/deploy_env:
-          name: deploy_dev
-          env: "dev"
-          context: hmpps-common-vars
+      - deploy_dev:
+          requires:
+            - build_docker
           filters:
             branches:
-              only:
-                - main
-          requires:
-            - build
-            - build_docker
-            - helm_lint_dev
+              only: main
       - request-preprod-approval:
           type: approval
           requires:
             - deploy_dev
-      - hmpps/deploy_env:
-          name: deploy_preprod
-          env: "preprod"
-          context: hmpps-common-vars
+      - deploy_preprod:
+          context: court-probation-preprod
           requires:
             - request-preprod-approval
       - request-prod-approval:
           type: approval
           requires:
             - deploy_preprod
-      - hmpps/deploy_env:
-          name: deploy_prod
-          env: "prod"
-          context: hmpps-common-vars
+      - deploy_prod:
+          context: court-probation-prod
           requires:
             - request-prod-approval
