@@ -192,13 +192,13 @@ jobs:
                --label "build.number=$CIRCLE_BUILD_NUM" \
                --label "build.url=$CIRCLE_BUILD_URL" \
                --label "build.gitref=$CIRCLE_SHA1"
-            #if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
+            if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
               # publish to docker hub as the tag
              docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
              docker tag mojdigitalstudio/court-case-matcher:$APP_VERSION mojdigitalstudio/court-case-matcher:latest
              docker push mojdigitalstudio/court-case-matcher:$APP_VERSION
              docker push mojdigitalstudio/court-case-matcher:latest
-            #fi
+            fi
 
   app-scan:
     executor: builder
@@ -303,9 +303,9 @@ workflows:
       - deploy_dev:
           requires:
             - build_docker
-#          filters:
-#            branches:
-#              only: main
+          filters:
+            branches:
+              only: main
       - request-preprod-approval:
           type: approval
           requires:
@@ -327,9 +327,9 @@ workflows:
           context: court-probation-live-dev
           requires:
             - build_docker
-#          filters:
-#            branches:
-#              only: main
+          filters:
+            branches:
+              only: main
       - request-live-preprod-approval:
           type: approval
           requires:
