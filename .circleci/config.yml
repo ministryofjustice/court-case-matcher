@@ -3,6 +3,11 @@ machine: true
 commands:
   setup:
     description: "Install tools and configure kubectl"
+#    TODO: DELETE (only needed for live1)
+    parameters:
+      server-prefix:
+        type: string
+        default: ""
     steps:
       - aws-cli/install
       - kubernetes/install
@@ -14,7 +19,7 @@ commands:
             echo -n "${KUBE_ENV_CACERT}" | base64 -d > /tmp/cluster_ca.crt
             kubectl config set-cluster "${KUBE_ENV_NAME}" \
               --certificate-authority="/tmp/cluster_ca.crt" \
-              --server="https://api.${KUBE_ENV_NAME}"
+              --server="https://<< parameters.server-prefix >>${KUBE_ENV_NAME}"
             kubectl config set-credentials circleci \
               --token="${KUBE_ENV_TOKEN}"
             kubectl config set-context circleci \
@@ -28,8 +33,15 @@ commands:
     parameters:
       env:
         type: string
+      cluster:
+        type: string
+      server-prefix:
+        type: string
+        default: ""
     steps:
-      - setup
+      - setup:
+          #    TODO: DELETE (only needed for live1)
+          server-prefix: << parameters.server-prefix  >>
       - checkout:
           path: ~/git
       - attach_workspace:
@@ -44,6 +56,7 @@ commands:
               --description="${APP_VERSION} - ${CIRCLE_BUILD_URL}" \
               --values ~/git/helm_deploy/values-<< parameters.env >>.yaml \
               --values - \
+              --values ~/git/helm_deploy/court-case-matcher/values-<< parameters.cluster >>.yaml \
               --set image.tag="${APP_VERSION}"
 executors:
   deployer:
@@ -179,13 +192,13 @@ jobs:
                --label "build.number=$CIRCLE_BUILD_NUM" \
                --label "build.url=$CIRCLE_BUILD_URL" \
                --label "build.gitref=$CIRCLE_SHA1"
-            if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
+            #if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
               # publish to docker hub as the tag
              docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
              docker tag mojdigitalstudio/court-case-matcher:$APP_VERSION mojdigitalstudio/court-case-matcher:latest
              docker push mojdigitalstudio/court-case-matcher:$APP_VERSION
              docker push mojdigitalstudio/court-case-matcher:latest
-            fi
+            #fi
 
   app-scan:
     executor: builder
@@ -210,22 +223,47 @@ jobs:
           monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/latest'
           organization: 'digital-probation-services'
-
+# TODO: DELETE
   deploy_dev:
     executor: deployer
     steps:
       - deploy_to_env:
           env: "dev"
+          cluster: "live1"
+          server-prefix: "api."
   deploy_preprod:
     executor: deployer
     steps:
       - deploy_to_env:
           env: "preprod"
+          cluster: "live1"
+          server-prefix: "api."
   deploy_prod:
     executor: deployer
     steps:
       - deploy_to_env:
           env: "prod"
+          cluster: "live1"
+          server-prefix: "api."
+# TODO: END
+  deploy_live_dev:
+    executor: deployer
+    steps:
+      - deploy_to_env:
+          env: "dev"
+          cluster: "live"
+  deploy_live_preprod:
+    executor: deployer
+    steps:
+      - deploy_to_env:
+          env: "preprod"
+          cluster: "live"
+  deploy_live_prod:
+    executor: deployer
+    steps:
+      - deploy_to_env:
+          env: "prod"
+          cluster: "live"
 
 workflows:
   version: 2
@@ -261,12 +299,13 @@ workflows:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
+#          TODO: DELETE
       - deploy_dev:
           requires:
             - build_docker
-          filters:
-            branches:
-              only: main
+#          filters:
+#            branches:
+#              only: main
       - request-preprod-approval:
           type: approval
           requires:
@@ -283,3 +322,27 @@ workflows:
           context: court-probation-prod
           requires:
             - request-prod-approval
+#          TODO: END
+      - deploy_live_dev:
+          context: court-probation-live-dev
+          requires:
+            - build_docker
+#          filters:
+#            branches:
+#              only: main
+      - request-live-preprod-approval:
+          type: approval
+          requires:
+            - deploy_live_dev
+      - deploy_live_preprod:
+          context: court-probation-live-preprod
+          requires:
+            - request-live-preprod-approval
+      - request-live-prod-approval:
+          type: approval
+          requires:
+            - deploy_live_preprod
+#      - deploy_live_prod:
+#          context: court-probation-live-prod
+#          requires:
+#            - request-prod-approval
