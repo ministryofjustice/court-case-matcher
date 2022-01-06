@@ -3,11 +3,6 @@ machine: true
 commands:
   setup:
     description: "Install tools and configure kubectl"
-#    TODO: DELETE (only needed for live1)
-    parameters:
-      server-prefix:
-        type: string
-        default: ""
     steps:
       - aws-cli/install
       - kubernetes/install
@@ -19,7 +14,7 @@ commands:
             echo -n "${KUBE_ENV_CACERT}" | base64 -d > /tmp/cluster_ca.crt
             kubectl config set-cluster "${KUBE_ENV_NAME}" \
               --certificate-authority="/tmp/cluster_ca.crt" \
-              --server="https://<< parameters.server-prefix >>${KUBE_ENV_NAME}"
+              --server="https://${KUBE_ENV_NAME}"
             kubectl config set-credentials circleci \
               --token="${KUBE_ENV_TOKEN}"
             kubectl config set-context circleci \
@@ -35,13 +30,8 @@ commands:
         type: string
       cluster:
         type: string
-      server-prefix:
-        type: string
-        default: ""
     steps:
-      - setup:
-          #    TODO: DELETE (only needed for live1)
-          server-prefix: << parameters.server-prefix  >>
+      - setup
       - checkout:
           path: ~/git
       - attach_workspace:
@@ -223,42 +213,19 @@ jobs:
           monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/latest'
           organization: 'digital-probation-services'
-# TODO: DELETE
   deploy_dev:
     executor: deployer
     steps:
       - deploy_to_env:
           env: "dev"
-          cluster: "live1"
-          server-prefix: "api."
+          cluster: "live"
   deploy_preprod:
     executor: deployer
     steps:
       - deploy_to_env:
           env: "preprod"
-          cluster: "live1"
-          server-prefix: "api."
+          cluster: "live"
   deploy_prod:
-    executor: deployer
-    steps:
-      - deploy_to_env:
-          env: "prod"
-          cluster: "live1"
-          server-prefix: "api."
-# TODO: END
-  deploy_live_dev:
-    executor: deployer
-    steps:
-      - deploy_to_env:
-          env: "dev"
-          cluster: "live"
-  deploy_live_preprod:
-    executor: deployer
-    steps:
-      - deploy_to_env:
-          env: "preprod"
-          cluster: "live"
-  deploy_live_prod:
     executor: deployer
     steps:
       - deploy_to_env:
@@ -299,8 +266,8 @@ workflows:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
-#          TODO: DELETE
       - deploy_dev:
+          context: court-probation-live-dev
           requires:
             - build_docker
           filters:
@@ -311,7 +278,7 @@ workflows:
           requires:
             - deploy_dev
       - deploy_preprod:
-          context: court-probation-preprod
+          context: court-probation-live-preprod
           requires:
             - request-preprod-approval
       - request-prod-approval:
@@ -319,30 +286,6 @@ workflows:
           requires:
             - deploy_preprod
       - deploy_prod:
-          context: court-probation-prod
-          requires:
-            - request-prod-approval
-#          TODO: END
-      - deploy_live_dev:
-          context: court-probation-live-dev
-          requires:
-            - build_docker
-          filters:
-            branches:
-              only: main
-      - request-live-preprod-approval:
-          type: approval
-          requires:
-            - deploy_live_dev
-      - deploy_live_preprod:
-          context: court-probation-live-preprod
-          requires:
-            - request-live-preprod-approval
-      - request-live-prod-approval:
-          type: approval
-          requires:
-            - deploy_live_preprod
-      - deploy_live_prod:
           context: court-probation-live-prod
           requires:
             - request-prod-approval
