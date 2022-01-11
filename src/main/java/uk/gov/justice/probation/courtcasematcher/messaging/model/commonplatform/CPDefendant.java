@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
@@ -20,7 +21,9 @@ import java.util.stream.Collectors;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
+@Slf4j
 public class CPDefendant {
+    private static final String PNC_REGEX = "^[0-9]{4}[0-9]{7}[a-zA-Z]$";
     @NotBlank
     private final String id;
     private final String pncId;
@@ -62,10 +65,25 @@ public class CPDefendant {
     private Defendant.DefendantBuilder commonFieldsBuilder() {
         return Defendant.builder()
                 .defendantId(getId())
-                .pnc(getPncId())
+                .pnc(correctPnc(getPncId()))
                 .cro(getCroNumber())
                 .offences(getOffences().stream()
                         .map(CPOffence::asDomain)
                         .collect(Collectors.toList()));
+    }
+
+    public static String correctPnc(String pncId) {
+        return Optional.ofNullable(pncId)
+                .filter(s -> s.matches(PNC_REGEX))
+                .map(s -> {
+                    final var year = pncId.substring(0, 4);
+                    final var id = pncId.substring(4, 12);
+                    final var corrected = String.format("%s/%s", year, id);
+                    log.debug("Correcting PNC {} to {}", pncId, corrected);
+                    return corrected;
+                }).orElseGet(() -> {
+                    log.debug("Will not correct PNC {} as it is not in the expected format {}", pncId, PNC_REGEX);
+                    return pncId;
+                });
     }
 }

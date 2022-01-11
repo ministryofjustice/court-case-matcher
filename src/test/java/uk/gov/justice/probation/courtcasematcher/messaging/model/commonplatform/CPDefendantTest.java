@@ -8,6 +8,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant.correctPnc;
 
 class CPDefendantTest {
     @Test
@@ -28,7 +29,7 @@ class CPDefendantTest {
                         .build())
                 .offences(List.of(CPOffence.builder().id("1").build(), CPOffence.builder().id("2").build()))
                 .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
-                .pncId("pncid")
+                .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
                 .asDomain();
@@ -39,7 +40,7 @@ class CPDefendantTest {
         assertThat(actual.getDateOfBirth()).isEqualTo(LocalDate.of(2021, 1, 1));
         assertThat(actual.getSex()).isEqualTo("gender");
         assertThat(actual.getCro()).isEqualTo("croNumber");
-        assertThat(actual.getPnc()).isEqualTo("pncid");
+        assertThat(actual.getPnc()).isEqualTo("2007/1234557L");
         assertThat(actual.getAddress().getLine1()).isEqualTo("address1");
         assertThat(actual.getOffences().get(0).getId()).isEqualTo("1");
         assertThat(actual.getOffences().get(1).getId()).isEqualTo("2");
@@ -55,7 +56,7 @@ class CPDefendantTest {
                         .build())
                 .offences(List.of(CPOffence.builder().id("1").build(), CPOffence.builder().id("2").build()))
                 .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
-                .pncId("pncid")
+                .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
                 .asDomain();
@@ -66,7 +67,7 @@ class CPDefendantTest {
         assertThat(actual.getDateOfBirth()).isNull();
         assertThat(actual.getSex()).isNull();
         assertThat(actual.getCro()).isEqualTo("croNumber");
-        assertThat(actual.getPnc()).isEqualTo("pncid");
+        assertThat(actual.getPnc()).isEqualTo("2007/1234557L");
         assertThat(actual.getAddress()).isNull();
         assertThat(actual.getOffences().get(0).getId()).isEqualTo("1");
         assertThat(actual.getOffences().get(1).getId()).isEqualTo("2");
@@ -85,5 +86,12 @@ class CPDefendantTest {
                 .isThrownBy(defendant::asDomain)
                 .withMessage("Defendant with id '2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9' is neither a person nor a legal entity");
 
+    }
+
+    @Test
+    public void normalisePncId_onlyAddsSlashToOtherwiseValidPnc() {
+        assertThat(correctPnc("19871234567L")).isEqualTo("1987/1234567L");
+        assertThat(correctPnc(null)).isEqualTo(null);
+        assertThat(correctPnc("something unexpected")).isEqualTo("something unexpected");
     }
 }
