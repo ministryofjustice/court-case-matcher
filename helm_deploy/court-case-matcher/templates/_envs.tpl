@@ -55,6 +55,7 @@ env:
         name: court-case-matcher-queue-credentials
         key: sqs_id
 
-  - name: AWS_SQS_PROCESS_COURT_CASE_MATCHER_MESSAGES
-    value: "{{ .Values.env.PROCESS_COURT_CASE_MATCHER_MESSAGES }}"
+  - name: OFFENDER_SEARCH_USE_DOB_WITH_PNC
+    value: true
+
 {{- end -}}
