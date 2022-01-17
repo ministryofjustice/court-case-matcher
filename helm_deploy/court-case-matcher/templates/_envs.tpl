@@ -13,6 +13,9 @@ env:
   - name: JAVA_OPTS
     value: "{{ .Values.env.JAVA_OPTS }}"
 
+  - name: OFFENDER_SEARCH_USE_DOB_WITH_PNC
+    value: "true"
+
   - name: OFFENDER_SEARCH_CLIENT_ID
     valueFrom:
       secretKeyRef:
@@ -54,8 +57,4 @@ env:
       secretKeyRef:
         name: court-case-matcher-queue-credentials
         key: sqs_id
-
-  - name: OFFENDER_SEARCH_USE_DOB_WITH_PNC
-    value: true
-
 {{- end -}}
