@@ -23,12 +23,15 @@ public class CCSOffence {
 
     private final Integer sequenceNumber;
 
+    private final Integer listNo;
+
     public static CCSOffence of(Offence offence) {
         return CCSOffence.builder()
                 .offenceTitle(offence.getOffenceTitle())
                 .offenceSummary(offence.getOffenceSummary())
                 .act(offence.getAct())
                 .sequenceNumber(offence.getSequenceNumber())
+                .listNo(offence.getListNo())
                 .build();
     }
 
@@ -38,6 +41,7 @@ public class CCSOffence {
                 .offenceSummary(getOffenceSummary())
                 .act(getAct())
                 .sequenceNumber(getSequenceNumber())
+                .listNo(listNo)
                 .build();
     }
 }

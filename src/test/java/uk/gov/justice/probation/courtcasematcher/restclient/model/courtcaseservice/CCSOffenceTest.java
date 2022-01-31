@@ -29,6 +29,7 @@ class CCSOffenceTest {
                 .offenceSummary("summary")
                 .act("act")
                 .sequenceNumber(1)
+                .listNo(30)
                 .build();
     }
 

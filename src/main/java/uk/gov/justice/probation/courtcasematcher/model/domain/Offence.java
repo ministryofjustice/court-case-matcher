@@ -22,4 +22,6 @@ public class Offence {
     private final String act;
 
     private final Integer sequenceNumber;
+
+    private final Integer listNo;
 }
