@@ -13,7 +13,7 @@ class CPOffenceTest {
                 .offenceTitle("title")
                 .offenceLegislation("legislation")
                 .wording("wording")
-                .listNo(20)
+                .listingNumber(20)
                 .build()
                 .asDomain();
 

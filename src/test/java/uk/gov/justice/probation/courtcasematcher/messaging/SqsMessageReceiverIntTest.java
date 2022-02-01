@@ -141,7 +141,7 @@ public class SqsMessageReceiverIntTest {
                         // Values from offender search
                         .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
                         .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("X346205")))
-                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("10")))
+                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("30")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
