@@ -3,7 +3,6 @@ package uk.gov.justice.probation.courtcasematcher.pact;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
-import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
@@ -134,7 +133,7 @@ class CourtCaseRestClientPactTest {
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
                 }));
-                defendant.stringType("probationStatus");
+                defendant.stringType("probationStatus", "CURRENT");
                 defendant.stringType("type", "ORGANISATION");
                 defendant.stringType("crn");
                 defendant.stringType("cro");
