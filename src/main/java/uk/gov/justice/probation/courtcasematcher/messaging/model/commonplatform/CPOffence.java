@@ -22,6 +22,7 @@ public class CPOffence {
     private final String offenceTitle;
     @NotBlank
     private final String wording;
+    private final Integer listingNumber;
 
     public Offence asDomain() {
         return Offence.builder()
@@ -29,6 +30,7 @@ public class CPOffence {
                 .act(offenceLegislation)
                 .offenceTitle(offenceTitle)
                 .offenceSummary(wording)
+                .listNo(listingNumber)
                 .build();
     }
 }
