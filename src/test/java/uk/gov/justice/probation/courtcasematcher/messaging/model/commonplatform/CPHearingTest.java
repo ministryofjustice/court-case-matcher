@@ -50,6 +50,9 @@ class CPHearingTest {
             .surname("organisationname")
             .build());
         assertThat(secondDefendant.getOffences().get(0).getId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
+
+        assertThat(courtCase.getHearingDays().get(0).getListNo()).isNull();
+        assertThat(courtCase.getHearingDays().get(1).getListNo()).isNull();
     }
 
     static CPHearing buildHearing() {

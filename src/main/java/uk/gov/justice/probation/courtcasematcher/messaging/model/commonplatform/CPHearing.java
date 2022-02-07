@@ -43,7 +43,6 @@ public class CPHearing {
                         .map(hearingDay -> HearingDay.builder()
                                 .courtCode(courtCentre.getNormalisedCode())
                                 .courtRoom(courtCentre.getRoomName())
-                                .listNo(String.valueOf(hearingDay.getListingSequence()))
                                 .sessionStartTime(hearingDay.getSittingDay())
                                 .build())
                         .collect(Collectors.toList()))
