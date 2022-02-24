@@ -135,7 +135,7 @@ dependencies {
     testImplementation 'au.com.dius.pact.consumer:junit5:4.3.5'
     testImplementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
 
-    agentDeps 'com.microsoft.azure:applicationinsights-agent:3.2.6'
+    agentDeps 'com.microsoft.azure:applicationinsights-agent:3.2.7'
 }
 
 test {
