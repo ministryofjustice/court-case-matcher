@@ -57,4 +57,28 @@ env:
       secretKeyRef:
         name: court-case-matcher-queue-credentials
         key: sqs_id
+
+  - name: AWS_SQS_COURT_CASE_MATCHER_DLQ_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: court-case-matcher-queue-dead-letter-queue-credentials
+        key: access_key_id
+
+  - name: AWS_SQS_COURT_CASE_MATCHER_DLQ_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: court-case-matcher-queue-dead-letter-queue-credentials
+        key: secret_access_key
+
+  - name: AWS_SQS_COURT_CASE_MATCHER_DLQ_QUEUE_NAME
+    valueFrom:
+      secretKeyRef:
+        name: court-case-matcher-queue-dead-letter-queue-credentials
+        key: sqs_name
+
+  - name: AWS_SQS_COURT_CASE_MATCHER_DLQ_ENDPOINT_URL
+    valueFrom:
+      secretKeyRef:
+        name: court-case-matcher-queue-dead-letter-queue-credentials
+        key: sqs_id
 {{- end -}}

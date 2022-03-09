@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.TestConfig;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.application.healthchecks.SqsCheck;
+import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -32,6 +34,9 @@ public class HealthCheckTest {
 
     @LocalServerPort
     private int port;
+
+    @MockBean
+    private SqsAdminService sqsAdminService;
 
     private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
 

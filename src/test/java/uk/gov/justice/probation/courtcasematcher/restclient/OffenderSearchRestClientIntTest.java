@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -13,6 +14,7 @@ import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -33,6 +35,9 @@ public class OffenderSearchRestClientIntTest {
 
     @RegisterExtension
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
+
+    @MockBean
+    private SqsAdminService sqsAdminService;
 
     @Nested
     class Match {

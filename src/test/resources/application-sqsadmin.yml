@@ -1,0 +1,8 @@
+aws_sqs_court_case_matcher_access_key_id: id1
+aws_sqs_court_case_matcher_secret_access_key: sec1
+aws_sqs_court_case_matcher_queue_name: court-case-matcher-queue
+aws_sqs_court_case_matcher_endpoint_url: http://localhost:4566/000000000000/court-case-matcher-dlq
+aws_sqs_court_case_matcher_dlq_access_key_id: id2
+aws_sqs_court_case_matcher_dlq_secret_access_key: sec2
+aws_sqs_court_case_matcher_dlq_queue_name: ourt-case-matcher-dlq
+aws_sqs_court_case_matcher_dlq_endpoint_url: http://localhost:4566/000000000000/court-case-matcher-dlq
