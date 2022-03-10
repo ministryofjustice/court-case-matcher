@@ -1,10 +1,13 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 
 @RestController
+@RequestMapping("/queue-admin")
 public class SqsAdminController {
 
     private SqsAdminService sqsAdminService;
@@ -14,6 +17,7 @@ public class SqsAdminController {
     }
 
     @PutMapping("/retry-all-dlqs")
+    @PreAuthorize("hasRole(@environment.getProperty('hmpps.sqs.queueAdminRole', 'ROLE_QUEUE_ADMIN'))")
     public void replayDlqMessages() {
         sqsAdminService.replayDlqMessages();
     }

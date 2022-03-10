@@ -31,8 +31,8 @@ public class SqsAdminService {
     private String courtCaseMatcherSqsUrl;
 
     public SqsAdminService(AmazonSQSAsync courtCaseMatcherSqsDlq, AmazonSQSAsync courtCaseMatcherSqsQueue,
-                           @Value("${aws_sqs_court_case_matcher_dlq_endpoint_url}") String courtCaseMatcherSqsDlqUrl,
-                           @Value("${aws_sqs_court_case_matcher_endpoint_url}") String courtCaseMatcherSqsUrl) {
+                           @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}") String courtCaseMatcherSqsDlqUrl,
+                           @Value("${aws.sqs.court_case_matcher_endpoint_url}") String courtCaseMatcherSqsUrl) {
         this.courtCaseMatcherSqsDlq = courtCaseMatcherSqsDlq;
         this.courtCaseMatcherSqsQueue = courtCaseMatcherSqsQueue;
         this.courtCaseMatcherSqsDlqUrl = courtCaseMatcherSqsDlqUrl;

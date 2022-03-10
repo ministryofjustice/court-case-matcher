@@ -11,13 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.justice.probation.courtcasematcher.application.healthchecks.SqsCheck;
+import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 
 import java.util.List;
 
@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"local", "sqsadmin"})
+@Import(TestMessagingConfig.class)
 public class SqsAdminControllerIntTest {
 
     @Autowired
@@ -32,9 +33,6 @@ public class SqsAdminControllerIntTest {
 
     @LocalServerPort
     protected int port;
-
-    @MockBean
-    private SqsCheck sqsCheck;
 
     @Autowired
     @Qualifier("courtCaseMatcherSqsQueue")
@@ -44,10 +42,10 @@ public class SqsAdminControllerIntTest {
     @Qualifier("courtCaseMatcherSqsDlq")
     private AmazonSQSAsync courtCaseMatcherSqsDlq;
 
-    @Value("${aws_sqs_court_case_matcher_endpoint_url}")
+    @Value("${aws.sqs.court_case_matcher_endpoint_url}")
     private String courtCaseMatcherSqsEndpointUrl;
 
-    @Value("${aws_sqs_court_case_matcher_dlq_endpoint_url}")
+    @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}")
     private String courtCaseMatcherSqsDlqEndpointUrl;
 
     @Test
@@ -58,7 +56,8 @@ public class SqsAdminControllerIntTest {
         sendMessageToDlq("message body 1");
         sendMessageToDlq("message body 2");
 
-        var response = testRestTemplate.exchange("http://localhost:" + port + "/retry-all-dlqs", HttpMethod.PUT, null, String.class);
+        String sqsAdminUrl = "http://localhost:" + port + "/queue-admin/retry-all-dlqs";
+        var response = testRestTemplate.exchange(sqsAdminUrl, HttpMethod.PUT, null, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         var messageResult = courtCaseMatcherSqsQueue.receiveMessage(new ReceiveMessageRequest(courtCaseMatcherSqsEndpointUrl).withMaxNumberOfMessages(2));

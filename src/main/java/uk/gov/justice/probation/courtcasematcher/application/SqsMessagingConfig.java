@@ -24,17 +24,17 @@ public class SqsMessagingConfig {
     @Primary
     @Bean(name = "courtCaseMatcherSqsQueue")
     public AmazonSQSAsync courtCaseMatcherSqsQueue(@Value("${aws.region-name}") final String regionName,
-                                                   @Value("${aws_sqs_court_case_matcher_endpoint_url}") final String awsEndpointUrl,
-                                                   @Value("${aws_sqs_court_case_matcher_access_key_id}") final String awsAccessKeyId,
-                                                   @Value("${aws_sqs_court_case_matcher_secret_access_key}") final String awsSecretAccessKey) {
+                                                   @Value("${aws.sqs.court_case_matcher_endpoint_url}") final String awsEndpointUrl,
+                                                   @Value("${aws.sqs.court_case_matcher_access_key_id}") final String awsAccessKeyId,
+                                                   @Value("${aws.sqs.court_case_matcher_secret_access_key}") final String awsSecretAccessKey) {
         return getAmazonSQSAsync(awsAccessKeyId, awsSecretAccessKey, awsEndpointUrl, regionName);
     }
 
     @Bean(name = "courtCaseMatcherSqsDlq")
     public AmazonSQSAsync courtCaseMatcherSqsDlq(@Value("${aws.region-name}") final String regionName,
-                                                 @Value("${aws_sqs_court_case_matcher_dlq_endpoint_url}") final String awsEndpointUrl,
-                                                 @Value("${aws_sqs_court_case_matcher_dlq_access_key_id}") final String awsAccessKeyId,
-                                                 @Value("${aws_sqs_court_case_matcher_dlq_secret_access_key}") final String awsSecretAccessKey) {
+                                                 @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}") final String awsEndpointUrl,
+                                                 @Value("${aws.sqs.court_case_matcher_dlq_access_key_id}") final String awsAccessKeyId,
+                                                 @Value("${aws.sqs.court_case_matcher_dlq_secret_access_key}") final String awsSecretAccessKey) {
         return getAmazonSQSAsync(awsAccessKeyId, awsSecretAccessKey, awsEndpointUrl, regionName);
     }
 
@@ -48,7 +48,7 @@ public class SqsMessagingConfig {
 
     @Primary
     @Bean
-    public SqsService sqsService(AmazonSQSAsync courtCaseMatcherSqsQueue, @Value("${aws_sqs_court_case_matcher_queue_name}") String queueName) {
+    public SqsService sqsService(AmazonSQSAsync courtCaseMatcherSqsQueue, @Value("${aws.sqs.court_case_matcher_queue_name}") String queueName) {
         return new SqsService(queueName, courtCaseMatcherSqsQueue);
     }
 

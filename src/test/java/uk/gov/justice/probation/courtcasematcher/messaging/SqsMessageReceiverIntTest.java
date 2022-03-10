@@ -236,7 +236,7 @@ public class SqsMessageReceiverIntTest {
 
     @TestConfiguration
     public static class AwsTestConfig {
-        @Value("${aws_sqs_court_case_matcher_endpoint_url}")
+        @Value("${aws.sqs.court_case_matcher_endpoint_url}")
         private String sqsEndpointUrl;
         @Value("${aws.access_key_id}")
         private String accessKeyId;
@@ -244,7 +244,7 @@ public class SqsMessageReceiverIntTest {
         private String secretAccessKey;
         @Value("${aws.region_name}")
         private String regionName;
-        @Value("${aws_sqs_court_case_matcher_queue_name}")
+        @Value("${aws.sqs.court_case_matcher_queue_name}")
         private String queueName;
         @MockBean
         private TelemetryService telemetryService;
