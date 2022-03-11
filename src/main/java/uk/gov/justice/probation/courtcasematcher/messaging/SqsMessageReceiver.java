@@ -34,7 +34,7 @@ public class SqsMessageReceiver {
     private final TelemetryService telemetryService;
 
     @Value("${aws.sqs.court_case_matcher_queue_name}")
-    private String queueName;
+    private final String queueName;
 
     @Autowired
     @NonNull

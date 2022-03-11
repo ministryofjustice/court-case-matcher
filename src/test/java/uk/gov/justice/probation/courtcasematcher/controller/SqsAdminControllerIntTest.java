@@ -16,6 +16,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"local", "sqsadmin"})
 @Import(TestMessagingConfig.class)
+@DirtiesContext
 public class SqsAdminControllerIntTest {
 
     @Autowired
