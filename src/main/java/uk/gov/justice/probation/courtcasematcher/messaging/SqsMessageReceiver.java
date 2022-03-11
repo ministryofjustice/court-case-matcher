@@ -38,7 +38,7 @@ public class SqsMessageReceiver {
 
     @Autowired
     @NonNull
-    private CourtCaseExtractor courtCaseExtractor;
+    private final CourtCaseExtractor courtCaseExtractor;
 
     @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(

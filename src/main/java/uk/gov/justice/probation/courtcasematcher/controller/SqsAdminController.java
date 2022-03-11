@@ -17,7 +17,6 @@ public class SqsAdminController {
     }
 
     @PutMapping("/retry-all-dlqs")
-    @PreAuthorize("hasRole(@environment.getProperty('hmpps.sqs.queueAdminRole', 'ROLE_QUEUE_ADMIN'))")
     public void replayDlqMessages() {
         sqsAdminService.replayDlqMessages();
     }

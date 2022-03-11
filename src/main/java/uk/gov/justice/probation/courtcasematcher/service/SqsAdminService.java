@@ -17,20 +17,16 @@ import static java.util.Optional.ofNullable;
 public class SqsAdminService {
     private static final String APPROXIMATE_NUMBER_OF_MESSAGES_ATTR_NAME = "ApproximateNumberOfMessages";
 
-    @Autowired
-    @Qualifier("courtCaseMatcherSqsQueue")
-    private AmazonSQSAsync courtCaseMatcherSqsDlq;
+    private final AmazonSQSAsync courtCaseMatcherSqsDlq;
 
-    @Autowired
-    @Qualifier("courtCaseMatcherSqsDlq")
-    private AmazonSQSAsync courtCaseMatcherSqsQueue;
+    private final AmazonSQSAsync courtCaseMatcherSqsQueue;
 
+    private final String courtCaseMatcherSqsDlqUrl;
 
-    private String courtCaseMatcherSqsDlqUrl;
+    private final String courtCaseMatcherSqsUrl;
 
-    private String courtCaseMatcherSqsUrl;
-
-    public SqsAdminService(AmazonSQSAsync courtCaseMatcherSqsDlq, AmazonSQSAsync courtCaseMatcherSqsQueue,
+    public SqsAdminService(@Qualifier("courtCaseMatcherSqsDlq") AmazonSQSAsync courtCaseMatcherSqsDlq,
+                           @Qualifier("courtCaseMatcherSqsQueue") AmazonSQSAsync courtCaseMatcherSqsQueue,
                            @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}") String courtCaseMatcherSqsDlqUrl,
                            @Value("${aws.sqs.court_case_matcher_endpoint_url}") String courtCaseMatcherSqsUrl) {
         this.courtCaseMatcherSqsDlq = courtCaseMatcherSqsDlq;

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,9 +62,6 @@ public class SqsMessageReceiverIntTest {
 
     private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
 
-    @MockBean
-    private SqsAdminService sqsAdminService;
-
     @RegisterExtension
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
 
@@ -89,7 +87,7 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING"));
 
         await()
-                .atMost(20, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended") == 1);
 
         MOCK_SERVER.verify(
@@ -128,7 +126,7 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING"));
 
         await()
-                .atMost(20, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/case/D2B61C8A-0684-4764-B401-F0A788BC7CCF/extended") == 1);
 
         MOCK_SERVER.verify(
@@ -160,7 +158,7 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING"));
 
         await()
-                .atMost(20, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/case/D2B61C8A-0684-4764-B401-F0A788BC7CCF/extended") == 1);
 
         MOCK_SERVER.verify(
@@ -189,7 +187,7 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE"));
 
         await()
-                .atMost(20, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
 
         MOCK_SERVER.verify(
@@ -215,7 +213,7 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE"));
 
         await()
-                .atMost(20, TimeUnit.SECONDS)
+                .atMost(5, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
 
         MOCK_SERVER.verify(
@@ -231,8 +229,6 @@ public class SqsMessageReceiverIntTest {
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
-
-
 
     @TestConfiguration
     public static class AwsTestConfig {
@@ -253,6 +249,8 @@ public class SqsMessageReceiverIntTest {
         private CourtCaseProcessor caseMessageProcessor;
         @Autowired
         private CourtCaseExtractor caseExtractor;
+        @MockBean
+        private SqsAdminService sqsAdminService;
 
         @Primary
         @Bean
