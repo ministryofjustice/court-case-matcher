@@ -95,9 +95,9 @@ jobs:
       - run:
           name: Record the Application Version
           command: |
-            jar xvf build/libs/court-case-matcher-*.jar BOOT-INF/classes/META-INF/build-info.properties
-            APP_VERSION=$(grep 'build.version=' BOOT-INF/classes/META-INF/build-info.properties | awk -F= '{print $2}')
-            rm BOOT-INF/classes/META-INF/build-info.properties
+            jar xvf build/libs/court-case-matcher-*.jar META-INF/build-info.properties
+            APP_VERSION=$(grep 'build.version=' META-INF/build-info.properties | awk -F= '{print $2}')
+            rm META-INF/build-info.properties
             # make up a good version name
             SHORT_HASH=$(git rev-parse --short HEAD)
             TAG=${APP_VERSION}.${SHORT_HASH}
