@@ -34,11 +34,11 @@ public class SqsMessageReceiver {
     private final TelemetryService telemetryService;
 
     @Value("${aws.sqs.court_case_matcher_queue_name}")
-    private String queueName;
+    private final String queueName;
 
     @Autowired
     @NonNull
-    private CourtCaseExtractor courtCaseExtractor;
+    private final CourtCaseExtractor courtCaseExtractor;
 
     @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(
