@@ -11,7 +11,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +26,6 @@ import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
@@ -249,8 +247,6 @@ public class SqsMessageReceiverIntTest {
         private CourtCaseProcessor caseMessageProcessor;
         @Autowired
         private CourtCaseExtractor caseExtractor;
-        @MockBean
-        private SqsAdminService sqsAdminService;
 
         @Primary
         @Bean

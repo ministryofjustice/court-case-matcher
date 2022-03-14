@@ -13,7 +13,6 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
@@ -25,7 +24,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
-import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -47,9 +45,6 @@ public class LegacyCourtCaseRestClientIntTest {
     private static final String CASE_NO = "12345";
     private static final String NEW_CASE_NO = "1600032981";
     static final int WEB_CLIENT_TIMEOUT_MS = 10000;
-
-    @MockBean
-    private SqsAdminService sqsAdminService;
 
     @Mock
     private Appender<ILoggingEvent> mockAppender;

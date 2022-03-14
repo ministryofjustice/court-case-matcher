@@ -6,27 +6,26 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
+import uk.gov.justice.probation.courtcasematcher.application.healthchecks.SqsCheck;
 
 import java.util.List;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"local", "sqsadmin"})
-@Import(TestMessagingConfig.class)
 @DirtiesContext
 public class SqsAdminControllerIntTest {
 
@@ -50,6 +49,9 @@ public class SqsAdminControllerIntTest {
     @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}")
     private String courtCaseMatcherSqsDlqEndpointUrl;
 
+    @MockBean
+    private SqsCheck sqsCheck;
+
     @Test
     void givenThereAreMessagesOnDlq_whenRetryAllDlqInvoked_shouldReplayMessages() {
 
@@ -58,9 +60,15 @@ public class SqsAdminControllerIntTest {
         sendMessageToDlq("message body 1");
         sendMessageToDlq("message body 2");
 
-        String sqsAdminUrl = "http://localhost:" + port + "/queue-admin/retry-all-dlqs";
-        var response = testRestTemplate.exchange(sqsAdminUrl, HttpMethod.PUT, null, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String sqsAdminUrl = String.format("http://localhost:%d/queue-admin/retry-all-dlqs", port);
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .when()
+            .put(sqsAdminUrl)
+            .then()
+            .statusCode(200)
+            .extract().response().asString();
 
         var messageResult = courtCaseMatcherSqsQueue.receiveMessage(new ReceiveMessageRequest(courtCaseMatcherSqsEndpointUrl).withMaxNumberOfMessages(2));
         List<Message> messages = messageResult.getMessages();

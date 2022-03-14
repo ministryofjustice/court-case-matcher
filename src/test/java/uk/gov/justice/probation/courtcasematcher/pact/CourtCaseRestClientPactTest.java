@@ -42,9 +42,6 @@ class CourtCaseRestClientPactTest {
     @Autowired
     private CourtCaseRestClient restClient;
 
-    @MockBean
-    private SqsAdminService sqsAdminService;
-
     @Pact(provider="court-case-service", consumer="court-case-matcher")
     public V4Pact getCourtCaseByIdPact(PactDslWithProvider builder) throws IOException {
 

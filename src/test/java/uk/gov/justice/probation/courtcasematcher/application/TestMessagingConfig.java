@@ -4,6 +4,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.justice.probation.courtcasematcher.application.healthchecks.SqsCheck;
+import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 
 @TestConfiguration
 public class TestMessagingConfig {
@@ -13,5 +14,8 @@ public class TestMessagingConfig {
 
     @MockBean
     private BuildProperties buildProperties;
+
+    @MockBean
+    private SqsAdminService sqsAdminService;
 
 }

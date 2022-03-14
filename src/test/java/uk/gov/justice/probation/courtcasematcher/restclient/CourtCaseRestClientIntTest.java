@@ -71,8 +71,6 @@ class CourtCaseRestClientIntTest {
     private Mono<CourtCase> courtCaseMono;
     @MockBean
     private LegacyCourtCaseRestClient legacyClient;
-    @MockBean
-    private SqsAdminService sqsAdminService;
 
     @Autowired
     private CourtCaseRestClient client;

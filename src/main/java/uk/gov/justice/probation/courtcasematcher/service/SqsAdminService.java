@@ -4,10 +4,11 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.IntStream;
 
 import static java.util.List.of;
 import static java.util.Optional.ofNullable;
@@ -48,19 +49,16 @@ public class SqsAdminService {
 
         log.info("Found {} messages on the dlq", messageCount);
 
-        var replayedMessages = 0;
-
-        while (replayedMessages < messageCount) {
+        IntStream.range(0, messageCount).forEach(value -> {
             var dlqMessages = courtCaseMatcherSqsDlq.receiveMessage(
-                    new ReceiveMessageRequest(courtCaseMatcherSqsDlqUrl).withMaxNumberOfMessages(1))
+                            new ReceiveMessageRequest(courtCaseMatcherSqsDlqUrl).withMaxNumberOfMessages(1))
                     .getMessages();
             dlqMessages.stream().forEach(message -> {
                 courtCaseMatcherSqsQueue.sendMessage(courtCaseMatcherSqsUrl, message.getBody());
                 courtCaseMatcherSqsDlq.deleteMessage(new DeleteMessageRequest(courtCaseMatcherSqsDlqUrl, message.getReceiptHandle()));
             });
-            replayedMessages++;
-        }
+        });
 
-        log.info("Replayed {} messages.", replayedMessages);
+        log.info("Replayed {} messages.", messageCount);
     }
 }
