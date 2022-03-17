@@ -49,29 +49,6 @@ commands:
               --values ~/git/helm_deploy/court-case-matcher/values-<< parameters.cluster >>.yaml \
               --set image.tag="${APP_VERSION}"
 executors:
-  deployer:
-    docker:
-      - image: circleci/python:3
-    working_directory: ~/app
-  builder:
-    docker:
-      - image: circleci/openjdk:15-jdk-buster-browsers
-    working_directory: ~/app
-  validator-integration:
-    docker:
-      - image: circleci/openjdk:15-jdk-buster-browsers
-      - image: localstack/localstack:latest
-        environment:
-          - SERVICES=sqs,sns
-          - DEBUG=${DEBUG- }
-          - DATA_DIR=/tmp/localstack/data
-          - DOCKER_HOST=unix:///var/run/docker.sock
-          - AWS_EXECUTION_ENV=True
-          - DEFAULT_REGION=eu-west-2
-          - TMPDIR=/private
-    environment:
-      _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
-    working_directory: ~/app
 
 orbs:
   aws-cli: circleci/aws-cli@0.1.13
@@ -79,12 +56,12 @@ orbs:
   helm: circleci/helm@1.1.2
   snyk: snyk/snyk@0.0.10
   dps: ministryofjustice/dps@1.2.1
-  hmpps: ministryofjustice/hmpps@2.3
+  hmpps: ministryofjustice/hmpps@3.14.3
   slack: circleci/slack@4.4.2
 
 jobs:
   build:
-    executor: builder
+    executor: hmpps/java
     steps:
       - checkout
       - restore_cache:
@@ -124,7 +101,9 @@ jobs:
           template: basic_fail_1
 
   test-integration:
-    executor: validator-integration
+    executor:
+      name: hmpps/localstack
+      services: sqs,sns
     steps:
       - checkout
       - hmpps/install_aws_cli
@@ -153,7 +132,7 @@ jobs:
           path: build/reports/tests
 
   pact-publish:
-    executor: builder
+    executor: hmpps/java
     steps:
       - checkout
       - restore_cache:
@@ -163,7 +142,7 @@ jobs:
       - run: PACTCONSUMER_VERSION=$CIRCLE_SHA1 PACTCONSUMER_TAGS=$CIRCLE_BRANCH ./gradlew -Dpact.writer.overwrite=true pactTest pactPublish
 
   build_docker:
-    executor: deployer
+    executor: hmpps/default
     steps:
       - checkout
       - attach_workspace:
@@ -191,7 +170,7 @@ jobs:
             fi
 
   app-scan:
-    executor: builder
+    executor: hmpps/default_small
     steps:
       - checkout
       - snyk/scan:
@@ -201,7 +180,7 @@ jobs:
           organization: 'digital-probation-services'
 
   image-scan:
-    executor: deployer
+    executor: hmpps/default_small
     steps:
       - checkout
       - setup_remote_docker:
@@ -214,19 +193,19 @@ jobs:
           project: '${CIRCLE_PROJECT_REPONAME}/latest'
           organization: 'digital-probation-services'
   deploy_dev:
-    executor: deployer
+    executor: hmpps/default_small
     steps:
       - deploy_to_env:
           env: "dev"
           cluster: "live"
   deploy_preprod:
-    executor: deployer
+    executor: hmpps/default_small
     steps:
       - deploy_to_env:
           env: "preprod"
           cluster: "live"
   deploy_prod:
-    executor: deployer
+    executor: hmpps/default_small
     steps:
       - deploy_to_env:
           env: "prod"
