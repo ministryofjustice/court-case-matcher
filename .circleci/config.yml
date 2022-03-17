@@ -49,12 +49,15 @@ commands:
               --values ~/git/helm_deploy/court-case-matcher/values-<< parameters.cluster >>.yaml \
               --set image.tag="${APP_VERSION}"
 executors:
-
+  builder:
+    docker:
+      - image: cimg/openjdk:15-jdk-buster-browsers
+    working_directory: ~/app
 orbs:
   aws-cli: circleci/aws-cli@0.1.13
   kubernetes: circleci/kubernetes@0.3.0
   helm: circleci/helm@1.1.2
-  snyk: snyk/snyk@0.0.10
+  snyk: snyk/snyk@1.1.2
   hmpps: ministryofjustice/hmpps@3.14.3
   slack: circleci/slack@4.4.2
 
@@ -73,7 +76,7 @@ jobs:
       - run:
           name: Record the Application Version
           command: |
-            jar xvf build/libs/court-case-matcher-*.jar META-INF/build-info.properties
+            $JAVA_HOME/bin/jar xvf build/libs/court-case-matcher-*.jar META-INF/build-info.properties
             APP_VERSION=$(grep 'build.version=' META-INF/build-info.properties | awk -F= '{print $2}')
             rm META-INF/build-info.properties
             # make up a good version name
@@ -105,6 +108,8 @@ jobs:
     executor:
       name: hmpps/localstack
       services: sqs,sns
+      jdk_tag: "15.0"
+      localstack_tag: latest
     steps:
       - checkout
       - hmpps/install_aws_cli
@@ -133,7 +138,9 @@ jobs:
           path: build/reports/tests
 
   pact-publish:
-    executor: hmpps/java
+    executor:
+      name: hmpps/java
+      tag: "15.0"
     steps:
       - checkout
       - restore_cache:
@@ -171,7 +178,9 @@ jobs:
             fi
 
   app-scan:
-    executor: hmpps/default_small
+    executor:
+      name: hmpps/java
+      tag: "15.0"
     steps:
       - checkout
       - snyk/scan:
@@ -181,7 +190,9 @@ jobs:
           organization: 'digital-probation-services'
 
   image-scan:
-    executor: hmpps/default_small
+    executor:
+      name: hmpps/java
+      tag: "15.0"
     steps:
       - checkout
       - setup_remote_docker:
