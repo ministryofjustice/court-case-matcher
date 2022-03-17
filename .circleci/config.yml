@@ -55,13 +55,14 @@ orbs:
   kubernetes: circleci/kubernetes@0.3.0
   helm: circleci/helm@1.1.2
   snyk: snyk/snyk@0.0.10
-  dps: ministryofjustice/dps@1.2.1
   hmpps: ministryofjustice/hmpps@3.14.3
   slack: circleci/slack@4.4.2
 
 jobs:
   build:
-    executor: hmpps/java
+    executor:
+      name: hmpps/java
+      tag: "15.0"
     steps:
       - checkout
       - restore_cache:
@@ -241,7 +242,7 @@ workflows:
       - pact-publish:
           requires:
             - build
-      - dps/helm_lint:
+      - hmpps/helm_lint:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
