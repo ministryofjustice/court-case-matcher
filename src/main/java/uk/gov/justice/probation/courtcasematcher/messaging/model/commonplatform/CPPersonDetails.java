@@ -26,6 +26,8 @@ public class CPPersonDetails {
     private final String gender;
     @Valid
     private final CPAddress address;
+    @Valid
+    private final CPContact contact;
 
     public Name asName() {
         return Name.builder()

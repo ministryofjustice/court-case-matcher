@@ -40,6 +40,7 @@ public class CCSDefendant {
     private Boolean suspendedSentenceOrder;
     private Boolean awaitingPsr;
     private Boolean breach;
+    private CCSPhoneNumber phoneNumber;
 
     public static CCSDefendant of(Defendant defendant) {
         return builder()
@@ -65,6 +66,8 @@ public class CCSDefendant {
                 .previouslyKnownTerminationDate(defendant.getPreviouslyKnownTerminationDate())
                 .awaitingPsr(defendant.getAwaitingPsr())
                 .breach(defendant.getBreach())
+                .phoneNumber(Optional.ofNullable(defendant.getPhoneNumber()).map(CCSPhoneNumber::of).orElse(null))
+
                 .build();
     }
 

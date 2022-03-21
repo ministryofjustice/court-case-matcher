@@ -36,6 +36,7 @@ public class Defendant {
     private Boolean suspendedSentenceOrder;
     private Boolean awaitingPsr;
     private Boolean breach;
+    private PhoneNumber phoneNumber;
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;

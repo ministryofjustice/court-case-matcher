@@ -2,12 +2,14 @@ package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPContactTest.TEST_CP_CONTACT;
 import static uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant.correctPnc;
 
 class CPDefendantTest {
@@ -25,6 +27,7 @@ class CPDefendantTest {
                                 .address(CPAddress.builder()
                                         .address1("address1")
                                         .build())
+                                .contact(TEST_CP_CONTACT)
                                 .build())
                         .build())
                 .offences(List.of(CPOffence.builder().id("1").build(), CPOffence.builder().id("2").build()))
@@ -44,6 +47,11 @@ class CPDefendantTest {
         assertThat(actual.getAddress().getLine1()).isEqualTo("address1");
         assertThat(actual.getOffences().get(0).getId()).isEqualTo("1");
         assertThat(actual.getOffences().get(1).getId()).isEqualTo("2");
+        assertThat(actual.getPhoneNumber()).isEqualTo(PhoneNumber.builder()
+                .work(TEST_CP_CONTACT.getWork())
+                .mobile(TEST_CP_CONTACT.getMobile())
+                .home(TEST_CP_CONTACT.getHome())
+                .build());
     }
 
     @Test

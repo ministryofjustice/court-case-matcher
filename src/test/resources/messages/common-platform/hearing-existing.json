@@ -56,7 +56,12 @@
                 "firstName": "Arthur",
                 "gender": "MALE",
                 "lastName": "MORGAN",
-                "title": "Mr"
+                "title": "Mr",
+                "contact": {
+                  "home": "07000000001",
+                  "work": "07000000002",
+                  "mobile": "07000000003"
+                }
               }
             },
             "prosecutionCaseId": "D517D32D-3C80-41E8-846E-D274DC2B94A5"
@@ -92,7 +97,11 @@
                 "firstName": "Phyllis",
                 "middleName": "Ulon",
                 "gender": "FEMALE",
-                "lastName": "Leffler"
+                "lastName": "Leffler",
+                "contact": {
+                  "work": "07000000005",
+                  "mobile": "07000000006"
+                }
               }
             },
             "prosecutionCaseId": "D517D32D-3C80-41E8-846E-D274DC2B94A5"
