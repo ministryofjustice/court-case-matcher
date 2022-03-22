@@ -53,6 +53,8 @@ public class CPDefendant {
                         .sex(personDetails.getGender())
                         .address(Optional.ofNullable(personDetails.getAddress())
                                 .map(CPAddress::asDomain).orElse(Address.builder().build()))
+                        .phoneNumber(Optional.ofNullable(personDetails.getContact())
+                                .map(CPContact::asPhoneNumber).orElse(null))
                         .build())
                 .orElseGet(() -> commonFieldsBuilder()
                             .type(DefendantType.ORGANISATION)

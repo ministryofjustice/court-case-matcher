@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
@@ -100,6 +101,9 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
                         .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("X346224")))
                         // Values from probation status update
+                        .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("07000000001")))
+                        .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("07000000002")))
+                        .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("07000000003")))
                         .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
                         .withRequestBody(matchingJsonPath("defendants[0].breach", equalTo("false")))
                         .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", equalTo("true")))
@@ -108,6 +112,9 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[1].awaitingPsr", equalTo("false")))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("20")))
                         .withRequestBody(matchingJsonPath("defendants[1].offences[1].listNo", equalTo("30")))
+                        .withRequestBody(matchingJsonPath("defendants[1].phoneNumber.home", absent()))
+                        .withRequestBody(matchingJsonPath("defendants[1].phoneNumber.work", equalTo("07000000005")))
+                        .withRequestBody(matchingJsonPath("defendants[1].phoneNumber.mobile", equalTo("07000000006")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
