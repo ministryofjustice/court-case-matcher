@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CCSCourtCaseTest {
     @Test
     public void mapBack() {
-        final var original = DomainDataHelper.aCourtCaseWithAllFields();
+        final var original = DomainDataHelper.aCourtCaseWithAllFields().withHearingId(null);
 
         final var firstDefendant = original.getDefendants().get(0);
         final var ccsCourtCase = CCSCourtCase.builder()

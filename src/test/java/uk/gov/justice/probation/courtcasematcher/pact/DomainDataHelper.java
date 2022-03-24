@@ -17,6 +17,7 @@ public class DomainDataHelper {
     public static final String DEFENDANT_ID = "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199";
     public static final String DEFENDANT_ID_2 = "903c4c54-f667-4770-8fdf-1adbb5957c25";
     public static String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
+    public static String HEARING_ID = "ABCDD32D-3C80-41E8-846E-D274DC2B94A5";
 
     public static CourtCase aCourtCaseWithAllFields() {
         return aCourtCaseBuilderWithAllFields()
@@ -26,6 +27,7 @@ public class DomainDataHelper {
     public static CourtCase.CourtCaseBuilder aCourtCaseBuilderWithAllFields() {
         return aMinimalCourtCaseBuilder()
                 .caseNo("case no")
+                .hearingId(HEARING_ID)
                 .defendants(Collections.singletonList(Defendant.builder()
                         .defendantId(DEFENDANT_ID)
                         .probationStatus("Current")

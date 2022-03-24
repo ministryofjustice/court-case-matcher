@@ -39,6 +39,7 @@ public class CCSExtendedCaseTest {
         final var actual = CCSExtendedCase.of(courtCase);
 
         assertThat(actual.getCaseId()).isNotBlank().isEqualTo(courtCase.getCaseId());
+        assertThat(actual.getHearingId()).isEqualTo(courtCase.getHearingId());
         assertThat(actual.getCaseNo()).isEqualTo(courtCase.getCaseNo());
         assertThat(actual.getSource()).isEqualTo(CCSDataSource.COMMON_PLATFORM);
 
