@@ -22,6 +22,7 @@ import java.util.Optional;
 public class CourtCase implements Serializable {
 
     private final String caseId;
+    private final String hearingId;
 
     @Setter(AccessLevel.NONE)
     private final String caseNo;

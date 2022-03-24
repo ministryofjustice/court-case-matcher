@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class CCSExtendedCase {
     private String caseId;
+    private String hearingId;
     private String caseNo;
     private List<CCSDefendant> defendants;
     private List<CCSHearingDay> hearingDays;
@@ -29,6 +30,7 @@ public class CCSExtendedCase {
         return CCSExtendedCase.builder()
                 .caseId(Optional.ofNullable(courtCase.getCaseId())
                         .orElseGet(() -> UUID.randomUUID().toString()))
+                .hearingId(courtCase.getHearingId())
                 .caseNo(courtCase.getCaseNo())
                 .source(CCSDataSource.of(courtCase.getSource()))
                 .hearingDays(courtCase.getHearingDays().stream()
@@ -43,6 +45,7 @@ public class CCSExtendedCase {
     public CourtCase asDomain() {
         return CourtCase.builder()
                 .caseId(caseId)
+                .hearingId(hearingId)
                 .caseNo(caseNo)
                 .source(source.asDomain())
                 .hearingDays(hearingDays.stream()

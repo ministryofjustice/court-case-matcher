@@ -45,4 +45,6 @@ aws:
   sns:
     court_case_matcher_endpoint_url: "http://localhost:4566"
 
-
+feature:
+  flags:
+    pass-hearing-id-to-court-case-service: true
