@@ -11,14 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
-import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +62,7 @@ class CourtCaseRestClientPactTest {
 
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
+            rootObject.stringType("hearingId");
             rootObject.stringValue("source", "COMMON_PLATFORM");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
