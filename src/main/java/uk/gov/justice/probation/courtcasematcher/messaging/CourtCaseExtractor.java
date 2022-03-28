@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
@@ -36,6 +37,8 @@ public class CourtCaseExtractor {
     @Qualifier("commonPlatformJsonParser")
     final MessageParser<CPHearingEvent> commonPlatformParser;
 
+    @Value("${feature.flags.pass-hearing-id-to-court-case-service:false}")
+    final boolean passHearingIdToCourtCaseService;
 
     CourtCase extractCourtCase(String payload, String messageId) {
         try {
@@ -44,7 +47,7 @@ public class CourtCaseExtractor {
 
             return switch (snsMessageContainer.getMessageType()){
                 case LIBRA_COURT_CASE -> libraParser.parseMessage(snsMessageContainer.getMessage(), LibraCase.class).asDomain();
-                case COMMON_PLATFORM_HEARING -> commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class).asDomain();
+                case COMMON_PLATFORM_HEARING -> parseCPMessage(snsMessageContainer);
                 default -> throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
             };
 
@@ -57,6 +60,13 @@ public class CourtCaseExtractor {
             log.error("Message processing failed. Error: {} ", e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private CourtCase parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
+        final var cpHearingEvent = commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class);
+        final var courtCase = cpHearingEvent.asDomain();
+        return passHearingIdToCourtCaseService ? courtCase
+                .withHearingId(cpHearingEvent.getHearing().getId()) : courtCase;
     }
 
 }

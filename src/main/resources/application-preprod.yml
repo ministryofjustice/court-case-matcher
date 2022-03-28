@@ -7,3 +7,8 @@ court-case-service:
 
 nomis-oauth:
   base-url: https://sign-in-preprod.hmpps.service.justice.gov.uk
+
+
+feature:
+  flags:
+    pass-hearing-id-to-court-case-service: true

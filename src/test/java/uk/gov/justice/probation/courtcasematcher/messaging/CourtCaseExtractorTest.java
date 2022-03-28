@@ -36,6 +36,7 @@ class CourtCaseExtractorTest {
     private static final String MESSAGE_CONTAINER_STRING = "message container string";
     private static final String CASE_NO = "123456";
     private static final String CASE_ID = "26B938F7-AAE7-44EC-86FF-30DAF218B059";
+    private static final String HEARING_ID = "hearing-id-one";
 
     @Mock
     private MessageParser<SnsMessageContainer> snsContainerParser;
@@ -52,30 +53,36 @@ class CourtCaseExtractorTest {
     private final SnsMessageContainer.SnsMessageContainerBuilder messageContainerBuilder = SnsMessageContainer.builder()
             .message(MESSAGE_STRING);
     private final LibraCase libraCase = LibraCase.builder().caseNo(CASE_NO).build();
-    private final CPHearingEvent commonPlatformHearingEvent = CPHearingEvent.builder()
-            .hearing(CPHearing.builder()
-                            .courtCentre(CPCourtCentre.builder()
-                                            .code("12345")
-                                            .build())
-                            .hearingDays(Collections.singletonList(CPHearingDay.builder().build()))
-                            .prosecutionCases(Collections.singletonList(CPProsecutionCase.builder()
-                                                .id(CASE_ID)
-                                                .defendants(Collections.singletonList(CPDefendant.builder()
-                                                        .legalEntityDefendant(CPLegalEntityDefendant.builder()
-                                                        .organisation(CPOrganisation.builder().build())
-                                                        .build())
-                                                .offences(Collections.emptyList())
-                                                .build()))
+    private final CPHearingEvent commonPlatformHearingEvent;
+
+    {
+        commonPlatformHearingEvent = CPHearingEvent.builder()
+                .hearing(CPHearing.builder()
+                        .id(HEARING_ID)
+                        .courtCentre(CPCourtCentre.builder()
+                                .code("12345")
+                                .build())
+                        .hearingDays(Collections.singletonList(CPHearingDay.builder().build()))
+                        .prosecutionCases(Collections.singletonList(CPProsecutionCase.builder()
+                                .id(CASE_ID)
+                                .defendants(Collections.singletonList(CPDefendant.builder()
+                                        .legalEntityDefendant(CPLegalEntityDefendant.builder()
+                                                .organisation(CPOrganisation.builder().build())
+                                                .build())
+                                        .offences(Collections.emptyList())
+                                        .build()))
                                 .build()))
-                            .build())
-            .build();
+                        .build())
+                .build();
+    }
 
     @BeforeEach
     void setUp() {
         caseExtractor = new CourtCaseExtractor(
                 snsContainerParser,
                 libraParser,
-                commonPlatformParser
+                commonPlatformParser,
+                false
         );
     }
 
@@ -104,6 +111,39 @@ class CourtCaseExtractorTest {
 
         assertThat(courtCase).isNotNull();
         assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
+    }
+
+    @Test
+    void whenCommonPlatformHearingEventReceived_PassHearingIdIsFalse_thenDoNotPopulateHearingIdInCourtCase() throws JsonProcessingException {
+        when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
+                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING))
+                .build());
+        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
+
+        var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+
+        assertThat(courtCase).isNotNull();
+        assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(courtCase.getHearingId()).isNull();
+    }
+
+    @Test
+    void whenCommonPlatformHearingEventReceived_PassHearingIdIsTrue_thenDoNotPopulateHearingIdInCourtCase() throws JsonProcessingException {
+        when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
+                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING))
+                .build());
+        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
+
+        var courtCase = new CourtCaseExtractor(
+                snsContainerParser,
+                libraParser,
+                commonPlatformParser,
+                true
+        ).extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+
+        assertThat(courtCase).isNotNull();
+        assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(courtCase.getHearingId()).isEqualTo(HEARING_ID);
     }
 
     @Test

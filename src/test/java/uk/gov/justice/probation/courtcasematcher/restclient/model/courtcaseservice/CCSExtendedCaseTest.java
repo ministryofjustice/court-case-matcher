@@ -16,14 +16,17 @@ public class CCSExtendedCaseTest {
     @Test
     public void shouldMapFromCourtCaseAndGenerateIdsIfNotPresent() {
         final var aCase = DomainDataHelper.aCourtCaseWithAllFields();
+        String testHearingId = "hearing-id-one";
         final var courtCase = aCase
                 .withCaseId(null)
+                .withHearingId(testHearingId)
                 .withDefendants(Collections.singletonList(
                         aCase.getDefendants().get(0)
                                 .withDefendantId(null)
                 ));
         final var actual = CCSExtendedCase.of(courtCase);
 
+        assertThat(actual.getHearingId()).isEqualTo(testHearingId);
         assertThat(actual.getCaseId()).hasSameSizeAs(A_UUID);
         final var actualFirstDefendant = actual.getDefendants().get(0);
 
@@ -36,6 +39,7 @@ public class CCSExtendedCaseTest {
         final var actual = CCSExtendedCase.of(courtCase);
 
         assertThat(actual.getCaseId()).isNotBlank().isEqualTo(courtCase.getCaseId());
+        assertThat(actual.getHearingId()).isEqualTo(courtCase.getHearingId());
         assertThat(actual.getCaseNo()).isEqualTo(courtCase.getCaseNo());
         assertThat(actual.getSource()).isEqualTo(CCSDataSource.COMMON_PLATFORM);
 

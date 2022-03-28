@@ -61,6 +61,10 @@ offender-search:
   ignore-titles: "MISS,MRS,MS,MASTER,MR,MX,DR"
   use-dob-with-pnc: false
 
+feature:
+  flags:
+    pass-hearing-id-to-court-case-service: false
+
 nomis-oauth:
   ping-path: /auth/ping
 
