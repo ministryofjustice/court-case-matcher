@@ -75,6 +75,7 @@ public class DomainDataHelper {
     public static CourtCase.CourtCaseBuilder aMinimalCourtCaseBuilder() {
         return CourtCase.builder()
                 .caseId(CASE_ID)
+                .hearingId(HEARING_ID)
                 .source(DataSource.COMMON_PLATFORM)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("B10JQ")
