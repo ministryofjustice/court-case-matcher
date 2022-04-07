@@ -73,7 +73,7 @@ springBoot {
 }
 
 ext {
-    restAssuredVersion = '5.0.0'
+    restAssuredVersion = '5.0.1'
 }
 
 dependencies {
