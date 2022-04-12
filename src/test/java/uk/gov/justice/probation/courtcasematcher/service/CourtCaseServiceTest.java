@@ -42,6 +42,7 @@ class CourtCaseServiceTest {
     private static final String CASE_NO = "1234567890";
     private static final String CRN = "X340741";
     private static final String CASE_ID = "c468042b-5ecd-4ce9-a77e-20ad07616e2c";
+    private static final String HEARING_ID = "dd57f899-084a-4241-b264-4d2124c6006f";
     private static final Defendant DEFENDANT = Defendant.builder().defendantId(DEFENDANT_UUID_1).build();
     private static final Defendant DEFENDANT_2 = Defendant.builder().defendantId(DEFENDANT_UUID_2).build();
     private static final List<Defendant> defendants = List.of(DEFENDANT, DEFENDANT_2);
@@ -172,15 +173,16 @@ class CourtCaseServiceTest {
                         .build()))
                 .defendants(defendants)
                 .caseId(CASE_ID)
+                .hearingId(HEARING_ID)
                 .source(DataSource.COMMON_PLATFORM)
                 .build();
 
-        when(courtCaseRepo.getCourtCase(CASE_ID)).thenReturn(Mono.just(courtCase));
+        when(courtCaseRepo.getCourtCase(HEARING_ID)).thenReturn(Mono.just(courtCase));
 
         final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
-        verify(courtCaseRepo).getCourtCase(CASE_ID);
+        verify(courtCaseRepo).getCourtCase(HEARING_ID);
     }
 
     @DisplayName("Get court case which is new, return a transformed copy.")
@@ -341,6 +343,7 @@ class CourtCaseServiceTest {
                 .defendants(List.of(DEFENDANT, defendant2))
                 .caseNo(CASE_NO)
                 .caseId(CASE_ID)
+                .hearingId(HEARING_ID)
                 .source(DataSource.COMMON_PLATFORM)
                 .build();
     }

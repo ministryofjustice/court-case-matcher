@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "url": "/case/SERVER_ERROR/extended"
+    "url": "/hearing/SERVER_ERROR"
   },
   "response": {
     "status": 500,

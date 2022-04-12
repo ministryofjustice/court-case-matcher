@@ -45,7 +45,7 @@ spring:
 
 court-case-service:
   case-put-url-template: /court/%s/case/%s
-  case-get-url-template-extended: /case/%s/extended
+  case-get-by-hearing-id-url-template: /hearing/%s
   case-put-url-template-extended: /case/%s/extended
   matches-post-url-template: /court/%s/case/%s/grouped-offender-matches
   matches-by-case-defendant-post-url-template: /case/%s/defendant/%s/grouped-offender-matches

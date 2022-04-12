@@ -32,7 +32,7 @@ public class CourtCaseService {
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {
         if (aCase.getSource() == DataSource.COMMON_PLATFORM) {
-            return courtCaseRepository.getCourtCase(aCase.getCaseId())
+            return courtCaseRepository.getCourtCase(aCase.getHearingId())
                     .map(existing -> CaseMapper.merge(aCase, existing))
                     .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
         }
