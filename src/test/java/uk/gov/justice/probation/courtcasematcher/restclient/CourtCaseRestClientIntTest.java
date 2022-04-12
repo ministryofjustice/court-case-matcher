@@ -32,7 +32,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.service.SqsAdminService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -88,16 +87,18 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenGetCourtCaseById_thenItsSuccessful() {
-        final var courtCase = client.getCourtCase(CASE_ID).block();
+    void whenGetCourtCaseByHearingId_thenItsSuccessful() {
+        final var HEARING_ID = "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f";
+        final var courtCase = client.getCourtCase(HEARING_ID).block();
 
         assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(courtCase.getHearingId()).isEqualTo(HEARING_ID);
         assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(DEFENDANT_ID);
         assertThat(courtCase.getDefendants().get(1).getDefendantId()).isEqualTo(DEFENDANT_ID_2);
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
-                getRequestedFor(urlEqualTo(String.format("/case/%s/extended", CASE_ID)))
+                getRequestedFor(urlEqualTo(String.format("/hearing/%s", HEARING_ID)))
         );
     }
 
@@ -109,7 +110,7 @@ class CourtCaseRestClientIntTest {
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
-                getRequestedFor(urlEqualTo(String.format("/case/%s/extended", "NOT_FOUND")))
+                getRequestedFor(urlEqualTo(String.format("/hearing/%s", "NOT_FOUND")))
         );
     }
 
@@ -122,7 +123,7 @@ class CourtCaseRestClientIntTest {
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
-                getRequestedFor(urlEqualTo(String.format("/case/%s/extended", "SERVER_ERROR")))
+                getRequestedFor(urlEqualTo(String.format("/hearing/%s", "SERVER_ERROR")))
         );
     }
 

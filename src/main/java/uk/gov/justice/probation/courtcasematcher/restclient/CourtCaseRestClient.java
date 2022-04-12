@@ -42,8 +42,8 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Autowired
     private CourtCaseServiceRestHelper restHelper;
 
-    @Value("${court-case-service.case-get-url-template-extended}")
-    private String courtCaseGetByIdTemplate;
+    @Value("${court-case-service.case-get-by-hearing-id-url-template}")
+    private String courtCaseGetByHearingIdTemplate;
 
     @Value("${court-case-service.case-put-url-template-extended}")
     private String courtCasePutTemplate;
@@ -51,14 +51,13 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Value("${court-case-service.matches-by-case-defendant-post-url-template}")
     private String matchesPostTemplate;
 
-
-    public Mono<CourtCase> getCourtCase(String caseId) {
-        final String path = String.format(courtCaseGetByIdTemplate, caseId);
+    public Mono<CourtCase> getCourtCase(String hearingId) {
+        final String path = String.format(courtCaseGetByHearingIdTemplate, hearingId);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         return restHelper.get(path)
                 .retrieve()
-                .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, caseId))
+                .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))
 
                 .bodyToMono(CCSExtendedCase.class)
                 .map(courtCaseResponse -> {
