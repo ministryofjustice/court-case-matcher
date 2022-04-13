@@ -104,7 +104,7 @@ class MessageParserTest {
 
         private void checkHearing(CPHearing actual, List<CPDefendant> defendants) {
             assertThat(actual).isNotNull();
-            assertThat(actual.getId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
+            assertThat(actual.getId()).isEqualTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC");
             assertThat(actual.getCourtCentre()).isEqualTo(
                     CPCourtCentre.builder()
                             .id("9b583616-049b-30f9-a14f-028a53b7cfe8")
