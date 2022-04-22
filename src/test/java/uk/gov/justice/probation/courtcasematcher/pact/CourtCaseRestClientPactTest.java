@@ -48,7 +48,7 @@ class CourtCaseRestClientPactTest {
         return builder
                 .given("a case exists for caseId D517D32D-3C80-41E8-846E-D274DC2B94A5")
                 .uponReceiving("a request for a case by case number")
-                .path("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended")
+                .path("/hearing/ABCDD32D-3C80-41E8-846E-D274DC2B94A5")
                 .method("GET")
                 .willRespondWith()
                 .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
@@ -172,7 +172,7 @@ class CourtCaseRestClientPactTest {
     @PactTestFor(pactMethod = "getCourtCaseByIdPact")
     @Test
     void getCourtCaseById() {
-        final var courtCase = restClient.getCourtCase(DomainDataHelper.aMinimalValidCourtCase().getCaseId()).block();
+        final var courtCase = restClient.getCourtCase(DomainDataHelper.aMinimalValidCourtCase().getHearingId()).block();
         assertThat(courtCase.getCaseId()).isEqualTo("D517D32D-3C80-41E8-846E-D274DC2B94A5");
     }
 
