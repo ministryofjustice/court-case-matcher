@@ -10,5 +10,5 @@ nomis-oauth:
 feature:
   flags:
     use-offender-search-for-probation-status: true
-    pass-hearing-id-to-court-case-service: false
+    pass-hearing-id-to-court-case-service: true
 
