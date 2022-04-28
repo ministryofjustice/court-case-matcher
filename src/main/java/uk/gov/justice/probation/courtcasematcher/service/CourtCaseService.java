@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.util.StringUtils;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
@@ -51,6 +52,10 @@ public class CourtCaseService {
             final var caseId = courtCase.getCaseId() != null ? courtCase.getCaseId() : UUID.randomUUID().toString();
             updatedCase = courtCase.withCaseId(caseId)
                     .withCaseNo(caseId);
+        }
+
+        if (StringUtils.isEmpty(courtCase.getHearingId())) {
+            updatedCase = updatedCase.withHearingId(updatedCase.getCaseId());
         }
 
         try {

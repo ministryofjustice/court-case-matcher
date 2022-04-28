@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "PUT",
-    "urlPattern": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended",
+    "urlPattern": "/hearing/D517D32D-3C80-41E8-846E-D274DC2B94A5",
     "bodyPatterns": [
       {
         "matches" : ".*caseId.*D517D32D-3C80-41E8-846E-D274DC2B94A5.*"

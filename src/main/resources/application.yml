@@ -45,8 +45,7 @@ spring:
 
 court-case-service:
   case-put-url-template: /court/%s/case/%s
-  case-get-by-hearing-id-url-template: /hearing/%s
-  case-put-url-template-extended: /case/%s/extended
+  case-by-hearing-id-url-template: /hearing/%s
   matches-post-url-template: /court/%s/case/%s/grouped-offender-matches
   matches-by-case-defendant-post-url-template: /case/%s/defendant/%s/grouped-offender-matches
   post-max-retries: 3

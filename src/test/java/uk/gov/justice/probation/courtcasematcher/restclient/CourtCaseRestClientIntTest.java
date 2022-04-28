@@ -50,10 +50,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
-import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.CASE_ID;
-import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.DEFENDANT_ID;
-import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.DEFENDANT_ID_2;
-import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.aCourtCaseBuilderWithAllFields;
+import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.*;
 import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyCourtCaseRestClientIntTest.WEB_CLIENT_TIMEOUT_MS;
 
 @SpringBootTest
@@ -61,7 +58,7 @@ import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyCourtCa
 @Import(TestMessagingConfig.class)
 @ExtendWith(MockitoExtension.class)
 class CourtCaseRestClientIntTest {
-    public static final String CASE_ID_SERVER_ERROR = "771F1C21-D2CA-4235-8659-5C3C7D7C58B6";
+    public static final String HEARING_ID_SERVER_ERROR = "771F1C21-D2CA-4235-8659-5C3C7D7C58B6";
     @Mock
     private Appender<ILoggingEvent> mockAppender;
     @Captor
@@ -135,7 +132,7 @@ class CourtCaseRestClientIntTest {
         assertThat(voidMono.blockOptional()).isEmpty();
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlEqualTo(String.format("/case/%s/extended", CASE_ID)))
+                putRequestedFor(urlEqualTo(String.format("/hearing/%s", HEARING_ID)))
         );
         assertThat(MOCK_SERVER.findAllUnmatchedRequests().size()).isEqualTo(0);
     }
@@ -149,7 +146,7 @@ class CourtCaseRestClientIntTest {
         assertThat(voidMono.blockOptional()).isEmpty();
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlMatching("/case/[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}/extended"))
+                putRequestedFor(urlMatching("/hearing/[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}"))
 
         );
     }
@@ -157,7 +154,7 @@ class CourtCaseRestClientIntTest {
     @Test
     void whenRestClientThrows500OnPut_ThenThrow() {
         final var aCase = aCourtCaseBuilderWithAllFields()
-                .caseId(CASE_ID_SERVER_ERROR)
+                .hearingId(HEARING_ID_SERVER_ERROR)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("X500")
                         .build()))
