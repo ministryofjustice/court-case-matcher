@@ -45,13 +45,13 @@ public class CourtCaseService {
     public void saveCourtCase(CourtCase courtCase) {
         CourtCase updatedCase = courtCase;
         // New LIBRA cases will have no case or defendant ID and we need to assign
-        if (courtCase.getCaseId() == null) {
+        if (courtCase.getSource() == DataSource.LIBRA  && courtCase.getCaseId() == null) {
             updatedCase = assignUuids(courtCase);
-        } else if (courtCase.getCaseNo() == null) {
-            // Retain the case ID if there is one
-            final var caseId = courtCase.getCaseId() != null ? courtCase.getCaseId() : UUID.randomUUID().toString();
-            updatedCase = courtCase.withCaseId(caseId)
-                    .withCaseNo(caseId);
+        }
+
+        // If this is a new case from COMMON platform, set caseNo = caseId
+        if (courtCase.getSource() == DataSource.COMMON_PLATFORM && courtCase.getCaseNo() == null) {
+            updatedCase = courtCase.withCaseNo(updatedCase.getCaseId());
         }
 
         if (StringUtils.isEmpty(courtCase.getHearingId())) {

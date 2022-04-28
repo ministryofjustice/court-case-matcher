@@ -25,7 +25,7 @@ import java.util.Map;
 import static au.com.dius.pact.consumer.dsl.LambdaDsl.newJsonBody;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.CASE_ID;
+import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.HEARING_ID;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -95,7 +95,7 @@ class CourtCaseRestClientPactTest {
         return builder
                 .given("a case will be PUT by id")
                 .uponReceiving("a request to put a minimal court case")
-                .path(String.format("/case/%s/extended", CASE_ID))
+                .path(String.format("/hearing/%s", HEARING_ID))
                 .headers("Content-type", "application/json")
                 .method("PUT")
                 .body(body)
@@ -156,7 +156,7 @@ class CourtCaseRestClientPactTest {
             }));
         }).build();
 
-        final var location = String.format("/case/%s/extended", CASE_ID);
+        final var location = String.format("/hearing/%s", HEARING_ID);
         return builder
                 .given("a case will be PUT by id")
                 .uponReceiving("a request to put a full court case")
