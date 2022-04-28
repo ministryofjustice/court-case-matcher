@@ -88,6 +88,7 @@ class CourtCaseServiceTest {
     @Test
     void givenNoCaseNoOrId_whenSaveCourtCaseWithCaseId() {
         final var courtCase = CourtCase.builder()
+                .source(DataSource.COMMON_PLATFORM)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .build()))
@@ -113,6 +114,7 @@ class CourtCaseServiceTest {
     @Test
     void givenNoCaseButHaveCaseNo_whenSaveCourtCaseWithCaseIdRetainCaseNo() {
         final var courtCase = CourtCase.builder()
+                .source(DataSource.LIBRA)
             .hearingDays(Collections.singletonList(HearingDay.builder()
                 .courtCode(COURT_CODE)
                 .build()))
