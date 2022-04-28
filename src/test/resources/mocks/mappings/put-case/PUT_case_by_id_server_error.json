@@ -1,10 +1,10 @@
 {
   "request": {
     "method": "PUT",
-    "url": "/case/771F1C21-D2CA-4235-8659-5C3C7D7C58B6/extended",
+    "url": "/hearing/771F1C21-D2CA-4235-8659-5C3C7D7C58B6",
     "bodyPatterns": [
       {
-        "matches" : ".*caseId.*771F1C21-D2CA-4235-8659-5C3C7D7C58B6.*"
+        "matches" : ".*hearingId.*771F1C21-D2CA-4235-8659-5C3C7D7C58B6.*"
       }
     ]
   },

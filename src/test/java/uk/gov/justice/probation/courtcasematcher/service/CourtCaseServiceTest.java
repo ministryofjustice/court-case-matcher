@@ -75,12 +75,12 @@ class CourtCaseServiceTest {
                 .defendants(defendants)
                 .source(DataSource.LIBRA)
                 .build();
-        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(courtCase.withHearingId(CASE_ID))).thenReturn(Mono.empty());
         when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
-        verify(courtCaseRepo).putCourtCase(courtCase);
+        verify(courtCaseRepo).putCourtCase(courtCase.withHearingId(CASE_ID));
         verify(courtCaseRepo).postOffenderMatches(CASE_ID, defendants);
     }
 
@@ -124,9 +124,16 @@ class CourtCaseServiceTest {
 
         courtCaseService.saveCourtCase(courtCase);
 
-        verify(courtCaseRepo).putCourtCase(notNull());
+        verify(courtCaseRepo).putCourtCase(courtCaseCaptor.capture());
 
-        final var capturedCase = courtCaseCaptor.getValue();
+        CourtCase actual = courtCaseCaptor.getValue();
+        assertThat(actual).isNotNull();
+        assertThat(actual.getHearingId()).isNotNull();
+        assertThat(actual.getCaseId()).isNotNull();
+        assertThat(actual.getCaseId()).isEqualTo(actual.getHearingId());
+
+
+        final var capturedCase = actual;
         assertThat(capturedCase.getCaseId()).hasSameSizeAs(CASE_ID);
         assertThat(capturedCase.getDefendants().get(0).getDefendantId()).hasSameSizeAs(DEFENDANT_UUID_1);
         assertThat(capturedCase.getDefendants().get(1).getDefendantId()).hasSameSizeAs(DEFENDANT_UUID_1);
@@ -210,6 +217,7 @@ class CourtCaseServiceTest {
                         .build()))
                 .defendants(defendants)
                 .caseId(CASE_ID)
+                .hearingId(HEARING_ID)
                 .caseNo(CASE_NO)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenThrow(new RuntimeException("bang!"));

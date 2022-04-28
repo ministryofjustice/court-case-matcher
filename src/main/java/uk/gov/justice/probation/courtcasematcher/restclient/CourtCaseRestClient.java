@@ -42,17 +42,14 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Autowired
     private CourtCaseServiceRestHelper restHelper;
 
-    @Value("${court-case-service.case-get-by-hearing-id-url-template}")
-    private String courtCaseGetByHearingIdTemplate;
-
-    @Value("${court-case-service.case-put-url-template-extended}")
-    private String courtCasePutTemplate;
+    @Value("${court-case-service.case-by-hearing-id-url-template}")
+    private String courtCaseByHearingIdTemplate;
 
     @Value("${court-case-service.matches-by-case-defendant-post-url-template}")
     private String matchesPostTemplate;
 
     public Mono<CourtCase> getCourtCase(String hearingId) {
-        final String path = String.format(courtCaseGetByHearingIdTemplate, hearingId);
+        final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         return restHelper.get(path)
@@ -78,14 +75,14 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Override
     public Mono<Void> putCourtCase(CourtCase courtCase) {
         final var extendedCase = CCSExtendedCase.of(courtCase);
-        final var caseId = extendedCase.getCaseId();
-        final String path = String.format(courtCasePutTemplate, caseId);
+        final var hearingId = extendedCase.getHearingId();
+        final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
         return restHelper.putObject(path, extendedCase, CCSExtendedCase.class)
                 .retrieve()
                 .toBodilessEntity()
                 .retryWhen(restHelper.buildRetrySpec(
-                        String.format("Initial retry failed for caseId %s", caseId),
-                        (attemptNo, maxAttempts) -> String.format("Retry failed for caseId %s at attempt %s of %s", caseId, attemptNo, maxAttempts))
+                        String.format("Initial retry failed for hearingId %s", hearingId),
+                        (attemptNo, maxAttempts) -> String.format("Retry failed for hearingId %s at attempt %s of %s", hearingId, attemptNo, maxAttempts))
                 )
                 .then();
     }

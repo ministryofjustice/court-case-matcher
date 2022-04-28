@@ -54,6 +54,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 @Import(TestMessagingConfig.class)
 public class SqsMessageReceiverIntTest {
 
+    final String UUID_REGEX = "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}";
+    final String COURT_CASE_HEARING_ENDPOINT = "/hearing/" + UUID_REGEX;
+
     private static final String BASE_PATH = "src/test/resources/messages";
 
     @Autowired
@@ -87,10 +90,10 @@ public class SqsMessageReceiverIntTest {
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> countPutRequestsTo("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended") == 1);
+                .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlMatching("/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/extended"))
+                putRequestedFor(urlMatching("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
                         // Values from incoming case
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
@@ -133,10 +136,10 @@ public class SqsMessageReceiverIntTest {
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> countPutRequestsTo("/case/D2B61C8A-0684-4764-B401-F0A788BC7CCF/extended") == 1);
+                .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlMatching("/case/D2B61C8A-0684-4764-B401-F0A788BC7CCF/extended"))
+                putRequestedFor(urlMatching("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC"))
                         // Values from incoming case
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC")))
@@ -165,12 +168,13 @@ public class SqsMessageReceiverIntTest {
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING"));
 
         await()
-                .atMost(10, TimeUnit.SECONDS)
-                .until(() -> countPutRequestsTo("/case/D2B61C8A-0684-4764-B401-F0A788BC7CCF/extended") == 1);
+                .atMost(1, TimeUnit.SECONDS)
+                .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlMatching("/case/D2B61C8A-0684-4764-B401-F0A788BC7CCF/extended"))
+                putRequestedFor(urlMatching("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC"))
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
+                        .withRequestBody(matchingJsonPath("hearingId", equalTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
@@ -195,10 +199,10 @@ public class SqsMessageReceiverIntTest {
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
+                .until(() -> countPutRequestsTo("/hearing/.*") == 1);
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlMatching("/case/.*/extended"))
+                putRequestedFor(urlMatching("/hearing/.*"))
                         .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032981")))
@@ -221,10 +225,10 @@ public class SqsMessageReceiverIntTest {
 
         await()
                 .atMost(5, TimeUnit.SECONDS)
-                .until(() -> countPutRequestsTo("/case/.*/extended") == 1);
+                .until(() -> countPutRequestsTo(COURT_CASE_HEARING_ENDPOINT) == 1);
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlMatching("/case/.*/extended"))
+                putRequestedFor(urlMatching(COURT_CASE_HEARING_ENDPOINT))
                         .withRequestBody(matchingJsonPath("caseId", equalTo("A0884637-5A70-4622-88E9-7324949B8E7A")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("07")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("ORGANISATION")))
