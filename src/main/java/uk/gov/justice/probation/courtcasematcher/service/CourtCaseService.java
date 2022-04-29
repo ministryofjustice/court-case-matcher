@@ -54,10 +54,6 @@ public class CourtCaseService {
             updatedCase = courtCase.withCaseNo(updatedCase.getCaseId());
         }
 
-        if (StringUtils.isEmpty(courtCase.getHearingId())) {
-            updatedCase = updatedCase.withHearingId(updatedCase.getCaseId());
-        }
-
         try {
             courtCaseRepository.putCourtCase(updatedCase)
                     .block();
@@ -88,7 +84,7 @@ public class CourtCaseService {
     CourtCase assignUuids(CourtCase courtCase) {
         // Apply the new case ID
         final var caseId = UUID.randomUUID().toString();
-        var updatedCase = courtCase.withCaseId(caseId);
+        var updatedCase = courtCase.withCaseId(caseId).withHearingId(caseId);
 
         // We want to retain the LIBRA case no if present
         if (courtCase.getCaseNo() == null) {

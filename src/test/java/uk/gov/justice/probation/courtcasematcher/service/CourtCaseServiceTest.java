@@ -75,12 +75,12 @@ class CourtCaseServiceTest {
                 .defendants(defendants)
                 .source(DataSource.LIBRA)
                 .build();
-        when(courtCaseRepo.putCourtCase(courtCase.withHearingId(CASE_ID))).thenReturn(Mono.empty());
+        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
         when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         courtCaseService.saveCourtCase(courtCase);
 
-        verify(courtCaseRepo).putCourtCase(courtCase.withHearingId(CASE_ID));
+        verify(courtCaseRepo).putCourtCase(courtCase);
         verify(courtCaseRepo).postOffenderMatches(CASE_ID, defendants);
     }
 
