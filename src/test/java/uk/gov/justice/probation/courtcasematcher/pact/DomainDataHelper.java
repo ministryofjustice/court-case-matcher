@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 
 public class DomainDataHelper {
+
     public static final String DEFENDANT_ID = "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199";
     public static final String DEFENDANT_ID_2 = "903c4c54-f667-4770-8fdf-1adbb5957c25";
     public static String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";

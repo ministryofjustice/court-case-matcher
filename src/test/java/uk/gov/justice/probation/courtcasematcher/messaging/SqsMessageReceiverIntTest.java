@@ -48,13 +48,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static uk.gov.justice.probation.courtcasematcher.TestUtils.UUID_REGEX;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test"})
 @Import(TestMessagingConfig.class)
 public class SqsMessageReceiverIntTest {
 
-    final String UUID_REGEX = "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}";
     final String COURT_CASE_HEARING_ENDPOINT = "/hearing/" + UUID_REGEX;
 
     private static final String BASE_PATH = "src/test/resources/messages";
