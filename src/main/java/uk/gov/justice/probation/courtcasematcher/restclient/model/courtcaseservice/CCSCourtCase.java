@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class CCSCourtCase implements Serializable {
 
     private final String caseId;
+    private final String hearingId;
     private final String defendantId;
     @Setter(AccessLevel.NONE)
     private final String caseNo;
@@ -61,6 +62,7 @@ public class CCSCourtCase implements Serializable {
         return CourtCase.builder()
                 .source(Optional.ofNullable(source).map(CCSDataSource::asDomain).orElse(null))
                 .caseId(getCaseId())
+                .hearingId(getHearingId())
                 .caseNo(getCaseNo())
 
                 .hearingDays(Collections.singletonList(HearingDay.builder()
