@@ -48,14 +48,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static uk.gov.justice.probation.courtcasematcher.TestUtils.UUID_REGEX;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test"})
 @Import(TestMessagingConfig.class)
 public class SqsMessageReceiverIntTest {
-
-    final String COURT_CASE_HEARING_ENDPOINT = "/hearing/" + UUID_REGEX;
 
     private static final String BASE_PATH = "src/test/resources/messages";
 
@@ -223,13 +220,15 @@ public class SqsMessageReceiverIntTest {
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE"));
 
+        final var expectedEndpoint = String.format("/hearing/%s", "A0884637-5A70-4622-88E9-7324949B8E7A");
         await()
                 .atMost(5, TimeUnit.SECONDS)
-                .until(() -> countPutRequestsTo(COURT_CASE_HEARING_ENDPOINT) == 1);
+                .until(() -> countPutRequestsTo(expectedEndpoint) == 1);
 
         MOCK_SERVER.verify(
-                putRequestedFor(urlMatching(COURT_CASE_HEARING_ENDPOINT))
+                putRequestedFor(urlMatching(expectedEndpoint))
                         .withRequestBody(matchingJsonPath("caseId", equalTo("A0884637-5A70-4622-88E9-7324949B8E7A")))
+                        .withRequestBody(matchingJsonPath("hearingId", equalTo("A0884637-5A70-4622-88E9-7324949B8E7A")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("07")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("51EB661C-6CDF-46B2-ACF3-95098CF41154")))
