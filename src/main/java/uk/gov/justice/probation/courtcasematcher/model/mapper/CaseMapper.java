@@ -58,6 +58,7 @@ public class CaseMapper {
                         .build()))
                 .source(DataSource.LIBRA)
                 .caseNo(aLibraCase.getCaseNo())
+                .urn(aLibraCase.getUrn())
 
                 .build();
     }

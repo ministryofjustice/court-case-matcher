@@ -11,19 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.probation.courtcasematcher.application.MessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPAddress;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCourtCentre;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPJurisdictionType;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOffence;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPPersonDefendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPPersonDetails;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.*;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
@@ -131,6 +119,7 @@ class MessageParserTest {
                     .isEqualTo(CPProsecutionCase.builder()
                             .id("D2B61C8A-0684-4764-B401-F0A788BC7CCF")
                             .defendants(defendants)
+                            .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseURN("25GD34377719").build())
                             .build());
             assertThat(actual.getJurisdictionType()).isEqualTo(CPJurisdictionType.CROWN);
         }

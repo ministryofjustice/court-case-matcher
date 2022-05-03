@@ -79,7 +79,10 @@
             "prosecutionCaseId": "b7417f11-49d8-482d-b516-ba4135d38d0d"
           }
         ],
-        "id": ""
+        "id": "",
+        "prosecutionCaseIdentifier": {
+          "caseURN": "25GD34377719"
+        }
       }
     ]
   }

@@ -6,23 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class CPProsecutionCase {
+public class ProsecutionCaseIdentifier {
     @NotBlank
-    private final String id;
-    @NotNull
-    @Valid
-    private final List<CPDefendant> defendants;
-
-    @NotNull
-    @Valid
-    private final ProsecutionCaseIdentifier prosecutionCaseIdentifier;
+    private final String caseURN;
 }
