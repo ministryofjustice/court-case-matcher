@@ -83,7 +83,7 @@ class CPHearingTest {
                                 buildPersonDefendant(),
                                 buildOrganisationDefendant()
                         ))
-                        .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseURN("urn").build())
+                        .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                         .build())
                 )
                 .build();

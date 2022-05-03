@@ -119,7 +119,7 @@ class MessageParserTest {
                     .isEqualTo(CPProsecutionCase.builder()
                             .id("D2B61C8A-0684-4764-B401-F0A788BC7CCF")
                             .defendants(defendants)
-                            .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseURN("25GD34377719").build())
+                            .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("25GD34377719").build())
                             .build());
             assertThat(actual.getJurisdictionType()).isEqualTo(CPJurisdictionType.CROWN);
         }

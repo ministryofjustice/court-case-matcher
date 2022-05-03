@@ -50,7 +50,7 @@ public class CPHearing {
                         .stream()
                         .map(CPDefendant::asDomain)
                         .collect(Collectors.toList()))
-                .urn(prosecutionCases.get(0).getProsecutionCaseIdentifier().getCaseURN())
+                .urn(prosecutionCases.get(0).getProsecutionCaseIdentifier().getCaseUrn())
                 .build();
     }
 }
