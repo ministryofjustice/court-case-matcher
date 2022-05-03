@@ -7,14 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCourtCentre;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.*;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.MessageAttributes;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
@@ -71,6 +64,7 @@ class CourtCaseExtractorTest {
                                                 .build())
                                         .offences(Collections.emptyList())
                                         .build()))
+                                        .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseURN("urn").build())
                                 .build()))
                         .build())
                 .build();
@@ -123,6 +117,7 @@ class CourtCaseExtractorTest {
         var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(courtCase).isNotNull();
+        assertThat(courtCase.getUrn()).isEqualTo("urn");
         assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
         assertThat(courtCase.getHearingId()).isNull();
     }

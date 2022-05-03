@@ -111,6 +111,7 @@ class CourtCaseRestClientPactTest {
             rootObject.stringType("caseId");
             rootObject.stringType("hearingId");
             rootObject.stringType("caseNo");
+            rootObject.stringType("urn");
             rootObject.stringValue("source", "COMMON_PLATFORM");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
