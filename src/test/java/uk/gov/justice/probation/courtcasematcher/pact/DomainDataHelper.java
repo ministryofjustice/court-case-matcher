@@ -29,6 +29,7 @@ public class DomainDataHelper {
         return aMinimalCourtCaseBuilder()
                 .caseNo("case no")
                 .hearingId(HEARING_ID)
+                .urn("urn")
                 .defendants(Collections.singletonList(Defendant.builder()
                         .defendantId(DEFENDANT_ID)
                         .probationStatus("Current")

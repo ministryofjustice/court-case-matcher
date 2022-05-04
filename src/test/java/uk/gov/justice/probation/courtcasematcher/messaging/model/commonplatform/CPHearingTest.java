@@ -26,6 +26,7 @@ class CPHearingTest {
         assertThat(courtCase.getCaseNo()).isNull();
         assertThat(courtCase.getCourtCode()).isEqualTo("B10JQ");
         assertThat(courtCase.getSource()).isEqualTo(COMMON_PLATFORM);
+        assertThat(courtCase.getUrn()).isEqualTo("urn");
 
         final var firstDefendant = courtCase.getDefendants().get(0);
         assertThat(firstDefendant.getDefendantId()).isEqualTo("92673716-9B4F-40B2-A3E5-B398750328E9");
@@ -82,6 +83,7 @@ class CPHearingTest {
                                 buildPersonDefendant(),
                                 buildOrganisationDefendant()
                         ))
+                        .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                         .build())
                 )
                 .build();

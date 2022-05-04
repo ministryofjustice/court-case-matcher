@@ -41,6 +41,7 @@ public class CCSExtendedCaseTest {
         assertThat(actual.getCaseId()).isNotBlank().isEqualTo(courtCase.getCaseId());
         assertThat(actual.getHearingId()).isEqualTo(courtCase.getHearingId());
         assertThat(actual.getCaseNo()).isEqualTo(courtCase.getCaseNo());
+        assertThat(actual.getUrn()).isEqualTo(courtCase.getUrn());
         assertThat(actual.getSource()).isEqualTo(CCSDataSource.COMMON_PLATFORM);
 
         assertThat(actual.getHearingDays()).asList().containsExactly(CCSHearingDay.builder()

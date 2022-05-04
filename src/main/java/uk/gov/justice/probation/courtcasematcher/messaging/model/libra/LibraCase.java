@@ -31,6 +31,7 @@ public class LibraCase {
     @NotBlank
     @JacksonXmlProperty(localName = "caseno")
     private final String caseNo;
+    private final String urn;
     @PositiveOrZero
     private final Integer seq;
     private final LibraName name;

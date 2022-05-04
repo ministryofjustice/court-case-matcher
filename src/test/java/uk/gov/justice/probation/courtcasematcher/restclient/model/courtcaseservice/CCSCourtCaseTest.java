@@ -24,6 +24,7 @@ class CCSCourtCaseTest {
                 .caseId(original.getCaseId())
                 .hearingId(original.getHearingId())
                 .caseNo(original.getCaseNo())
+                .urn(original.getUrn())
 
 
                 .courtCode(original.getCourtCode())

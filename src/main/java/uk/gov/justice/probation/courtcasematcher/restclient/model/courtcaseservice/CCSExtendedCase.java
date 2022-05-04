@@ -22,6 +22,7 @@ public class CCSExtendedCase {
     private String caseId;
     private String hearingId;
     private String caseNo;
+    private String urn;
     private List<CCSDefendant> defendants;
     private List<CCSHearingDay> hearingDays;
     private CCSDataSource source;
@@ -31,6 +32,7 @@ public class CCSExtendedCase {
                 .caseId(Optional.ofNullable(courtCase.getCaseId())
                         .orElseGet(() -> UUID.randomUUID().toString()))
                 .hearingId(courtCase.getHearingId())
+                .urn(courtCase.getUrn())
                 .caseNo(courtCase.getCaseNo())
                 .source(CCSDataSource.of(courtCase.getSource()))
                 .hearingDays(courtCase.getHearingDays().stream()
@@ -46,6 +48,7 @@ public class CCSExtendedCase {
         return CourtCase.builder()
                 .caseId(caseId)
                 .hearingId(hearingId)
+                .urn(getUrn())
                 .caseNo(caseNo)
                 .source(source.asDomain())
                 .hearingDays(hearingDays.stream()
