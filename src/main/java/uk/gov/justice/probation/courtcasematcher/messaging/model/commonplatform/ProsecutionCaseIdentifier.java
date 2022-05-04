@@ -1,28 +1,20 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class CPProsecutionCase {
+public class ProsecutionCaseIdentifier {
     @NotBlank
-    private final String id;
-    @NotNull
-    @Valid
-    private final List<CPDefendant> defendants;
-
-    @NotNull
-    @Valid
-    private final ProsecutionCaseIdentifier prosecutionCaseIdentifier;
+    @JsonProperty("caseURN")
+    private final String caseUrn;
 }

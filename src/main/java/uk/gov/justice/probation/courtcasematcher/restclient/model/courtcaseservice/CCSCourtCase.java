@@ -41,6 +41,7 @@ public class CCSCourtCase implements Serializable {
     private final String crn;
     private final String cro;
     private final String pnc;
+    private final String urn;
     private final CCSName name;
     private final String defendantName;
     private final CCSAddress defendantAddress;
@@ -64,6 +65,7 @@ public class CCSCourtCase implements Serializable {
                 .caseId(getCaseId())
                 .hearingId(getHearingId())
                 .caseNo(getCaseNo())
+                .urn(getUrn())
 
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(getCourtCode())

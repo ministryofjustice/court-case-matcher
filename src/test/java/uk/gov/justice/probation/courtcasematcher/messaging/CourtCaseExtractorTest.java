@@ -15,6 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.ProsecutionCaseIdentifier;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
 import uk.gov.justice.probation.courtcasematcher.model.MessageAttributes;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
@@ -71,6 +72,7 @@ class CourtCaseExtractorTest {
                                                 .build())
                                         .offences(Collections.emptyList())
                                         .build()))
+                                        .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                                 .build()))
                         .build())
                 .build();
@@ -123,6 +125,7 @@ class CourtCaseExtractorTest {
         var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(courtCase).isNotNull();
+        assertThat(courtCase.getUrn()).isEqualTo("urn");
         assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
         assertThat(courtCase.getHearingId()).isNull();
     }

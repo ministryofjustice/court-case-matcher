@@ -58,6 +58,7 @@ public class CaseMapper {
                         .build()))
                 .source(DataSource.LIBRA)
                 .caseNo(aLibraCase.getCaseNo())
+                .urn(aLibraCase.getUrn())
 
                 .build();
     }
@@ -92,6 +93,7 @@ public class CaseMapper {
     public static CourtCase merge(CourtCase incomingCase, CourtCase existingCourtCase) {
         return existingCourtCase
                 .withHearingDays(incomingCase.getHearingDays())
+                .withUrn(incomingCase.getUrn())
 
                 // PK fields
                 .withCaseNo(existingCourtCase.getCaseNo())
