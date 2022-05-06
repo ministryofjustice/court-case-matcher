@@ -13,6 +13,22 @@
           "croNumber": "2234DEF",
           "pncNumber": "BBCD1567"
         },
+        "offenderAliases": [
+          {
+            "id": "2500102187",
+            "dateOfBirth": "1969-08-26",
+            "firstName": "Adi",
+            "surname": "Akinbye",
+            "gender": "Male"
+          },
+          {
+            "id": "2500089684",
+            "dateOfBirth": "1968-08-06",
+            "firstName": "Chris",
+            "surname": "FAULKNER",
+            "gender": "Male"
+          }
+        ],
         "contactDetails": {},
         "offenderProfile": {
           "offenderLanguages": {},
