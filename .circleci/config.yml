@@ -127,7 +127,7 @@ jobs:
           environment:
             AWS_PROVIDER: localstack
             SPRING_PROFILES_ACTIVE: test-msg
-          command: ./gradlew integrationTest
+          command: curl http://localhost:4566 && ./gradlew integrationTest
       - save_cache:
           paths:
             - ~/.gradle

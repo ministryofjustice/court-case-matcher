@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @AllArgsConstructor
 @Builder
@@ -17,4 +19,5 @@ public class MatchIdentifiers {
     private final String crn;
     private final String pnc;
     private final String cro;
+    private final List<OffenderAlias> aliases;
 }
