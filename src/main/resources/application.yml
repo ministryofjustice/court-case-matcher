@@ -50,6 +50,7 @@ court-case-service:
   matches-by-case-defendant-post-url-template: /case/%s/defendant/%s/grouped-offender-matches
   post-max-retries: 3
   min-backoff-seconds: 5
+  jitter-factor: 0.5
 
 offender-search:
   post-match-url: /match
