@@ -15,7 +15,6 @@ court-case-service:
   disable-authentication: true
   min-backoff-seconds: 1
   max-retries: 1
-  jitter-factor: 0.5
 
 offender-search:
   base-url: http://localhost:8090
