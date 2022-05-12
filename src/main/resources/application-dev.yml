@@ -11,7 +11,7 @@ logging:
 
 court-case-service:
   base-url: https://court-case-service-dev.apps.live-1.cloud-platform.service.justice.gov.uk
-  jitter-factor: 0.5
+  jitter-factor: 0.5d
 
 offender-search:
   base-url: https://probation-offender-search-dev.hmpps.service.justice.gov.uk
