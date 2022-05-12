@@ -196,6 +196,7 @@ public class CaseMapper {
                         .pnc(match.getOffender().getOtherIds().getPncNumber())
                         .cro(match.getOffender().getOtherIds().getCroNumber())
                         .crn(match.getOffender().getOtherIds().getCrn())
+                        .aliases(match.getOffender().getOffenderAliases())
                         .build())
                 .build();
     }

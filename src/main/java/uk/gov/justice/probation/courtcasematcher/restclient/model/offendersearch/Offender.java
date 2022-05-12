@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 
+import java.util.List;
+
 @Getter
 @Builder
 @ToString
@@ -16,4 +18,5 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDet
 public class Offender {
     private final OtherIds otherIds;
     private final ProbationStatusDetail probationStatus;
+    private final List<OffenderAlias> offenderAliases;
 }

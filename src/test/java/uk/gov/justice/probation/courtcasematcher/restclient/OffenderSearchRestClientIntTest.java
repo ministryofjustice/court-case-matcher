@@ -12,12 +12,14 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -132,6 +134,15 @@ public class OffenderSearchRestClientIntTest {
             assertThat(offender1.getOtherIds().getCrn()).isEqualTo("Y346123");
             assertThat(offender1.getOtherIds().getCroNumber()).isEqualTo("2234DEF");
             assertThat(offender1.getOtherIds().getPncNumber()).isEqualTo("BBCD1567");
+            assertThat(offender1.getOffenderAliases().get(0).getDateOfBirth()).isEqualTo(LocalDate.of(1969, 8, 26));
+            assertThat(offender1.getOffenderAliases().get(0).getFirstName()).isEqualTo("Adi");
+            assertThat(offender1.getOffenderAliases().get(0).getSurname()).isEqualTo("Akinbye");
+            assertThat(offender1.getOffenderAliases().get(0).getGender()).isEqualTo("Male");
+
+            assertThat(offender1.getOffenderAliases().get(1).getDateOfBirth()).isEqualTo(LocalDate.of(1968, 8, 6));
+            assertThat(offender1.getOffenderAliases().get(1).getFirstName()).isEqualTo("Chris");
+            assertThat(offender1.getOffenderAliases().get(1).getSurname()).isEqualTo("FAULKNER");
+            assertThat(offender1.getOffenderAliases().get(1).getGender()).isEqualTo("Male");
 
             var offender2 = match.get().getMatches().get(1).getOffender();
             assertThat(offender2.getOtherIds().getCrn()).isEqualTo("Z346124");

@@ -19,11 +19,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -64,6 +60,14 @@ class CaseMapperTest {
     private static final String DEFENDANT_ID = "9E27A145-E847-4AAB-9FF9-B88912520D14";
     private static final String DEFENDANT_ID_2 = "F01ADD33-C534-44A6-BD7B-F2AAD0FB750C";
     private static final String CASE_ID = "8CC06F57-F5F7-4858-A9BF-035F7D6AC60F";
+
+    private static List<OffenderAlias> offenderAliases = List.of(OffenderAlias.builder()
+            .dateOfBirth(LocalDate.of(2000, 01, 01))
+            .firstName("firstNameOne")
+            .middleNames(List.of("middleOne", "middleTwo"))
+            .surname("surnameOne")
+            .gender("Not Specified")
+            .build());
 
     private LibraCase aLibraCase;
 
@@ -117,6 +121,7 @@ class CaseMapperTest {
             var match = Match.builder()
                     .offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                            .offenderAliases(offenderAliases)
                             .probationStatus(ProbationStatusDetail.builder().status("CURRENT").preSentenceActivity(true).awaitingPsr(true).build())
                             .build())
                     .build();
@@ -140,7 +145,7 @@ class CaseMapperTest {
             assertThat(newDefendant.getPreSentenceActivity()).isTrue();
             assertThat(newDefendant.getAwaitingPsr()).isTrue();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
+            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
@@ -150,6 +155,7 @@ class CaseMapperTest {
             var previouslyKnownTerminationDate = LocalDate.of(2016, Month.DECEMBER, 25);
             var match = Match.builder().offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                            .offenderAliases(offenderAliases)
                             .probationStatus(ProbationStatusDetail.builder()
                                     .awaitingPsr(true)
                                     .preSentenceActivity(true)
@@ -178,7 +184,7 @@ class CaseMapperTest {
             assertThat(newDefendant.getPreSentenceActivity()).isNull();
             assertThat(newDefendant.getAwaitingPsr()).isNull();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            var expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, PNC);
+            var expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, PNC, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(expectedOffenderMatch);
         }
 
@@ -187,6 +193,7 @@ class CaseMapperTest {
         void givenSingleMatchWithNoProbationStatus_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithSingleMatch() {
             var match = Match.builder().offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                            .offenderAliases(offenderAliases)
                             .build())
                     .build();
 
@@ -206,7 +213,7 @@ class CaseMapperTest {
             assertThat(newDefendant.getBreach()).isNull();
             assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            var offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC);
+            var offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
@@ -219,6 +226,7 @@ class CaseMapperTest {
                     .build();
             var match2 = Match.builder().offender(Offender.builder()
                             .otherIds(OtherIds.builder().crn("CRN1").build())
+                            .offenderAliases(offenderAliases)
                             .build())
                     .build();
 
@@ -238,17 +246,17 @@ class CaseMapperTest {
             assertThat(newDefendant.getBreach()).isNull();
             assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(2);
-            var offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, PNC);
-            var offenderMatch2 = buildOffenderMatch(MatchType.PARTIAL_NAME, "CRN1", null, null);
+            var offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, PNC, null);
+            var offenderMatch2 = buildOffenderMatch(MatchType.PARTIAL_NAME, "CRN1", null, null, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactlyInAnyOrder(offenderMatch1, offenderMatch2);
         }
 
-        private OffenderMatch buildOffenderMatch(MatchType matchType, String crn, String cro, String pnc) {
+        private OffenderMatch buildOffenderMatch(MatchType matchType, String crn, String cro, String pnc, List<OffenderAlias> offenderAliases) {
             return OffenderMatch.builder()
                     .matchType(matchType)
                     .confirmed(false)
                     .rejected(false)
-                    .matchIdentifiers(MatchIdentifiers.builder().pnc(pnc).cro(cro).crn(crn).build())
+                    .matchIdentifiers(MatchIdentifiers.builder().pnc(pnc).cro(cro).crn(crn).aliases(offenderAliases).build())
                     .build();
         }
     }
