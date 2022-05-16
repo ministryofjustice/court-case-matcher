@@ -3,6 +3,7 @@ offender-search:
 
 court-case-service:
   base-url: https://court-case-service.apps.live-1.cloud-platform.service.justice.gov.uk
+  jitter-factor: 0.5d
 
 nomis-oauth:
   base-url: https://sign-in.hmpps.service.justice.gov.uk

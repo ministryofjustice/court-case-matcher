@@ -38,6 +38,11 @@ public class CourtCaseServiceRestHelper {
     @Value("${court-case-service.disable-authentication:false}")
     private Boolean disableAuthentication;
 
+    @Getter
+    @Setter
+    @Value("${court-case-service.jitter-factor:0.5d}")
+    private double courtCaseServiceJitterFactor;
+
     @Autowired
     public CourtCaseServiceRestHelper(@Qualifier("courtCaseServiceWebClient") WebClient webClient) {
         this.webClient = webClient;
@@ -92,7 +97,7 @@ public class CourtCaseServiceRestHelper {
 
     RetryBackoffSpec buildRetrySpec(String intialMessage, BiFunction<Long, Integer, String> subsequentMessageFunc) {
         return Retry.backoff(maxRetries, Duration.ofSeconds(minBackOffSeconds))
-                .jitter(0.0d)
+                .jitter(courtCaseServiceJitterFactor)
                 .doAfterRetryAsync((retrySignal) -> logRetrySignal(retrySignal, intialMessage, subsequentMessageFunc))
                 .filter(EXCEPTION_RETRY_FILTER);
     }
