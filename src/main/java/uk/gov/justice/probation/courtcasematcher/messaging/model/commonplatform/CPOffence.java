@@ -16,7 +16,6 @@ import javax.validation.constraints.NotBlank;
 public class CPOffence {
     @NotBlank
     private final String id;
-    @NotBlank
     private final String offenceLegislation;
     @NotBlank
     private final String offenceTitle;
