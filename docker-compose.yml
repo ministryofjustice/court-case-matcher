@@ -30,7 +30,7 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:0.14.2
     networks:
       - hmpps
     container_name: localstack
