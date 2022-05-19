@@ -12,12 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.justice.probation.courtcasematcher.application.healthchecks.SqsCheck;
 
 import java.util.List;
 
@@ -25,12 +22,9 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({"local", "sqsadmin"})
+@ActiveProfiles({"local", "sqsadmin", "unsecured"})
 @DirtiesContext
 public class SqsAdminControllerIntTest {
-
-    @Autowired
-    private TestRestTemplate testRestTemplate;
 
     @LocalServerPort
     protected int port;
@@ -49,9 +43,6 @@ public class SqsAdminControllerIntTest {
     @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}")
     private String courtCaseMatcherSqsDlqEndpointUrl;
 
-    @MockBean
-    private SqsCheck sqsCheck;
-
     @Test
     void givenThereAreMessagesOnDlq_whenRetryAllDlqInvoked_shouldReplayMessages() {
 
@@ -61,19 +52,18 @@ public class SqsAdminControllerIntTest {
         sendMessageToDlq("message body 2");
 
         String sqsAdminUrl = String.format("http://localhost:%d/queue-admin/retry-all-dlqs", port);
-        given()
-            .contentType(ContentType.JSON)
-            .accept(ContentType.JSON)
-            .when()
-            .put(sqsAdminUrl)
-            .then()
-            .statusCode(200)
-            .extract().response().asString();
+        final var response = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                .put(sqsAdminUrl)
+                .then()
+                .statusCode(200);
 
         var messageResult = courtCaseMatcherSqsQueue.receiveMessage(new ReceiveMessageRequest(courtCaseMatcherSqsEndpointUrl).withMaxNumberOfMessages(2));
         List<Message> messages = messageResult.getMessages();
         assertThat(messages.size()).isEqualTo(2);
-        assertThat( messages).extracting(Message::getBody).containsExactlyInAnyOrder("message body 1", "message body 2");
+        assertThat(messages).extracting(Message::getBody).containsExactlyInAnyOrder("message body 1", "message body 2");
 
         var dlqMessageResult = courtCaseMatcherSqsDlq.receiveMessage(new ReceiveMessageRequest(courtCaseMatcherSqsDlqEndpointUrl).withMaxNumberOfMessages(2));
         assertThat(dlqMessageResult.getMessages().size()).isEqualTo(0);

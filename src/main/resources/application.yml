@@ -42,6 +42,9 @@ spring:
         provider:
           nomis-oauth-service:
             token-uri: ${nomis-oauth.base-url:http://oauth:8095}/auth/oauth/token
+      resourceserver:
+        jwt:
+          issuer-uri: ${nomis-oauth.issuer-base-url:${nomis-oauth.base-url}}/auth/issuer
 
 court-case-service:
   case-put-url-template: /court/%s/case/%s
@@ -84,3 +87,6 @@ aws:
 health:
   default-ping-path: /ping
 
+hmpps:
+  sqs:
+    queueAdminRole: COURT_CASE_MATCHER_QUEUE_ADMIN
