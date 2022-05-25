@@ -29,7 +29,7 @@ public class OAuth2SecurityConfig extends WebSecurityConfigurerAdapter {
                         auth
                                 .mvcMatchers(
                                         "/actuator/health",
-                                        "/ping"
+                                        "/actuator/health/ping"
                                 ).permitAll()
                                 .anyRequest()
                                 .hasRole(role)
