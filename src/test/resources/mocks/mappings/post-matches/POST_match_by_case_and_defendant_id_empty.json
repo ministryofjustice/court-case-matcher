@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "url": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/defendant/FE6E58E3-D3F1-4721-AB47-69741940847E/grouped-offender-matches",
+    "url": "/defendant/FE6E58E3-D3F1-4721-AB47-69741940847E/grouped-offender-matches",
     "bodyPatterns": [
       {
         "matches" : ".*\\[\\].*"
@@ -12,7 +12,7 @@
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "Location": "/case/D517D32D-3C80-41E8-846E-D274DC2B94A5/defendant/FE6E58E3-D3F1-4721-AB47-69741940847E/grouped-offender-matches/4"
+      "Location": "/defendant/FE6E58E3-D3F1-4721-AB47-69741940847E/grouped-offender-matches/4"
     }
   }
 }
