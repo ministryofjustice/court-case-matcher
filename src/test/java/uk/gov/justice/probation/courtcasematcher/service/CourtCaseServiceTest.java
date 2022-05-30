@@ -164,7 +164,7 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.getCourtCaseAndMerge(aCase).block();
+        final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
@@ -188,7 +188,7 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(HEARING_ID)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.getCourtCaseAndMerge(aCase).block();
+        final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
         verify(courtCaseRepo).getCourtCase(HEARING_ID);
@@ -202,7 +202,7 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
 
-        final var newCourtCase = courtCaseService.getCourtCaseAndMerge(aCase).block();
+        final var newCourtCase = courtCaseService.getCourtCase(aCase).block();
 
         assertThat(newCourtCase.getCourtCode()).isSameAs(COURT_CODE);
         assertThat(newCourtCase.getCaseNo()).isSameAs(CASE_NO);
