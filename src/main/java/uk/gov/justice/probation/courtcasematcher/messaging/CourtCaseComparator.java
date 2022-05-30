@@ -24,14 +24,14 @@ public class CourtCaseComparator {
             .thenComparing(HearingDay::getSessionStartTime, nullsFirst(naturalOrder())));
 
 
-    public static boolean hasCourtCaseChanged(CourtCase courtCaseReceived, CourtCase courtCaseRetrieved) {
+    public static boolean hasCourtCaseChanged(CourtCase courtCaseReceived, CourtCase existingCourtCase) {
 
-        if (hasHearingDayChanged(courtCaseReceived.getHearingDays(), courtCaseRetrieved.getHearingDays()) ||
-                hasDefendantChanged(courtCaseReceived.getDefendants(), courtCaseRetrieved.getDefendants())) {
+        if (hasHearingDayChanged(courtCaseReceived.getHearingDays(), existingCourtCase.getHearingDays()) ||
+                hasDefendantChanged(courtCaseReceived.getDefendants(), existingCourtCase.getDefendants())) {
             return true;
         }
 
-        return hasCaseChanged(courtCaseReceived, courtCaseRetrieved);
+        return hasCaseChanged(courtCaseReceived, existingCourtCase);
     }
 
     private static boolean hasCaseChanged(CourtCase courtCaseReceived, CourtCase courtCaseRetrieved) {
