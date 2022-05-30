@@ -24,26 +24,26 @@ public class CourtCaseComparator {
             .thenComparing(HearingDay::getSessionStartTime, nullsFirst(naturalOrder())));
 
 
-    public static boolean hasCourtCaseChanged(CourtCase courtCaseReceived, CourtCase courtCaseRetrieved) {
+    public static boolean hasCourtCaseChanged(CourtCase courtCase, CourtCase courtCaseToCompare) {
 
-        if (hasHearingDayChanged(courtCaseReceived.getHearingDays(), courtCaseRetrieved.getHearingDays()) ||
-                hasDefendantChanged(courtCaseReceived.getDefendants(), courtCaseRetrieved.getDefendants())) {
+        if (hasHearingDayChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
+                hasDefendantChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
             return true;
         }
 
-        return hasCaseChanged(courtCaseReceived, courtCaseRetrieved);
+        return hasCaseChanged(courtCase, courtCaseToCompare);
     }
 
-    private static boolean hasCaseChanged(CourtCase courtCaseReceived, CourtCase courtCaseRetrieved) {
-        return caseComparator.compare(courtCaseReceived, courtCaseRetrieved) != 0;
+    private static boolean hasCaseChanged(CourtCase courtCase, CourtCase courtCaseToCompare) {
+        return caseComparator.compare(courtCase, courtCaseToCompare) != 0;
     }
 
-    private static boolean hasDefendantChanged(List<Defendant> defendantsReceived, List<Defendant> defendantsRetrieved) {
-        return areNotEqualIgnoringOrder(defendantsReceived, defendantsRetrieved, defendantComparator);
+    private static boolean hasDefendantChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
+        return areNotEqualIgnoringOrder(defendants, defendantsToCompare, defendantComparator);
     }
 
-    private static boolean hasHearingDayChanged(List<HearingDay> hearingDaysReceived, List<HearingDay> hearingDaysRetrieved) {
-        return areNotEqualIgnoringOrder(hearingDaysReceived, hearingDaysRetrieved, hearingDayComparator);
+    private static boolean hasHearingDayChanged(List<HearingDay> hearingDays, List<HearingDay> hearingDaysToCompare) {
+        return areNotEqualIgnoringOrder(hearingDays, hearingDaysToCompare, hearingDayComparator);
     }
 
     private static <T> boolean areNotEqualIgnoringOrder(List<T> list1, List<T> list2, Comparator<? super T> comparator) {

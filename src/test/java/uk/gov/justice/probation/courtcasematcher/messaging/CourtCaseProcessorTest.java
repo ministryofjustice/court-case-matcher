@@ -62,7 +62,7 @@ class CourtCaseProcessorTest {
                         .build()))
                 .build();
         var updatedCourtCase = CourtCase.builder().build();
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
+        when(courtCaseService.getCourtCaseAndMerge(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
@@ -70,7 +70,7 @@ class CourtCaseProcessorTest {
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
 
         verify(courtCaseService).saveCourtCase(eq(updatedCourtCase));
-        verify(courtCaseService).getCourtCase(any(CourtCase.class));
+        verify(courtCaseService).getCourtCaseAndMerge(any(CourtCase.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
@@ -86,13 +86,13 @@ class CourtCaseProcessorTest {
                         .crn("X320741")
                         .build()))
                 .build();
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
+        when(courtCaseService.getCourtCaseAndMerge(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
-        verify(courtCaseService).getCourtCase(any(CourtCase.class));
+        verify(courtCaseService).getCourtCaseAndMerge(any(CourtCase.class));
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCase));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);

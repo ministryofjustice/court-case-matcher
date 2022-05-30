@@ -43,7 +43,7 @@ public class CourtCaseProcessor {
 
     private void matchAndSaveCase(CourtCase aCase, String messageId) {
         telemetryService.trackCourtCaseEvent(aCase, messageId);
-        final var courtCase = courtCaseService.getCourtCase(aCase)
+        final var courtCase = courtCaseService.getCourtCaseAndMerge(aCase)
                 .block();
         if (courtCase.shouldMatchToOffender()) {
             applyMatches(courtCase);
