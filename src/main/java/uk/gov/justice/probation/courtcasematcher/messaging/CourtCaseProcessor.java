@@ -47,11 +47,15 @@ public class CourtCaseProcessor {
         telemetryService.trackCourtCaseEvent(aCase, messageId);
         final var courtCase = courtCaseService.getCourtCase(aCase)
                 .block();
-        if (courtCase.shouldMatchToOffender()) {
-            applyMatches(courtCase);
-        }
-        else {
-            updateAndSave(courtCase);
+        if(!courtCase.equals(aCase)) {
+            if (courtCase.shouldMatchToOffender()) {
+                applyMatches(courtCase);
+            } else {
+                updateAndSave(courtCase);
+            }
+        }else{
+            System.out.println("CASE ARE EQUALS");
+            //TODO telemetryservice
         }
     }
 

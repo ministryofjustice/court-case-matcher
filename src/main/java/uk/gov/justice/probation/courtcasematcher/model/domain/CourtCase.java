@@ -1,12 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.With;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -18,6 +12,7 @@ import java.util.Optional;
 @Builder
 @With
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class CourtCase implements Serializable {
 
@@ -26,8 +21,11 @@ public class CourtCase implements Serializable {
 
     @Setter(AccessLevel.NONE)
     private final String caseNo;
+    @EqualsAndHashCode.Include
     private final String urn;
+    @EqualsAndHashCode.Include
     private List<Defendant> defendants;
+    @EqualsAndHashCode.Include
     private List<HearingDay> hearingDays;
 
     private final DataSource source;

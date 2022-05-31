@@ -58,11 +58,17 @@ class CourtCaseProcessorTest {
                         .courtCode("SHF")
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
                         .type(PERSON)
                         .build()))
                 .build();
-        var updatedCourtCase = CourtCase.builder().build();
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
+        var updatedCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO-ANOTHER")
+                        .type(PERSON)
+                        .build()))
+                .build();
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
         when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
