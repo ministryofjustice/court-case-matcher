@@ -172,9 +172,10 @@ jobs:
             if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
               # publish to docker hub as the tag
              docker login -u="${QUAYIO_USERNAME}" -p="${QUAYIO_PASSWORD}" quay.io
-             docker tag hmpps/court-case-matcher:$APP_VERSION hmpps/court-case-matcher:latest
-             docker push hmpps/court-case-matcher:$APP_VERSION
-             docker push hmpps/court-case-matcher:latest
+             docker tag hmpps/court-case-matcher:$APP_VERSION quay.io/hmpps/court-case-matcher:$APP_VERSION
+             docker tag hmpps/court-case-matcher:$APP_VERSION quay.io/hmpps/court-case-matcher:latest
+             docker push quay.io/hmpps/court-case-matcher:$APP_VERSION
+             docker push quay.io/hmpps/court-case-matcher:latest
             fi
 
   app-scan:
