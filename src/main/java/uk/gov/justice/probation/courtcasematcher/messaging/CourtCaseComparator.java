@@ -26,8 +26,8 @@ public class CourtCaseComparator {
 
     public static boolean hasCourtCaseChanged(CourtCase courtCase, CourtCase courtCaseToCompare) {
 
-        if (hasHearingDayChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
-                hasDefendantChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
+        if (hasHearingDaysChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
+                hasDefendantsChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
             return true;
         }
 
@@ -38,11 +38,11 @@ public class CourtCaseComparator {
         return caseComparator.compare(courtCase, courtCaseToCompare) != 0;
     }
 
-    private static boolean hasDefendantChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
+    private static boolean hasDefendantsChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
         return areNotEqualIgnoringOrder(defendants, defendantsToCompare, defendantComparator);
     }
 
-    private static boolean hasHearingDayChanged(List<HearingDay> hearingDays, List<HearingDay> hearingDaysToCompare) {
+    private static boolean hasHearingDaysChanged(List<HearingDay> hearingDays, List<HearingDay> hearingDaysToCompare) {
         return areNotEqualIgnoringOrder(hearingDays, hearingDaysToCompare, hearingDayComparator);
     }
 
