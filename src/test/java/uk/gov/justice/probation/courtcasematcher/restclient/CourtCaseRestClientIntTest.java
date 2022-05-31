@@ -37,6 +37,7 @@ import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -186,11 +187,11 @@ class CourtCaseRestClientIntTest {
         Assertions.assertThat(events).hasSizeGreaterThanOrEqualTo(2);
 
         MOCK_SERVER.verify(
-            postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, DEFENDANT_ID)))
+            postRequestedFor(urlEqualTo(String.format("/defendant/%s/grouped-offender-matches", DEFENDANT_ID)))
         );
 
         MOCK_SERVER.verify(
-            postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, DEFENDANT_ID_2)))
+            postRequestedFor(urlEqualTo(String.format("/defendant/%s/grouped-offender-matches", DEFENDANT_ID_2)))
         );
     }
 
@@ -198,7 +199,7 @@ class CourtCaseRestClientIntTest {
     void whenRestClientThrows500OnPostDefendantMatches_ThenRetryAndLogRetryExhaustedError() {
 
         assertThatExceptionOfType(RuntimeException.class)
-            .isThrownBy(() -> client.postOffenderMatches("X500", buildDefendants()).block())
+            .isThrownBy(() -> client.postOffenderMatches("X500", buildDefendants("HTTP_500")).block())
             .withMessage("Retries exhausted: 1/1");
 
         verify(mockAppender, timeout(WEB_CLIENT_TIMEOUT_MS).atLeast(1)).doAppend(captorLoggingEvent.capture());
@@ -226,7 +227,7 @@ class CourtCaseRestClientIntTest {
         client.postOffenderMatches(CASE_ID, defendants).block();
 
         MOCK_SERVER.verify(0,
-                postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, DEFENDANT_ID)))
+                postRequestedFor(urlEqualTo(String.format("/defendant/%s/grouped-offender-matches", CASE_ID, DEFENDANT_ID)))
         );
         assertThat(MOCK_SERVER.findAllUnmatchedRequests().size()).isEqualTo(0);
     }
@@ -245,11 +246,15 @@ class CourtCaseRestClientIntTest {
         client.postOffenderMatches(CASE_ID, defendants).block();
 
         MOCK_SERVER.verify(
-                postRequestedFor(urlEqualTo(String.format("/case/%s/defendant/%s/grouped-offender-matches", CASE_ID, "FE6E58E3-D3F1-4721-AB47-69741940847E")))
+                postRequestedFor(urlEqualTo(String.format("/defendant/%s/grouped-offender-matches", "FE6E58E3-D3F1-4721-AB47-69741940847E")))
         );
     }
 
     private List<Defendant> buildDefendants() {
+        return buildDefendants(null);
+    }
+
+    private List<Defendant> buildDefendants(String defendantIdPrefix) {
         final var matches1 = GroupedOffenderMatches.builder()
                 .matches(Collections.singletonList(OffenderMatch.builder()
                         .matchType(MatchType.NAME_DOB)
@@ -275,12 +280,12 @@ class CourtCaseRestClientIntTest {
         return List.of(
                 Defendant.builder()
                         .type(DefendantType.PERSON)
-                        .defendantId(DEFENDANT_ID)
+                        .defendantId(Optional.ofNullable(defendantIdPrefix).map(s -> s + DEFENDANT_ID).orElse(DEFENDANT_ID))
                         .groupedOffenderMatches(matches1)
                         .build(),
                 Defendant.builder()
                         .type(DefendantType.PERSON)
-                        .defendantId(DEFENDANT_ID_2)
+                        .defendantId(Optional.ofNullable(defendantIdPrefix).map(s -> s + DEFENDANT_ID_2).orElse(DEFENDANT_ID_2))
                         .groupedOffenderMatches(matches2)
                         .build()
         );

@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "urlPattern": "/case/X500/defendant/.*/grouped-offender-matches",
+    "urlPattern": "/defendant/HTTP_500.*/grouped-offender-matches",
     "bodyPatterns": [
     ]
   },
