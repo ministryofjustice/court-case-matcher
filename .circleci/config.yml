@@ -162,7 +162,7 @@ jobs:
           command: |
             APP_VERSION=$(cat ./app_version.txt)
             docker build --rm=false . \
-               --tag "mojdigitalstudio/court-case-matcher:$APP_VERSION" \
+               --tag "hmpps/court-case-matcher:$APP_VERSION" \
                --label "maintainer=info@digital.justice.gov.uk" \
                --label "app.version=$APP_VERSION" \
                --label "build.version=$APP_VERSION" \
@@ -171,10 +171,10 @@ jobs:
                --label "build.gitref=$CIRCLE_SHA1"
             if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
               # publish to docker hub as the tag
-             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-             docker tag mojdigitalstudio/court-case-matcher:$APP_VERSION mojdigitalstudio/court-case-matcher:latest
-             docker push mojdigitalstudio/court-case-matcher:$APP_VERSION
-             docker push mojdigitalstudio/court-case-matcher:latest
+             docker login -u="${QUAYIO_USERNAME}" -p="${QUAYIO_PASSWORD}" quay.io
+             docker tag hmpps/court-case-matcher:$APP_VERSION hmpps/court-case-matcher:latest
+             docker push quay.io/hmpps/court-case-matcher:$APP_VERSION
+             docker push quay.io/hmpps/court-case-matcher:latest
             fi
 
   app-scan:
@@ -198,7 +198,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - snyk/scan:
-          docker-image-name: 'mojdigitalstudio/court-case-matcher:latest'
+          docker-image-name: 'quay.io/hmpps/court-case-matcher:latest'
           target-file: 'Dockerfile'
           fail-on-issues: false
           monitor-on-build: true
