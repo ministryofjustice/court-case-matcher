@@ -19,15 +19,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor
 public class CourtCaseService {
 
-    @Autowired
+
     @Qualifier("court-case-rest-client")
     private CourtCaseRepository courtCaseRepository;
 
-    @Autowired
     private OffenderSearchRestClient offenderSearchRestClient;
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {

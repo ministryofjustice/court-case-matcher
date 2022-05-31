@@ -14,18 +14,17 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Service
 @Qualifier("caseMessageProcessor")
 @Slf4j
 public class CourtCaseProcessor {
 
-    @Autowired
+
     @NonNull
     private final TelemetryService telemetryService;
 
-    @Autowired
     @NonNull
     private final CourtCaseService courtCaseService;
 
