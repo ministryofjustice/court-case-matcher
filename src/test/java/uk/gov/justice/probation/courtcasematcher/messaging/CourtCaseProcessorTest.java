@@ -23,6 +23,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.ORGANISATION;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
@@ -92,15 +93,21 @@ class CourtCaseProcessorTest {
                         .crn("X320741")
                         .build()))
                 .build();
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
-        when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
+        var updatedCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(ORGANISATION)
+                        .crn("X320741")
+                        .build()))
+                .build();
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
+        when(courtCaseService.updateProbationStatusDetail(updatedCourtCase)).thenReturn(Mono.just(updatedCourtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
-        verify(courtCaseService).updateProbationStatusDetail(eq(courtCase));
-        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
+        verify(courtCaseService).updateProbationStatusDetail(eq(updatedCourtCase));
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(updatedCourtCase));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 

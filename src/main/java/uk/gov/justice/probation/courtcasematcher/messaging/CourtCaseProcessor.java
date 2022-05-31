@@ -14,6 +14,10 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
+import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
+
 @AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Service
@@ -21,20 +25,18 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 @Slf4j
 public class CourtCaseProcessor {
 
-
     @NonNull
     private final TelemetryService telemetryService;
 
     @NonNull
     private final CourtCaseService courtCaseService;
 
-    @Autowired
     @NonNull
     private final MatcherService matcherService;
 
-    public void process(CourtCase courtCase, String messageId) {
+    public void process(CourtCase courtCaseReceived, String messageId) {
         try {
-            matchAndSaveCase(courtCase, messageId);
+            matchAndSaveCase(courtCaseReceived, messageId);
         }
         catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
@@ -42,24 +44,23 @@ public class CourtCaseProcessor {
         }
     }
 
-    private void matchAndSaveCase(CourtCase aCase, String messageId) {
-        telemetryService.trackCourtCaseEvent(aCase, messageId);
-        final var courtCase = courtCaseService.getCourtCase(aCase)
+    private void matchAndSaveCase(CourtCase courtCaseReceived, String messageId) {
+        telemetryService.trackCourtCaseEvent(courtCaseReceived, messageId);
+        final var courtCaseMerged = courtCaseService.getCourtCase(courtCaseReceived)
                 .block();
-        if(!courtCase.equals(aCase)) {
-            if (courtCase.shouldMatchToOffender()) {
-                applyMatches(courtCase);
+        if(!requireNonNull(courtCaseMerged).equals(courtCaseReceived)) {
+            if (courtCaseMerged.shouldMatchToOffender()) {
+                applyMatchesAndSave(courtCaseMerged);
             } else {
-                updateAndSave(courtCase);
+                updateAndSave(courtCaseMerged);
             }
         }else{
-            System.out.println("CASE ARE EQUALS");
-            //TODO telemetryservice
+            //TODO telemetryService
         }
     }
 
 
-    private void applyMatches(final CourtCase courtCase) {
+    private void applyMatchesAndSave(final CourtCase courtCase) {
         matcherService.matchDefendants(courtCase)
                 .onErrorReturn(courtCase)
                 .doOnSuccess(courtCaseService::saveCourtCase)
