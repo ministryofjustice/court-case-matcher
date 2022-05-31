@@ -1,23 +1,24 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
+import uk.gov.justice.probation.courtcasematcher.model.domain.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
+import static java.util.Comparator.*;
 
 public class CourtCaseComparator {
 
     static final Comparator<CourtCase> caseComparator = Comparator.nullsFirst(comparing(CourtCase::getUrn, nullsFirst(naturalOrder())));
     static final Comparator<Defendant> defendantComparator = Comparator.nullsFirst(comparing(Defendant::getCrn, nullsFirst(naturalOrder()))
-            .thenComparing(Defendant::getCro, nullsFirst(naturalOrder()))); //TODO add more fields
+
+            .thenComparing(Defendant::getCro, nullsFirst(naturalOrder()))
+            .thenComparing(Defendant::getDateOfBirth, nullsFirst(naturalOrder()))
+            .thenComparing(d -> d.getAddress().getLine1(), nullsFirst(naturalOrder()))
+            .thenComparing(d -> d.getAddress().getLine2(), nullsFirst(naturalOrder()))
+    ); //TODO add more fields
     static final Comparator<HearingDay> hearingDayComparator = Comparator.nullsFirst(comparing(HearingDay::getCourtCode, nullsFirst(naturalOrder()))
             .thenComparing(HearingDay::getCourtRoom, nullsFirst(naturalOrder()))
             .thenComparing(HearingDay::getListNo, nullsFirst(naturalOrder()))
@@ -26,8 +27,8 @@ public class CourtCaseComparator {
 
     public static boolean hasCourtCaseChanged(CourtCase courtCase, CourtCase courtCaseToCompare) {
 
-        if (hasHearingDayChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
-                hasDefendantChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
+        if (hasHearingDaysChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
+                hasDefendantsChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
             return true;
         }
 
@@ -38,11 +39,11 @@ public class CourtCaseComparator {
         return caseComparator.compare(courtCase, courtCaseToCompare) != 0;
     }
 
-    private static boolean hasDefendantChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
+    private static boolean hasDefendantsChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
         return areNotEqualIgnoringOrder(defendants, defendantsToCompare, defendantComparator);
     }
 
-    private static boolean hasHearingDayChanged(List<HearingDay> hearingDays, List<HearingDay> hearingDaysToCompare) {
+    private static boolean hasHearingDaysChanged(List<HearingDay> hearingDays, List<HearingDay> hearingDaysToCompare) {
         return areNotEqualIgnoringOrder(hearingDays, hearingDaysToCompare, hearingDayComparator);
     }
 
