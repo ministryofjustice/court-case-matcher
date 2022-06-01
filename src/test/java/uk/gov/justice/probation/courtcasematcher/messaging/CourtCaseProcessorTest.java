@@ -63,20 +63,15 @@ class CourtCaseProcessorTest {
                         .type(PERSON)
                         .build()))
                 .build();
-        var updatedCourtCase = CourtCase.builder()
-                .defendants(Collections.singletonList(Defendant.builder()
-                        .cro("CRO-ANOTHER")
-                        .type(PERSON)
-                        .build()))
-                .build();
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
-        when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
+
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.empty());
+        when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
 
-        verify(courtCaseService).saveCourtCase(eq(updatedCourtCase));
+        verify(courtCaseService).saveCourtCase(eq(courtCase));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
@@ -95,7 +90,7 @@ class CourtCaseProcessorTest {
                 .build();
         var updatedCourtCase = CourtCase.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
-                        .type(ORGANISATION)
+                        .type(PERSON)
                         .crn("X320741")
                         .build()))
                 .build();

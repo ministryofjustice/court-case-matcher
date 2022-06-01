@@ -9,14 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.util.StringUtils;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-import java.util.Objects;
-
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.isNull;
 
 @AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
@@ -37,8 +38,7 @@ public class CourtCaseProcessor {
     public void process(CourtCase courtCaseReceived, String messageId) {
         try {
             matchAndSaveCase(courtCaseReceived, messageId);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
             throw new RuntimeException(ex.getMessage(), ex);
         }
@@ -46,16 +46,16 @@ public class CourtCaseProcessor {
 
     private void matchAndSaveCase(CourtCase courtCaseReceived, String messageId) {
         telemetryService.trackCourtCaseEvent(courtCaseReceived, messageId);
-        final var courtCaseMerged = courtCaseService.getCourtCase(courtCaseReceived)
+        final var existingCourtCase = courtCaseService.getCourtCase(courtCaseReceived)
                 .block();
-        if(!requireNonNull(courtCaseMerged).equals(courtCaseReceived)) {
-            if (courtCaseMerged.shouldMatchToOffender()) {
-                applyMatchesAndSave(courtCaseMerged);
-            } else {
-                updateAndSave(courtCaseMerged);
-            }
-        }else{
-            //TODO telemetryService
+        if (isNull(existingCourtCase)) {
+            applyMatchesAndSave(courtCaseReceived);
+        } else if (!existingCourtCase.equals(courtCaseReceived)) {
+            var courtCaseMerged = CaseMapper.merge(courtCaseReceived, existingCourtCase);
+            updateAndSave(courtCaseMerged);
+        } else {
+            //TODO implement correct telemetryService
+           // telemetryService.trackCourtCaseEvent(courtCaseReceived, messageId);
         }
     }
 
