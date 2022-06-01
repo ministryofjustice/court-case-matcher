@@ -166,13 +166,13 @@ class CourtCaseServiceTest {
 
         final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
 
-        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
+        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
     }
 
     @DisplayName("Incoming Common Platform case which is merged with the existing.")
     @Test
-    void givenExistingCommonPlatformCase_whenGetCourtCase_thenMergeAndReturn() {
+    void givenExistingCommonPlatformCase_whenGetCourtCase_thenReturn() {
         final var aCase = buildCaseNoMatches();
 
         final var courtCase = CourtCase.builder()
@@ -190,13 +190,13 @@ class CourtCaseServiceTest {
 
         final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
 
-        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
+        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
         verify(courtCaseRepo).getCourtCase(HEARING_ID);
     }
 
-    @DisplayName("Get court case which is new, return a transformed copy.")
+    @DisplayName("Get court case which is new, return a null")
     @Test
-    void givenNewCase_whenGetCourtCase_thenReturn() {
+    void givenNewCase_whenGetCourtCase_thenReturnNull() {
         var aCase = buildCaseNoMatches()
                 .withSource(DataSource.LIBRA);
 
@@ -204,9 +204,8 @@ class CourtCaseServiceTest {
 
         final var newCourtCase = courtCaseService.getCourtCase(aCase).block();
 
-        assertThat(newCourtCase.getCourtCode()).isSameAs(COURT_CODE);
-        assertThat(newCourtCase.getCaseNo()).isSameAs(CASE_NO);
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
+        assertThat(newCourtCase).isNull();
     }
 
 

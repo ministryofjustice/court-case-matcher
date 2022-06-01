@@ -31,19 +31,15 @@ public class CourtCaseService {
 
     public Mono<CourtCase> getCourtCase(CourtCase aCase) {
         if (aCase.getSource() == DataSource.COMMON_PLATFORM) {
-            return courtCaseRepository.getCourtCase(aCase.getHearingId())
-                    .map(existing -> CaseMapper.merge(aCase, existing))
-                    .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
+            return courtCaseRepository.getCourtCase(aCase.getHearingId());
         }
-        return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
-                .map(existing -> CaseMapper.merge(aCase, existing))
-                .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
+        return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo());
     }
 
     public void saveCourtCase(CourtCase courtCase) {
         CourtCase updatedCase = courtCase;
         // New LIBRA cases will have no case or defendant ID and we need to assign
-        if (courtCase.getSource() == DataSource.LIBRA  && courtCase.getCaseId() == null) {
+        if (courtCase.getSource() == DataSource.LIBRA && courtCase.getCaseId() == null) {
             updatedCase = assignUuids(courtCase);
         }
 
