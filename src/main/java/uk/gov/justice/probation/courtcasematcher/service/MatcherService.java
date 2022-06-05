@@ -17,16 +17,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class MatcherService {
 
-    @Autowired
     private final OffenderSearchRestClient offenderSearchRestClient;
 
-    @Autowired
     private final MatchRequest.Factory matchRequestFactory;
-    @Autowired
+
     private TelemetryService telemetryService;
 
     public Mono<CourtCase> matchDefendants(CourtCase courtCase) {

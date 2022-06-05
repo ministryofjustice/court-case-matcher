@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -19,10 +20,7 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,18 +56,19 @@ class CourtCaseProcessorTest {
                         .courtCode("SHF")
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
                         .type(PERSON)
                         .build()))
                 .build();
-        var updatedCourtCase = CourtCase.builder().build();
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
-        when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(updatedCourtCase));
+
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.empty());
+        when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
 
-        verify(courtCaseService).saveCourtCase(eq(updatedCourtCase));
+        verify(courtCaseService).saveCourtCase(eq(courtCase));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
@@ -86,15 +85,22 @@ class CourtCaseProcessorTest {
                         .crn("X320741")
                         .build()))
                 .build();
-        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
-        when(courtCaseService.updateProbationStatusDetail(courtCase)).thenReturn(Mono.just(courtCase));
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .crn("X320741")
+                        .build()))
+                .build();
+        var courtCaseMerged = CaseMapper.merge(courtCase, existingCourtCase);
+        when(courtCaseService.getCourtCase(any(CourtCase.class))).thenReturn(Mono.just(existingCourtCase));
+        when(courtCaseService.updateProbationStatusDetail(courtCaseMerged)).thenReturn(Mono.just(courtCaseMerged));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
         verify(courtCaseService).getCourtCase(any(CourtCase.class));
-        verify(courtCaseService).updateProbationStatusDetail(eq(courtCase));
-        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCase));
+        verify(courtCaseService).updateProbationStatusDetail(eq(courtCaseMerged));
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCaseMerged));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 

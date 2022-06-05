@@ -1,12 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.With;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
