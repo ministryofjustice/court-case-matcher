@@ -89,7 +89,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
 
     private Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
         return Mono.justOrEmpty(offenderMatches)
-            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, caseId, defendantId), CCSGroupedOffenderMatchesRequest.of(matches)))
+            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, defendantId), CCSGroupedOffenderMatchesRequest.of(matches)))
             .flatMap(tuple2 -> restHelper.postObject(tuple2.getT1(), tuple2.getT2(), CCSGroupedOffenderMatchesRequest.class)
                 .retrieve()
                 .toBodilessEntity()
