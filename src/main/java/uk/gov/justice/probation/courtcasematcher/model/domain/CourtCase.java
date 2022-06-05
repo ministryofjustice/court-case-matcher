@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
