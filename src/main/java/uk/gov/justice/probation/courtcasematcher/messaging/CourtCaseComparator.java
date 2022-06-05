@@ -1,24 +1,38 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import uk.gov.justice.probation.courtcasematcher.model.domain.*;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import static java.util.Comparator.*;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
 
 public class CourtCaseComparator {
 
     static final Comparator<CourtCase> caseComparator = Comparator.nullsFirst(comparing(CourtCase::getUrn, nullsFirst(naturalOrder())));
     static final Comparator<Defendant> defendantComparator = Comparator.nullsFirst(comparing(Defendant::getCrn, nullsFirst(naturalOrder()))
-
             .thenComparing(Defendant::getCro, nullsFirst(naturalOrder()))
             .thenComparing(Defendant::getDateOfBirth, nullsFirst(naturalOrder()))
             .thenComparing(d -> d.getAddress().getLine1(), nullsFirst(naturalOrder()))
             .thenComparing(d -> d.getAddress().getLine2(), nullsFirst(naturalOrder()))
-    ); //TODO add more fields
+            .thenComparing(d -> d.getAddress().getLine3(), nullsFirst(naturalOrder()))
+            .thenComparing(d -> d.getAddress().getLine4(), nullsFirst(naturalOrder()))
+            .thenComparing(d -> d.getAddress().getLine5(), nullsFirst(naturalOrder()))
+            .thenComparing(d -> d.getAddress().getPostcode(), nullsFirst(naturalOrder())));
+
+    static final Comparator<Offence> offenceComparator = Comparator.nullsFirst(comparing(Offence::getOffenceTitle, nullsFirst(naturalOrder()))
+            .thenComparing(Offence::getOffenceSummary, nullsFirst(naturalOrder()))
+            .thenComparing(Offence::getAct, nullsFirst(naturalOrder()))
+            .thenComparing(Offence::getSequenceNumber, nullsFirst(naturalOrder()))
+            .thenComparing(Offence::getListNo, nullsFirst(naturalOrder())));
+
     static final Comparator<HearingDay> hearingDayComparator = Comparator.nullsFirst(comparing(HearingDay::getCourtCode, nullsFirst(naturalOrder()))
             .thenComparing(HearingDay::getCourtRoom, nullsFirst(naturalOrder()))
             .thenComparing(HearingDay::getListNo, nullsFirst(naturalOrder()))
@@ -47,8 +61,16 @@ public class CourtCaseComparator {
         return areNotEqualIgnoringOrder(hearingDays, hearingDaysToCompare, hearingDayComparator);
     }
 
+    private static boolean hasDefendantOffencesChanged(List<Offence> offences, List<Offence> offencesToCompare) {
+        return areNotEqualIgnoringOrder(offences, offencesToCompare, offenceComparator);
+    }
+
     private static <T> boolean areNotEqualIgnoringOrder(List<T> list1, List<T> list2, Comparator<? super T> comparator) {
 
+        // if either of them is null
+        if (list1 == null || list2 == null) {
+            return true;
+        }
         // if not the same size, lists has addition or deletion
         if (list1.size() != list2.size()) {
             return true;
