@@ -58,14 +58,9 @@ public class IncomingCourtCaseComparator {
     }
 
     private static boolean hasDefendantOffencesChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
-        for (Defendant defendantReceived : Collections.unmodifiableList(defendants)) {
-            for (Defendant existingDefendant : Collections.unmodifiableList(defendantsToCompare)) {
-                if (areNotEqualIgnoringOrder(defendantReceived.getOffences(), existingDefendant.getOffences(), offenceComparator)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return Collections.unmodifiableList(defendants).stream()
+                .anyMatch(defendantReceived -> Collections.unmodifiableList(defendantsToCompare).stream()
+                        .anyMatch(existingDefendant -> areNotEqualIgnoringOrder(defendantReceived.getOffences(), existingDefendant.getOffences(), offenceComparator)));
     }
 
     private static <T> boolean areNotEqualIgnoringOrder(List<T> list1, List<T> list2, Comparator<? super T> comparator) {
