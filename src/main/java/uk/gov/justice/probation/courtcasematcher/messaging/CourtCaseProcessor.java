@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.util.StringUtils;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
@@ -47,7 +45,7 @@ public class CourtCaseProcessor {
 
     private void matchAndSaveCase(CourtCase courtCaseReceived, String messageId) {
         telemetryService.trackCourtCaseEvent(courtCaseReceived, messageId);
-        final var existingCourtCase = courtCaseService.getCourtCase(courtCaseReceived)
+        final var existingCourtCase = courtCaseService.findCourtCase(courtCaseReceived)
                 .block();
         if (isNull(existingCourtCase)) {
             applyMatchesAndSave(courtCaseReceived);
