@@ -5,27 +5,22 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
+import static java.util.Objects.isNull;
 
-public class CourtCaseComparator {
+public class IncomingCourtCaseComparator {
     static final Comparator<CourtCase> caseComparator = Comparator.nullsFirst(comparing(CourtCase::getUrn, nullsFirst(naturalOrder())));
     static final Comparator<Defendant> defendantComparator = Comparator.nullsFirst(comparing(Defendant::getCrn, nullsFirst(naturalOrder()))
             .thenComparing(Defendant::getCro, nullsFirst(naturalOrder()))
             .thenComparing(Defendant::getDateOfBirth, nullsFirst(naturalOrder()))
-            .thenComparing(d -> d.getAddress().getLine1(), nullsFirst(naturalOrder()))
-            .thenComparing(d -> d.getAddress().getLine2(), nullsFirst(naturalOrder()))
-            .thenComparing(d -> d.getAddress().getLine3(), nullsFirst(naturalOrder()))
-            .thenComparing(d -> d.getAddress().getLine4(), nullsFirst(naturalOrder()))
-            .thenComparing(d -> d.getAddress().getLine5(), nullsFirst(naturalOrder()))
-            .thenComparing(d -> d.getAddress().getPostcode(), nullsFirst(naturalOrder())));
+            .thenComparing(Defendant::getAddress, nullsFirst(naturalOrder())));
 
     static final Comparator<Offence> offenceComparator = Comparator.nullsFirst(comparing(Offence::getOffenceTitle, nullsFirst(naturalOrder()))
             .thenComparing(Offence::getOffenceSummary, nullsFirst(naturalOrder()))
@@ -65,10 +60,8 @@ public class CourtCaseComparator {
     private static boolean hasDefendantOffencesChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
         for (Defendant defendantReceived : Collections.unmodifiableList(defendants)) {
             for (Defendant existingDefendant : Collections.unmodifiableList(defendantsToCompare)) {
-                if (defendantReceived.getDefendantId().equals(existingDefendant.getDefendantId())) {
-                    if (areNotEqualIgnoringOrder(defendantReceived.getOffences(), existingDefendant.getOffences(), offenceComparator)) {
-                        return true;
-                    }
+                if (areNotEqualIgnoringOrder(defendantReceived.getOffences(), existingDefendant.getOffences(), offenceComparator)) {
+                    return true;
                 }
             }
         }
@@ -77,34 +70,23 @@ public class CourtCaseComparator {
 
     private static <T> boolean areNotEqualIgnoringOrder(List<T> list1, List<T> list2, Comparator<? super T> comparator) {
 
-        // if either of them is null
-        if ((list1 != null && list2 == null) || (list1 == null && list2 != null)) {
+        // if both are null, nothing has changed
+        if (isNull(list1) && isNull(list2)) {
+            return false;
+        }
+
+        // if any of them is null, then something has changed
+        if (isNull(list1) != isNull(list2)) {
             return true;
         }
         // if not the same size, lists has addition or deletion
         if (list1.size() != list2.size()) {
             return true;
         }
-
-        //to avoid modifying the original lists
-        List<T> copy1 = new ArrayList<>(list1);
-        List<T> copy2 = new ArrayList<>(list2);
-
-        copy1.sort(comparator);
-        copy2.sort(comparator);
-
         // iterate through the elements and compare them one by one using
         // the provided comparator.
-        Iterator<T> it1 = copy1.iterator();
-        Iterator<T> it2 = copy2.iterator();
-        while (it1.hasNext()) {
-            T t1 = it1.next();
-            T t2 = it2.next();
-            if (comparator.compare(t1, t2) != 0) {
-                // as soon as a difference is found, stop looping
-                return true;
-            }
-        }
-        return false;
+        return IntStream
+                .range(0, list1.size())
+                .anyMatch(i -> comparator.compare(list1.get(i), list2.get(i)) != 0);
     }
 }

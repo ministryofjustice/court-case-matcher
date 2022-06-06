@@ -15,8 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-import static java.util.Objects.isNull;
-import static uk.gov.justice.probation.courtcasematcher.messaging.CourtCaseComparator.hasCourtCaseChanged;
+import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingCourtCaseComparator.hasCourtCaseChanged;
 
 @AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
@@ -34,28 +33,33 @@ public class CourtCaseProcessor {
     @NonNull
     private final MatcherService matcherService;
 
-    public void process(CourtCase courtCaseReceived, String messageId) {
+    public void process(CourtCase receivedCourtCase, String messageId) {
         try {
-            matchAndSaveCase(courtCaseReceived, messageId);
+            matchAndSaveCase(receivedCourtCase, messageId);
         } catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
-    private void matchAndSaveCase(CourtCase courtCaseReceived, String messageId) {
-        telemetryService.trackCourtCaseEvent(courtCaseReceived, messageId);
-        final var existingCourtCase = courtCaseService.findCourtCase(courtCaseReceived)
-                .block();
-        if (isNull(existingCourtCase)) {
-            applyMatchesAndSave(courtCaseReceived);
-        } else if (hasCourtCaseChanged(courtCaseReceived, existingCourtCase)) {
-            var courtCaseMerged = CaseMapper.merge(courtCaseReceived, existingCourtCase);
-            updateAndSave(courtCaseMerged);
-        } else {
-            //TODO implement correct telemetryService
-           // telemetryService.trackCourtCaseEvent(courtCaseReceived, messageId);
-        }
+    private void matchAndSaveCase(CourtCase receivedCourtCase, String messageId) {
+        telemetryService.trackCourtCaseEvent(receivedCourtCase, messageId);
+
+        courtCaseService.findCourtCase(receivedCourtCase)
+                .blockOptional()
+                .ifPresentOrElse(
+                        existingCourtCase -> {
+                            if (hasCourtCaseChanged(receivedCourtCase, existingCourtCase)) {
+                                mergeAndUpdateExistingCase(receivedCourtCase, existingCourtCase);
+                            }  //TODO telemetry
+                        },
+                        () -> applyMatchesAndSave(receivedCourtCase)
+                );
+    }
+
+    private void mergeAndUpdateExistingCase(CourtCase receivedCourtCase, CourtCase existingCourtCase) {
+        var courtCaseMerged = CaseMapper.merge(receivedCourtCase, existingCourtCase);
+        updateAndSave(courtCaseMerged);
     }
 
 
