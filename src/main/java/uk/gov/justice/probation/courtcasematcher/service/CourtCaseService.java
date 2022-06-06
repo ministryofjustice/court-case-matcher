@@ -29,7 +29,7 @@ public class CourtCaseService {
 
     private OffenderSearchRestClient offenderSearchRestClient;
 
-    public Mono<CourtCase> getCourtCase(CourtCase aCase) {
+    public Mono<CourtCase> findCourtCase(CourtCase aCase) {
         if (aCase.getSource() == DataSource.COMMON_PLATFORM) {
             return courtCaseRepository.getCourtCase(aCase.getHearingId());
         }

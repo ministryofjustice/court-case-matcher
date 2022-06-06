@@ -164,7 +164,7 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
+        final var updatedCourtCase = courtCaseService.findCourtCase(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
@@ -188,7 +188,7 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(HEARING_ID)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
+        final var updatedCourtCase = courtCaseService.findCourtCase(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
         verify(courtCaseRepo).getCourtCase(HEARING_ID);
@@ -202,7 +202,7 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
 
-        final var newCourtCase = courtCaseService.getCourtCase(aCase).block();
+        final var newCourtCase = courtCaseService.findCourtCase(aCase).block();
 
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
         assertThat(newCourtCase).isNull();
