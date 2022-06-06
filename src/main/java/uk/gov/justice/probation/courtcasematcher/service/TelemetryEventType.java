@@ -8,7 +8,11 @@ public enum TelemetryEventType {
     COURT_CASE_MESSAGE_RECEIVED("PiCCourtCaseMessageReceived"),
     COURT_LIST_RECEIVED("PiCCourtListReceived"),
     COURT_LIST_MESSAGE_RECEIVED("PiCCourtListMessageReceived"),
-    COURT_CASE_RECEIVED("PiCCourtCaseReceived")
+    COURT_CASE_RECEIVED("PiCCourtCaseReceived"),
+
+    HEARING_CHANGED("PiCHearingChanged"),
+
+    HEARING_UNCHANGED("PiCHearingUnchanged")
     ;
 
     final String eventName;

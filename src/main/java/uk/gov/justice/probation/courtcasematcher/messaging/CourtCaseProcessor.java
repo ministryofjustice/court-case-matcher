@@ -43,7 +43,6 @@ public class CourtCaseProcessor {
     }
 
     private void matchAndSaveCase(CourtCase receivedCourtCase, String messageId) {
-        telemetryService.trackCourtCaseEvent(receivedCourtCase, messageId);
 
         courtCaseService.findCourtCase(receivedCourtCase)
                 .blockOptional()
@@ -51,9 +50,15 @@ public class CourtCaseProcessor {
                         existingCourtCase -> {
                             if (hasCourtCaseChanged(receivedCourtCase, existingCourtCase)) {
                                 mergeAndUpdateExistingCase(receivedCourtCase, existingCourtCase);
-                            }  //TODO telemetry
+                                telemetryService.trackHearingChangedEvent(receivedCourtCase);
+                            } else {
+                                telemetryService.trackHearingUnChangedEvent(receivedCourtCase);
+                            }
                         },
-                        () -> applyMatchesAndSave(receivedCourtCase)
+                        () -> {
+                            applyMatchesAndSave(receivedCourtCase);
+                            telemetryService.trackCourtCaseEvent(receivedCourtCase, messageId);
+                        }
                 );
     }
 
