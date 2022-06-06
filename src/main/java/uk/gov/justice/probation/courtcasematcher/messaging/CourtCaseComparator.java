@@ -6,6 +6,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +42,8 @@ public class CourtCaseComparator {
     public static boolean hasCourtCaseChanged(CourtCase courtCase, CourtCase courtCaseToCompare) {
 
         if (hasHearingDaysChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
-                hasDefendantsChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
+                hasDefendantsChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants()) ||
+                hasDefendantOffencesChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
             return true;
         }
 
@@ -60,8 +62,17 @@ public class CourtCaseComparator {
         return areNotEqualIgnoringOrder(hearingDays, hearingDaysToCompare, hearingDayComparator);
     }
 
-    private static boolean hasDefendantOffencesChanged(List<Offence> offences, List<Offence> offencesToCompare) {
-        return areNotEqualIgnoringOrder(offences, offencesToCompare, offenceComparator);
+    private static boolean hasDefendantOffencesChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
+        for (Defendant defendantReceived : Collections.unmodifiableList(defendants)) {
+            for (Defendant existingDefendant : Collections.unmodifiableList(defendantsToCompare)) {
+                if (defendantReceived.getDefendantId().equals(existingDefendant.getDefendantId())) {
+                    if (areNotEqualIgnoringOrder(defendantReceived.getOffences(), existingDefendant.getOffences(), offenceComparator)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static <T> boolean areNotEqualIgnoringOrder(List<T> list1, List<T> list2, Comparator<? super T> comparator) {
