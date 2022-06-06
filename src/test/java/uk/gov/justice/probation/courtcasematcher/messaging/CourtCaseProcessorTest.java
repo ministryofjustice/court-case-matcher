@@ -73,7 +73,7 @@ class CourtCaseProcessorTest {
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
-    @DisplayName("Receive a case which does not need matching, then update detail and save")
+    @DisplayName("Receive a case which has changed, then update detail and save")
     @Test
     void whenValidMessageReceivedForMatchedCase_ThenUpdateAndSave() {
         var courtCase = CourtCase.builder()
@@ -97,10 +97,34 @@ class CourtCaseProcessorTest {
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
+        verify(telemetryService).trackHearingChangedEvent(any(CourtCase.class));
         verify(courtCaseService).findCourtCase(any(CourtCase.class));
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCaseMerged));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCaseMerged));
+        verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
+    }
+
+    @DisplayName("Receive a case which has not changed, then just tack un changed event")
+    @Test
+    void whenValidMessageReceivedWithNoCaseChange_ThenJustTrackEvent() {
+        var courtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .crn("X320741")
+                        .build()))
+                .build();
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .crn("X320741")
+                        .build()))
+                .build();
+        when(courtCaseService.findCourtCase(any(CourtCase.class))).thenReturn(Mono.just(existingCourtCase));
+
+        messageProcessor.process(courtCase, MESSAGE_ID);
+
+        verify(telemetryService).trackHearingUnChangedEvent(any(CourtCase.class));
+        verify(courtCaseService).findCourtCase(any(CourtCase.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 

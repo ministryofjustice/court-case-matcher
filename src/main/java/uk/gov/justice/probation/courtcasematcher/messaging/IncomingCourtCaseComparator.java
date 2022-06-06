@@ -17,6 +17,7 @@ import static java.util.Objects.isNull;
 
 public class IncomingCourtCaseComparator {
     static final Comparator<CourtCase> caseComparator = Comparator.nullsFirst(comparing(CourtCase::getUrn, nullsFirst(naturalOrder())));
+
     static final Comparator<Defendant> defendantComparator = Comparator.nullsFirst(comparing(Defendant::getCrn, nullsFirst(naturalOrder()))
             .thenComparing(Defendant::getCro, nullsFirst(naturalOrder()))
             .thenComparing(Defendant::getDateOfBirth, nullsFirst(naturalOrder()))
