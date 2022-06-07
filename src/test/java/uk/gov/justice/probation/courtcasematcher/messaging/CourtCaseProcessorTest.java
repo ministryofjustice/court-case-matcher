@@ -104,7 +104,7 @@ class CourtCaseProcessorTest {
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 
-    @DisplayName("Receive a case which has not changed, then just tack un changed event")
+    @DisplayName("Receive a case which has not changed, then just track un changed event")
     @Test
     void whenValidMessageReceivedWithNoCaseChange_ThenJustTrackEvent() {
         var courtCase = CourtCase.builder()
