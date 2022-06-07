@@ -37,7 +37,19 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.*;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_ID_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_NO_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_CODE_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_ROOM_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CRNS_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_DATE_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_ID_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHED_BY_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHES_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNC_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SOURCE_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SQS_MESSAGE_ID_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.URN_KEY;
 
 @DisplayName("Exercise TelemetryService")
 @ExtendWith(MockitoExtension.class)
