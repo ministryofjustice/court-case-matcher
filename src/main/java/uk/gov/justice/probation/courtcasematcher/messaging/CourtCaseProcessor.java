@@ -49,15 +49,15 @@ public class CourtCaseProcessor {
                 .ifPresentOrElse(
                         existingCourtCase -> {
                             if (hasCourtCaseChanged(receivedCourtCase, existingCourtCase)) {
-                                mergeAndUpdateExistingCase(receivedCourtCase, existingCourtCase);
                                 telemetryService.trackHearingChangedEvent(receivedCourtCase);
+                                mergeAndUpdateExistingCase(receivedCourtCase, existingCourtCase);
                             } else {
                                 telemetryService.trackHearingUnChangedEvent(receivedCourtCase);
                             }
                         },
                         () -> {
-                            applyMatchesAndSave(receivedCourtCase);
                             telemetryService.trackCourtCaseEvent(receivedCourtCase, messageId);
+                            applyMatchesAndSave(receivedCourtCase);
                         }
                 );
     }
