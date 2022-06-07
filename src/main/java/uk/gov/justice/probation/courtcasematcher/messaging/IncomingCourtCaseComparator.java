@@ -1,11 +1,11 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -16,12 +16,19 @@ import static java.util.Comparator.nullsFirst;
 import static java.util.Objects.isNull;
 
 public class IncomingCourtCaseComparator {
+
     static final Comparator<CourtCase> caseComparator = Comparator.nullsFirst(comparing(CourtCase::getUrn, nullsFirst(naturalOrder())));
 
     static final Comparator<Defendant> defendantComparator = Comparator.nullsFirst(comparing(Defendant::getCrn, nullsFirst(naturalOrder()))
             .thenComparing(Defendant::getCro, nullsFirst(naturalOrder()))
-            .thenComparing(Defendant::getDateOfBirth, nullsFirst(naturalOrder()))
-            .thenComparing(Defendant::getAddress, nullsFirst(naturalOrder())));
+            .thenComparing(Defendant::getDateOfBirth, nullsFirst(naturalOrder())));
+
+    static final Comparator<Address> addressComparator = Comparator.nullsFirst(comparing(Address::getLine1, nullsFirst(naturalOrder()))
+            .thenComparing(Address::getLine2, nullsFirst(naturalOrder()))
+            .thenComparing(Address::getLine3, nullsFirst(naturalOrder()))
+            .thenComparing(Address::getLine4, nullsFirst(naturalOrder()))
+            .thenComparing(Address::getLine5, nullsFirst(naturalOrder()))
+            .thenComparing(Address::getPostcode, nullsFirst(naturalOrder())));
 
     static final Comparator<Offence> offenceComparator = Comparator.nullsFirst(comparing(Offence::getOffenceTitle, nullsFirst(naturalOrder()))
             .thenComparing(Offence::getOffenceSummary, nullsFirst(naturalOrder()))
@@ -39,6 +46,7 @@ public class IncomingCourtCaseComparator {
 
         if (hasHearingDaysChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
                 hasDefendantsChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants()) ||
+                hasDefendantAddressChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants()) ||
                 hasDefendantOffencesChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
             return true;
         }
@@ -59,9 +67,15 @@ public class IncomingCourtCaseComparator {
     }
 
     private static boolean hasDefendantOffencesChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
-        return Collections.unmodifiableList(defendants).stream()
-                .anyMatch(defendantReceived -> Collections.unmodifiableList(defendantsToCompare).stream()
+        return defendants.stream()
+                .anyMatch(defendantReceived -> defendantsToCompare.stream()
                         .anyMatch(existingDefendant -> areNotEqualIgnoringOrder(defendantReceived.getOffences(), existingDefendant.getOffences(), offenceComparator)));
+    }
+
+    private static boolean hasDefendantAddressChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {
+        return defendants.stream()
+                .anyMatch(defendantReceived -> defendantsToCompare.stream()
+                        .anyMatch(existingDefendant -> addressComparator.compare(defendantReceived.getAddress(), existingDefendant.getAddress()) != 0));
     }
 
     private static <T> boolean areNotEqualIgnoringOrder(List<T> list1, List<T> list2, Comparator<? super T> comparator) {
