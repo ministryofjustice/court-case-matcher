@@ -8,12 +8,16 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
+import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.ORGANISATION;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,9 +87,9 @@ class IncomingCourtCaseComparatorTest {
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
-                                .address(Address.builder()
-                                        .postcode("Cf23 4as")
-                                        .build())
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
                         .build()))
                 .build();
 
@@ -153,6 +157,182 @@ class IncomingCourtCaseComparatorTest {
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
+    @DisplayName("Received case has a defendant with different pnc")
+    @Test
+    void givenReceivedCourtCaseContainsDefendantWithDifferentPnc_ThenReturnTrue() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .pnc("PNC1")
+                        .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .pnc("PNC")
+                        .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
+    @DisplayName("Received case has defendant name changed")
+    @Test
+    void givenReceivedCourtCaseContainsDefendantWithDifferentName_ThenReturnTrue() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .name(Name.builder()
+                                .forename1("forename1")
+                                .surname("surnameOther")
+                                .build())
+                        .cro("CRO")
+                        .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .name(Name.builder()
+                                .forename1("forename1")
+                                .surname("surname1")
+                                .build())
+                        .cro("CRO")
+                        .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
+    @DisplayName("Received case has a defendant with different phone number")
+    @Test
+    void givenReceivedCourtCaseContainsDefendantWithDifferentPhoneNumber_ThenReturnTrue() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .phoneNumber(PhoneNumber.builder()
+                                .mobile("07564328988")
+                                .build())
+                        .cro("CRO")
+                        .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .phoneNumber(PhoneNumber.builder()
+                                .mobile("07564328999")
+                                .build())
+                        .cro("CRO")
+                        .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
+    @DisplayName("Received case has a defendant with different DOB")
+    @Test
+    void givenReceivedCourtCaseContainsDefendantWithDifferentDob_ThenReturnTrue() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .dateOfBirth(LocalDate.of(1984, 1, 1))
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .dateOfBirth(LocalDate.of(1985, 1, 1))
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
+    @DisplayName("Received case has a defendant with different type")
+    @Test
+    void givenReceivedCourtCaseContainsDefendantWithDifferentType_ThenReturnTrue() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(ORGANISATION)
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
+    @DisplayName("Received case has a defendant with different sex")
+    @Test
+    void givenReceivedCourtCaseContainsDefendantWithDifferentSex_ThenReturnTrue() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .sex("MALE")
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .sex("FEMALE")
                         .address(Address.builder()
                                 .postcode("Cf23 4as")
                                 .build())
