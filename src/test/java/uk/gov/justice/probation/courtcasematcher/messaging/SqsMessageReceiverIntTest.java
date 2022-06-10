@@ -121,7 +121,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
+        verify(telemetryService).trackHearingChangedEvent(any(CourtCase.class));
         verify(telemetryService, never()).trackOffenderMatchEvent(any(Defendant.class), any(CourtCase.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
@@ -237,7 +237,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
+        verify(telemetryService).trackHearingChangedEvent(any(CourtCase.class));
         verifyNoMoreInteractions(telemetryService);
     }
 

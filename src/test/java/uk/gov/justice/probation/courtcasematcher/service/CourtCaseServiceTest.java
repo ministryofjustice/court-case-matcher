@@ -145,9 +145,9 @@ class CourtCaseServiceTest {
         verifyNoMoreInteractions(courtCaseRepo);
     }
 
-    @DisplayName("Incoming Libra case which is merged with the existing.")
+    @DisplayName("Incoming Libra case returned if exist")
     @Test
-    void givenExistingLibraCase_whenGetCourtCase_thenMergeAndReturn() {
+    void givenExistingLibraCase_whenGetCourtCase_thenReturn() {
         final var aCase = buildCaseNoMatches()
                 .withSource(DataSource.LIBRA);
 
@@ -164,15 +164,15 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
+        final var updatedCourtCase = courtCaseService.findCourtCase(aCase).block();
 
-        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
+        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
     }
 
-    @DisplayName("Incoming Common Platform case which is merged with the existing.")
+    @DisplayName("Incoming Common Platform case returned if exist")
     @Test
-    void givenExistingCommonPlatformCase_whenGetCourtCase_thenMergeAndReturn() {
+    void givenExistingCommonPlatformCase_whenGetCourtCase_thenReturn() {
         final var aCase = buildCaseNoMatches();
 
         final var courtCase = CourtCase.builder()
@@ -188,25 +188,24 @@ class CourtCaseServiceTest {
 
         when(courtCaseRepo.getCourtCase(HEARING_ID)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.getCourtCase(aCase).block();
+        final var updatedCourtCase = courtCaseService.findCourtCase(aCase).block();
 
-        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo(COURT_ROOM);
+        assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
         verify(courtCaseRepo).getCourtCase(HEARING_ID);
     }
 
-    @DisplayName("Get court case which is new, return a transformed copy.")
+    @DisplayName("Get court case which is new, return a null")
     @Test
-    void givenNewCase_whenGetCourtCase_thenReturn() {
+    void givenNewCase_whenGetCourtCase_thenReturnNull() {
         var aCase = buildCaseNoMatches()
                 .withSource(DataSource.LIBRA);
 
         when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
 
-        final var newCourtCase = courtCaseService.getCourtCase(aCase).block();
+        final var newCourtCase = courtCaseService.findCourtCase(aCase).block();
 
-        assertThat(newCourtCase.getCourtCode()).isSameAs(COURT_CODE);
-        assertThat(newCourtCase.getCaseNo()).isSameAs(CASE_NO);
         verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
+        assertThat(newCourtCase).isNull();
     }
 
 

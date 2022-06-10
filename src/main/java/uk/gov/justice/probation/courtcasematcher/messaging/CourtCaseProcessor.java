@@ -10,53 +10,65 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-@AllArgsConstructor
+import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingCourtCaseComparator.hasCourtCaseChanged;
+
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Service
 @Qualifier("caseMessageProcessor")
 @Slf4j
 public class CourtCaseProcessor {
 
-    @Autowired
     @NonNull
     private final TelemetryService telemetryService;
 
-    @Autowired
     @NonNull
     private final CourtCaseService courtCaseService;
 
-    @Autowired
     @NonNull
     private final MatcherService matcherService;
 
-    public void process(CourtCase courtCase, String messageId) {
+    public void process(CourtCase receivedCourtCase, String messageId) {
         try {
-            matchAndSaveCase(courtCase, messageId);
-        }
-        catch (Exception ex) {
+            matchAndSaveCase(receivedCourtCase, messageId);
+        } catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
-    private void matchAndSaveCase(CourtCase aCase, String messageId) {
-        telemetryService.trackCourtCaseEvent(aCase, messageId);
-        final var courtCase = courtCaseService.getCourtCase(aCase)
-                .block();
-        if (courtCase.shouldMatchToOffender()) {
-            applyMatches(courtCase);
-        }
-        else {
-            updateAndSave(courtCase);
-        }
+    private void matchAndSaveCase(CourtCase receivedCourtCase, String messageId) {
+
+        courtCaseService.findCourtCase(receivedCourtCase)
+                .blockOptional()
+                .ifPresentOrElse(
+                        existingCourtCase -> {
+                            if (hasCourtCaseChanged(receivedCourtCase, existingCourtCase)) {
+                                telemetryService.trackHearingChangedEvent(receivedCourtCase);
+                                mergeAndUpdateExistingCase(receivedCourtCase, existingCourtCase);
+                            } else {
+                                telemetryService.trackHearingUnChangedEvent(receivedCourtCase);
+                            }
+                        },
+                        () -> {
+                            telemetryService.trackCourtCaseEvent(receivedCourtCase, messageId);
+                            applyMatchesAndSave(receivedCourtCase);
+                        }
+                );
+    }
+
+    private void mergeAndUpdateExistingCase(CourtCase receivedCourtCase, CourtCase existingCourtCase) {
+        var courtCaseMerged = CaseMapper.merge(receivedCourtCase, existingCourtCase);
+        updateAndSave(courtCaseMerged);
     }
 
 
-    private void applyMatches(final CourtCase courtCase) {
+    private void applyMatchesAndSave(final CourtCase courtCase) {
         matcherService.matchDefendants(courtCase)
                 .onErrorReturn(courtCase)
                 .doOnSuccess(courtCaseService::saveCourtCase)

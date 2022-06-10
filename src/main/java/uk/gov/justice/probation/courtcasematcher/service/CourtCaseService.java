@@ -19,32 +19,27 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor
 public class CourtCaseService {
 
-    @Autowired
+
     @Qualifier("court-case-rest-client")
     private CourtCaseRepository courtCaseRepository;
 
-    @Autowired
     private OffenderSearchRestClient offenderSearchRestClient;
 
-    public Mono<CourtCase> getCourtCase(CourtCase aCase) {
+    public Mono<CourtCase> findCourtCase(CourtCase aCase) {
         if (aCase.getSource() == DataSource.COMMON_PLATFORM) {
-            return courtCaseRepository.getCourtCase(aCase.getHearingId())
-                    .map(existing -> CaseMapper.merge(aCase, existing))
-                    .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
+            return courtCaseRepository.getCourtCase(aCase.getHearingId());
         }
-        return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo())
-                .map(existing -> CaseMapper.merge(aCase, existing))
-                .switchIfEmpty(Mono.defer(() -> Mono.just(aCase)));
+        return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo());
     }
 
     public void saveCourtCase(CourtCase courtCase) {
         CourtCase updatedCase = courtCase;
         // New LIBRA cases will have no case or defendant ID and we need to assign
-        if (courtCase.getSource() == DataSource.LIBRA  && courtCase.getCaseId() == null) {
+        if (courtCase.getSource() == DataSource.LIBRA && courtCase.getCaseId() == null) {
             updatedCase = assignUuids(courtCase);
         }
 

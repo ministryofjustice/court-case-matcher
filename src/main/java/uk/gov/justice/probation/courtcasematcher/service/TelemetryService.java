@@ -31,6 +31,10 @@ public class TelemetryService {
     static final String CRNS_KEY = "crns";
     static final String HEARING_DATE_KEY = "hearingDate";
     static final String SQS_MESSAGE_ID_KEY = "sqsMessageId";
+    static final String URN_KEY = "urn";
+
+    static final String HEARING_ID_KEY = "hearingId";
+
 
     private final TelemetryClient telemetryClient;
 
@@ -98,6 +102,40 @@ public class TelemetryService {
                 .ifPresent((source) -> properties.put(SOURCE_KEY, source.name()));
 
         telemetryClient.trackEvent(TelemetryEventType.COURT_CASE_RECEIVED.eventName, properties, Collections.emptyMap());
+    }
+
+    public void trackHearingChangedEvent(CourtCase courtCase) {
+
+        Map<String, String> properties = new HashMap<>(5);
+        ofNullable(courtCase.getCourtCode())
+                .ifPresent((code) -> properties.put(COURT_CODE_KEY, code));
+        ofNullable(courtCase.getDateOfHearing())
+                .ifPresent((dateOfHearing) -> properties.put(HEARING_DATE_KEY, dateOfHearing.toString()));
+        ofNullable(courtCase.getUrn())
+                .ifPresent((urn) -> properties.put(URN_KEY, urn));
+        ofNullable(courtCase.getHearingId())
+                .ifPresent((hearingId) -> properties.put(HEARING_ID_KEY, hearingId));
+        ofNullable(courtCase.getSource())
+                .ifPresent((source) -> properties.put(SOURCE_KEY, source.name()));
+
+        telemetryClient.trackEvent(TelemetryEventType.HEARING_CHANGED.eventName, properties, Collections.emptyMap());
+    }
+
+    public void trackHearingUnChangedEvent(CourtCase courtCase) {
+
+        Map<String, String> properties = new HashMap<>(5);
+        ofNullable(courtCase.getCourtCode())
+                .ifPresent((code) -> properties.put(COURT_CODE_KEY, code));
+        ofNullable(courtCase.getDateOfHearing())
+                .ifPresent((dateOfHearing) -> properties.put(HEARING_DATE_KEY, dateOfHearing.toString()));
+        ofNullable(courtCase.getUrn())
+                .ifPresent((urn) -> properties.put(URN_KEY, urn));
+        ofNullable(courtCase.getHearingId())
+                .ifPresent((hearingId) -> properties.put(HEARING_ID_KEY, hearingId));
+        ofNullable(courtCase.getSource())
+                .ifPresent((source) -> properties.put(SOURCE_KEY, source.name()));
+
+        telemetryClient.trackEvent(TelemetryEventType.HEARING_UNCHANGED.eventName, properties, Collections.emptyMap());
     }
 
     private Map<String, String> getCourtCaseProperties(CourtCase courtCase) {
