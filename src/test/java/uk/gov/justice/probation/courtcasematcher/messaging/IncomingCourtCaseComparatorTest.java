@@ -87,9 +87,9 @@ class IncomingCourtCaseComparatorTest {
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
-                        .address(Address.builder()
-                                .postcode("Cf23 4as")
-                                .build())
+                                .address(Address.builder()
+                                        .postcode("Cf23 4as")
+                                        .build())
                         .build()))
                 .build();
 
@@ -369,5 +369,4 @@ class IncomingCourtCaseComparatorTest {
 
         assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
     }
-
 }
