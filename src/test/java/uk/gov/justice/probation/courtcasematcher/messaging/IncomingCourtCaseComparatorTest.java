@@ -342,4 +342,32 @@ class IncomingCourtCaseComparatorTest {
         assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
     }
 
+    @DisplayName("Received case contains defendant with different CRO")
+    @Test
+    void givenReceivedCourtCaseContainsDefendantWithDifferentCRO_ThenReturnTrue() {
+        var defendant1 = Defendant.builder()
+                .cro("CRO")
+                .type(PERSON)
+                .build();
+        var defendantWithDifferentCRO = Defendant.builder()
+                .cro("CRO-another")
+                .type(PERSON)
+                .build();
+        var courtCaseReceived = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("SHF")
+                        .build()))
+                .defendants(Collections.singletonList(defendantWithDifferentCRO))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("SHF")
+                        .build()))
+                .defendants(Collections.singletonList(defendant1))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
 }
