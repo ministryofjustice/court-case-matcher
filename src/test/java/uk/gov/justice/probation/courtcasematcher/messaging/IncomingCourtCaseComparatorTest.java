@@ -369,4 +369,32 @@ class IncomingCourtCaseComparatorTest {
 
         assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
     }
+
+    @DisplayName("Existing case has a defendant with normalised sex string")
+    @Test
+    void givenExistingCourtCaseContainsDefendantWithUnNormalisedSexString_ThenReturnFalse() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .sex("MALE")
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .sex("M")
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertFalse(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
 }

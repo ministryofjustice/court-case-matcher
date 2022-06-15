@@ -17,16 +17,7 @@ public enum Sex {
         this.name = sex;
     }
 
-    /**
-     * Common platform defines this enum
-     *       "enum": [
-     *         "MALE",
-     *         "FEMALE",
-     *         "NOT_KNOWN",
-     *         "NOT_SPECIFIED"
-     *       ]
-     */
-    public static Sex fromString(final String sex) {
+    public static Sex getNormalisedSex(final String sex) {
 
         switch (Optional.ofNullable(sex).map(s -> s.trim().toUpperCase()).orElse(NOT_KNOWN.name())) {
             case "MALE", "M" -> { return Sex.MALE; }

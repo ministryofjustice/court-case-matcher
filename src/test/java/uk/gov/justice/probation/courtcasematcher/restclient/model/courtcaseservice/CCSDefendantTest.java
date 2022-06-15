@@ -59,7 +59,7 @@ class CCSDefendantTest {
                 .withCro("CRO")
                 .withPreSentenceActivity(true)
                 .withPreviouslyKnownTerminationDate(LocalDate.of(2021, 10, 5))
-                .withSex("MALE")
+                .withSex("M")
                 .withSuspendedSentenceOrder(true)
                 .withAwaitingPsr(true)
                 .withBreach(true);
