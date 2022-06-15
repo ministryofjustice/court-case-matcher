@@ -370,9 +370,9 @@ class IncomingCourtCaseComparatorTest {
         assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
     }
 
-    @DisplayName("Existing case has a defendant with normalised sex string")
+    @DisplayName("Existing case has a defendant with correct un normalised sex string")
     @Test
-    void givenExistingCourtCaseContainsDefendantWithUnNormalisedSexString_ThenReturnFalse() {
+    void givenExistingCourtCaseContainsDefendantWithCorrectUnNormalisedSexString_ThenReturnFalse() {
         var courtCaseReceived = CourtCase.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
@@ -396,5 +396,33 @@ class IncomingCourtCaseComparatorTest {
                 .build();
 
         assertFalse(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+    }
+
+    @DisplayName("Existing case has a defendant with in correct un normalised sex string")
+    @Test
+    void givenExistingCourtCaseContainsDefendantWithInCorrectUnNormalisedSexString_ThenReturnTrue() {
+        var courtCaseReceived = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .sex("MALE")
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        var existingCourtCase = CourtCase.builder()
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .cro("CRO")
+                        .type(PERSON)
+                        .sex("F")
+                        .address(Address.builder()
+                                .postcode("Cf23 4as")
+                                .build())
+                        .build()))
+                .build();
+
+        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
     }
 }
