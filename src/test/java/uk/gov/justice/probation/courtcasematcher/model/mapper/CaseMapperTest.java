@@ -514,7 +514,7 @@ class CaseMapperTest {
             assertThat(firstDefendant.getDateOfBirth()).isNull();
             assertThat(firstDefendant.getName()).isEqualTo(name);
             assertThat(firstDefendant.getType()).isSameAs(DefendantType.PERSON);
-            assertThat(firstDefendant.getSex()).isEqualTo("M");
+            assertThat(firstDefendant.getSex()).isEqualTo("MALE");
             assertThat(courtCase.getSessionStartTime()).isEqualTo(SESSION_START_TIME);
             assertThat(firstDefendant.getPreviouslyKnownTerminationDate()).isEqualTo(LocalDate.of(2001, Month.AUGUST, 26));
             assertThat(firstDefendant.getOffences()).hasSize(1);

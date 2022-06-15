@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
 
@@ -32,6 +33,7 @@ public class Defendant {
     private String pnc;
     private Boolean preSentenceActivity;
     private LocalDate previouslyKnownTerminationDate;
+    @Getter(AccessLevel.NONE)
     private String sex;
     private Boolean suspendedSentenceOrder;
     private Boolean awaitingPsr;
@@ -46,5 +48,9 @@ public class Defendant {
                 .filter(defendant -> defendant.getType() == DefendantType.PERSON)
                 .filter(defendant -> !hasText(defendant.getCrn()))
                 .isPresent();
+    }
+
+    public String getSex(){
+        return this.sex = Sex.getNormalisedSex(sex).toString();
     }
 }

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Sex;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -62,7 +63,7 @@ public class CCSDefendant {
                 .cro(defendant.getCro())
                 .preSentenceActivity(defendant.getPreSentenceActivity())
                 .suspendedSentenceOrder(defendant.getSuspendedSentenceOrder())
-                .sex(defendant.getSex())
+                .sex(Sex.getNormalisedSex(defendant.getSex()).toString())
                 .previouslyKnownTerminationDate(defendant.getPreviouslyKnownTerminationDate())
                 .awaitingPsr(defendant.getAwaitingPsr())
                 .breach(defendant.getBreach())
