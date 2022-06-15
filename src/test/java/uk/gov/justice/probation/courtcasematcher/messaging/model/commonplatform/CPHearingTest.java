@@ -32,7 +32,7 @@ class CPHearingTest {
         assertThat(firstDefendant.getDefendantId()).isEqualTo("92673716-9B4F-40B2-A3E5-B398750328E9");
         assertThat(firstDefendant.getCro()).isEqualTo("cro");
         assertThat(firstDefendant.getPnc()).isEqualTo("pncid");
-        assertThat(firstDefendant.getSex()).isEqualTo("gender");
+        assertThat(firstDefendant.getSex()).isEqualTo("MALE");
         assertThat(firstDefendant.getName()).isEqualTo(Name.builder()
             .title("title")
             .forename1("firstname")
@@ -97,7 +97,7 @@ class CPHearingTest {
                 .prosecutionCaseId("E4631566-6479-4EBA-BFFA-DD599147FBAB")
                 .personDefendant(CPPersonDefendant.builder()
                         .personDetails(CPPersonDetails.builder()
-                                .gender("gender")
+                                .gender("MALE")
                                 .title("title")
                                 .firstName("firstname")
                                 .middleName("middlename")

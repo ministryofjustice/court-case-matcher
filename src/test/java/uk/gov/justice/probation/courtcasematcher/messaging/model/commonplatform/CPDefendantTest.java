@@ -18,7 +18,7 @@ class CPDefendantTest {
         final var actual = CPDefendant.builder()
                 .personDefendant(CPPersonDefendant.builder()
                         .personDetails(CPPersonDetails.builder()
-                                .gender("gender")
+                                .gender("MALE")
                                 .title("title")
                                 .firstName("firstname")
                                 .middleName("middlename")
@@ -41,7 +41,7 @@ class CPDefendantTest {
         assertThat(actual.getType()).isEqualTo(DefendantType.PERSON);
         assertThat(actual.getName().getForename1()).isEqualTo("firstname");
         assertThat(actual.getDateOfBirth()).isEqualTo(LocalDate.of(2021, 1, 1));
-        assertThat(actual.getSex()).isEqualTo("gender");
+        assertThat(actual.getSex()).isEqualTo("MALE");
         assertThat(actual.getCro()).isEqualTo("croNumber");
         assertThat(actual.getPnc()).isEqualTo("2007/1234557L");
         assertThat(actual.getAddress().getLine1()).isEqualTo("address1");
@@ -73,7 +73,7 @@ class CPDefendantTest {
         assertThat(actual.getType()).isEqualTo(DefendantType.ORGANISATION);
         assertThat(actual.getName().getSurname()).isEqualTo("orgname");
         assertThat(actual.getDateOfBirth()).isNull();
-        assertThat(actual.getSex()).isNull();
+        assertThat(actual.getSex()).isEqualTo("NOT_KNOWN");
         assertThat(actual.getCro()).isEqualTo("croNumber");
         assertThat(actual.getPnc()).isEqualTo("2007/1234557L");
         assertThat(actual.getAddress()).isNull();
