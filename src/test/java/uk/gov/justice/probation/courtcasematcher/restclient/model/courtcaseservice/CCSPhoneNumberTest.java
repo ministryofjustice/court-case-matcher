@@ -21,4 +21,16 @@ class CCSPhoneNumberTest {
                         .mobile(phoneNumner.getMobile())
                 .build());
     }
+
+    @Test
+    public void shouldMapPhoneNumberBackToDomain() {
+        final var original = PhoneNumber.builder()
+                .home("01000000007")
+                .work("01000000008")
+                .mobile("07000000009")
+                .build();
+        final var actual = CCSPhoneNumber.of(original).asDomain();
+
+        assertThat(actual).isEqualTo(original);
+    }
 }

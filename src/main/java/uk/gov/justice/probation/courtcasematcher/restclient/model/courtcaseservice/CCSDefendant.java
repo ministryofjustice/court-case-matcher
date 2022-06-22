@@ -97,6 +97,9 @@ public class CCSDefendant {
                 .previouslyKnownTerminationDate(previouslyKnownTerminationDate)
                 .awaitingPsr(awaitingPsr)
                 .breach(breach)
+                .phoneNumber(Optional.ofNullable(phoneNumber)
+                        .map(CCSPhoneNumber::asDomain)
+                        .orElse(null))
                 .build();
     }
 }

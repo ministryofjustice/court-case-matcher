@@ -30,4 +30,12 @@ public class CCSPhoneNumber {
                 .orElse(null);
     }
 
+    public PhoneNumber asDomain(){
+        return PhoneNumber.builder()
+                .home(home)
+                .mobile(mobile)
+                .work(work)
+                .build();
+    }
+
 }
