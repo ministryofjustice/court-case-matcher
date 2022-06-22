@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseserv
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 
 import java.time.LocalDate;
@@ -62,7 +63,12 @@ class CCSDefendantTest {
                 .withSex("M")
                 .withSuspendedSentenceOrder(true)
                 .withAwaitingPsr(true)
-                .withBreach(true);
+                .withBreach(true)
+                .withPhoneNumber(PhoneNumber.builder()
+                        .home("01000000007")
+                        .work("01000000008")
+                        .mobile("07000000009")
+                        .build());
     }
 
     @Test
