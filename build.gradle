@@ -103,7 +103,7 @@ dependencies {
 
     implementation 'com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.4'
     implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.4'
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.2'
 
     testImplementation(platform("org.junit:junit-bom:5.8.2"))
     testRuntimeOnly("org.junit.jupiter:junit-jupiter")
