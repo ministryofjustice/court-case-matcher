@@ -29,7 +29,8 @@ public class OAuth2SecurityConfig extends WebSecurityConfigurerAdapter {
                         auth
                                 .mvcMatchers(
                                         "/actuator/health",
-                                        "/actuator/health/ping"
+                                        "/actuator/health/ping",
+                                        "/queue-admin/retry-all-dlqs"
                                 ).permitAll()
                                 .anyRequest()
                                 .hasRole(role)
