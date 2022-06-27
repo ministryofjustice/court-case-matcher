@@ -45,7 +45,8 @@ public class TelemetryService {
     }
 
     public void trackOffenderMatchFailureEvent(Defendant defendant, CourtCase courtCase) {
-        final var properties = getCourtCaseProperties(courtCase, defendant.getPnc());
+        var properties = getCourtCaseProperties(courtCase, defendant.getPnc());
+        properties.put(DEFENDANT_ID_KEY, defendant.getDefendantId());
 
         telemetryClient.trackEvent(TelemetryEventType.OFFENDER_MATCH_ERROR.eventName, properties, Collections.emptyMap());
     }

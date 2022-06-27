@@ -225,7 +225,7 @@ class TelemetryServiceTest {
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderMatchError"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties(10);
+        assertCourtCaseProperties(11);
         assertThat(propertiesCaptor.getValue()).contains(
                 entry(PNC_KEY, PNC)
         );

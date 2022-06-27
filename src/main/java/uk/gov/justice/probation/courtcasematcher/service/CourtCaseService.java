@@ -70,27 +70,4 @@ public class CourtCaseService {
                 .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, defendant))
                 .defaultIfEmpty(defendant);
     }
-
-    CourtCase assignUuids(CourtCase courtCase) {
-        // Apply the new case ID
-        final var caseId = UUID.randomUUID().toString();
-        var updatedCase = courtCase.withCaseId(caseId).withHearingId(caseId);
-
-        // We want to retain the LIBRA case no if present
-        if (courtCase.getCaseNo() == null) {
-            updatedCase = updatedCase.withCaseNo(caseId);
-        }
-
-        // Assign defendant IDs
-        final var updatedDefendants = courtCase.getDefendants()
-                .stream()
-                .map(defendant -> defendant.withDefendantId(
-                        defendant.getDefendantId() == null ? UUID.randomUUID().toString() : defendant.getDefendantId()
-                ))
-                .collect(Collectors.toList());
-        updatedCase = updatedCase.withDefendants(updatedDefendants);
-
-        return updatedCase;
-    }
-
 }
