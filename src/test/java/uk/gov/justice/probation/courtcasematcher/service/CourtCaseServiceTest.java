@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -113,12 +114,18 @@ class CourtCaseServiceTest {
     @DisplayName("Save court case with no caseId but with a caseNo and no defendant ID. Indicates a new LIBRA case.")
     @Test
     void givenNoCaseButHaveCaseNo_whenSaveCourtCaseWithCaseIdRetainCaseNo() {
+        var caseId = UUID.randomUUID().toString();
+        var defendantId = UUID.randomUUID().toString();
+        var defendantIdAnother = UUID.randomUUID().toString();
+
         final var courtCase = CourtCase.builder()
+                .caseId(caseId)
+                .hearingId("hearingId")
                 .source(DataSource.LIBRA)
             .hearingDays(Collections.singletonList(HearingDay.builder()
                 .courtCode(COURT_CODE)
                 .build()))
-            .defendants(List.of(Defendant.builder().build(), Defendant.builder().build()))
+            .defendants(List.of(Defendant.builder().defendantId(defendantId).build(), Defendant.builder().defendantId(defendantIdAnother).build()))
             .caseNo(CASE_NO)
             .build();
         when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
@@ -132,7 +139,7 @@ class CourtCaseServiceTest {
         assertThat(actual).isNotNull();
         assertThat(actual.getHearingId()).isNotNull();
         assertThat(actual.getCaseId()).isNotNull();
-        assertThat(actual.getCaseId()).isEqualTo(actual.getHearingId());
+        assertThat(actual.getCaseId()).isEqualTo(caseId);
 
 
         final var capturedCase = actual;

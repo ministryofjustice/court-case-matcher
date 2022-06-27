@@ -14,26 +14,6 @@ public class CCSExtendedCaseTest {
     private static final String A_UUID = "9E27A145-E847-4AAB-9FF9-B88912520D14";
 
     @Test
-    public void shouldMapFromCourtCaseAndGenerateIdsIfNotPresent() {
-        final var aCase = DomainDataHelper.aCourtCaseWithAllFields();
-        String testHearingId = "hearing-id-one";
-        final var courtCase = aCase
-                .withCaseId(null)
-                .withHearingId(testHearingId)
-                .withDefendants(Collections.singletonList(
-                        aCase.getDefendants().get(0)
-                                .withDefendantId(null)
-                ));
-        final var actual = CCSExtendedCase.of(courtCase);
-
-        assertThat(actual.getHearingId()).isEqualTo(testHearingId);
-        assertThat(actual.getCaseId()).hasSameSizeAs(A_UUID);
-        final var actualFirstDefendant = actual.getDefendants().get(0);
-
-        assertThat(actualFirstDefendant.getDefendantId()).hasSameSizeAs(A_UUID);
-    }
-
-    @Test
     public void shouldMapFromCourtCaseAndKeepIdsIfPresent() {
         final var courtCase = DomainDataHelper.aCourtCaseWithAllFields();
         final var actual = CCSExtendedCase.of(courtCase);

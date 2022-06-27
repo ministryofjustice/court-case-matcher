@@ -29,8 +29,7 @@ public class CCSExtendedCase {
 
     public static CCSExtendedCase of(CourtCase courtCase) {
         return CCSExtendedCase.builder()
-                .caseId(Optional.ofNullable(courtCase.getCaseId())
-                        .orElseGet(() -> UUID.randomUUID().toString()))
+                .caseId(courtCase.getCaseId())
                 .hearingId(courtCase.getHearingId())
                 .urn(courtCase.getUrn())
                 .caseNo(courtCase.getCaseNo())

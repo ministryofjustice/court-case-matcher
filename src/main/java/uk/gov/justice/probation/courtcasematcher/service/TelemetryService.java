@@ -35,6 +35,9 @@ public class TelemetryService {
     static final String HEARING_ID_KEY = "hearingId";
     static final String DEFENDANT_IDS_KEY = "defendantIds";
 
+    static final String DEFENDANT_ID_KEY = "defendantId";
+
+
     private final TelemetryClient telemetryClient;
 
     public void trackEvent(TelemetryEventType eventType) {
@@ -42,7 +45,8 @@ public class TelemetryService {
     }
 
     public void trackOffenderMatchFailureEvent(Defendant defendant, CourtCase courtCase) {
-        final var properties = getCourtCaseProperties(courtCase, defendant.getPnc());
+        var properties = getCourtCaseProperties(courtCase, defendant.getPnc());
+        properties.put(DEFENDANT_ID_KEY, defendant.getDefendantId());
 
         telemetryClient.trackEvent(TelemetryEventType.OFFENDER_MATCH_ERROR.eventName, properties, Collections.emptyMap());
     }
@@ -64,6 +68,7 @@ public class TelemetryService {
                     .map(match -> match.getOffender().getOtherIds().getCrn())
                     .collect(Collectors.joining(","));
                 properties.put(MATCHES_KEY, String.valueOf(matches.size()));
+                properties.put(DEFENDANT_ID_KEY, defendant.getDefendantId());
                 properties.put(CRNS_KEY, allCrns);
             }));
 
