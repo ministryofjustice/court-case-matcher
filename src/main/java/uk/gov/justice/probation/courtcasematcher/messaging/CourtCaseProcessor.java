@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
@@ -39,7 +40,9 @@ public class CourtCaseProcessor {
     public void process(CourtCase receivedCourtCase, String messageId) {
         try {
             // New LIBRA cases will have no case or defendant ID and we need to assign
-            receivedCourtCase = assignUuids(receivedCourtCase);
+            if (receivedCourtCase.getSource() == DataSource.LIBRA && receivedCourtCase.getCaseId() == null) {
+                receivedCourtCase = assignUuids(receivedCourtCase);
+            }
             matchAndSaveCase(receivedCourtCase, messageId);
         } catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
