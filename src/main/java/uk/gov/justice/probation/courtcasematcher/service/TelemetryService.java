@@ -35,6 +35,9 @@ public class TelemetryService {
     static final String HEARING_ID_KEY = "hearingId";
     static final String DEFENDANT_IDS_KEY = "defendantIds";
 
+    static final String DEFENDANT_ID_KEY = "defendantId";
+
+
     private final TelemetryClient telemetryClient;
 
     public void trackEvent(TelemetryEventType eventType) {
@@ -64,6 +67,7 @@ public class TelemetryService {
                     .map(match -> match.getOffender().getOtherIds().getCrn())
                     .collect(Collectors.joining(","));
                 properties.put(MATCHES_KEY, String.valueOf(matches.size()));
+                properties.put(DEFENDANT_ID_KEY, defendant.getDefendantId());
                 properties.put(CRNS_KEY, allCrns);
             }));
 

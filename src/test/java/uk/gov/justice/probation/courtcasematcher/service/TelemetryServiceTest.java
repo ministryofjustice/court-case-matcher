@@ -145,7 +145,7 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCOffenderExactMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertCourtCaseProperties(13);
+        assertCourtCaseProperties(14);
         assertThat(properties).contains(
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.ALL_SUPPLIED.name()),
@@ -167,7 +167,7 @@ class TelemetryServiceTest {
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties(13);
+        assertCourtCaseProperties(14);
         assertThat(propertiesCaptor.getValue()).contains(
                 entry(MATCHES_KEY, "2"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
@@ -188,7 +188,7 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertCourtCaseProperties(13);
+        assertCourtCaseProperties(14);
         assertThat(properties).contains(
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),

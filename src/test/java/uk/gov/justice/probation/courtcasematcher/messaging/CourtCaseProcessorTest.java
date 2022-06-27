@@ -16,6 +16,7 @@ import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,19 +77,26 @@ class CourtCaseProcessorTest {
     @DisplayName("Receive a case which has changed, then update detail and save")
     @Test
     void whenValidMessageReceivedForMatchedCase_ThenUpdateAndSave() {
+        var caseId = UUID.randomUUID().toString();
+        var defendantId = UUID.randomUUID().toString();
+
         var courtCase = CourtCase.builder()
+                .caseId(caseId)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
                         .crn("X320741")
+                        .defendantId(defendantId)
                         .build()))
                 .build();
         var existingCourtCase = CourtCase.builder()
+                .caseId(caseId)
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
                         .crn("X320741")
+                        .defendantId(defendantId)
                         .build()))
                 .build();
         var courtCaseMerged = CaseMapper.merge(courtCase, existingCourtCase);
@@ -131,19 +139,25 @@ class CourtCaseProcessorTest {
     @DisplayName("Receive a same payload multiple times then fire changed event first time and only unchanged event")
     @Test
     void whenValidMessageWithSamePayLoadReceivedMultipleTimes_ThenFireChangedEventFirst_ThenUnChangedEventOnSubsequentCall() {
+        var caseId = UUID.randomUUID().toString();
+        var defendantId = UUID.randomUUID().toString();
         var courtCase = CourtCase.builder()
+                .caseId(caseId)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
                         .crn("X320741")
+                        .defendantId(defendantId)
                         .build()))
                 .build();
         var existingCourtCase = CourtCase.builder()
+                .caseId(caseId)
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
                         .crn("X320741")
+                        .defendantId(defendantId)
                         .build()))
                 .build();
         var existingCourtCaseAfterUpdated = CourtCase.builder()

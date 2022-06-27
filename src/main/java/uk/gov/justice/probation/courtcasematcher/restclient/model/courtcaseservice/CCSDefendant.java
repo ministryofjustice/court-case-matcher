@@ -45,8 +45,7 @@ public class CCSDefendant {
 
     public static CCSDefendant of(Defendant defendant) {
         return builder()
-                .defendantId(Optional.ofNullable(defendant.getDefendantId())
-                        .orElseGet(() -> UUID.randomUUID().toString()))
+                .defendantId(defendant.getDefendantId())
                 .name(CCSName.of(defendant.getName()))
                 .dateOfBirth(defendant.getDateOfBirth())
                 .address(Optional.ofNullable(defendant.getAddress()).map(CCSAddress::of).orElse(null))
@@ -74,8 +73,7 @@ public class CCSDefendant {
 
     public Defendant asDomain() {
         return Defendant.builder()
-                .defendantId(Optional.ofNullable(defendantId)
-                        .orElseGet(() -> UUID.randomUUID().toString()))
+                .defendantId(defendantId)
                 .name(name.asDomain())
                 .dateOfBirth(dateOfBirth)
                 .address(Optional.ofNullable(address)
