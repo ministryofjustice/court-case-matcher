@@ -216,7 +216,7 @@ class CourtCaseServiceTest {
     }
 
 
-    @DisplayName("Save a search responses even if case put fails.")
+    @DisplayName("Do not save a search responses if case put fails.")
     @Test
     void givenSearchResponse_whenCreateCourtCaseFails_thenPostMatches() {
         final var courtCase = CourtCase.builder()
@@ -229,14 +229,13 @@ class CourtCaseServiceTest {
                 .caseNo(CASE_NO)
                 .build();
         when(courtCaseRepo.putCourtCase(courtCase)).thenThrow(new RuntimeException("bang!"));
-        when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> courtCaseService.saveCourtCase(courtCase))
                 .withMessage("bang!");
 
         verify(courtCaseRepo).putCourtCase(courtCase);
-        verify(courtCaseRepo).postOffenderMatches(CASE_ID, defendants);
+        verifyNoMoreInteractions(courtCaseRepo);
     }
 
     @DisplayName("Fetch and update probation status")

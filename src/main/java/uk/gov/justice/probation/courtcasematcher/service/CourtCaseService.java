@@ -44,15 +44,17 @@ public class CourtCaseService {
             updatedCase = courtCase.withCaseNo(updatedCase.getCaseId());
         }
 
-        try {
-            courtCaseRepository.putCourtCase(updatedCase)
-                    .block();
-        } finally {
-            courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
-                    .block();
-        }
-    }
+        courtCaseRepository.putCourtCase(updatedCase)
+                .doOnError(throwable -> {
+                    log.error("Save court case failed for case id {} with {}", courtCase.getCaseId(), throwable.getMessage());
+                    throw new RuntimeException(throwable.getMessage());
+                })
+                .block();
 
+        courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
+                .block();
+
+    }
     public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
         final var updatedDefendants = courtCase.getDefendants()
                 .stream()
