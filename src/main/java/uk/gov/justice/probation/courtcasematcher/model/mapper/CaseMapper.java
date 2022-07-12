@@ -172,7 +172,10 @@ public class CaseMapper {
                 .withAwaitingPsr(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isAwaitingPsr).orElse(false))
                 .withCrn(offender.getOtherIds().getCrn())
                 .withCro(offender.getOtherIds().getCroNumber())
-                .withPnc(offender.getOtherIds().getPncNumber());
+                .withOffender(uk.gov.justice.probation.courtcasematcher.model.domain.Offender.builder()
+                        .pnc(offender.getOtherIds().getPncNumber())
+                        .build())
+                ;
     }
 
     public static GroupedOffenderMatches buildGroupedOffenderMatch(List<Match> matches, MatchType matchType) {

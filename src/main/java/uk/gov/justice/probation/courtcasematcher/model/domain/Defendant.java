@@ -40,6 +40,8 @@ public class Defendant {
     private Boolean breach;
     private PhoneNumber phoneNumber;
 
+    private Offender offender;
+
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;
 

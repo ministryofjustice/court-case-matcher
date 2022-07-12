@@ -19,7 +19,12 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.*;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,10 +61,11 @@ class CaseMapperTest {
             .build();
     public static final String CRN = "CRN123";
     public static final String CRO = "CRO456";
-    public static final String PNC = "PNC789";
+    public static final String OFFENDER_SEARCH_PNC = "PNC789";
     private static final String DEFENDANT_ID = "9E27A145-E847-4AAB-9FF9-B88912520D14";
     private static final String DEFENDANT_ID_2 = "F01ADD33-C534-44A6-BD7B-F2AAD0FB750C";
     private static final String CASE_ID = "8CC06F57-F5F7-4858-A9BF-035F7D6AC60F";
+    private static final String LIBRA_PNC = "LIBRA_PNC";
 
     private static List<OffenderAlias> offenderAliases = List.of(OffenderAlias.builder()
             .dateOfBirth(LocalDate.of(2000, 01, 01))
@@ -112,6 +118,7 @@ class CaseMapperTest {
             assertThat(newDefendant).isNotSameAs(defendant);
             assertThat(newDefendant.getCrn()).isNull();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(0);
+            assertThat(newDefendant.getOffender()).isNull();
             assertThat(newDefendant.getDefendantId()).isEqualTo(defendant.getDefendantId());
         }
 
@@ -120,7 +127,7 @@ class CaseMapperTest {
         void givenSingleMatch_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithSingleMatch() {
             var match = Match.builder()
                     .offender(Offender.builder()
-                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(OFFENDER_SEARCH_PNC).build())
                             .offenderAliases(offenderAliases)
                             .probationStatus(ProbationStatusDetail.builder().status("CURRENT").preSentenceActivity(true).awaitingPsr(true).build())
                             .build())
@@ -138,14 +145,15 @@ class CaseMapperTest {
 
             assertThat(newDefendant).isNotSameAs(defendant);
             assertThat(newDefendant.getCrn()).isEqualTo(CRN);
-            assertThat(newDefendant.getPnc()).isEqualTo(PNC);
+            assertThat(newDefendant.getPnc()).isNull();
+            assertThat(newDefendant.getOffender().getPnc()).isEqualTo(OFFENDER_SEARCH_PNC);
             assertThat(newDefendant.getProbationStatus()).isEqualTo("CURRENT");
             assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(newDefendant.getBreach()).isNull();
             assertThat(newDefendant.getPreSentenceActivity()).isTrue();
             assertThat(newDefendant.getAwaitingPsr()).isTrue();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC, offenderAliases);
+            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, OFFENDER_SEARCH_PNC, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
@@ -154,7 +162,7 @@ class CaseMapperTest {
         void givenSingleMatchOnNameButNonExact_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithSingleMatchButNoCrn() {
             var previouslyKnownTerminationDate = LocalDate.of(2016, Month.DECEMBER, 25);
             var match = Match.builder().offender(Offender.builder()
-                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(OFFENDER_SEARCH_PNC).build())
                             .offenderAliases(offenderAliases)
                             .probationStatus(ProbationStatusDetail.builder()
                                     .awaitingPsr(true)
@@ -177,6 +185,7 @@ class CaseMapperTest {
 
             assertThat(newDefendant).isNotSameAs(defendant);
             assertThat(newDefendant.getCrn()).isNull();
+            assertThat(newDefendant.getOffender()).isNull();
             // The new probation status details are all ignored because match is non-exact
             assertThat(newDefendant.getProbationStatus()).isNull();
             assertThat(newDefendant.getBreach()).isNull();
@@ -184,7 +193,7 @@ class CaseMapperTest {
             assertThat(newDefendant.getPreSentenceActivity()).isNull();
             assertThat(newDefendant.getAwaitingPsr()).isNull();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            var expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, PNC, offenderAliases);
+            var expectedOffenderMatch = buildOffenderMatch(MatchType.NAME, CRN, CRO, OFFENDER_SEARCH_PNC, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(expectedOffenderMatch);
         }
 
@@ -192,7 +201,7 @@ class CaseMapperTest {
         @Test
         void givenSingleMatchWithNoProbationStatus_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithSingleMatch() {
             var match = Match.builder().offender(Offender.builder()
-                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(OFFENDER_SEARCH_PNC).build())
                             .offenderAliases(offenderAliases)
                             .build())
                     .build();
@@ -209,11 +218,13 @@ class CaseMapperTest {
 
             assertThat(newDefendant).isNotSameAs(defendant);
             assertThat(newDefendant.getCrn()).isEqualTo(CRN);
+            assertThat(newDefendant.getPnc()).isNull();
+            assertThat(newDefendant.getOffender().getPnc()).isEqualTo(OFFENDER_SEARCH_PNC);
             assertThat(newDefendant.getProbationStatus()).isNull();
             assertThat(newDefendant.getBreach()).isNull();
             assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            var offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, PNC, offenderAliases);
+            var offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, CRO, OFFENDER_SEARCH_PNC, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
@@ -221,7 +232,7 @@ class CaseMapperTest {
         @Test
         void givenMultipleMatches_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithListOfMatches() {
             var match1 = Match.builder().offender(Offender.builder()
-                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(PNC).build())
+                            .otherIds(OtherIds.builder().crn(CRN).croNumber(CRO).pncNumber(OFFENDER_SEARCH_PNC).build())
                             .build())
                     .build();
             var match2 = Match.builder().offender(Offender.builder()
@@ -242,11 +253,12 @@ class CaseMapperTest {
 
             assertThat(newDefendant).isNotSameAs(defendant);
             assertThat(newDefendant.getCrn()).isNull();
+            assertThat(newDefendant.getOffender()).isNull();
             assertThat(newDefendant.getProbationStatus()).isNull();
             assertThat(newDefendant.getBreach()).isNull();
             assertThat(newDefendant.getPreviouslyKnownTerminationDate()).isNull();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(2);
-            var offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, PNC, null);
+            var offenderMatch1 = buildOffenderMatch(MatchType.PARTIAL_NAME, CRN, CRO, OFFENDER_SEARCH_PNC, null);
             var offenderMatch2 = buildOffenderMatch(MatchType.PARTIAL_NAME, "CRN1", null, null, offenderAliases);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactlyInAnyOrder(offenderMatch1, offenderMatch2);
         }
@@ -536,7 +548,7 @@ class CaseMapperTest {
                             .breach(Boolean.TRUE)
                             .suspendedSentenceOrder(Boolean.TRUE)
                             .crn(CRN)
-                            .pnc(PNC)
+                            .pnc(OFFENDER_SEARCH_PNC)
                             .cro(CRO)
                             .address(null)
                             .name(Name.builder()
