@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.service;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.TelemetryContext;
-import joptsimple.internal.Strings;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +19,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 
@@ -38,7 +37,20 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.*;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_ID_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_NO_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_CODE_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_ROOM_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CRNS_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.DEFENDANT_IDS_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_DATE_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_ID_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHED_BY_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHES_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNC_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SOURCE_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SQS_MESSAGE_ID_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.URN_KEY;
 
 @DisplayName("Exercise TelemetryService")
 @ExtendWith(MockitoExtension.class)
@@ -357,7 +369,7 @@ class TelemetryServiceTest {
 
     private Match buildMatch(String crn) {
         return Match.builder()
-                .offender(Offender.builder()
+                .offender(OSOffender.builder()
                         .otherIds(OtherIds.builder().crn(crn).build())
                         .build())
                 .build();

@@ -8,13 +8,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Sex;
 
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
@@ -42,6 +42,7 @@ public class CCSDefendant {
     private Boolean awaitingPsr;
     private Boolean breach;
     private CCSPhoneNumber phoneNumber;
+    private CCSOffender offender;
 
     public static CCSDefendant of(Defendant defendant) {
         return builder()
@@ -67,7 +68,12 @@ public class CCSDefendant {
                 .awaitingPsr(defendant.getAwaitingPsr())
                 .breach(defendant.getBreach())
                 .phoneNumber(Optional.ofNullable(defendant.getPhoneNumber()).map(CCSPhoneNumber::of).orElse(null))
-
+                .offender(Optional.ofNullable(defendant.getOffender())
+                        .map(offender -> CCSOffender.builder()
+                            .pnc(offender.getPnc())
+                            .cro(offender.getCro())
+                            .build())
+                        .orElse(null))
                 .build();
     }
 
@@ -98,6 +104,12 @@ public class CCSDefendant {
                 .phoneNumber(Optional.ofNullable(phoneNumber)
                         .map(CCSPhoneNumber::asDomain)
                         .orElse(null))
+                .offender(Optional.ofNullable(offender)
+                                .map(o -> Offender.builder()
+                                        .pnc(o.getPnc())
+                                        .cro(o.getCro())
+                                        .build()
+                                ).orElse(null))
                 .build();
     }
 }

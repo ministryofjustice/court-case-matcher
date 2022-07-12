@@ -1,11 +1,11 @@
-package uk.gov.justice.probation.courtcasematcher.model.domain;
+package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class Offender {
+public class CCSOffender {
     private final String pnc;
     private final String cro;
 }

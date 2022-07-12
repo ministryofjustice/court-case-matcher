@@ -18,11 +18,12 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
 
 import java.util.Collections;
 import java.util.List;
@@ -162,7 +163,7 @@ public class CaseMapper {
         return newDefendant;
     }
 
-    private static Defendant buildDefendant(Offender offender, Defendant defendant, ProbationStatusDetail probationStatus) {
+    private static Defendant buildDefendant(OSOffender offender, Defendant defendant, ProbationStatusDetail probationStatus) {
         return defendant
                 .withBreach(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::getInBreach).orElse(null))
                 .withPreviouslyKnownTerminationDate(
@@ -171,10 +172,12 @@ public class CaseMapper {
                 .withPreSentenceActivity(probationStatus != null && probationStatus.isPreSentenceActivity())
                 .withAwaitingPsr(Optional.ofNullable(probationStatus).map(ProbationStatusDetail::isAwaitingPsr).orElse(false))
                 .withCrn(offender.getOtherIds().getCrn())
-                .withCro(offender.getOtherIds().getCroNumber())
-                .withOffender(uk.gov.justice.probation.courtcasematcher.model.domain.Offender.builder()
+                .withOffender(
+                        offender.getOtherIds().getPncNumber() != null || offender.getOtherIds().getCroNumber() != null ? Offender.builder()
                         .pnc(offender.getOtherIds().getPncNumber())
-                        .build())
+                        .cro(offender.getOtherIds().getCroNumber())
+                        .build() : null
+                )
                 ;
     }
 
