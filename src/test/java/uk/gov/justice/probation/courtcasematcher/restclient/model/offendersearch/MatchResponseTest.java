@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("MatchResponse is component to receive")
 class MatchResponseTest {
 
-    private final Match match = Match.builder().offender(Offender.builder().build()).build();
+    private final Match match = Match.builder().offender(OSOffender.builder().build()).build();
 
     @DisplayName("Search with one match for ALL_SUPPLIED is exact")
     @Test
@@ -38,7 +38,7 @@ class MatchResponseTest {
     @DisplayName("Search with multiple matches is always NOT exact")
     @Test
     void givenMultipleMatches_whenIsExact_thenAlwaysReturnFalse() {
-        Match match2 = Match.builder().offender(Offender.builder().build()).build();
+        Match match2 = Match.builder().offender(OSOffender.builder().build()).build();
 
         MatchResponse matchResponse = MatchResponse.builder()
             .matches(List.of(match, match2))

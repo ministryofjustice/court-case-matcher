@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseserv
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 
@@ -50,6 +51,8 @@ class CCSDefendantTest {
         assertThat(actual.getSuspendedSentenceOrder()).isEqualTo(true);
         assertThat(actual.getAwaitingPsr()).isEqualTo(true);
         assertThat(actual.getBreach()).isEqualTo(true);
+        assertThat(actual.getOffender().getPnc()).isEqualTo("OFFENDER_PNC");
+        assertThat(actual.getOffender().getCro()).isEqualTo("OFFENDER_CRO");
     }
 
     private Defendant buildDefendant() {
@@ -68,7 +71,12 @@ class CCSDefendantTest {
                         .home("01000000007")
                         .work("01000000008")
                         .mobile("07000000009")
-                        .build());
+                        .build())
+                .withOffender(Offender.builder()
+                        .pnc("OFFENDER_PNC")
+                        .cro("OFFENDER_CRO")
+                        .build())
+                ;
     }
 
     @Test

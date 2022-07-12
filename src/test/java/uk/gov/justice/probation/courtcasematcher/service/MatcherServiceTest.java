@@ -26,7 +26,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestCl
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Offender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 
@@ -101,7 +101,7 @@ class MatcherServiceTest {
             .croNumber("CRO")
             .pncNumber(PNC)
             .build();
-    private final Offender offender = Offender.builder()
+    private final OSOffender offender = OSOffender.builder()
             .otherIds(otherIds)
             .probationStatus(ProbationStatusDetail.builder()
                     .status(PROBATION_STATUS)

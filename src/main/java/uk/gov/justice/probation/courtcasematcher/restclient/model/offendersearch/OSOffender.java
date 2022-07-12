@@ -15,7 +15,7 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class Offender {
+public class OSOffender {
     private final OtherIds otherIds;
     private final ProbationStatusDetail probationStatus;
     private final List<OffenderAlias> offenderAliases;
