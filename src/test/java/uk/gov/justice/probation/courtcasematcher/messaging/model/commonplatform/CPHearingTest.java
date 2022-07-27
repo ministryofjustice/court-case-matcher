@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
@@ -21,14 +21,14 @@ class CPHearingTest {
         applyAssertions(courtCase);
     }
 
-    static void applyAssertions(CourtCase courtCase) {
-        assertThat(courtCase.getCaseId()).isEqualTo("E4631566-6479-4EBA-BFFA-DD599147FBAB");
-        assertThat(courtCase.getCaseNo()).isNull();
-        assertThat(courtCase.getCourtCode()).isEqualTo("B10JQ");
-        assertThat(courtCase.getSource()).isEqualTo(COMMON_PLATFORM);
-        assertThat(courtCase.getUrn()).isEqualTo("urn");
+    static void applyAssertions(Hearing hearing) {
+        assertThat(hearing.getCaseId()).isEqualTo("E4631566-6479-4EBA-BFFA-DD599147FBAB");
+        assertThat(hearing.getCaseNo()).isNull();
+        assertThat(hearing.getCourtCode()).isEqualTo("B10JQ");
+        assertThat(hearing.getSource()).isEqualTo(COMMON_PLATFORM);
+        assertThat(hearing.getUrn()).isEqualTo("urn");
 
-        final var firstDefendant = courtCase.getDefendants().get(0);
+        final var firstDefendant = hearing.getDefendants().get(0);
         assertThat(firstDefendant.getDefendantId()).isEqualTo("92673716-9B4F-40B2-A3E5-B398750328E9");
         assertThat(firstDefendant.getCro()).isEqualTo("cro");
         assertThat(firstDefendant.getPnc()).isEqualTo("pncid");
@@ -43,7 +43,7 @@ class CPHearingTest {
         assertThat(firstDefendant.getOffences().get(0).getId()).isEqualTo("7AA4F55F-F104-4D07-9732-FEB679230E49");
         assertThat(firstDefendant.getOffences().get(1).getId()).isEqualTo("43AE14D2-6980-49DD-803B-B6A77E7D438E");
 
-        final var secondDefendant = courtCase.getDefendants().get(1);
+        final var secondDefendant = hearing.getDefendants().get(1);
         assertThat(secondDefendant.getDefendantId()).isEqualTo("80F2F0CB-11F3-4A65-B587-A9808BC74C02");
         assertThat(secondDefendant.getCro()).isNull();
         assertThat(secondDefendant.getPnc()).isNull();
@@ -52,8 +52,8 @@ class CPHearingTest {
             .build());
         assertThat(secondDefendant.getOffences().get(0).getId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
 
-        assertThat(courtCase.getHearingDays().get(0).getListNo()).isNull();
-        assertThat(courtCase.getHearingDays().get(1).getListNo()).isNull();
+        assertThat(hearing.getHearingDays().get(0).getListNo()).isNull();
+        assertThat(hearing.getHearingDays().get(1).getListNo()).isNull();
     }
 
     static CPHearing buildHearing() {

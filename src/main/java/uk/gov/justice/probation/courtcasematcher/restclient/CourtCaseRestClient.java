@@ -14,12 +14,12 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.tuple.Tuple2;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
-import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSExtendedCase;
+import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNotFoundException;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSExtendedHearing;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
 
 import java.nio.charset.StandardCharsets;
@@ -48,7 +48,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     @Value("${court-case-service.matches-by-case-defendant-post-url-template}")
     private String matchesPostTemplate;
 
-    public Mono<CourtCase> getCourtCase(String hearingId) {
+    public Mono<Hearing> getHearing(String hearingId) {
         final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
@@ -56,28 +56,28 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                 .retrieve()
                 .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))
 
-                .bodyToMono(CCSExtendedCase.class)
-                .map(courtCaseResponse -> {
-                    log.debug("GET succeeded for retrieving the case for path {}", path);
-                    return courtCaseResponse.asDomain();
+                .bodyToMono(CCSExtendedHearing.class)
+                .map(response -> {
+                    log.debug("GET succeeded for retrieving the hearing for path {}", path);
+                    return response.asDomain();
                 })
-                .onErrorResume(CourtCaseNotFoundException.class, (e) -> {
+                .onErrorResume(HearingNotFoundException.class, (e) -> {
                     // This is normal in the context of CCM, don't log
                     return Mono.empty();
                 });
     }
 
     @Override
-    public Mono<CourtCase> getCourtCase(String courtCode, String caseNo) throws WebClientResponseException {
-        return legacyCourtCaseRestClient.getCourtCase(courtCode, caseNo);
+    public Mono<Hearing> getHearing(String courtCode, String caseNo) throws WebClientResponseException {
+        return legacyCourtCaseRestClient.getHearing(courtCode, caseNo);
     }
 
     @Override
-    public Mono<Void> putCourtCase(CourtCase courtCase) {
-        final var extendedCase = CCSExtendedCase.of(courtCase);
+    public Mono<Void> putHearing(Hearing hearing) {
+        final var extendedCase = CCSExtendedHearing.of(hearing);
         final var hearingId = extendedCase.getHearingId();
         final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
-        return restHelper.putObject(path, extendedCase, CCSExtendedCase.class)
+        return restHelper.putObject(path, extendedCase, CCSExtendedHearing.class)
                 .retrieve()
                 .toBodilessEntity()
                 .retryWhen(restHelper.buildRetrySpec(
@@ -115,7 +115,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
         // This is expected for new cases
         if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
             log.info("Failed to get case for caseId {}", caseId);
-            return Mono.error(new CourtCaseNotFoundException(caseId));
+            return Mono.error(new HearingNotFoundException(caseId));
         }
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
             log.error("HTTP status {} to to GET the case from court case service", httpStatus);

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
@@ -21,12 +21,12 @@ import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantTy
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
-class IncomingCourtCaseComparatorTest {
+class IncomingHearingComparatorTest {
 
     @DisplayName("Received case is same as existing case")
     @Test
     void givenReceivedCourtCaseIsSameAsExistingCase_ThenReturnFalse() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
@@ -36,7 +36,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
@@ -46,7 +46,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertFalse(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertFalse(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case contains more defendant than the existing case")
@@ -60,27 +60,27 @@ class IncomingCourtCaseComparatorTest {
                 .cro("CRO-another")
                 .type(PERSON)
                 .build();
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
                 .defendants(Arrays.asList(defendant1, defendant2))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
                 .defendants(Collections.singletonList(defendant1))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has different address")
     @Test
     void givenReceivedCourtCaseHasDifferentAddress_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
@@ -93,7 +93,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
@@ -106,13 +106,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has hearing day details")
     @Test
     void givenReceivedCourtCaseContainsHearingDays_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
@@ -125,7 +125,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -135,13 +135,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has different court details")
     @Test
     void givenReceivedCourtCaseHasDifferentCourt_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .urn("URN-OTHER")
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
@@ -152,7 +152,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .urn("URN")
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
@@ -163,13 +163,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has a defendant with different pnc")
     @Test
     void givenReceivedCourtCaseContainsDefendantWithDifferentPnc_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .pnc("PNC1")
@@ -180,7 +180,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .pnc("PNC")
@@ -191,13 +191,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has defendant name changed")
     @Test
     void givenReceivedCourtCaseContainsDefendantWithDifferentName_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .name(Name.builder()
                                 .forename1("forename1")
@@ -211,7 +211,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .name(Name.builder()
                                 .forename1("forename1")
@@ -225,13 +225,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has a defendant with different phone number")
     @Test
     void givenReceivedCourtCaseContainsDefendantWithDifferentPhoneNumber_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .phoneNumber(PhoneNumber.builder()
                                 .mobile("07564328988")
@@ -244,7 +244,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .phoneNumber(PhoneNumber.builder()
                                 .mobile("07564328999")
@@ -257,13 +257,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has a defendant with different DOB")
     @Test
     void givenReceivedCourtCaseContainsDefendantWithDifferentDob_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -274,7 +274,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -285,13 +285,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has a defendant with different type")
     @Test
     void givenReceivedCourtCaseContainsDefendantWithDifferentType_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -301,7 +301,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(ORGANISATION)
@@ -311,13 +311,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case has a defendant with different sex")
     @Test
     void givenReceivedCourtCaseContainsDefendantWithDifferentSex_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -328,7 +328,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -339,7 +339,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Received case contains defendant with different CRO")
@@ -353,27 +353,27 @@ class IncomingCourtCaseComparatorTest {
                 .cro("CRO-another")
                 .type(PERSON)
                 .build();
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
                 .defendants(Collections.singletonList(defendantWithDifferentCRO))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
                 .defendants(Collections.singletonList(defendant1))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Existing case has a defendant with correct un normalised sex string")
     @Test
     void givenExistingCourtCaseContainsDefendantWithCorrectUnNormalisedSexString_ThenReturnFalse() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -384,7 +384,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -395,13 +395,13 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertFalse(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertFalse(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 
     @DisplayName("Existing case has a defendant with in correct un normalised sex string")
     @Test
     void givenExistingCourtCaseContainsDefendantWithInCorrectUnNormalisedSexString_ThenReturnTrue() {
-        var courtCaseReceived = CourtCase.builder()
+        var courtCaseReceived = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -412,7 +412,7 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .cro("CRO")
                         .type(PERSON)
@@ -423,6 +423,6 @@ class IncomingCourtCaseComparatorTest {
                         .build()))
                 .build();
 
-        assertTrue(IncomingCourtCaseComparator.hasCourtCaseChanged(courtCaseReceived, existingCourtCase));
+        assertTrue(IncomingHearingComparator.hasCourtHearingChanged(courtCaseReceived, existingCourtCase));
     }
 }

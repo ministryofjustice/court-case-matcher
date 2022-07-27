@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CourtCaseServiceTest {
+class HearingServiceTest {
 
     private static final String DEFENDANT_UUID_1 = "858e8102-5005-4702-a7c5-5f6baa966d59";
     private static final String DEFENDANT_UUID_2 = "ea66c23c-9c9c-4623-8c47-b882007915c3";
@@ -50,7 +50,7 @@ class CourtCaseServiceTest {
     private static final String CRN_2 = "CRN_2";
 
     @Captor
-    private ArgumentCaptor<CourtCase> courtCaseCaptor;
+    private ArgumentCaptor<Hearing> courtCaseCaptor;
 
     @Mock
     private CourtCaseRepository courtCaseRepo;
@@ -67,7 +67,7 @@ class CourtCaseServiceTest {
     @DisplayName("Save court case. This must be existing because it has a case no and a case id.")
     @Test
     void whenSaveCourtCase() {
-        final var courtCase = CourtCase.builder()
+        final var courtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .build()))
@@ -76,19 +76,19 @@ class CourtCaseServiceTest {
                 .defendants(defendants)
                 .source(DataSource.LIBRA)
                 .build();
-        when(courtCaseRepo.putCourtCase(courtCase)).thenReturn(Mono.empty());
+        when(courtCaseRepo.putHearing(courtCase)).thenReturn(Mono.empty());
         when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
-        courtCaseService.saveCourtCase(courtCase);
+        courtCaseService.saveHearing(courtCase);
 
-        verify(courtCaseRepo).putCourtCase(courtCase);
+        verify(courtCaseRepo).putHearing(courtCase);
         verify(courtCaseRepo).postOffenderMatches(CASE_ID, defendants);
     }
 
     @DisplayName("Save court case with no caseNo but with a caseId. Indicates a new CP case.")
     @Test
     void givenNoCaseNoOrId_whenSaveCourtCaseWithCaseId() {
-        final var courtCase = CourtCase.builder()
+        final var courtCase = Hearing.builder()
                 .source(DataSource.COMMON_PLATFORM)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
@@ -96,12 +96,12 @@ class CourtCaseServiceTest {
                 .defendants(defendants)
                 .caseId(CASE_ID)
                 .build();
-        when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
+        when(courtCaseRepo.putHearing(courtCaseCaptor.capture())).thenReturn(Mono.empty());
         when(courtCaseRepo.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
-        courtCaseService.saveCourtCase(courtCase);
+        courtCaseService.saveHearing(courtCase);
 
-        verify(courtCaseRepo).putCourtCase(notNull());
+        verify(courtCaseRepo).putHearing(notNull());
 
         final var capturedCase = courtCaseCaptor.getValue();
         assertThat(capturedCase.getCaseId()).isEqualTo(CASE_ID);
@@ -118,7 +118,7 @@ class CourtCaseServiceTest {
         var defendantId = UUID.randomUUID().toString();
         var defendantIdAnother = UUID.randomUUID().toString();
 
-        final var courtCase = CourtCase.builder()
+        final var courtCase = Hearing.builder()
                 .caseId(caseId)
                 .hearingId("hearingId")
                 .source(DataSource.LIBRA)
@@ -128,14 +128,14 @@ class CourtCaseServiceTest {
             .defendants(List.of(Defendant.builder().defendantId(defendantId).build(), Defendant.builder().defendantId(defendantIdAnother).build()))
             .caseNo(CASE_NO)
             .build();
-        when(courtCaseRepo.putCourtCase(courtCaseCaptor.capture())).thenReturn(Mono.empty());
+        when(courtCaseRepo.putHearing(courtCaseCaptor.capture())).thenReturn(Mono.empty());
         when(courtCaseRepo.postOffenderMatches(notNull(), notNull())).thenReturn(Mono.empty());
 
-        courtCaseService.saveCourtCase(courtCase);
+        courtCaseService.saveHearing(courtCase);
 
-        verify(courtCaseRepo).putCourtCase(courtCaseCaptor.capture());
+        verify(courtCaseRepo).putHearing(courtCaseCaptor.capture());
 
-        CourtCase actual = courtCaseCaptor.getValue();
+        Hearing actual = courtCaseCaptor.getValue();
         assertThat(actual).isNotNull();
         assertThat(actual.getHearingId()).isNotNull();
         assertThat(actual.getCaseId()).isNotNull();
@@ -158,7 +158,7 @@ class CourtCaseServiceTest {
         final var aCase = buildCaseNoMatches()
                 .withSource(DataSource.LIBRA);
 
-        final var courtCase = CourtCase.builder()
+        final var courtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .courtRoom("2")
@@ -169,12 +169,12 @@ class CourtCaseServiceTest {
                 .source(DataSource.LIBRA)
                 .build();
 
-        when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
+        when(courtCaseRepo.getHearing(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.findCourtCase(aCase).block();
+        final var updatedCourtCase = courtCaseService.findHearing(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
-        verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
+        verify(courtCaseRepo).getHearing(COURT_CODE, CASE_NO);
     }
 
     @DisplayName("Incoming Common Platform case returned if exist")
@@ -182,7 +182,7 @@ class CourtCaseServiceTest {
     void givenExistingCommonPlatformCase_whenGetCourtCase_thenReturn() {
         final var aCase = buildCaseNoMatches();
 
-        final var courtCase = CourtCase.builder()
+        final var courtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .courtRoom("2")
@@ -193,12 +193,12 @@ class CourtCaseServiceTest {
                 .source(DataSource.COMMON_PLATFORM)
                 .build();
 
-        when(courtCaseRepo.getCourtCase(HEARING_ID)).thenReturn(Mono.just(courtCase));
+        when(courtCaseRepo.getHearing(HEARING_ID)).thenReturn(Mono.just(courtCase));
 
-        final var updatedCourtCase = courtCaseService.findCourtCase(aCase).block();
+        final var updatedCourtCase = courtCaseService.findHearing(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
-        verify(courtCaseRepo).getCourtCase(HEARING_ID);
+        verify(courtCaseRepo).getHearing(HEARING_ID);
     }
 
     @DisplayName("Get court case which is new, return a null")
@@ -207,11 +207,11 @@ class CourtCaseServiceTest {
         var aCase = buildCaseNoMatches()
                 .withSource(DataSource.LIBRA);
 
-        when(courtCaseRepo.getCourtCase(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
+        when(courtCaseRepo.getHearing(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
 
-        final var newCourtCase = courtCaseService.findCourtCase(aCase).block();
+        final var newCourtCase = courtCaseService.findHearing(aCase).block();
 
-        verify(courtCaseRepo).getCourtCase(COURT_CODE, CASE_NO);
+        verify(courtCaseRepo).getHearing(COURT_CODE, CASE_NO);
         assertThat(newCourtCase).isNull();
     }
 
@@ -219,7 +219,7 @@ class CourtCaseServiceTest {
     @DisplayName("Do not save a search responses if case put fails.")
     @Test
     void givenSearchResponse_whenCreateCourtCaseFails_thenPostMatches() {
-        final var courtCase = CourtCase.builder()
+        final var courtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .build()))
@@ -228,13 +228,13 @@ class CourtCaseServiceTest {
                 .hearingId(HEARING_ID)
                 .caseNo(CASE_NO)
                 .build();
-        when(courtCaseRepo.putCourtCase(courtCase)).thenThrow(new RuntimeException("bang!"));
+        when(courtCaseRepo.putHearing(courtCase)).thenThrow(new RuntimeException("bang!"));
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> courtCaseService.saveCourtCase(courtCase))
+                .isThrownBy(() -> courtCaseService.saveHearing(courtCase))
                 .withMessage("bang!");
 
-        verify(courtCaseRepo).putCourtCase(courtCase);
+        verify(courtCaseRepo).putHearing(courtCase);
         verifyNoMoreInteractions(courtCaseRepo);
     }
 
@@ -243,7 +243,7 @@ class CourtCaseServiceTest {
     void whenUpdateProbationStatus_thenMergeAndReturn() {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
-        var courtCase = CourtCase.builder()
+        var courtCase = Hearing.builder()
                 .caseNo(CASE_NO)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
@@ -300,7 +300,7 @@ class CourtCaseServiceTest {
     void givenMultipleSearchResponses_whenUpdateProbationStatus_thenIgnore() {
 
         var localDate = LocalDate.of(2020, Month.AUGUST, 20);
-        var courtCase = CourtCase.builder()
+        var courtCase = Hearing.builder()
                 .caseNo(CASE_NO)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
@@ -334,23 +334,23 @@ class CourtCaseServiceTest {
     @Test
     void givenFailedCallToRestClient_whenUpdateProbationStatus_thenReturnInput() {
 
-        final var courtCase = CourtCase.builder()
+        final var courtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .crn(CRN)
                         .build()))
                 .build();
         when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.empty());
 
-        CourtCase courtCaseResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
+        Hearing hearingResult = courtCaseService.updateProbationStatusDetail(courtCase).block();
 
-        assertThat(courtCaseResult).isEqualTo(courtCase);
+        assertThat(hearingResult).isEqualTo(courtCase);
         verify(offenderSearchRestClient).search(CRN);
     }
 
-    private CourtCase buildCaseNoMatches() {
+    private Hearing buildCaseNoMatches() {
 
         final var defendant2 = Defendant.builder().defendantId(DEFENDANT_UUID_2).build();
-        return CourtCase.builder()
+        return Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .courtRoom(COURT_ROOM)

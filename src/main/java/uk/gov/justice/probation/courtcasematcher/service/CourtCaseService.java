@@ -7,14 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,47 +28,47 @@ public class CourtCaseService {
 
     private OffenderSearchRestClient offenderSearchRestClient;
 
-    public Mono<CourtCase> findCourtCase(CourtCase aCase) {
-        if (aCase.getSource() == DataSource.COMMON_PLATFORM) {
-            return courtCaseRepository.getCourtCase(aCase.getHearingId());
+    public Mono<Hearing> findHearing(Hearing hearing) {
+        if (hearing.getSource() == DataSource.COMMON_PLATFORM) {
+            return courtCaseRepository.getHearing(hearing.getHearingId());
         }
-        return courtCaseRepository.getCourtCase(aCase.getCourtCode(), aCase.getCaseNo());
+        return courtCaseRepository.getHearing(hearing.getCourtCode(), hearing.getCaseNo());
     }
 
-    public void saveCourtCase(CourtCase courtCase) {
-        CourtCase updatedCase = courtCase;
+    public void saveHearing(Hearing hearing) {
+        Hearing updatedHearing = hearing;
 
         // If this is a new case from COMMON platform, set caseNo = caseId
-        if (courtCase.getSource() == DataSource.COMMON_PLATFORM && courtCase.getCaseNo() == null) {
-            updatedCase = courtCase.withCaseNo(updatedCase.getCaseId());
+        if (hearing.getSource() == DataSource.COMMON_PLATFORM && hearing.getCaseNo() == null) {
+            updatedHearing = hearing.withCaseNo(updatedHearing.getCaseId());
         }
 
-        courtCaseRepository.putCourtCase(updatedCase)
+        courtCaseRepository.putHearing(updatedHearing)
                 .doOnError(throwable -> {
-                    log.error("Save court case failed for case id {} with {}", courtCase.getCaseId(), throwable.getMessage());
+                    log.error("Save court case failed for case id {} with {}", hearing.getCaseId(), throwable.getMessage());
                     throw new RuntimeException(throwable.getMessage());
                 })
                 .block();
 
-        courtCaseRepository.postOffenderMatches(updatedCase.getCaseId(), updatedCase.getDefendants())
+        courtCaseRepository.postOffenderMatches(updatedHearing.getCaseId(), updatedHearing.getDefendants())
                 .block();
 
     }
-    public Mono<CourtCase> updateProbationStatusDetail(CourtCase courtCase) {
-        final var updatedDefendants = courtCase.getDefendants()
+    public Mono<Hearing> updateProbationStatusDetail(Hearing hearing) {
+        final var updatedDefendants = hearing.getDefendants()
                 .stream()
                 .map(defendant -> defendant.getCrn() != null ? updateDefendant(defendant) : Mono.just(defendant))
                 .map(Mono::block)
                 .collect(Collectors.toList());
 
-        return Mono.just(courtCase.withDefendants(updatedDefendants));
+        return Mono.just(hearing.withDefendants(updatedDefendants));
     }
 
     private Mono<Defendant> updateDefendant(Defendant defendant) {
         return offenderSearchRestClient.search(defendant.getCrn())
                 .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
                 .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
-                .map(probationStatusDetail -> CaseMapper.merge(probationStatusDetail, defendant))
+                .map(probationStatusDetail -> HearingMapper.merge(probationStatusDetail, defendant))
                 .defaultIfEmpty(defendant);
     }
 }

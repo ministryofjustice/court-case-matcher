@@ -24,7 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
@@ -52,20 +52,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.*;
-import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyCourtCaseRestClientIntTest.WEB_CLIENT_TIMEOUT_MS;
+import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyHearingRestClientIntTest.WEB_CLIENT_TIMEOUT_MS;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TestMessagingConfig.class)
 @ExtendWith(MockitoExtension.class)
-class CourtCaseRestClientIntTest {
+class HearingRestClientIntTest {
     public static final String HEARING_ID_SERVER_ERROR = "771F1C21-D2CA-4235-8659-5C3C7D7C58B6";
     @Mock
     private Appender<ILoggingEvent> mockAppender;
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
     @Mock
-    private Mono<CourtCase> courtCaseMono;
+    private Mono<Hearing> courtCaseMono;
     @MockBean
     private LegacyCourtCaseRestClient legacyClient;
 
@@ -87,7 +87,7 @@ class CourtCaseRestClientIntTest {
     @Test
     void whenGetCourtCaseByHearingId_thenItsSuccessful() {
         final var HEARING_ID = "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f";
-        final var courtCase = client.getCourtCase(HEARING_ID).block();
+        final var courtCase = client.getHearing(HEARING_ID).block();
 
         assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
         assertThat(courtCase.getHearingId()).isEqualTo(HEARING_ID);
@@ -102,7 +102,7 @@ class CourtCaseRestClientIntTest {
 
     @Test
     void givenNotFound_whenGetCourtCaseById_thenReturnEmpty() {
-        final var courtCase = client.getCourtCase("NOT_FOUND").blockOptional();
+        final var courtCase = client.getHearing("NOT_FOUND").blockOptional();
 
         assertThat(courtCase).isEmpty();
 
@@ -116,7 +116,7 @@ class CourtCaseRestClientIntTest {
     void givenError_whenGetCourtCaseById_thenReturnEmpty() {
 
         assertThatExceptionOfType(WebClientResponseException.class)
-                .isThrownBy(()-> client.getCourtCase("SERVER_ERROR").block())
+                .isThrownBy(()-> client.getHearing("SERVER_ERROR").block())
                 .withMessageContaining("INTERNAL_SERVER_ERROR");
 
         MOCK_SERVER.findAllUnmatchedRequests();
@@ -129,7 +129,7 @@ class CourtCaseRestClientIntTest {
     void whenPutCourtCase_thenItsSuccessful() {
         final var courtCase = aCourtCaseBuilderWithAllFields()
                 .build();
-        final var voidMono = client.putCourtCase(courtCase);
+        final var voidMono = client.putHearing(courtCase);
         assertThat(voidMono.blockOptional()).isEmpty();
 
         MOCK_SERVER.verify(
@@ -143,7 +143,7 @@ class CourtCaseRestClientIntTest {
         final var courtCase = aCourtCaseBuilderWithAllFields()
                 .caseId(null)
                 .build();
-        final var voidMono = client.putCourtCase(courtCase);
+        final var voidMono = client.putHearing(courtCase);
         assertThat(voidMono.blockOptional()).isEmpty();
 
         MOCK_SERVER.verify(
@@ -162,15 +162,15 @@ class CourtCaseRestClientIntTest {
                 .build();
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> client.putCourtCase(aCase).block())
+                .isThrownBy(() -> client.putHearing(aCase).block())
                 .withMessage("Retries exhausted: 1/1");
     }
 
     @Test
     void getCourtCase_delegatesToLegacyClient() {
-        when(legacyClient.getCourtCase("court code", "case no")).thenReturn(courtCaseMono);
+        when(legacyClient.getHearing("court code", "case no")).thenReturn(courtCaseMono);
 
-        final var actualMono = client.getCourtCase("court code", "case no");
+        final var actualMono = client.getHearing("court code", "case no");
 
         assertThat(actualMono).isEqualTo(courtCaseMono);
     }

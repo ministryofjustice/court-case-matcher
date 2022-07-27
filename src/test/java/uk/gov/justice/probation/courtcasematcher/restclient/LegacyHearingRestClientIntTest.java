@@ -16,9 +16,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.event.CourtCaseFailureEvent;
+import uk.gov.justice.probation.courtcasematcher.event.HearingFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
@@ -39,7 +39,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TestMessagingConfig.class)
-public class LegacyCourtCaseRestClientIntTest {
+public class LegacyHearingRestClientIntTest {
 
     private static final String COURT_CODE = "B10JQ";
     private static final String CASE_NO = "12345";
@@ -81,7 +81,7 @@ public class LegacyCourtCaseRestClientIntTest {
                 .act("Contrary to section 1(1) and 7 of the Theft Act 1968.")
                 .build();
 
-        CourtCase expected = CourtCase.builder()
+        Hearing expected = Hearing.builder()
                 .caseId("1246257")
                 .caseNo(CASE_NO)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
@@ -111,7 +111,7 @@ public class LegacyCourtCaseRestClientIntTest {
                         .build()))
                 .build();
 
-        Optional<CourtCase> optional = restClient.getCourtCase(COURT_CODE, "123456").blockOptional();
+        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, "123456").blockOptional();
 
         assertThat(optional.get()).usingRecursiveComparison().isEqualTo(expected);
     }
@@ -119,18 +119,18 @@ public class LegacyCourtCaseRestClientIntTest {
     @Test
     void givenUnknownCaseNo_whenGetCourtCase_thenReturnEmptyOptional() {
 
-        Optional<CourtCase> optional = restClient.getCourtCase(COURT_CODE, NEW_CASE_NO).blockOptional();
+        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, NEW_CASE_NO).blockOptional();
 
         assertThat(optional.isPresent()).isFalse();
     }
 
     @Builder
-    public static class FailureEventMatcher implements ArgumentMatcher<CourtCaseFailureEvent> {
+    public static class FailureEventMatcher implements ArgumentMatcher<HearingFailureEvent> {
 
         private final Class throwableClass;
 
         @Override
-        public boolean matches(CourtCaseFailureEvent argument) {
+        public boolean matches(HearingFailureEvent argument) {
             return throwableClass.equals(argument.getThrowable().getClass());
         }
     }

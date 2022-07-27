@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(PactConsumerTestExt.class)
 @PactTestFor(providerName = "court-case-service")
 @PactDirectory(value = "build/pacts")
-class CourtCaseServiceConsumerPactTest {
+class HearingServiceConsumerPactTest {
 
     private static final String BASE_MOCK_PATH = "src/test/resources/mocks/__files/";
 

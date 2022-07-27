@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.restclient.exception.CourtCaseNotFoundException;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSCourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
+import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNotFoundException;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSHearing;
 
 import java.nio.charset.StandardCharsets;
 
@@ -36,17 +36,17 @@ public class LegacyCourtCaseRestClient {
         this.courtCasePutTemplate = courtCasePutTemplate;
     }
 
-    public Mono<CourtCase> getCourtCase(final String courtCode, final String caseNo) throws WebClientResponseException {
+    public Mono<Hearing> getHearing(final String courtCode, final String caseNo) throws WebClientResponseException {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         return courtCaseServiceRestHelper.get(path)
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
-            .bodyToMono(CCSCourtCase.class)
-            .map(courtCaseResponse -> {
-                log.debug("GET succeeded for retrieving the case for path {}", path);
-                return courtCaseResponse.asDomain();
+            .bodyToMono(CCSHearing.class)
+            .map(ccsHearing -> {
+                log.debug("GET succeeded for retrieving the hearing for path {}", path);
+                return ccsHearing.asDomain();
             })
             .onErrorResume((e) -> {
                 // This is normal in the context of CCM, don't log
@@ -59,7 +59,7 @@ public class LegacyCourtCaseRestClient {
         // This is expected for new cases
         if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
             log.info("Failed to get case for case number {} and court code {}", caseNo, courtCode);
-            return Mono.error(new CourtCaseNotFoundException(courtCode, caseNo));
+            return Mono.error(new HearingNotFoundException(courtCode, caseNo));
         }
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
             log.error("HTTP status {} to to GET the case from court case service", httpStatus);

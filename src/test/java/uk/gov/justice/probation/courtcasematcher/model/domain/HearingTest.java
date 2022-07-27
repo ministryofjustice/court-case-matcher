@@ -6,11 +6,11 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-class CourtCaseTest {
+class HearingTest {
 
     @Test
     void givenAnyDefendantShouldMatch_thenTrue() {
-        CourtCase courtCase = CourtCase.builder()
+        Hearing hearing = Hearing.builder()
                 .defendants(List.of(Defendant.builder()
                         .type(DefendantType.ORGANISATION)
                         .build(),
@@ -20,12 +20,12 @@ class CourtCaseTest {
                                 .build()
                 ))
                 .build();
-        assertThat(courtCase.shouldMatchToOffender()).isTrue();
+        assertThat(hearing.shouldMatchToOffender()).isTrue();
     }
 
     @Test
     void givenNoDefendantsShouldMatch_thenFalse() {
-        CourtCase courtCase = CourtCase.builder()
+        Hearing hearing = Hearing.builder()
                 .defendants(List.of(Defendant.builder()
                         .type(DefendantType.ORGANISATION)
                         .build(),
@@ -35,6 +35,6 @@ class CourtCaseTest {
                                 .build()
                 ))
                 .build();
-        assertThat(courtCase.shouldMatchToOffender()).isFalse();
+        assertThat(hearing.shouldMatchToOffender()).isFalse();
     }
 }

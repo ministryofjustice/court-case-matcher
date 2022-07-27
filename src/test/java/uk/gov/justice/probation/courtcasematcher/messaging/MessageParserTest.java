@@ -13,7 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.probation.courtcasematcher.application.MessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.*;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 
@@ -239,7 +239,7 @@ class MessageParserTest {
 
         @Autowired
         @Qualifier("libraJsonParser")
-        private MessageParser<LibraCase> messageParser;
+        private MessageParser<LibraHearing> messageParser;
 
         @DisplayName("Parse a valid message")
         @Test
@@ -247,7 +247,7 @@ class MessageParserTest {
             var path = "src/test/resources/messages/libra/case.json";
             var content = Files.readString(Paths.get(path));
 
-            var aCase = messageParser.parseMessage(content, LibraCase.class);
+            var aCase = messageParser.parseMessage(content, LibraHearing.class);
             checkLibraCase(aCase);
         }
 
@@ -257,7 +257,7 @@ class MessageParserTest {
             var path = "src/test/resources/messages/libra/case-invalid.json";
             var content = Files.readString(Paths.get(path));
 
-            var thrown = catchThrowable(() -> messageParser.parseMessage(content, LibraCase.class));
+            var thrown = catchThrowable(() -> messageParser.parseMessage(content, LibraHearing.class));
 
             var ex = (ConstraintViolationException) thrown;
             assertThat(ex.getConstraintViolations()).hasSize(1);
@@ -266,30 +266,30 @@ class MessageParserTest {
         }
     }
 
-    private static void checkLibraCase(LibraCase aLibraCase) {
+    private static void checkLibraCase(LibraHearing aLibraHearing) {
         // Fields populated from the session
-        assertThat(aLibraCase.getDefendantAge()).isEqualTo("20");
-        assertThat(aLibraCase.getDefendantName()).isEqualTo("Mr Arthur MORGAN");
-        assertThat(aLibraCase.getName()).isEqualTo(LibraName.builder()
+        assertThat(aLibraHearing.getDefendantAge()).isEqualTo("20");
+        assertThat(aLibraHearing.getDefendantName()).isEqualTo("Mr Arthur MORGAN");
+        assertThat(aLibraHearing.getName()).isEqualTo(LibraName.builder()
                 .title("Mr")
                 .forename1("Arthur")
                 .surname("MORGAN").build());
-        assertThat(aLibraCase.getDefendantType()).isEqualTo("P");
-        assertThat(aLibraCase.getDefendantSex()).isEqualTo("N");
-        assertThat(aLibraCase.getDefendantAge()).isEqualTo("20");
-        assertThat(aLibraCase.getPnc()).isEqualTo("2004/0012345U");
-        assertThat(aLibraCase.getCro()).isEqualTo("11111/79J");
-        assertThat(aLibraCase.getDefendantAddress()).usingRecursiveComparison().isEqualTo(LibraAddress.builder()
+        assertThat(aLibraHearing.getDefendantType()).isEqualTo("P");
+        assertThat(aLibraHearing.getDefendantSex()).isEqualTo("N");
+        assertThat(aLibraHearing.getDefendantAge()).isEqualTo("20");
+        assertThat(aLibraHearing.getPnc()).isEqualTo("2004/0012345U");
+        assertThat(aLibraHearing.getCro()).isEqualTo("11111/79J");
+        assertThat(aLibraHearing.getDefendantAddress()).usingRecursiveComparison().isEqualTo(LibraAddress.builder()
                 .line1("39 The Street")
                 .line2("Newtown")
                 .pcode("NT4 6YH").build());
-        assertThat(aLibraCase.getDefendantDob()).isEqualTo(LocalDate.of(1975, Month.JANUARY, 1));
-        assertThat(aLibraCase.getNationality1()).isEqualTo("Angolan");
-        assertThat(aLibraCase.getNationality2()).isEqualTo("Austrian");
-        assertThat(aLibraCase.getSeq()).isEqualTo(1);
-        assertThat(aLibraCase.getListNo()).isEqualTo("1st");
-        assertThat(aLibraCase.getOffences()).hasSize(1);
-        checkOffence(aLibraCase.getOffences().get(0));
+        assertThat(aLibraHearing.getDefendantDob()).isEqualTo(LocalDate.of(1975, Month.JANUARY, 1));
+        assertThat(aLibraHearing.getNationality1()).isEqualTo("Angolan");
+        assertThat(aLibraHearing.getNationality2()).isEqualTo("Austrian");
+        assertThat(aLibraHearing.getSeq()).isEqualTo(1);
+        assertThat(aLibraHearing.getListNo()).isEqualTo("1st");
+        assertThat(aLibraHearing.getOffences()).hasSize(1);
+        checkOffence(aLibraHearing.getOffences().get(0));
     }
 
     private static void checkOffence(LibraOffence offence) {

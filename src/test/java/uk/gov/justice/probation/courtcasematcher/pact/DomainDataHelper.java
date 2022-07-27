@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.pact;
 
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
@@ -20,12 +20,12 @@ public class DomainDataHelper {
     public static String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
     public static String HEARING_ID = "ABCDD32D-3C80-41E8-846E-D274DC2B94A5";
 
-    public static CourtCase aCourtCaseWithAllFields() {
+    public static Hearing aCourtCaseWithAllFields() {
         return aCourtCaseBuilderWithAllFields()
                 .build();
     }
 
-    public static CourtCase.CourtCaseBuilder aCourtCaseBuilderWithAllFields() {
+    public static Hearing.HearingBuilder aCourtCaseBuilderWithAllFields() {
         return aMinimalCourtCaseBuilder()
                 .caseNo("case no")
                 .hearingId(HEARING_ID)
@@ -69,13 +69,13 @@ public class DomainDataHelper {
                 ;
     }
 
-    public static CourtCase aMinimalValidCourtCase() {
+    public static Hearing aMinimalValidCourtCase() {
         return aMinimalCourtCaseBuilder()
                 .build();
     }
 
-    public static CourtCase.CourtCaseBuilder aMinimalCourtCaseBuilder() {
-        return CourtCase.builder()
+    public static Hearing.HearingBuilder aMinimalCourtCaseBuilder() {
+        return Hearing.builder()
                 .caseId(CASE_ID)
                 .hearingId(HEARING_ID)
                 .source(DataSource.COMMON_PLATFORM)

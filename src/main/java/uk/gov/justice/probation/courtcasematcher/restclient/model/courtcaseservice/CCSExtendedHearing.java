@@ -6,11 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Builder
@@ -18,7 +16,7 @@ import java.util.stream.Collectors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class CCSExtendedCase {
+public class CCSExtendedHearing {
     private String caseId;
     private String hearingId;
     private String caseNo;
@@ -27,24 +25,24 @@ public class CCSExtendedCase {
     private List<CCSHearingDay> hearingDays;
     private CCSDataSource source;
 
-    public static CCSExtendedCase of(CourtCase courtCase) {
-        return CCSExtendedCase.builder()
-                .caseId(courtCase.getCaseId())
-                .hearingId(courtCase.getHearingId())
-                .urn(courtCase.getUrn())
-                .caseNo(courtCase.getCaseNo())
-                .source(CCSDataSource.of(courtCase.getSource()))
-                .hearingDays(courtCase.getHearingDays().stream()
+    public static CCSExtendedHearing of(Hearing hearing) {
+        return CCSExtendedHearing.builder()
+                .caseId(hearing.getCaseId())
+                .hearingId(hearing.getHearingId())
+                .urn(hearing.getUrn())
+                .caseNo(hearing.getCaseNo())
+                .source(CCSDataSource.of(hearing.getSource()))
+                .hearingDays(hearing.getHearingDays().stream()
                         .map(CCSHearingDay::of)
                         .collect(Collectors.toList()))
-                .defendants(courtCase.getDefendants().stream()
+                .defendants(hearing.getDefendants().stream()
                         .map(CCSDefendant::of)
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    public CourtCase asDomain() {
-        return CourtCase.builder()
+    public Hearing asDomain() {
+        return Hearing.builder()
                 .caseId(caseId)
                 .hearingId(hearingId)
                 .urn(getUrn())

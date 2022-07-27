@@ -15,7 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
@@ -70,7 +70,7 @@ class MatcherServiceTest {
             .surname("Marston")
             .build();
 
-    private static final CourtCase COURT_CASE;
+    private static final Hearing COURT_CASE;
 
     static {
         final var defendant1 = Defendant.builder()

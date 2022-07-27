@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
@@ -26,19 +26,19 @@ class SqsMessageReceiverTest {
     private static String singleCaseJson;
 
     @Mock
-    private CourtCaseProcessor caseProcessor;
+    private HearingProcessor caseProcessor;
     @Mock
     private TelemetryService telemetryService;
     @Mock
     private AutoCloseable operation;
     @Mock
-    private CourtCaseExtractor caseExtractor;
+    private HearingExtractor caseExtractor;
 
-    private CourtCase libraCourtCase = CourtCase.builder()
+    private Hearing libraHearing = Hearing.builder()
             .source(DataSource.LIBRA)
             .build();
 
-    private CourtCase commonPlatformCourtCase = CourtCase.builder()
+    private Hearing commonPlatformHearing = Hearing.builder()
             .source(DataSource.COMMON_PLATFORM)
             .build();
     private SqsMessageReceiver sqsMessageReceiver;
@@ -58,13 +58,13 @@ class SqsMessageReceiverTest {
     @Test
     void givenLibraMessage_whenReceived_ThenTrackAndProcess() throws Exception {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
-        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(libraCourtCase);
+        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId");
 
         verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackCaseMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor).process(libraCourtCase, MESSAGE_ID);
+        verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
+        verify(caseProcessor).process(libraHearing, MESSAGE_ID);
         verify(operation).close();
     }
 
@@ -72,15 +72,15 @@ class SqsMessageReceiverTest {
     @Test
     void givenCommonPlatformMessage_whenReceived_ThenProcess() throws Exception {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
-        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(CourtCase.builder()
+        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(Hearing.builder()
                 .source(DataSource.COMMON_PLATFORM)
                 .build());
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId");
 
         verify(telemetryService).withOperation("operationId");
-        verify(telemetryService).trackCaseMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor).process(commonPlatformCourtCase, MESSAGE_ID);
+        verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
+        verify(caseProcessor).process(commonPlatformHearing, MESSAGE_ID);
         verify(operation).close();
     }
 
@@ -88,7 +88,7 @@ class SqsMessageReceiverTest {
     void givenExceptionThrown_whenExtractCase_thenThrow() {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
         final var runtimeException = new RuntimeException("Bang");
-        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenThrow(runtimeException);
+        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenThrow(runtimeException);
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId"))
@@ -99,8 +99,8 @@ class SqsMessageReceiverTest {
     void givenExceptionThrown_whenProcessCase_thenThrow() {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
         final var runtimeException = new RuntimeException("Bang");
-        when(caseExtractor.extractCourtCase(singleCaseJson, MESSAGE_ID)).thenReturn(libraCourtCase);
-        doThrow(runtimeException).when(caseProcessor).process(libraCourtCase, MESSAGE_ID);
+        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
+        doThrow(runtimeException).when(caseProcessor).process(libraHearing, MESSAGE_ID);
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId"))
