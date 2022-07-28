@@ -52,13 +52,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.*;
-import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyHearingRestClientIntTest.WEB_CLIENT_TIMEOUT_MS;
+import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyCourtCaseRestClientIntTest.WEB_CLIENT_TIMEOUT_MS;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TestMessagingConfig.class)
 @ExtendWith(MockitoExtension.class)
-class HearingRestClientIntTest {
+class CourtCaseRestClientIntTest {
     public static final String HEARING_ID_SERVER_ERROR = "771F1C21-D2CA-4235-8659-5C3C7D7C58B6";
     @Mock
     private Appender<ILoggingEvent> mockAppender;

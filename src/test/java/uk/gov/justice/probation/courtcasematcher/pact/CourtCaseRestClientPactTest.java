@@ -33,7 +33,7 @@ import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.HE
 @ExtendWith({PactConsumerTestExt.class})
 @PactTestFor(providerName = "court-case-service", port = "8090")
 @PactDirectory(value = "build/pacts")
-class HearingRestClientPactTest {
+class CourtCaseRestClientPactTest {
 
     private static final String BASE_MOCK_PATH = "src/test/resources/mocks/__files/";
 

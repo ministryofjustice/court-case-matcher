@@ -3,11 +3,9 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
-import lombok.Builder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.LoggerFactory;
@@ -16,11 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.event.HearingFailureEvent;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
@@ -39,7 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TestMessagingConfig.class)
-public class LegacyHearingRestClientIntTest {
+public class LegacyCourtCaseRestClientIntTest {
 
     private static final String COURT_CODE = "B10JQ";
     private static final String CASE_NO = "12345";
@@ -122,16 +119,5 @@ public class LegacyHearingRestClientIntTest {
         Optional<Hearing> optional = restClient.getHearing(COURT_CODE, NEW_CASE_NO).blockOptional();
 
         assertThat(optional.isPresent()).isFalse();
-    }
-
-    @Builder
-    public static class FailureEventMatcher implements ArgumentMatcher<HearingFailureEvent> {
-
-        private final Class throwableClass;
-
-        @Override
-        public boolean matches(HearingFailureEvent argument) {
-            return throwableClass.equals(argument.getThrowable().getClass());
-        }
     }
 }

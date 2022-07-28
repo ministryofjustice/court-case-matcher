@@ -8,7 +8,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import java.util.List;
 
 public interface CourtCaseRepository {
-    Mono<Hearing> getHearing(String caseId);
+    Mono<Hearing> getHearing(String hearingId);
 
     Mono<Hearing> getHearing(String courtCode, String caseNo) throws WebClientResponseException;
 
