@@ -19,7 +19,7 @@ import java.util.Optional;
 @With
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class CourtCase implements Serializable {
+public class Hearing implements Serializable {
 
     private final String caseId;
     private final String hearingId;

@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
 @Data
 @Builder
@@ -18,7 +18,7 @@ public class CPHearingEvent {
     @Valid
     private final CPHearing hearing;
 
-    public CourtCase asDomain() {
+    public Hearing asDomain() {
         return hearing.asDomain();
     }
 }

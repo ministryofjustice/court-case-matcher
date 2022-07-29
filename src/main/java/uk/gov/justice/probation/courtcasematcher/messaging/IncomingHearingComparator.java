@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
@@ -17,9 +17,9 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 import static java.util.Objects.isNull;
 
-public class IncomingCourtCaseComparator {
+public class IncomingHearingComparator {
 
-    static final Comparator<CourtCase> caseComparator = Comparator.nullsFirst(comparing(CourtCase::getUrn, nullsFirst(naturalOrder())));
+    static final Comparator<Hearing> hearingComparator = Comparator.nullsFirst(comparing(Hearing::getUrn, nullsFirst(naturalOrder())));
 
     static final Comparator<Defendant> defendantComparator = Comparator.nullsFirst(comparing(Defendant::getPnc, nullsFirst(naturalOrder()))
             .thenComparing(Defendant::getCro, nullsFirst(naturalOrder()))
@@ -52,19 +52,19 @@ public class IncomingCourtCaseComparator {
             .thenComparing(HearingDay::getSessionStartTime, nullsFirst(naturalOrder())));
 
 
-    public static boolean hasCourtCaseChanged(CourtCase courtCase, CourtCase courtCaseToCompare) {
+    public static boolean hasCourtHearingChanged(Hearing hearing, Hearing hearingToCompare) {
 
-        if (hasHearingDaysChanged(courtCase.getHearingDays(), courtCaseToCompare.getHearingDays()) ||
-                hasDefendantsChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants()) ||
-                hasDefendantOffencesChanged(courtCase.getDefendants(), courtCaseToCompare.getDefendants())) {
+        if (hasHearingDaysChanged(hearing.getHearingDays(), hearingToCompare.getHearingDays()) ||
+                hasDefendantsChanged(hearing.getDefendants(), hearingToCompare.getDefendants()) ||
+                hasDefendantOffencesChanged(hearing.getDefendants(), hearingToCompare.getDefendants())) {
             return true;
         }
 
-        return hasCaseChanged(courtCase, courtCaseToCompare);
+        return hasHearingChanged(hearing, hearingToCompare);
     }
 
-    private static boolean hasCaseChanged(CourtCase courtCase, CourtCase courtCaseToCompare) {
-        return caseComparator.compare(courtCase, courtCaseToCompare) != 0;
+    private static boolean hasHearingChanged(Hearing hearing, Hearing hearingToCompare) {
+        return hearingComparator.compare(hearing, hearingToCompare) != 0;
     }
 
     private static boolean hasDefendantsChanged(List<Defendant> defendants, List<Defendant> defendantsToCompare) {

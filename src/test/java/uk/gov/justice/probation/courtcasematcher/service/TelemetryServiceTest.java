@@ -13,7 +13,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
@@ -74,7 +74,7 @@ class TelemetryServiceTest {
             .build();
     private static final String COURT_ROOM = "01";
     private static final LocalDate DATE_OF_HEARING = LocalDate.of(2020, Month.NOVEMBER, 5);
-    private static CourtCase courtCase;
+    private static Hearing hearing;
 
     @Captor
     private ArgumentCaptor<Map<String, String>> propertiesCaptor;
@@ -88,7 +88,7 @@ class TelemetryServiceTest {
     @BeforeAll
     static void beforeEach() {
 
-        courtCase = CourtCase.builder()
+        hearing = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .courtRoom(COURT_ROOM)
@@ -120,10 +120,10 @@ class TelemetryServiceTest {
 
     @DisplayName("Record the event when an sqs message event happens")
     @Test
-    void whenCaseMessageReceived_thenRecord() {
-        telemetryService.trackCaseMessageReceivedEvent("messageId");
+    void whenHearingMessageReceived_thenRecord() {
+        telemetryService.trackHearingMessageReceivedEvent("messageId");
 
-        verify(telemetryClient).trackEvent(eq("PiCCourtCaseMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+        verify(telemetryClient).trackEvent(eq("PiCHearingMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(1);
@@ -134,10 +134,10 @@ class TelemetryServiceTest {
 
     @DisplayName("Record the event when an sqs message event happens and the messageId is null")
     @Test
-    void whenCaseMessageReceivedAndMessageIdNull_thenRecord() {
-        telemetryService.trackCaseMessageReceivedEvent(null);
+    void whenHearingMessageReceivedAndMessageIdNull_thenRecord() {
+        telemetryService.trackHearingMessageReceivedEvent(null);
 
-        verify(telemetryClient).trackEvent(eq("PiCCourtCaseMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+        verify(telemetryClient).trackEvent(eq("PiCHearingMessageReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(0);
@@ -152,12 +152,12 @@ class TelemetryServiceTest {
                 .matches(List.of(match))
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, hearing, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderExactMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertCourtCaseProperties(14);
+        assertHearingProperties(14);
         assertThat(properties).contains(
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.ALL_SUPPLIED.name()),
@@ -175,11 +175,11 @@ class TelemetryServiceTest {
                 .matches(matches)
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, hearing, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties(14);
+        assertHearingProperties(14);
         assertThat(propertiesCaptor.getValue()).contains(
                 entry(MATCHES_KEY, "2"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
@@ -195,12 +195,12 @@ class TelemetryServiceTest {
                 .matches(List.of(buildMatch(CRN)))
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, hearing, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderPartialMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
-        assertCourtCaseProperties(14);
+        assertHearingProperties(14);
         assertThat(properties).contains(
                 entry(MATCHES_KEY, "1"),
                 entry(MATCHED_BY_KEY, OffenderSearchMatchType.PARTIAL_NAME.name()),
@@ -216,11 +216,11 @@ class TelemetryServiceTest {
                 .matchedBy(OffenderSearchMatchType.NOTHING)
                 .build();
 
-        telemetryService.trackOffenderMatchEvent(DEFENDANT, courtCase, response);
+        telemetryService.trackOffenderMatchEvent(DEFENDANT, hearing, response);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderNoMatch"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties(10);
+        assertHearingProperties(10);
         assertThat(propertiesCaptor.getValue()).contains(
                 entry(PNC_KEY, PNC)
         );
@@ -233,49 +233,49 @@ class TelemetryServiceTest {
         final Defendant defendant = Defendant.builder()
                 .pnc(PNC)
                 .build();
-        telemetryService.trackOffenderMatchFailureEvent(defendant, courtCase);
+        telemetryService.trackOffenderMatchFailureEvent(defendant, hearing);
 
         verify(telemetryClient).trackEvent(eq("PiCOffenderMatchError"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties(11);
+        assertHearingProperties(11);
         assertThat(propertiesCaptor.getValue()).contains(
                 entry(PNC_KEY, PNC)
         );
     }
 
-    @DisplayName("Record the event when a court case is received")
+    @DisplayName("Record the event when a hearing is received")
     @Test
-    void whenCourtCaseReceived_thenRecord() {
+    void whenHearingReceived_thenRecord() {
 
-        telemetryService.trackCourtCaseEvent(courtCase, "messageId");
+        telemetryService.trackHearingEvent(hearing, "messageId");
 
-        verify(telemetryClient).trackEvent(eq("PiCCourtCaseReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+        verify(telemetryClient).trackEvent(eq("PiCHearingReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
 
-        assertCourtCaseProperties(10);
+        assertHearingProperties(10);
         assertThat(properties).contains(
                 entry(SQS_MESSAGE_ID_KEY, "messageId")
         );
     }
 
-    @DisplayName("Record the event when a court case is received and messageId is null")
+    @DisplayName("Record the event when a hearing is received and messageId is null")
     @Test
-    void whenCourtCaseReceived_andMessageIdIsNull_thenRecord() {
+    void whenHearingReceived_andMessageIdIsNull_thenRecord() {
 
-        telemetryService.trackCourtCaseEvent(courtCase, null);
+        telemetryService.trackHearingEvent(hearing, null);
 
-        verify(telemetryClient).trackEvent(eq("PiCCourtCaseReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+        verify(telemetryClient).trackEvent(eq("PiCHearingReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties();
+        assertHearingProperties();
     }
 
-    @DisplayName("Record the event when a court case is received as JSON and messageId is not null")
+    @DisplayName("Record the event when a hearing is received as JSON and messageId is not null")
     @Test
-    void whenCourtCaseReceivedFromJson_andMessageIdIsNull_thenRecord() {
+    void whenHearingReceivedFromJson_andMessageIdIsNull_thenRecord() {
 
         var sessionStartTime = LocalDateTime.of(DATE_OF_HEARING, LocalTime.of(9, 30, 34));
-        var caseJson = CourtCase.builder()
+        var hearingJson = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .courtRoom(COURT_ROOM)
@@ -284,9 +284,9 @@ class TelemetryServiceTest {
                 .caseNo(CASE_NO)
                 .build();
 
-        telemetryService.trackCourtCaseEvent(caseJson, "messageId");
+        telemetryService.trackHearingEvent(hearingJson, "messageId");
 
-        verify(telemetryClient).trackEvent(eq("PiCCourtCaseReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+        verify(telemetryClient).trackEvent(eq("PiCHearingReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(5);
@@ -299,46 +299,46 @@ class TelemetryServiceTest {
         );
     }
 
-    @DisplayName("Record the event when the received court case has changed")
+    @DisplayName("Record the event when the received hearing has changed")
     @Test
-    void whenUpdatedCaseReceived_thenRecord() {
+    void whenUpdatedHearingReceived_thenRecord() {
 
-        telemetryService.trackHearingChangedEvent(courtCase);
+        telemetryService.trackHearingChangedEvent(hearing);
 
         verify(telemetryClient).trackEvent(eq("PiCHearingChanged"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties();
+        assertHearingProperties();
     }
 
-    @DisplayName("Record the event when the received court case has not changed")
+    @DisplayName("Record the event when the received hearing has not changed")
     @Test
-    void whenCaseReceivedHasNoChange_thenRecord() {
+    void whenHearingReceivedHasNoChange_thenRecord() {
 
-        telemetryService.trackHearingUnChangedEvent(courtCase);
+        telemetryService.trackHearingUnChangedEvent(hearing);
 
         verify(telemetryClient).trackEvent(eq("PiCHearingUnchanged"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
-        assertCourtCaseProperties();
+        assertHearingProperties();
     }
 
-    private void assertCourtCaseProperties(int size) {
+    private void assertHearingProperties(int size) {
         Map<String, String> properties = propertiesCaptor.getValue();
         assertThat(properties).hasSize(size);
         assertThat(properties).contains(
-          entry(COURT_CODE_KEY, courtCase.getCourtCode()),
-          entry(URN_KEY, courtCase.getUrn()),
-          entry(HEARING_ID_KEY, courtCase.getHearingId()),
-          entry(HEARING_DATE_KEY, courtCase.getDateOfHearing().toString()),
-          entry(SOURCE_KEY, courtCase.getSource().name()),
-          entry(COURT_ROOM_KEY, courtCase.getCourtRoom()),
-          entry(CASE_NO_KEY, courtCase.getCaseNo()),
-          entry(CASE_ID_KEY, courtCase.getCaseId()),
+          entry(COURT_CODE_KEY, hearing.getCourtCode()),
+          entry(URN_KEY, hearing.getUrn()),
+          entry(HEARING_ID_KEY, hearing.getHearingId()),
+          entry(HEARING_DATE_KEY, hearing.getDateOfHearing().toString()),
+          entry(SOURCE_KEY, hearing.getSource().name()),
+          entry(COURT_ROOM_KEY, hearing.getCourtRoom()),
+          entry(CASE_NO_KEY, hearing.getCaseNo()),
+          entry(CASE_ID_KEY, hearing.getCaseId()),
           entry(DEFENDANT_IDS_KEY, String.join(",", DEFENDANT_ID_ONE, DEFENDANT_ID_TWO))
         );
     }
 
-    private void assertCourtCaseProperties() {
-        assertCourtCaseProperties(9);
+    private void assertHearingProperties() {
+        assertHearingProperties(9);
     }
 
     @Nested

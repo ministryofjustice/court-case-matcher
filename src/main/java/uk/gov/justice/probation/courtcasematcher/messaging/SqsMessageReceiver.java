@@ -26,8 +26,7 @@ public class SqsMessageReceiver {
 
     @Autowired
     @NonNull
-    @Qualifier("courtCaseProcessor")
-    private final CourtCaseProcessor courtCaseProcessor;
+    private final HearingProcessor hearingProcessor;
 
     @Autowired
     @NonNull
@@ -38,7 +37,7 @@ public class SqsMessageReceiver {
 
     @Autowired
     @NonNull
-    private final CourtCaseExtractor courtCaseExtractor;
+    private final HearingExtractor hearingExtractor;
 
     @SqsListener(value = "${aws.sqs.court_case_matcher_queue_name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(
@@ -49,10 +48,10 @@ public class SqsMessageReceiver {
         log.info("Received JSON message from SQS queue {} with messageId: {}. ", queueName, messageId);
 
         try (final var ignored = telemetryService.withOperation(operationId)) {
-            telemetryService.trackCaseMessageReceivedEvent(messageId);
-            final var courtCase = courtCaseExtractor.extractCourtCase(message, messageId);
+            telemetryService.trackHearingMessageReceivedEvent(messageId);
+            final var hearing = hearingExtractor.extractHearing(message, messageId);
 
-            courtCaseProcessor.process(courtCase, messageId);
+            hearingProcessor.process(hearing, messageId);
         }
     }
 }

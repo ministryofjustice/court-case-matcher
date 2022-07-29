@@ -173,14 +173,14 @@ class CourtCaseRestClientPactTest {
     @PactTestFor(pactMethod = "getCourtCaseByIdPact")
     @Test
     void getCourtCaseById() {
-        final var courtCase = restClient.getCourtCase("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f").block();
+        final var courtCase = restClient.getHearing("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f").block();
         assertThat(courtCase.getHearingId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
     }
 
     @PactTestFor(pactMethod = "putMinimalCourtCaseByIdPact")
     @Test
     void putMinimalCourtCase() {
-        final var actual = restClient.putCourtCase(DomainDataHelper.aMinimalValidCourtCase()).blockOptional();
+        final var actual = restClient.putHearing(DomainDataHelper.aMinimalValidCourtCase()).blockOptional();
         assertThat(actual).isEmpty();
     }
 
@@ -189,7 +189,7 @@ class CourtCaseRestClientPactTest {
     void putCourtCaseWithAllFields() {
 
         final var actual = ((CourtCaseRepository) restClient)
-                .putCourtCase(DomainDataHelper.aCourtCaseWithAllFields()).blockOptional();
+                .putHearing(DomainDataHelper.aCourtCaseWithAllFields()).blockOptional();
 
         assertThat(actual).isEmpty();
     }

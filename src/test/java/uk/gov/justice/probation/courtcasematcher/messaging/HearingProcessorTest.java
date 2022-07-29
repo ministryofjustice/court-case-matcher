@@ -7,10 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
-class CourtCaseProcessorTest {
+class HearingProcessorTest {
     private static final long MATCHER_THREAD_TIMEOUT = 4000;
     private static final String MESSAGE_ID = "messageId";
 
@@ -38,11 +38,11 @@ class CourtCaseProcessorTest {
     @Mock
     private MatcherService matcherService;
 
-    private CourtCaseProcessor messageProcessor;
+    private HearingProcessor messageProcessor;
 
     @BeforeEach
     void beforeEach() {
-        messageProcessor = new CourtCaseProcessor(telemetryService,
+        messageProcessor = new HearingProcessor(telemetryService,
                 courtCaseService,
                 matcherService
         );
@@ -52,7 +52,7 @@ class CourtCaseProcessorTest {
     @DisplayName("Receive a valid unmatched case for person then match and save")
     @Test
     void whenValidMessageReceivedForPerson_ThenMatchAndSave() {
-        var courtCase = CourtCase.builder()
+        var courtCase = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
@@ -62,15 +62,15 @@ class CourtCaseProcessorTest {
                         .build()))
                 .build();
 
-        when(courtCaseService.findCourtCase(any(CourtCase.class))).thenReturn(Mono.empty());
-        when(matcherService.matchDefendants(any(CourtCase.class))).thenReturn(Mono.just(courtCase));
+        when(courtCaseService.findHearing(any(Hearing.class))).thenReturn(Mono.empty());
+        when(matcherService.matchDefendants(any(Hearing.class))).thenReturn(Mono.just(courtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), eq(MESSAGE_ID));
+        verify(telemetryService).trackHearingEvent(any(Hearing.class), eq(MESSAGE_ID));
 
-        verify(courtCaseService).saveCourtCase(eq(courtCase));
-        verify(courtCaseService).findCourtCase(any(CourtCase.class));
+        verify(courtCaseService).saveHearing(eq(courtCase));
+        verify(courtCaseService).findHearing(any(Hearing.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService);
     }
 
@@ -80,7 +80,7 @@ class CourtCaseProcessorTest {
         var caseId = UUID.randomUUID().toString();
         var defendantId = UUID.randomUUID().toString();
 
-        var courtCase = CourtCase.builder()
+        var courtCase = Hearing.builder()
                 .caseId(caseId)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
@@ -91,7 +91,7 @@ class CourtCaseProcessorTest {
                         .defendantId(defendantId)
                         .build()))
                 .build();
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .caseId(caseId)
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
@@ -99,40 +99,40 @@ class CourtCaseProcessorTest {
                         .defendantId(defendantId)
                         .build()))
                 .build();
-        var courtCaseMerged = CaseMapper.merge(courtCase, existingCourtCase);
-        when(courtCaseService.findCourtCase(any(CourtCase.class))).thenReturn(Mono.just(existingCourtCase));
+        var courtCaseMerged = HearingMapper.merge(courtCase, existingCourtCase);
+        when(courtCaseService.findHearing(any(Hearing.class))).thenReturn(Mono.just(existingCourtCase));
         when(courtCaseService.updateProbationStatusDetail(courtCaseMerged)).thenReturn(Mono.just(courtCaseMerged));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackHearingChangedEvent(any(CourtCase.class));
-        verify(courtCaseService).findCourtCase(any(CourtCase.class));
+        verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
+        verify(courtCaseService).findHearing(any(Hearing.class));
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCaseMerged));
-        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCaseMerged));
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveHearing(eq(courtCaseMerged));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 
     @DisplayName("Receive a case which has not changed, then just track un changed event")
     @Test
     void whenValidMessageReceivedWithNoCaseChange_ThenJustTrackEvent() {
-        var courtCase = CourtCase.builder()
+        var courtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
                         .crn("X320741")
                         .build()))
                 .build();
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
                         .crn("X320741")
                         .build()))
                 .build();
-        when(courtCaseService.findCourtCase(any(CourtCase.class))).thenReturn(Mono.just(existingCourtCase));
+        when(courtCaseService.findHearing(any(Hearing.class))).thenReturn(Mono.just(existingCourtCase));
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackHearingUnChangedEvent(any(CourtCase.class));
-        verify(courtCaseService).findCourtCase(any(CourtCase.class));
+        verify(telemetryService).trackHearingUnChangedEvent(any(Hearing.class));
+        verify(courtCaseService).findHearing(any(Hearing.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 
@@ -141,7 +141,7 @@ class CourtCaseProcessorTest {
     void whenValidMessageWithSamePayLoadReceivedMultipleTimes_ThenFireChangedEventFirst_ThenUnChangedEventOnSubsequentCall() {
         var caseId = UUID.randomUUID().toString();
         var defendantId = UUID.randomUUID().toString();
-        var courtCase = CourtCase.builder()
+        var courtCase = Hearing.builder()
                 .caseId(caseId)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
@@ -152,7 +152,7 @@ class CourtCaseProcessorTest {
                         .defendantId(defendantId)
                         .build()))
                 .build();
-        var existingCourtCase = CourtCase.builder()
+        var existingCourtCase = Hearing.builder()
                 .caseId(caseId)
                 .defendants(Collections.singletonList(Defendant.builder()
                         .type(PERSON)
@@ -160,7 +160,7 @@ class CourtCaseProcessorTest {
                         .defendantId(defendantId)
                         .build()))
                 .build();
-        var existingCourtCaseAfterUpdated = CourtCase.builder()
+        var existingCourtCaseAfterUpdated = Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("SHF")
                         .build()))
@@ -169,8 +169,8 @@ class CourtCaseProcessorTest {
                         .crn("X320741")
                         .build()))
                 .build();
-        var courtCaseMerged = CaseMapper.merge(courtCase, existingCourtCase);
-        when(courtCaseService.findCourtCase(any(CourtCase.class)))
+        var courtCaseMerged = HearingMapper.merge(courtCase, existingCourtCase);
+        when(courtCaseService.findHearing(any(Hearing.class)))
                 .thenReturn(Mono.just(existingCourtCase))
                 .thenReturn(Mono.just(existingCourtCaseAfterUpdated));
         when(courtCaseService.updateProbationStatusDetail(courtCaseMerged)).thenReturn(Mono.just(courtCaseMerged));
@@ -179,24 +179,24 @@ class CourtCaseProcessorTest {
         messageProcessor.process(courtCase, MESSAGE_ID);
 
         // First time case change detected so changed event fired
-        verify(telemetryService).trackHearingChangedEvent(any(CourtCase.class));
-        verify(courtCaseService).findCourtCase(any(CourtCase.class));
+        verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
+        verify(courtCaseService).findHearing(any(Hearing.class));
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCaseMerged));
-        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveCourtCase(eq(courtCaseMerged));
+        verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveHearing(eq(courtCaseMerged));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
 
         // Second call with same case(the existing case was updated first time so matching the payload second time)
         messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackHearingUnChangedEvent(any(CourtCase.class));
-        verify(courtCaseService, times(2)).findCourtCase(any(CourtCase.class));
+        verify(telemetryService).trackHearingUnChangedEvent(any(Hearing.class));
+        verify(courtCaseService, times(2)).findHearing(any(Hearing.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
 
         // Third call
         messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService, times(2)).trackHearingUnChangedEvent(any(CourtCase.class));
-        verify(courtCaseService, times(3)).findCourtCase(any(CourtCase.class));
+        verify(telemetryService, times(2)).trackHearingUnChangedEvent(any(Hearing.class));
+        verify(courtCaseService, times(3)).findHearing(any(Hearing.class));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
     }
 

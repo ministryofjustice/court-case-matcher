@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CCSCourtCase implements Serializable {
+public class CCSHearing implements Serializable {
 
     private final String caseId;
     private final String hearingId;
@@ -59,8 +59,8 @@ public class CCSCourtCase implements Serializable {
     @JsonIgnore
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
 
-    public CourtCase asDomain() {
-        return CourtCase.builder()
+    public Hearing asDomain() {
+        return Hearing.builder()
                 .source(Optional.ofNullable(source).map(CCSDataSource::asDomain).orElse(null))
                 .caseId(getCaseId())
                 .hearingId(getHearingId())

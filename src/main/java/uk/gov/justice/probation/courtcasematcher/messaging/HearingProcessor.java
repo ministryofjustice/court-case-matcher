@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -19,14 +19,14 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingCourtCaseComparator.hasCourtCaseChanged;
+import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearingComparator.hasCourtHearingChanged;
 
 @AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Service
 @Qualifier("caseMessageProcessor")
 @Slf4j
-public class CourtCaseProcessor {
+public class HearingProcessor {
 
     @NonNull
     private final TelemetryService telemetryService;
@@ -37,72 +37,72 @@ public class CourtCaseProcessor {
     @NonNull
     private final MatcherService matcherService;
 
-    public void process(CourtCase receivedCourtCase, String messageId) {
+    public void process(Hearing receivedHearing, String messageId) {
         try {
-            // New LIBRA cases will have no case or defendant ID and we need to assign
-            if (receivedCourtCase.getSource() == DataSource.LIBRA && receivedCourtCase.getCaseId() == null) {
-                receivedCourtCase = assignUuids(receivedCourtCase);
+            // New LIBRA cases will have no case or defendant ID, and we need to assign
+            if (receivedHearing.getSource() == DataSource.LIBRA && receivedHearing.getCaseId() == null) {
+                receivedHearing = assignUuids(receivedHearing);
             }
-            matchAndSaveCase(receivedCourtCase, messageId);
+            matchAndSaveCase(receivedHearing, messageId);
         } catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
-    private void matchAndSaveCase(CourtCase receivedCourtCase, String messageId) {
+    private void matchAndSaveCase(Hearing receivedHearing, String messageId) {
 
-        courtCaseService.findCourtCase(receivedCourtCase)
+        courtCaseService.findHearing(receivedHearing)
                 .blockOptional()
                 .ifPresentOrElse(
                         existingCourtCase -> {
-                            if (hasCourtCaseChanged(receivedCourtCase, existingCourtCase)) {
-                                telemetryService.trackHearingChangedEvent(receivedCourtCase);
-                                mergeAndUpdateExistingCase(receivedCourtCase, existingCourtCase);
+                            if (hasCourtHearingChanged(receivedHearing, existingCourtCase)) {
+                                telemetryService.trackHearingChangedEvent(receivedHearing);
+                                mergeAndUpdateExistingCase(receivedHearing, existingCourtCase);
                             } else {
-                                telemetryService.trackHearingUnChangedEvent(receivedCourtCase);
+                                telemetryService.trackHearingUnChangedEvent(receivedHearing);
                             }
                         },
                         () -> {
-                            telemetryService.trackCourtCaseEvent(receivedCourtCase, messageId);
-                            applyMatchesAndSave(receivedCourtCase);
+                            telemetryService.trackHearingEvent(receivedHearing, messageId);
+                            applyMatchesAndSave(receivedHearing);
                         }
                 );
     }
 
-    private void mergeAndUpdateExistingCase(CourtCase receivedCourtCase, CourtCase existingCourtCase) {
-        var courtCaseMerged = CaseMapper.merge(receivedCourtCase, existingCourtCase);
+    private void mergeAndUpdateExistingCase(Hearing receivedHearing, Hearing existingHearing) {
+        var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
         updateAndSave(courtCaseMerged);
     }
 
 
-    private void applyMatchesAndSave(final CourtCase courtCase) {
-        matcherService.matchDefendants(courtCase)
-                .onErrorReturn(courtCase)
-                .doOnSuccess(courtCaseService::saveCourtCase)
+    private void applyMatchesAndSave(final Hearing hearing) {
+        matcherService.matchDefendants(hearing)
+                .onErrorReturn(hearing)
+                .doOnSuccess(courtCaseService::saveHearing)
                 .block();
     }
 
-    private void updateAndSave(final CourtCase courtCase) {
-        log.info("Upsert caseId {}", courtCase.getCaseId());
+    private void updateAndSave(final Hearing hearing) {
+        log.info("Upsert caseId {}", hearing.getCaseId());
 
-        courtCaseService.updateProbationStatusDetail(courtCase)
-                .onErrorResume(t -> Mono.just(courtCase))
-                .subscribe(courtCaseService::saveCourtCase);
+        courtCaseService.updateProbationStatusDetail(hearing)
+                .onErrorResume(t -> Mono.just(hearing))
+                .subscribe(courtCaseService::saveHearing);
     }
 
-    CourtCase assignUuids(CourtCase courtCase) {
+    Hearing assignUuids(Hearing hearing) {
         // Apply the new case ID
         final var caseId = UUID.randomUUID().toString();
-        var updatedCase = courtCase.withCaseId(caseId).withHearingId(caseId);
+        var updatedCase = hearing.withCaseId(caseId).withHearingId(caseId);
 
         // We want to retain the LIBRA case no if present
-        if (courtCase.getCaseNo() == null) {
+        if (hearing.getCaseNo() == null) {
             updatedCase = updatedCase.withCaseNo(caseId);
         }
 
         // Assign defendant IDs
-        final var updatedDefendants = courtCase.getDefendants()
+        final var updatedDefendants = hearing.getDefendants()
                 .stream()
                 .map(defendant -> defendant.withDefendantId(
                         defendant.getDefendantId() == null ? UUID.randomUUID().toString() : defendant.getDefendantId()

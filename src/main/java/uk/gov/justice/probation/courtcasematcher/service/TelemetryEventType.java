@@ -5,10 +5,10 @@ public enum TelemetryEventType {
     OFFENDER_PARTIAL_MATCH("PiCOffenderPartialMatch"),
     OFFENDER_NO_MATCH("PiCOffenderNoMatch"),
     OFFENDER_MATCH_ERROR("PiCOffenderMatchError"),
-    COURT_CASE_MESSAGE_RECEIVED("PiCCourtCaseMessageReceived"),
+    HEARING_MESSAGE_RECEIVED("PiCHearingMessageReceived"),
     COURT_LIST_RECEIVED("PiCCourtListReceived"),
     COURT_LIST_MESSAGE_RECEIVED("PiCCourtListMessageReceived"),
-    COURT_CASE_RECEIVED("PiCCourtCaseReceived"),
+    HEARING_RECEIVED("PiCHearingReceived"),
     HEARING_CHANGED("PiCHearingChanged"),
     HEARING_UNCHANGED("PiCHearingUnchanged")
     ;

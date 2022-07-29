@@ -16,7 +16,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.ProsecutionCaseIdentifier;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.model.MessageAttributes;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 
@@ -31,7 +31,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOf
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CourtCaseExtractorTest {
+class HearingExtractorTest {
     private static final String MESSAGE_ID = "messageId";
     private static final String MESSAGE_STRING = "messageString";
     private static final String MESSAGE_CONTAINER_STRING = "message container string";
@@ -42,7 +42,7 @@ class CourtCaseExtractorTest {
     @Mock
     private MessageParser<SnsMessageContainer> snsContainerParser;
     @Mock
-    private MessageParser<LibraCase> libraParser;
+    private MessageParser<LibraHearing> libraParser;
     @Mock
     private MessageParser<CPHearingEvent> commonPlatformParser;
     @Mock
@@ -50,10 +50,10 @@ class CourtCaseExtractorTest {
     @Mock
     private Path path;
 
-    private CourtCaseExtractor caseExtractor;
+    private HearingExtractor caseExtractor;
     private final SnsMessageContainer.SnsMessageContainerBuilder messageContainerBuilder = SnsMessageContainer.builder()
             .message(MESSAGE_STRING);
-    private final LibraCase libraCase = LibraCase.builder().caseNo(CASE_NO).build();
+    private final LibraHearing libraHearing = LibraHearing.builder().caseNo(CASE_NO).build();
     private final CPHearingEvent commonPlatformHearingEvent;
 
     {
@@ -80,7 +80,7 @@ class CourtCaseExtractorTest {
 
     @BeforeEach
     void setUp() {
-        caseExtractor = new CourtCaseExtractor(
+        caseExtractor = new HearingExtractor(
                 snsContainerParser,
                 libraParser,
                 commonPlatformParser,
@@ -94,9 +94,9 @@ class CourtCaseExtractorTest {
                 .thenReturn(messageContainerBuilder
                         .messageAttributes(new MessageAttributes(MessageType.LIBRA_COURT_CASE))
                         .build());
-        when(libraParser.parseMessage(MESSAGE_STRING, LibraCase.class)).thenReturn(libraCase);
+        when(libraParser.parseMessage(MESSAGE_STRING, LibraHearing.class)).thenReturn(libraHearing);
 
-        var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var courtCase = caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(courtCase).isNotNull();
         assertThat(courtCase.getCaseNo()).isEqualTo(CASE_NO);
@@ -109,7 +109,7 @@ class CourtCaseExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var courtCase = caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(courtCase).isNotNull();
         assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
@@ -122,7 +122,7 @@ class CourtCaseExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var courtCase = caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var courtCase = caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(courtCase).isNotNull();
         assertThat(courtCase.getUrn()).isEqualTo("urn");
@@ -137,12 +137,12 @@ class CourtCaseExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var courtCase = new CourtCaseExtractor(
+        var courtCase = new HearingExtractor(
                 snsContainerParser,
                 libraParser,
                 commonPlatformParser,
                 true
-        ).extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        ).extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(courtCase).isNotNull();
         assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
@@ -156,7 +156,7 @@ class CourtCaseExtractorTest {
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withMessage("Unprocessable message type: UNKNOWN");
     }
 
@@ -167,7 +167,7 @@ class CourtCaseExtractorTest {
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withMessage("Unprocessable message type: NONE");
     }
 
@@ -179,7 +179,7 @@ class CourtCaseExtractorTest {
         when(aViolation.getPropertyPath()).thenReturn(path);
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withCause(violationException)
                 .withMessage("Validation failed");
     }
@@ -191,11 +191,11 @@ class CourtCaseExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.LIBRA_COURT_CASE))
                 .build());
-        when(libraParser.parseMessage(MESSAGE_STRING, LibraCase.class)).thenThrow(violationException);
+        when(libraParser.parseMessage(MESSAGE_STRING, LibraHearing.class)).thenThrow(violationException);
         when(aViolation.getPropertyPath()).thenReturn(path);
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withCause(violationException)
                 .withMessage("Validation failed");
     }
@@ -206,7 +206,7 @@ class CourtCaseExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenThrow(jsonProcessingException);
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> caseExtractor.extractCourtCase(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> caseExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withCause(jsonProcessingException)
                 .withMessage("💥");
     }

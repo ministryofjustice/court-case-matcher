@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -120,9 +120,9 @@ public class SqsMessageReceiverIntTest {
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
-        verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingChangedEvent(any(CourtCase.class));
-        verify(telemetryService, never()).trackOffenderMatchEvent(any(Defendant.class), any(CourtCase.class), any(MatchResponse.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
+        verify(telemetryService, never()).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -153,9 +153,9 @@ public class SqsMessageReceiverIntTest {
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
-        verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
-        verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(CourtCase.class), any(MatchResponse.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -183,9 +183,9 @@ public class SqsMessageReceiverIntTest {
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
-        verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
-        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(CourtCase.class), any(MatchResponse.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -208,9 +208,9 @@ public class SqsMessageReceiverIntTest {
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
-        verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackCourtCaseEvent(any(CourtCase.class), any(String.class));
-        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(CourtCase.class), any(MatchResponse.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -236,8 +236,8 @@ public class SqsMessageReceiverIntTest {
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
-        verify(telemetryService).trackCaseMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingChangedEvent(any(CourtCase.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -256,10 +256,10 @@ public class SqsMessageReceiverIntTest {
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
-        @Qualifier("courtCaseProcessor")
-        private CourtCaseProcessor caseMessageProcessor;
+        @Qualifier("hearingProcessor")
+        private HearingProcessor caseMessageProcessor;
         @Autowired
-        private CourtCaseExtractor caseExtractor;
+        private HearingExtractor caseExtractor;
 
         @Primary
         @Bean

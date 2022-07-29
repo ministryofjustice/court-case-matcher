@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
@@ -37,29 +37,29 @@ import static java.util.Comparator.comparing;
 @AllArgsConstructor
 @Component
 @Slf4j
-public class CaseMapper {
+public class HearingMapper {
 
-    public static CourtCase newFromLibraCase(LibraCase aLibraCase) {
-        return CourtCase.builder()
+    public static Hearing newFromLibraHearing(LibraHearing aLibraHearing) {
+        return Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
-                        .courtCode(aLibraCase.getCourtCode())
-                        .courtRoom(aLibraCase.getCourtRoom())
-                        .sessionStartTime(aLibraCase.getSessionStartTime())
-                        .listNo(aLibraCase.getListNo())
+                        .courtCode(aLibraHearing.getCourtCode())
+                        .courtRoom(aLibraHearing.getCourtRoom())
+                        .sessionStartTime(aLibraHearing.getSessionStartTime())
+                        .listNo(aLibraHearing.getListNo())
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
-                        .name(Optional.ofNullable(aLibraCase.getName()).map(LibraName::asDomain).orElse(null))
-                        .address(Optional.ofNullable(aLibraCase.getDefendantAddress()).map(CaseMapper::fromAddress).orElse(null))
-                        .dateOfBirth(aLibraCase.getDefendantDob())
-                        .sex(aLibraCase.getDefendantSex())
-                        .type(DefendantType.of(aLibraCase.getDefendantType()))
-                        .cro(aLibraCase.getCro())
-                        .pnc(aLibraCase.getPnc())
-                        .offences(Optional.ofNullable(aLibraCase.getOffences()).map(CaseMapper::fromOffences).orElse(Collections.emptyList()))
+                        .name(Optional.ofNullable(aLibraHearing.getName()).map(LibraName::asDomain).orElse(null))
+                        .address(Optional.ofNullable(aLibraHearing.getDefendantAddress()).map(HearingMapper::fromAddress).orElse(null))
+                        .dateOfBirth(aLibraHearing.getDefendantDob())
+                        .sex(aLibraHearing.getDefendantSex())
+                        .type(DefendantType.of(aLibraHearing.getDefendantType()))
+                        .cro(aLibraHearing.getCro())
+                        .pnc(aLibraHearing.getPnc())
+                        .offences(Optional.ofNullable(aLibraHearing.getOffences()).map(HearingMapper::fromOffences).orElse(Collections.emptyList()))
                         .build()))
                 .source(DataSource.LIBRA)
-                .caseNo(aLibraCase.getCaseNo())
-                .urn(aLibraCase.getUrn())
+                .caseNo(aLibraHearing.getCaseNo())
+                .urn(aLibraHearing.getUrn())
 
                 .build();
     }
@@ -91,17 +91,17 @@ public class CaseMapper {
                 .orElse(null);
     }
 
-    public static CourtCase merge(CourtCase incomingCase, CourtCase existingCourtCase) {
-        return existingCourtCase
+    public static Hearing merge(Hearing incomingCase, Hearing existingHearing) {
+        return existingHearing
                 .withHearingDays(incomingCase.getHearingDays())
                 .withUrn(incomingCase.getUrn())
 
                 // PK fields
-                .withCaseNo(existingCourtCase.getCaseNo())
-                .withCaseId(Optional.ofNullable(existingCourtCase.getCaseId()).orElse(incomingCase.getCaseId()))
+                .withCaseNo(existingHearing.getCaseNo())
+                .withCaseId(Optional.ofNullable(existingHearing.getCaseId()).orElse(incomingCase.getCaseId()))
 
                 // Fields to be updated from incoming
-                .withDefendants(mergeDefendants(incomingCase.getDefendants(), existingCourtCase.getDefendants(), incomingCase.getSource()));
+                .withDefendants(mergeDefendants(incomingCase.getDefendants(), existingHearing.getDefendants(), incomingCase.getSource()));
     }
 
     private static List<Defendant> mergeDefendants(List<Defendant> incoming, List<Defendant> existingDefendants, DataSource source) {

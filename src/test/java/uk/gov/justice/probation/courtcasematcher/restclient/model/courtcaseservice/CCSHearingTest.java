@@ -2,7 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseserv
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 
 import java.util.Optional;
@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CCSCourtCaseTest {
+class CCSHearingTest {
     @Test
     public void mapBack() {
         final var original = DomainDataHelper.aCourtCaseWithAllFields();
 
         final var firstDefendant = original.getDefendants().get(0);
-        final var ccsCourtCase = CCSCourtCase.builder()
+        final var ccsCourtCase = CCSHearing.builder()
                 .source(CCSDataSource.of(original.getSource()))
                 .defendantId(firstDefendant.getDefendantId())
                 .awaitingPsr(firstDefendant.getAwaitingPsr())
@@ -40,7 +40,7 @@ class CCSCourtCaseTest {
                 .probationStatusActual(firstDefendant.getProbationStatus())
                 .suspendedSentenceOrder(firstDefendant.getSuspendedSentenceOrder())
                 .defendantDob(firstDefendant.getDateOfBirth())
-                .defendantName(CaseMapper.nameFrom(firstDefendant.getName()))
+                .defendantName(HearingMapper.nameFrom(firstDefendant.getName()))
                 .defendantType(CCSDefendantType.of(firstDefendant.getType()))
                 .defendantSex(firstDefendant.getSex())
 

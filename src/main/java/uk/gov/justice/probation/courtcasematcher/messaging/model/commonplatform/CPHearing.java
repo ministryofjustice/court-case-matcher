@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 
@@ -35,8 +35,8 @@ public class CPHearing {
     @Valid
     private final List<CPProsecutionCase> prosecutionCases;
 
-    public CourtCase asDomain() {
-        return CourtCase.builder()
+    public Hearing asDomain() {
+        return Hearing.builder()
                 .caseId(prosecutionCases.get(0).getId())
                 .source(DataSource.COMMON_PLATFORM)
                 .hearingDays(hearingDays.stream()

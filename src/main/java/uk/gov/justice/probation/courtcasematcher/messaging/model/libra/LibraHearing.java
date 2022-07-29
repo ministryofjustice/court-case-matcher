@@ -11,8 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CourtCase;
-import uk.gov.justice.probation.courtcasematcher.model.mapper.CaseMapper;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
+import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -26,7 +26,7 @@ import java.util.List;
 @Builder
 @Data
 @Valid
-public class LibraCase {
+public class LibraHearing {
 
     @NotBlank
     @JacksonXmlProperty(localName = "caseno")
@@ -56,7 +56,7 @@ public class LibraCase {
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
 
-    public CourtCase asDomain() {
-        return CaseMapper.newFromLibraCase(this);
+    public Hearing asDomain() {
+        return HearingMapper.newFromLibraHearing(this);
     }
 }
