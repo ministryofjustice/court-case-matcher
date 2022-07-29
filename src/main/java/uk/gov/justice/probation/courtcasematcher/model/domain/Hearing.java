@@ -32,6 +32,8 @@ public class Hearing implements Serializable {
 
     private final DataSource source;
 
+    private final String hearingEventType;
+
     public boolean shouldMatchToOffender() {
         return defendants.stream()
                 .anyMatch(Defendant::shouldMatchToOffender);

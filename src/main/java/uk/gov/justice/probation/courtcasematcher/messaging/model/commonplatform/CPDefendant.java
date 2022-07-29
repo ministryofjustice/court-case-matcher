@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;

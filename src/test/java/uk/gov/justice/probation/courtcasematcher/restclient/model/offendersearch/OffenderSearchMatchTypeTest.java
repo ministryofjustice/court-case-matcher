@@ -4,7 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

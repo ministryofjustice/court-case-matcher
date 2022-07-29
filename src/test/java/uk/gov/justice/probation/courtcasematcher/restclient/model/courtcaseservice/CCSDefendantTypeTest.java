@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
