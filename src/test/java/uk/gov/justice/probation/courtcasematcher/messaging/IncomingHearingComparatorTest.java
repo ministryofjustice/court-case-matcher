@@ -17,8 +17,8 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.ORGANISATION;
-import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
+import static uk.gov.justice.probation.courtcasematcher.model.type.DefendantType.ORGANISATION;
+import static uk.gov.justice.probation.courtcasematcher.model.type.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
 class IncomingHearingComparatorTest {

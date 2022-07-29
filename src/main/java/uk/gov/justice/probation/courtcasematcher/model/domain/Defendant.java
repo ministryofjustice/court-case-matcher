@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 
 import java.time.LocalDate;
 import java.util.List;

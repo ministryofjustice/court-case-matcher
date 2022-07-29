@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.domain;
+package uk.gov.justice.probation.courtcasematcher.model.type;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,4 +1,4 @@
-package uk.gov.justice.probation.courtcasematcher.model.domain;
+package uk.gov.justice.probation.courtcasematcher.model.type;
 
 public enum MatchType {
     NAME_DOB,
