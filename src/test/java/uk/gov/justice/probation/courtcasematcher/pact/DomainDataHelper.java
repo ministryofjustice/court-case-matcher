@@ -38,6 +38,7 @@ public class DomainDataHelper {
                                 .offenceSummary("offence summary")
                                 .act("offence act")
                                 .sequenceNumber(1)
+                                .judicialResults(Collections.emptyList())
                                 .build()))
                         .crn("crn")
                         .cro("cro")

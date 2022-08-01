@@ -16,7 +16,7 @@ class CCSHearingTest {
         final var original = DomainDataHelper.aCourtCaseWithAllFields();
 
         final var firstDefendant = original.getDefendants().get(0);
-        final var ccsCourtCase = CCSHearing.builder()
+        final var ccsHearing = CCSHearing.builder()
                 .source(CCSDataSource.of(original.getSource()))
                 .defendantId(firstDefendant.getDefendantId())
                 .awaitingPsr(firstDefendant.getAwaitingPsr())
@@ -57,7 +57,7 @@ class CCSHearingTest {
                         .orElse(null))
                 .build();
 
-        final var actual = ccsCourtCase.asDomain();
+        final var actual = ccsHearing.asDomain();
 
         assertThat(actual).isEqualTo(original);
     }

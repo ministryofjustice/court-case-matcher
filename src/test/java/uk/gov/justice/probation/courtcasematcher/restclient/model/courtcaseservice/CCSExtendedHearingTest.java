@@ -57,7 +57,8 @@ public class CCSExtendedHearingTest {
                         .offenceSummary("offence summary")
                         .act("offence act")
                         .sequenceNumber(1)
-                        .build()));
+                .judicialResults(Collections.emptyList())
+                .build()));
 
         assertThat(actualFirstDefendant.getCrn()).isEqualTo(firstDefendant.getCrn());
         assertThat(actualFirstDefendant.getCro()).isEqualTo(firstDefendant.getCro());

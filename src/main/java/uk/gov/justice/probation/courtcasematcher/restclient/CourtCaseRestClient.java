@@ -74,10 +74,10 @@ public class CourtCaseRestClient implements CourtCaseRepository {
 
     @Override
     public Mono<Void> putHearing(Hearing hearing) {
-        final var extendedCase = CCSExtendedHearing.of(hearing);
-        final var hearingId = extendedCase.getHearingId();
+        final var ccsExtendedHearing = CCSExtendedHearing.of(hearing);
+        final var hearingId = ccsExtendedHearing.getHearingId();
         final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
-        return restHelper.putObject(path, extendedCase, CCSExtendedHearing.class)
+        return restHelper.putObject(path, ccsExtendedHearing, CCSExtendedHearing.class)
                 .retrieve()
                 .toBodilessEntity()
                 .retryWhen(restHelper.buildRetrySpec(
