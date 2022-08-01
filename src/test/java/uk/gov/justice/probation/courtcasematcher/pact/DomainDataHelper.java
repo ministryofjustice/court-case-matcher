@@ -4,6 +4,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
@@ -38,7 +39,10 @@ public class DomainDataHelper {
                                 .offenceSummary("offence summary")
                                 .act("offence act")
                                 .sequenceNumber(1)
-                                .judicialResults(Collections.emptyList())
+                                .judicialResults(Collections.singletonList(JudicialResult.builder()
+                                        .isConvictedResult(true)
+                                        .label("Adjournment")
+                                        .build()))
                                 .build()))
                         .crn("crn")
                         .cro("cro")
@@ -93,6 +97,10 @@ public class DomainDataHelper {
                                 .offenceSummary("offence summary")
                                 .act("offence act")
                                 .sequenceNumber(1)
+                                .judicialResults(Collections.singletonList(JudicialResult.builder()
+                                        .isConvictedResult(true)
+                                        .label("Adjournment")
+                                        .build()))
                                 .build()))
                         .name(Name.builder()
                                 .title("title")
