@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public enum HearingEventType {
     CONFIRMED_OR_UPDATED("ConfirmedOrUpdated"),
-    RESULTED("Resulted")
-    ;
+    RESULTED("Resulted"),
+    UNKNOWN("Unknown");
 
     private static final HearingEventType DEFAULT = CONFIRMED_OR_UPDATED;
 
@@ -17,7 +17,7 @@ public enum HearingEventType {
     }
 
     public static HearingEventType of(String hearingEventType) {
-        hearingEventType = hearingEventType == null ? DEFAULT.name() : hearingEventType.toUpperCase();
+        hearingEventType = hearingEventType == null ? DEFAULT.name() : hearingEventType;
         switch (hearingEventType) {
             case "ConfirmedOrUpdated":
                 return CONFIRMED_OR_UPDATED;

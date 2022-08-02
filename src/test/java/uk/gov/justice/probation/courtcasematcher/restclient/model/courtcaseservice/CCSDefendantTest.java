@@ -23,7 +23,10 @@ class CCSDefendantTest {
                 .offenceSummary("offence summary")
                 .act("offence act")
                 .sequenceNumber(1)
-                .judicialResults(Collections.emptyList())
+                .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
+                        .isConvictedResult(true)
+                        .label("Adjournment")
+                        .build()))
                 .build());
         assertThat(actual.getName()).isEqualTo(CCSName.builder()
                 .title("title")

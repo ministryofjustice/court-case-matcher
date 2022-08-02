@@ -85,14 +85,14 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenGetCourtCaseByHearingId_thenItsSuccessful() {
+    void whenGetHearingByHearingId_thenItsSuccessful() {
         final var HEARING_ID = "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f";
-        final var courtCase = client.getHearing(HEARING_ID).block();
+        final var hearing = client.getHearing(HEARING_ID).block();
 
-        assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
-        assertThat(courtCase.getHearingId()).isEqualTo(HEARING_ID);
-        assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(DEFENDANT_ID);
-        assertThat(courtCase.getDefendants().get(1).getDefendantId()).isEqualTo(DEFENDANT_ID_2);
+        assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(hearing.getHearingId()).isEqualTo(HEARING_ID);
+        assertThat(hearing.getDefendants().get(0).getDefendantId()).isEqualTo(DEFENDANT_ID);
+        assertThat(hearing.getDefendants().get(1).getDefendantId()).isEqualTo(DEFENDANT_ID_2);
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
@@ -101,10 +101,10 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void givenNotFound_whenGetCourtCaseById_thenReturnEmpty() {
-        final var courtCase = client.getHearing("NOT_FOUND").blockOptional();
+    void givenNotFound_whenGetHearingById_thenReturnEmpty() {
+        final var hearing = client.getHearing("NOT_FOUND").blockOptional();
 
-        assertThat(courtCase).isEmpty();
+        assertThat(hearing).isEmpty();
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
@@ -113,7 +113,7 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void givenError_whenGetCourtCaseById_thenReturnEmpty() {
+    void givenError_whenGetHearingById_thenReturnEmpty() {
 
         assertThatExceptionOfType(WebClientResponseException.class)
                 .isThrownBy(()-> client.getHearing("SERVER_ERROR").block())
@@ -126,10 +126,10 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void whenPutCourtCase_thenItsSuccessful() {
-        final var courtCase = aCourtCaseBuilderWithAllFields()
+    void whenPutHearing_thenItsSuccessful() {
+        final var hearing = aCourtCaseBuilderWithAllFields()
                 .build();
-        final var voidMono = client.putHearing(courtCase);
+        final var voidMono = client.putHearing(hearing);
         assertThat(voidMono.blockOptional()).isEmpty();
 
         MOCK_SERVER.verify(
@@ -139,11 +139,11 @@ class CourtCaseRestClientIntTest {
     }
 
     @Test
-    void givenNullCaseId_whenPutCourtCase_thenItsSuccessful() {
-        final var courtCase = aCourtCaseBuilderWithAllFields()
+    void givenNullCaseId_whenPutHearing_thenItsSuccessful() {
+        final var hearing = aCourtCaseBuilderWithAllFields()
                 .caseId(null)
                 .build();
-        final var voidMono = client.putHearing(courtCase);
+        final var voidMono = client.putHearing(hearing);
         assertThat(voidMono.blockOptional()).isEmpty();
 
         MOCK_SERVER.verify(
@@ -154,7 +154,7 @@ class CourtCaseRestClientIntTest {
 
     @Test
     void whenRestClientThrows500OnPut_ThenThrow() {
-        final var aCase = aCourtCaseBuilderWithAllFields()
+        final var hearing = aCourtCaseBuilderWithAllFields()
                 .hearingId(HEARING_ID_SERVER_ERROR)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("X500")
@@ -162,12 +162,12 @@ class CourtCaseRestClientIntTest {
                 .build();
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> client.putHearing(aCase).block())
+                .isThrownBy(() -> client.putHearing(hearing).block())
                 .withMessage("Retries exhausted: 1/1");
     }
 
     @Test
-    void getCourtCase_delegatesToLegacyClient() {
+    void getHearing_delegatesToLegacyClient() {
         when(legacyClient.getHearing("court code", "case no")).thenReturn(courtCaseMono);
 
         final var actualMono = client.getHearing("court code", "case no");
