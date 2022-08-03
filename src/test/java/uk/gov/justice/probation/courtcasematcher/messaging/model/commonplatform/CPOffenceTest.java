@@ -1,7 +1,11 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
+import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResultType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -14,15 +18,21 @@ class CPOffenceTest {
                 .offenceLegislation("legislation")
                 .wording("wording")
                 .listingNumber(20)
+                .judicialResults(List.of(CPJudicialResult.builder()
+                        .judicialResultType(CPJudicialResultType.builder().build())
+                        .build()))
                 .build()
                 .asDomain();
 
         assertThat(offence).isEqualTo(Offence.builder()
-                        .id("id")
-                        .offenceTitle("title")
-                        .offenceSummary("wording")
-                        .act("legislation")
-                        .listNo(20)
+                .id("id")
+                .offenceTitle("title")
+                .offenceSummary("wording")
+                .act("legislation")
+                .listNo(20)
+                .judicialResults(List.of(JudicialResult.builder()
+                                .judicialResultType(JudicialResultType.builder().build())
+                        .build()))
                 .build());
     }
 

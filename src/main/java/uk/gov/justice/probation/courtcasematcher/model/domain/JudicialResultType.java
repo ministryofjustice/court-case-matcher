@@ -12,8 +12,7 @@ import lombok.With;
 @With
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class JudicialResult {
-    private boolean isConvictedResult;
-    private String label;
-    private JudicialResultType judicialResultType;
+public class JudicialResultType {
+    private String description;
+    private String id;
 }

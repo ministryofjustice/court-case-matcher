@@ -34,11 +34,11 @@ class CPHearingTest {
         assertThat(firstDefendant.getPnc()).isEqualTo("pncid");
         assertThat(firstDefendant.getSex()).isEqualTo("MALE");
         assertThat(firstDefendant.getName()).isEqualTo(Name.builder()
-            .title("title")
-            .forename1("firstname")
-            .forename2("middlename")
-            .surname("lastname")
-            .build());
+                .title("title")
+                .forename1("firstname")
+                .forename2("middlename")
+                .surname("lastname")
+                .build());
         assertThat(firstDefendant.getDateOfBirth()).isEqualTo(LocalDate.of(2000, 1, 1));
         assertThat(firstDefendant.getOffences().get(0).getId()).isEqualTo("7AA4F55F-F104-4D07-9732-FEB679230E49");
         assertThat(firstDefendant.getOffences().get(1).getId()).isEqualTo("43AE14D2-6980-49DD-803B-B6A77E7D438E");
@@ -48,8 +48,8 @@ class CPHearingTest {
         assertThat(secondDefendant.getCro()).isNull();
         assertThat(secondDefendant.getPnc()).isNull();
         assertThat(secondDefendant.getName()).isEqualTo(Name.builder()
-            .surname("organisationname")
-            .build());
+                .surname("organisationname")
+                .build());
         assertThat(secondDefendant.getOffences().get(0).getId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
 
         assertThat(hearing.getHearingDays().get(0).getListNo()).isNull();
@@ -110,12 +110,24 @@ class CPHearingTest {
                                 .wording("wording")
                                 .offenceTitle("title")
                                 .offenceLegislation("legislation")
+                                .judicialResults(List.of(CPJudicialResult.builder()
+                                        .judicialResultType(CPJudicialResultType.builder()
+                                                .description("description")
+                                                .id("id1")
+                                                .build())
+                                        .build()))
                                 .build(),
                         CPOffence.builder()
                                 .id("43AE14D2-6980-49DD-803B-B6A77E7D438E")
                                 .wording("wording2")
                                 .offenceTitle("title2")
                                 .offenceLegislation("legislation2")
+                                .judicialResults(List.of(CPJudicialResult.builder()
+                                        .judicialResultType(CPJudicialResultType.builder()
+                                                .description("description")
+                                                .id("id1")
+                                                .build())
+                                        .build()))
                                 .build())
                 ).build();
     }
@@ -134,6 +146,12 @@ class CPHearingTest {
                         .wording("wording3")
                         .offenceTitle("title3")
                         .offenceLegislation("legislation3")
+                        .judicialResults(List.of(CPJudicialResult.builder()
+                                        .judicialResultType(CPJudicialResultType.builder()
+                                                .description("Description")
+                                                .id("id1")
+                                                .build())
+                                .build()))
                         .build())
                 ).build();
 
