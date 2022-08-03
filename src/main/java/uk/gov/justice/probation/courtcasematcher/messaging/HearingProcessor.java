@@ -43,22 +43,22 @@ public class HearingProcessor {
             if (receivedHearing.getSource() == DataSource.LIBRA && receivedHearing.getCaseId() == null) {
                 receivedHearing = assignUuids(receivedHearing);
             }
-            matchAndSaveCase(receivedHearing, messageId);
+            matchAndSaveHearing(receivedHearing, messageId);
         } catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
-    private void matchAndSaveCase(Hearing receivedHearing, String messageId) {
+    private void matchAndSaveHearing(Hearing receivedHearing, String messageId) {
 
         courtCaseService.findHearing(receivedHearing)
                 .blockOptional()
                 .ifPresentOrElse(
-                        existingCourtCase -> {
-                            if (hasCourtHearingChanged(receivedHearing, existingCourtCase)) {
+                        existingHearing -> {
+                            if (hasCourtHearingChanged(receivedHearing, existingHearing)) {
                                 telemetryService.trackHearingChangedEvent(receivedHearing);
-                                mergeAndUpdateExistingCase(receivedHearing, existingCourtCase);
+                                mergeAndUpdateExistingHearing(receivedHearing, existingHearing);
                             } else {
                                 telemetryService.trackHearingUnChangedEvent(receivedHearing);
                             }
@@ -70,7 +70,7 @@ public class HearingProcessor {
                 );
     }
 
-    private void mergeAndUpdateExistingCase(Hearing receivedHearing, Hearing existingHearing) {
+    private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
         updateAndSave(courtCaseMerged);
     }
@@ -94,11 +94,11 @@ public class HearingProcessor {
     Hearing assignUuids(Hearing hearing) {
         // Apply the new case ID
         final var caseId = UUID.randomUUID().toString();
-        var updatedCase = hearing.withCaseId(caseId).withHearingId(caseId);
+        var updatedHering = hearing.withCaseId(caseId).withHearingId(caseId);
 
         // We want to retain the LIBRA case no if present
         if (hearing.getCaseNo() == null) {
-            updatedCase = updatedCase.withCaseNo(caseId);
+            updatedHering = updatedHering.withCaseNo(caseId);
         }
 
         // Assign defendant IDs
@@ -108,7 +108,7 @@ public class HearingProcessor {
                         defendant.getDefendantId() == null ? UUID.randomUUID().toString() : defendant.getDefendantId()
                 ))
                 .collect(Collectors.toList());
-        return updatedCase.withDefendants(updatedDefendants);
+        return updatedHering.withDefendants(updatedDefendants);
 
     }
 }
