@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
@@ -21,12 +22,15 @@ import javax.validation.ConstraintViolationException;
 @Slf4j
 public class HearingExtractor {
     @NonNull
+    @Autowired
     final MessageParser<SnsMessageContainer> snsMessageWrapperJsonParser;
 
     @NonNull
+    @Autowired
     final MessageParser<LibraHearing> libraParser;
 
     @NonNull
+    @Autowired
     final MessageParser<CPHearingEvent> commonPlatformParser;
 
     @Value("${feature.flags.pass-hearing-id-to-court-case-service:false}")

@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.model.type;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -16,6 +17,7 @@ public enum HearingEventType {
         this.type = type;
     }
 
+    @JsonCreator
     public static HearingEventType of(String hearingEventType) {
         hearingEventType = hearingEventType == null ? DEFAULT.name() : hearingEventType;
         switch (hearingEventType) {
