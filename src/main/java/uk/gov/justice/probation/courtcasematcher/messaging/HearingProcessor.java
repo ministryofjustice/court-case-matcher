@@ -94,11 +94,11 @@ public class HearingProcessor {
     Hearing assignUuids(Hearing hearing) {
         // Apply the new case ID
         final var caseId = UUID.randomUUID().toString();
-        var updatedHering = hearing.withCaseId(caseId).withHearingId(caseId);
+        var updatedHearing = hearing.withCaseId(caseId).withHearingId(caseId);
 
         // We want to retain the LIBRA case no if present
         if (hearing.getCaseNo() == null) {
-            updatedHering = updatedHering.withCaseNo(caseId);
+            updatedHearing = updatedHearing.withCaseNo(caseId);
         }
 
         // Assign defendant IDs
@@ -108,7 +108,7 @@ public class HearingProcessor {
                         defendant.getDefendantId() == null ? UUID.randomUUID().toString() : defendant.getDefendantId()
                 ))
                 .collect(Collectors.toList());
-        return updatedHering.withDefendants(updatedDefendants);
+        return updatedHearing.withDefendants(updatedDefendants);
 
     }
 }

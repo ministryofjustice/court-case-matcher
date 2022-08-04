@@ -26,7 +26,12 @@ public class CCSJudicialResultTest {
 
     private JudicialResult buildJudicialResult() {
         return JudicialResult.builder()
-                .judicialResultType(JudicialResultType.builder().build())
+                .isConvictedResult(false)
+                .label("label")
+                .judicialResultType(JudicialResultType.builder()
+                        .description("description")
+                        .id("id")
+                        .build())
                 .build();
     }
 }
