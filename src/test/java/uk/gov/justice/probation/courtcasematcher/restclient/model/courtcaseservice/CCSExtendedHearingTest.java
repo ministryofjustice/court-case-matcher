@@ -60,6 +60,7 @@ public class CCSExtendedHearingTest {
                 .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
                                 .isConvictedResult(true)
                                 .label("Adjournment")
+                                .judicialResultType(CCSJudicialResultType.builder().build())
                         .build()))
                 .build()));
 

@@ -5,6 +5,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
+import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResultType;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
@@ -42,6 +43,7 @@ public class DomainDataHelper {
                                 .judicialResults(Collections.singletonList(JudicialResult.builder()
                                         .isConvictedResult(true)
                                         .label("Adjournment")
+                                                .judicialResultType(JudicialResultType.builder().build())
                                         .build()))
                                 .build()))
                         .crn("crn")
