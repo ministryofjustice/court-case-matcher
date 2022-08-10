@@ -99,6 +99,7 @@ public class HearingMapper {
                 // PK fields
                 .withCaseNo(existingHearing.getCaseNo())
                 .withCaseId(Optional.ofNullable(existingHearing.getCaseId()).orElse(incomingCase.getCaseId()))
+                .withHearingEventType(incomingCase.getHearingEventType())
 
                 // Fields to be updated from incoming
                 .withDefendants(mergeDefendants(incomingCase.getDefendants(), existingHearing.getDefendants(), incomingCase.getSource()));
