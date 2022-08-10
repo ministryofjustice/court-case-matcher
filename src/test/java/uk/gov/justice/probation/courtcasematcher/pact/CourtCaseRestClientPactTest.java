@@ -46,7 +46,7 @@ class CourtCaseRestClientPactTest {
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8);
 
         return builder
-                .given("a case exists for hearingId 8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
+                .given("a hearing exists for hearingId 8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
                 .uponReceiving("a request for a case by hearingId")
                 .path("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
                 .method("GET")

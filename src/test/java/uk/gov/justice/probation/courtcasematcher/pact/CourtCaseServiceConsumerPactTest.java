@@ -33,7 +33,7 @@ class CourtCaseServiceConsumerPactTest {
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
 
         return builder
-            .given("a case exists for court B10JQ and case number 1600028913")
+            .given("a hearing exists for court B10JQ and case number 1600028913")
             .uponReceiving("a request for a case by case number")
             .path("/court/B10JQ/case/1600028913")
             .method("GET")
