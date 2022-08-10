@@ -26,7 +26,10 @@ class CCSDefendantTest {
                 .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
                         .isConvictedResult(true)
                         .label("Adjournment")
-                        .judicialResultType(CCSJudicialResultType.builder().build())
+                        .judicialResultType(CCSJudicialResultType.builder()
+                                .description("description")
+                                .id("id")
+                                .build())
                         .build()))
                 .build());
         assertThat(actual.getName()).isEqualTo(CCSName.builder()
