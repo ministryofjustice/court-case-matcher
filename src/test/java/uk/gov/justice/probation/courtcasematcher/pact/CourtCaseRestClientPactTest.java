@@ -7,6 +7,7 @@ import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -193,7 +194,7 @@ class CourtCaseRestClientPactTest {
         assertThat(courtCase.getHearingId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
     }
 
-/*    @PactTestFor(pactMethod = "putMinimalCourtCaseByIdPact")
+    @PactTestFor(pactMethod = "putMinimalCourtCaseByIdPact")
     @Test
     void putMinimalCourtCase() {
         final var actual = restClient.putHearing(DomainDataHelper.aMinimalValidCourtCase()).blockOptional();
@@ -208,5 +209,5 @@ class CourtCaseRestClientPactTest {
                 .putHearing(DomainDataHelper.aCourtCaseWithAllFields()).blockOptional();
 
         assertThat(actual).isEmpty();
-    }*/
+    }
 }
