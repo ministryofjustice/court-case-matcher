@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseserv
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
-import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResultType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,10 +27,7 @@ public class CCSJudicialResultTest {
         return JudicialResult.builder()
                 .isConvictedResult(false)
                 .label("label")
-                .judicialResultType(JudicialResultType.builder()
-                        .description("description")
-                        .id("id")
-                        .build())
+                .judicialResultTypeId("judicialResultTypeId")
                 .build();
     }
 }

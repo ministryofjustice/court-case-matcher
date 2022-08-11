@@ -7,9 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
-import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResultType;
-
-import javax.validation.constraints.NotBlank;
 
 @Data
 @Builder
@@ -18,16 +15,13 @@ import javax.validation.constraints.NotBlank;
 public class CPJudicialResult {
     private  boolean isConvictedResult;
     private String label;
-    private CPJudicialResultType judicialResultType;
+    private String judicialResultTypeId;
 
     public JudicialResult asDomain(){
         return JudicialResult.builder()
                 .isConvictedResult(isConvictedResult)
                 .label(label)
-                .judicialResultType(JudicialResultType.builder()
-                        .description(getJudicialResultType().getDescription())
-                        .id(getJudicialResultType().getId())
-                        .build())
+                .judicialResultTypeId(judicialResultTypeId)
                 .build();
     }
 

@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
-import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResultType;
 
 @Data
 @Builder
@@ -20,16 +19,13 @@ public class CCSJudicialResult {
     @JsonProperty("isConvictedResult")
     private boolean isConvictedResult;
     private String label;
-    private CCSJudicialResultType judicialResultType;
+    private String judicialResultTypeId;
 
     public static CCSJudicialResult of(JudicialResult judicialResult) {
         return CCSJudicialResult.builder()
                 .isConvictedResult(judicialResult.isConvictedResult())
                 .label(judicialResult.getLabel())
-                .judicialResultType(CCSJudicialResultType.builder()
-                        .description(judicialResult.getJudicialResultType().getDescription())
-                        .id(judicialResult.getJudicialResultType().getId())
-                        .build())
+                .judicialResultTypeId(judicialResult.getJudicialResultTypeId())
                 .build();
     }
 
@@ -37,10 +33,7 @@ public class CCSJudicialResult {
         return JudicialResult.builder()
                 .isConvictedResult(isConvictedResult())
                 .label(getLabel())
-                .judicialResultType(JudicialResultType.builder()
-                        .description(judicialResultType.getDescription())
-                        .id(judicialResultType.getId())
-                        .build())
+                .judicialResultTypeId(getJudicialResultTypeId())
                 .build();
 
     }

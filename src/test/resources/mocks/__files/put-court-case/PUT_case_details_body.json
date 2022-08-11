@@ -18,10 +18,7 @@
         {
           "isConvictedResult": false,
           "label": "Label-1",
-          "judicialResultType": {
-            "description": "Description-1",
-            "id": "ID-ONE"
-          }
+          "judicialResultTypeId": "judicialResultTypeId"
         }
       ]
     },

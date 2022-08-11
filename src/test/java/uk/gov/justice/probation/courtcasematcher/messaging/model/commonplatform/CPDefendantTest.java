@@ -32,12 +32,10 @@ class CPDefendantTest {
                         .build())
                 .offences(List.of(CPOffence.builder().id("1")
                                 .judicialResults(List.of(CPJudicialResult.builder()
-                                        .judicialResultType(CPJudicialResultType.builder().build())
                                         .build()))
                                 .build(),
                         CPOffence.builder().id("2")
                                 .judicialResults(List.of(CPJudicialResult.builder()
-                                        .judicialResultType(CPJudicialResultType.builder().build())
                                         .build()))
                                 .build()))
                 .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
@@ -73,13 +71,11 @@ class CPDefendantTest {
                         .build())
                 .offences(List.of(CPOffence.builder().id("1")
                                 .judicialResults(List.of(CPJudicialResult.builder()
-                                        .judicialResultType(CPJudicialResultType.builder().build())
                                         .build()))
                                 .build(),
 
                         CPOffence.builder().id("2")
                                 .judicialResults(List.of(CPJudicialResult.builder()
-                                        .judicialResultType(CPJudicialResultType.builder().build())
                                         .build()))
                                 .build()))
                 .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")

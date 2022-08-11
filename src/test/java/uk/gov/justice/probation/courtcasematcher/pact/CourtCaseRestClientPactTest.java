@@ -82,10 +82,8 @@ class CourtCaseRestClientPactTest {
                     offence.array("judicialResults",  (judicialResults)-> judicialResults.object((judicialResult) -> {
                         judicialResult.booleanType("isConvictedResult");
                         judicialResult.stringType("label");
-                        judicialResult.object("judicialResultType", (judicialResultTypeObject) -> {
-                            judicialResultTypeObject.stringType("description");
-                            judicialResultTypeObject.stringType("id");
-                        });
+                        judicialResult.stringType("label");
+
                     }));
                 }));
                 defendant.stringType("sex");

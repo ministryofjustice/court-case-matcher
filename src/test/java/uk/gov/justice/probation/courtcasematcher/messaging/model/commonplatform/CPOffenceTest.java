@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform
 
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
-import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResultType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
 import java.util.List;
@@ -19,7 +18,6 @@ class CPOffenceTest {
                 .wording("wording")
                 .listingNumber(20)
                 .judicialResults(List.of(CPJudicialResult.builder()
-                        .judicialResultType(CPJudicialResultType.builder().build())
                         .build()))
                 .build()
                 .asDomain();
@@ -31,7 +29,6 @@ class CPOffenceTest {
                 .act("legislation")
                 .listNo(20)
                 .judicialResults(List.of(JudicialResult.builder()
-                                .judicialResultType(JudicialResultType.builder().build())
                         .build()))
                 .build());
     }
