@@ -7,6 +7,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 
 import java.time.LocalDate;
+import java.util.Collections;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -22,6 +23,11 @@ class CCSDefendantTest {
                 .offenceSummary("offence summary")
                 .act("offence act")
                 .sequenceNumber(1)
+                .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
+                        .isConvictedResult(true)
+                        .label("Adjournment")
+                        .judicialResultTypeId("judicialResultTypeId")
+                        .build()))
                 .build());
         assertThat(actual.getName()).isEqualTo(CCSName.builder()
                 .title("title")

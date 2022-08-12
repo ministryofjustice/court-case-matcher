@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
@@ -22,19 +21,16 @@ import javax.validation.ConstraintViolationException;
 @AllArgsConstructor
 @Slf4j
 public class HearingExtractor {
-    @Autowired
     @NonNull
-    @Qualifier("snsMessageWrapperJsonParser")
+    @Autowired
     final MessageParser<SnsMessageContainer> snsMessageWrapperJsonParser;
 
-    @Autowired
     @NonNull
-    @Qualifier("libraJsonParser")
+    @Autowired
     final MessageParser<LibraHearing> libraParser;
 
-    @Autowired
     @NonNull
-    @Qualifier("commonPlatformJsonParser")
+    @Autowired
     final MessageParser<CPHearingEvent> commonPlatformParser;
 
     @Value("${feature.flags.pass-hearing-id-to-court-case-service:false}")
@@ -45,10 +41,12 @@ public class HearingExtractor {
             SnsMessageContainer snsMessageContainer = snsMessageWrapperJsonParser.parseMessage(payload, SnsMessageContainer.class);
             log.debug("Extracted message ID {} from SNS message of type {}. Incoming message ID was {} ", snsMessageContainer.getMessageId(), snsMessageContainer.getMessageType(), messageId);
 
-            return switch (snsMessageContainer.getMessageType()){
-                case LIBRA_COURT_CASE -> libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain();
+            return switch (snsMessageContainer.getMessageType()) {
+                case LIBRA_COURT_CASE ->
+                        libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain();
                 case COMMON_PLATFORM_HEARING -> parseCPMessage(snsMessageContainer);
-                default -> throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
+                default ->
+                        throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
             };
 
         } catch (ConstraintViolationException e) {
@@ -66,7 +64,12 @@ public class HearingExtractor {
         final var cpHearingEvent = commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class);
         final var hearing = cpHearingEvent.asDomain();
         return passHearingIdToCourtCaseService ? hearing
-                .withHearingId(cpHearingEvent.getHearing().getId()) : hearing;
+                .withHearingId(cpHearingEvent.getHearing().getId())
+                .withHearingEventType(snsMessageContainer.getHearingEventType().name())
+                : hearing
+                .withHearingEventType(snsMessageContainer.getHearingEventType().name());
+
+
     }
 
 }

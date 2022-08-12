@@ -6,8 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSJudicialResult;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -23,6 +27,8 @@ public class CPOffence {
     private final String wording;
     private final Integer listingNumber;
 
+    private List<CPJudicialResult> judicialResults;
+
     public Offence asDomain() {
         return Offence.builder()
                 .id(id)
@@ -30,6 +36,11 @@ public class CPOffence {
                 .offenceTitle(offenceTitle)
                 .offenceSummary(wording)
                 .listNo(listingNumber)
+                .judicialResults(Optional.ofNullable(getJudicialResults())
+                        .map(judicialResults -> judicialResults.stream()
+                                .map(CPJudicialResult::asDomain)
+                                .collect(Collectors.toList()))
+                        .orElse(null))
                 .build();
     }
 }

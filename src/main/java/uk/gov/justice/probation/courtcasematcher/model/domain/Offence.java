@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -24,4 +26,6 @@ public class Offence {
     private final Integer sequenceNumber;
 
     private final Integer listNo;
+
+    private List<JudicialResult> judicialResults;
 }

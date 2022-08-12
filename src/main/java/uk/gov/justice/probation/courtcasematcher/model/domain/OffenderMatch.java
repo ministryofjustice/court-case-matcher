@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

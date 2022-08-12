@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 
 @Slf4j
 public enum CCSDefendantType {
@@ -20,7 +20,7 @@ public enum CCSDefendantType {
         this.domainType = domainType;
     }
 
-    public static CCSDefendantType of(uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType defType) {
+    public static CCSDefendantType of(DefendantType defType) {
         if(defType == null) {
             return DEFAULT;
         }

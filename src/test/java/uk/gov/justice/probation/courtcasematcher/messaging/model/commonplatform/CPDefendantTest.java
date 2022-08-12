@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
 
 import java.time.LocalDate;
@@ -30,7 +30,14 @@ class CPDefendantTest {
                                 .contact(TEST_CP_CONTACT)
                                 .build())
                         .build())
-                .offences(List.of(CPOffence.builder().id("1").build(), CPOffence.builder().id("2").build()))
+                .offences(List.of(CPOffence.builder().id("1")
+                                .judicialResults(List.of(CPJudicialResult.builder()
+                                        .build()))
+                                .build(),
+                        CPOffence.builder().id("2")
+                                .judicialResults(List.of(CPJudicialResult.builder()
+                                        .build()))
+                                .build()))
                 .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
                 .pncId("20071234557L")
                 .croNumber("croNumber")
@@ -62,7 +69,15 @@ class CPDefendantTest {
                                 .name("orgname")
                                 .build())
                         .build())
-                .offences(List.of(CPOffence.builder().id("1").build(), CPOffence.builder().id("2").build()))
+                .offences(List.of(CPOffence.builder().id("1")
+                                .judicialResults(List.of(CPJudicialResult.builder()
+                                        .build()))
+                                .build(),
+
+                        CPOffence.builder().id("2")
+                                .judicialResults(List.of(CPJudicialResult.builder()
+                                        .build()))
+                                .build()))
                 .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
                 .pncId("20071234557L")
                 .croNumber("croNumber")

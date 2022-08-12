@@ -53,11 +53,16 @@ public class CCSExtendedHearingTest {
         assertThat(actualFirstDefendant.getType()).isEqualTo(CCSDefendantType.ORGANISATION);
         assertThat(actualFirstDefendant.getProbationStatus()).isEqualTo("Current");
         assertThat(actualFirstDefendant.getOffences()).isEqualTo(Collections.singletonList(CCSOffence.builder()
-                        .offenceTitle("offence title")
-                        .offenceSummary("offence summary")
-                        .act("offence act")
-                        .sequenceNumber(1)
-                        .build()));
+                .offenceTitle("offence title")
+                .offenceSummary("offence summary")
+                .act("offence act")
+                .sequenceNumber(1)
+                .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
+                        .isConvictedResult(true)
+                        .label("Adjournment")
+                        .judicialResultTypeId("judicialResultTypeId")
+                        .build()))
+                .build()));
 
         assertThat(actualFirstDefendant.getCrn()).isEqualTo(firstDefendant.getCrn());
         assertThat(actualFirstDefendant.getCro()).isEqualTo(firstDefendant.getCro());

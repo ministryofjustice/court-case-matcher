@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.justice.probation.courtcasematcher.model.domain.MatchType;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 
 @Slf4j
 public enum OffenderSearchMatchType {

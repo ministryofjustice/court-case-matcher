@@ -8,6 +8,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -25,6 +30,8 @@ public class CCSOffence {
 
     private final Integer listNo;
 
+    private List<CCSJudicialResult> judicialResults;
+
     public static CCSOffence of(Offence offence) {
         return CCSOffence.builder()
                 .offenceTitle(offence.getOffenceTitle())
@@ -32,6 +39,11 @@ public class CCSOffence {
                 .act(offence.getAct())
                 .sequenceNumber(offence.getSequenceNumber())
                 .listNo(offence.getListNo())
+                .judicialResults(Optional.of(offence)
+                        .map(Offence::getJudicialResults)
+                        .orElse(Collections.emptyList())
+                        .stream().map(CCSJudicialResult::of)
+                        .collect(Collectors.toList()))
                 .build();
     }
 
@@ -42,6 +54,11 @@ public class CCSOffence {
                 .act(getAct())
                 .sequenceNumber(getSequenceNumber())
                 .listNo(listNo)
+                .judicialResults(Optional.ofNullable(getJudicialResults())
+                        .map(judicialResults -> judicialResults.stream()
+                                .map(CCSJudicialResult::asDomain)
+                                .collect(Collectors.toList()))
+                        .orElse(null))
                 .build();
     }
 }

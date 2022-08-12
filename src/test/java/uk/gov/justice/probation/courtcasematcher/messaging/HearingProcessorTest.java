@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static uk.gov.justice.probation.courtcasematcher.model.domain.DefendantType.PERSON;
+import static uk.gov.justice.probation.courtcasematcher.model.type.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
 class HearingProcessorTest {

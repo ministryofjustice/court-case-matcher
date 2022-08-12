@@ -1,7 +1,10 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,6 +33,11 @@ class CCSOffenceTest {
                 .act("act")
                 .sequenceNumber(1)
                 .listNo(30)
+                .judicialResults(Collections.singletonList(JudicialResult.builder()
+                                .isConvictedResult(false)
+                                .label("label")
+                                .judicialResultTypeId("judicialResultTypeId")
+                        .build()))
                 .build();
     }
 

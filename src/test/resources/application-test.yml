@@ -48,3 +48,8 @@ aws:
 feature:
   flags:
     pass-hearing-id-to-court-case-service: true
+
+logging:
+  level:
+    au.com.dius.pact.core.matchers.RequestMatching: DEBUG
+          

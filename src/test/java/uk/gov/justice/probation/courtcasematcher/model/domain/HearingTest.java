@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 
 import java.util.List;
 

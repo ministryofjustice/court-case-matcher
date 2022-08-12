@@ -46,7 +46,7 @@ class CourtCaseRestClientPactTest {
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8);
 
         return builder
-                .given("a case exists for hearingId 8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
+                .given("a hearing exists for hearingId 8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
                 .uponReceiving("a request for a case by hearingId")
                 .path("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
                 .method("GET")
@@ -79,6 +79,11 @@ class CourtCaseRestClientPactTest {
                     offence.stringType("offenceSummary");
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
+                    offence.array("judicialResults",  (judicialResults)-> judicialResults.object((judicialResult) -> {
+                        judicialResult.booleanType("isConvictedResult");
+                        judicialResult.stringType("label");
+                        judicialResult.stringType("judicialResultTypeId");
+                    }));
                 }));
                 defendant.stringType("sex");
                 defendant.stringValue("type", "PERSON");
@@ -93,7 +98,7 @@ class CourtCaseRestClientPactTest {
         }).build();
 
         return builder
-                .given("a case will be PUT by id")
+                .given("a hearing will be PUT by id")
                 .uponReceiving("a request to put a minimal court case")
                 .path(String.format("/hearing/%s", HEARING_ID))
                 .headers("Content-type", "application/json")
@@ -135,6 +140,11 @@ class CourtCaseRestClientPactTest {
                     offence.stringType("offenceSummary");
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
+                    offence.array("judicialResults",  (judicialResults)-> judicialResults.object((judicialResult) -> {
+                        judicialResult.booleanType("isConvictedResult");
+                        judicialResult.stringType("label");
+                        judicialResult.stringType("judicialResultTypeId");
+                    }));
                 }));
                 defendant.stringType("probationStatus", "CURRENT");
                 defendant.stringType("type", "ORGANISATION");
@@ -159,7 +169,7 @@ class CourtCaseRestClientPactTest {
 
         final var location = String.format("/hearing/%s", HEARING_ID);
         return builder
-                .given("a case will be PUT by id")
+                .given("a hearing will be PUT by id")
                 .uponReceiving("a request to put a full court case")
                 .body(body)
                 .headers("Content-type", "application/json")
