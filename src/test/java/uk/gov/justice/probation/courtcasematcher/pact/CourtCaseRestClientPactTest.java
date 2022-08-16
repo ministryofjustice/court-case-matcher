@@ -199,7 +199,7 @@ class CourtCaseRestClientPactTest {
     void putCourtCaseWithAllFields() {
 
         final var actual = ((CourtCaseRepository) restClient)
-                .putHearing(DomainDataHelper.aCourtCaseWithAllFields()).blockOptional();
+                .putHearing(DomainDataHelper.aHearingWithAllFields()).blockOptional();
 
         assertThat(actual).isEmpty();
     }
