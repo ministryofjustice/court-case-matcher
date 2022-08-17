@@ -34,17 +34,4 @@ public enum HearingEventType {
                 return DEFAULT;
         }
     }
-
-    public static String from(HearingEventType eventType) {
-        eventType = eventType == null ? DEFAULT : eventType;
-        switch (eventType) {
-            case CONFIRMED_OR_UPDATED:
-                return CONFIRMED_OR_UPDATED.description;
-            case RESULTED:
-                return RESULTED.description;
-            default:
-                log.warn("Unknown hearing event type received {}. Returning CONFIRMED_OR_UPDATED.", eventType);
-                return DEFAULT.description;
-        }
-    }
 }
