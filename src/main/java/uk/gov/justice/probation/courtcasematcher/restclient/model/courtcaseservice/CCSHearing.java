@@ -55,6 +55,7 @@ public class CCSHearing implements Serializable {
     private final boolean preSentenceActivity;
     private final boolean awaitingPsr;
     private final CCSDataSource source;
+    private final String hearingEventType;
 
     @JsonIgnore
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
@@ -64,6 +65,7 @@ public class CCSHearing implements Serializable {
                 .source(Optional.ofNullable(source).map(CCSDataSource::asDomain).orElse(null))
                 .caseId(getCaseId())
                 .hearingId(getHearingId())
+                .hearingEventType(hearingEventType)
                 .caseNo(getCaseNo())
                 .urn(getUrn())
 

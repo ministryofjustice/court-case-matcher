@@ -127,7 +127,7 @@ class CourtCaseRestClientIntTest {
 
     @Test
     void whenPutHearing_thenItsSuccessful() {
-        final var hearing = aCourtCaseBuilderWithAllFields()
+        final var hearing = aHearingBuilderWithAllFields()
                 .build();
         final var voidMono = client.putHearing(hearing);
         assertThat(voidMono.blockOptional()).isEmpty();
@@ -140,7 +140,7 @@ class CourtCaseRestClientIntTest {
 
     @Test
     void givenNullCaseId_whenPutHearing_thenItsSuccessful() {
-        final var hearing = aCourtCaseBuilderWithAllFields()
+        final var hearing = aHearingBuilderWithAllFields()
                 .caseId(null)
                 .build();
         final var voidMono = client.putHearing(hearing);
@@ -154,7 +154,7 @@ class CourtCaseRestClientIntTest {
 
     @Test
     void whenRestClientThrows500OnPut_ThenThrow() {
-        final var hearing = aCourtCaseBuilderWithAllFields()
+        final var hearing = aHearingBuilderWithAllFields()
                 .hearingId(HEARING_ID_SERVER_ERROR)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode("X500")
