@@ -63,6 +63,7 @@ class CourtCaseRestClientPactTest {
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
             rootObject.stringType("hearingId");
+            rootObject.stringType("hearingEventType");
             rootObject.stringValue("source", "COMMON_PLATFORM");
             rootObject.array("defendants", (defendants) -> defendants.object((defendant -> {
                 defendant.object("address", (addressObj -> {
@@ -115,6 +116,7 @@ class CourtCaseRestClientPactTest {
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
             rootObject.stringType("hearingId");
+            rootObject.stringType("hearingEventType");
             rootObject.stringType("caseNo");
             rootObject.stringType("urn");
             rootObject.stringValue("source", "COMMON_PLATFORM");
@@ -199,7 +201,7 @@ class CourtCaseRestClientPactTest {
     void putCourtCaseWithAllFields() {
 
         final var actual = ((CourtCaseRepository) restClient)
-                .putHearing(DomainDataHelper.aCourtCaseWithAllFields()).blockOptional();
+                .putHearing(DomainDataHelper.aHearingWithAllFields()).blockOptional();
 
         assertThat(actual).isEmpty();
     }

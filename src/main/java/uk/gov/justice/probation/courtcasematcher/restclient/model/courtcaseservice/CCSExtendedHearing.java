@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
+import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,8 @@ public class CCSExtendedHearing {
     private List<CCSHearingDay> hearingDays;
     private CCSDataSource source;
 
+    private String hearingEventType;
+
     public static CCSExtendedHearing of(Hearing hearing) {
         return CCSExtendedHearing.builder()
                 .caseId(hearing.getCaseId())
@@ -32,6 +35,7 @@ public class CCSExtendedHearing {
                 .urn(hearing.getUrn())
                 .caseNo(hearing.getCaseNo())
                 .source(CCSDataSource.of(hearing.getSource()))
+                .hearingEventType(hearing.getHearingEventAsType().getDescription())
                 .hearingDays(hearing.getHearingDays().stream()
                         .map(CCSHearingDay::of)
                         .collect(Collectors.toList()))
@@ -48,6 +52,7 @@ public class CCSExtendedHearing {
                 .urn(getUrn())
                 .caseNo(caseNo)
                 .source(source.asDomain())
+                .hearingEventType(hearingEventType)
                 .hearingDays(hearingDays.stream()
                         .map(CCSHearingDay::asDomain)
                         .collect(Collectors.toList())

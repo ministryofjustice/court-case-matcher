@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CCSHearingTest {
     @Test
     public void mapBack() {
-        final var original = DomainDataHelper.aCourtCaseWithAllFields();
+        final var original = DomainDataHelper.aHearingWithAllFields();
 
         final var firstDefendant = original.getDefendants().get(0);
         final var ccsHearing = CCSHearing.builder()
@@ -23,6 +23,7 @@ class CCSHearingTest {
                 .breach(firstDefendant.getBreach())
                 .caseId(original.getCaseId())
                 .hearingId(original.getHearingId())
+                .hearingEventType(original.getHearingEventType())
                 .caseNo(original.getCaseNo())
                 .urn(original.getUrn())
 
