@@ -62,7 +62,7 @@ class CCSDefendantTest {
     }
 
     private Defendant buildDefendant() {
-        return DomainDataHelper.aCourtCaseWithAllFields().getDefendants().get(0)
+        return DomainDataHelper.aHearingWithAllFields().getDefendants().get(0)
                 .withProbationStatus("CURRENT")
                 .withCrn("CRN")
                 .withPnc("PNC")

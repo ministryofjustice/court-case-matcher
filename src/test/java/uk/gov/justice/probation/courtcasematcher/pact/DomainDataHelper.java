@@ -9,6 +9,7 @@ import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,15 +22,16 @@ public class DomainDataHelper {
     public static String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
     public static String HEARING_ID = "ABCDD32D-3C80-41E8-846E-D274DC2B94A5";
 
-    public static Hearing aCourtCaseWithAllFields() {
-        return aCourtCaseBuilderWithAllFields()
+    public static Hearing aHearingWithAllFields() {
+        return aHearingBuilderWithAllFields()
                 .build();
     }
 
-    public static Hearing.HearingBuilder aCourtCaseBuilderWithAllFields() {
+    public static Hearing.HearingBuilder aHearingBuilderWithAllFields() {
         return aMinimalCourtCaseBuilder()
                 .caseNo("case no")
                 .hearingId(HEARING_ID)
+                .hearingEventType(HearingEventType.CONFIRMED_OR_UPDATED.getDescription())
                 .urn("urn")
                 .defendants(Collections.singletonList(Defendant.builder()
                         .defendantId(DEFENDANT_ID)

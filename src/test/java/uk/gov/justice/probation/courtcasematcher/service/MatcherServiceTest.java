@@ -89,7 +89,7 @@ class MatcherServiceTest {
                 .type(DefendantType.PERSON)
                 .build();
 
-        COURT_CASE = DomainDataHelper.aCourtCaseBuilderWithAllFields()
+        COURT_CASE = DomainDataHelper.aHearingBuilderWithAllFields()
                 .defendants(List.of(defendant1, defendant2))
                 .build();
     }
