@@ -15,7 +15,7 @@ public class CCSExtendedHearingTest {
 
     @Test
     public void shouldMapFromCourtCaseAndKeepIdsIfPresent() {
-        final var courtCase = DomainDataHelper.aCourtCaseWithAllFields();
+        final var courtCase = DomainDataHelper.aHearingWithAllFields();
         final var actual = CCSExtendedHearing.of(courtCase);
 
         assertThat(actual.getCaseId()).isNotBlank().isEqualTo(courtCase.getCaseId());
@@ -77,7 +77,7 @@ public class CCSExtendedHearingTest {
 
     @Test
     public void shouldMapMultipleDefendants() {
-        final var aCase = DomainDataHelper.aCourtCaseWithAllFields();
+        final var aCase = DomainDataHelper.aHearingWithAllFields();
         final var courtCase = aCase
                 .withCaseId(null)
                 .withDefendants(List.of(
@@ -95,7 +95,7 @@ public class CCSExtendedHearingTest {
 
     @Test
     public void shouldMapBack() {
-        final var original = DomainDataHelper.aCourtCaseWithAllFields();
+        final var original = DomainDataHelper.aHearingWithAllFields();
 
         final var actual = CCSExtendedHearing.of(original).asDomain();
 

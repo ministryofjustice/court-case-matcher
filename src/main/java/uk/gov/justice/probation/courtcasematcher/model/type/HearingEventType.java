@@ -11,22 +11,26 @@ public enum HearingEventType {
 
     private static final HearingEventType DEFAULT = CONFIRMED_OR_UPDATED;
 
-    final String type;
+    final String description;
 
-    HearingEventType(String type) {
-        this.type = type;
+    HearingEventType(String description) {
+        this.description = description;
+    }
+
+    public String getDescription(){
+        return description;
     }
 
     @JsonCreator
-    public static HearingEventType of(String hearingEventType) {
-        hearingEventType = hearingEventType == null ? DEFAULT.name() : hearingEventType;
-        switch (hearingEventType) {
+    public static HearingEventType of(String eventTypeDescription) {
+        eventTypeDescription = eventTypeDescription == null ? DEFAULT.name() : eventTypeDescription;
+        switch (eventTypeDescription) {
             case "ConfirmedOrUpdated":
                 return CONFIRMED_OR_UPDATED;
             case "Resulted":
                 return RESULTED;
             default:
-                log.warn("Unknown hearing event type received {}. Returning CONFIRMED_OR_UPDATED.", hearingEventType);
+                log.warn("Unknown hearing event type received {}. Returning CONFIRMED_OR_UPDATED.", eventTypeDescription);
                 return DEFAULT;
         }
     }
