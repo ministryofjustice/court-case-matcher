@@ -39,9 +39,9 @@ spec:
         paths:
           - path: {{ $ingressPath }}
             backend:
-             service:
-               name: { { $serviceName } }
-               port:
-                 name: http
+              service:
+                name: { { $serviceName } }
+                port:
+                  name: http
   {{- end }}
 {{- end }}
