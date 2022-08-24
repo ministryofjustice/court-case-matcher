@@ -40,7 +40,7 @@ spec:
           - path: {{ $ingressPath }}
             backend:
               service:
-                name: { { $serviceName } }
+                name: { { $fullName } }
                 port:
                   name: http
   {{- end }}
