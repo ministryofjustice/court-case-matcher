@@ -27,11 +27,13 @@ public class CCSExtendedHearing {
     private CCSDataSource source;
 
     private String hearingEventType;
+    private String hearingType;
 
     public static CCSExtendedHearing of(Hearing hearing) {
         return CCSExtendedHearing.builder()
                 .caseId(hearing.getCaseId())
                 .hearingId(hearing.getHearingId())
+                .hearingType(hearing.getHearingType())
                 .urn(hearing.getUrn())
                 .caseNo(hearing.getCaseNo())
                 .source(CCSDataSource.of(hearing.getSource()))
@@ -53,6 +55,7 @@ public class CCSExtendedHearing {
                 .caseNo(caseNo)
                 .source(source.asDomain())
                 .hearingEventType(hearingEventType)
+                .hearingType(hearingType)
                 .hearingDays(hearingDays.stream()
                         .map(CCSHearingDay::asDomain)
                         .collect(Collectors.toList())

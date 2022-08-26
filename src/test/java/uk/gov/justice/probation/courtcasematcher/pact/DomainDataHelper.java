@@ -31,6 +31,7 @@ public class DomainDataHelper {
         return aMinimalCourtCaseBuilder()
                 .caseNo("case no")
                 .hearingId(HEARING_ID)
+                .hearingType("sentenced")
                 .hearingEventType(HearingEventType.CONFIRMED_OR_UPDATED.getDescription())
                 .urn("urn")
                 .defendants(Collections.singletonList(Defendant.builder()

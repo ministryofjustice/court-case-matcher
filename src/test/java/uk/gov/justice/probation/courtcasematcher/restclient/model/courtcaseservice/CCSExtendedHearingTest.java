@@ -23,6 +23,7 @@ public class CCSExtendedHearingTest {
         assertThat(actual.getCaseNo()).isEqualTo(courtCase.getCaseNo());
         assertThat(actual.getUrn()).isEqualTo(courtCase.getUrn());
         assertThat(actual.getSource()).isEqualTo(CCSDataSource.COMMON_PLATFORM);
+        assertThat(actual.getHearingType()).isEqualTo("sentenced");
 
         assertThat(actual.getHearingDays()).asList().containsExactly(CCSHearingDay.builder()
                 .courtCode("B10JQ")
