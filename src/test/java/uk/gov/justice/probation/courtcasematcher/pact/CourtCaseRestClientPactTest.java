@@ -116,6 +116,7 @@ class CourtCaseRestClientPactTest {
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
             rootObject.stringType("hearingId");
+            rootObject.stringType("hearingType");
             rootObject.stringType("hearingEventType");
             rootObject.stringType("caseNo");
             rootObject.stringType("urn");
