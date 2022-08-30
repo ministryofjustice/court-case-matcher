@@ -23,6 +23,7 @@ class CCSHearingTest {
                 .breach(firstDefendant.getBreach())
                 .caseId(original.getCaseId())
                 .hearingId(original.getHearingId())
+                .hearingType("sentenced")
                 .hearingEventType(original.getHearingEventType())
                 .caseNo(original.getCaseNo())
                 .urn(original.getUrn())

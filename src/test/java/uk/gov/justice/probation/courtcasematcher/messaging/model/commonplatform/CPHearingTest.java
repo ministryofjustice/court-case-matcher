@@ -27,6 +27,7 @@ class CPHearingTest {
         assertThat(hearing.getCourtCode()).isEqualTo("B10JQ");
         assertThat(hearing.getSource()).isEqualTo(COMMON_PLATFORM);
         assertThat(hearing.getUrn()).isEqualTo("urn");
+        assertThat(hearing.getHearingType()).isEqualTo("sentence");
 
         final var firstDefendant = hearing.getDefendants().get(0);
         assertThat(firstDefendant.getDefendantId()).isEqualTo("92673716-9B4F-40B2-A3E5-B398750328E9");
@@ -59,6 +60,7 @@ class CPHearingTest {
     static CPHearing buildHearing() {
         return CPHearing.builder()
                 .id("F40CF1F4-B226-44C8-A377-494AEC9F4EBE")
+                .type(CPHearingType.builder().description("sentence").build())
                 .jurisdictionType(CPJurisdictionType.MAGISTRATES) // Note: Not currently mapped to anything
                 .hearingDays(List.of(
                         CPHearingDay.builder()

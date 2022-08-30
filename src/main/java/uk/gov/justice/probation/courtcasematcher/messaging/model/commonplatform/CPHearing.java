@@ -14,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -35,6 +36,8 @@ public class CPHearing {
     @Valid
     private final List<CPProsecutionCase> prosecutionCases;
 
+    private final CPHearingType type;
+
     public Hearing asDomain() {
         return Hearing.builder()
                 .caseId(prosecutionCases.get(0).getId())
@@ -51,6 +54,7 @@ public class CPHearing {
                         .map(CPDefendant::asDomain)
                         .collect(Collectors.toList()))
                 .urn(prosecutionCases.get(0).getProsecutionCaseIdentifier().getCaseUrn())
+                .hearingType(Optional.ofNullable(type).map(CPHearingType::getDescription).orElse(null))
                 .build();
     }
 }
