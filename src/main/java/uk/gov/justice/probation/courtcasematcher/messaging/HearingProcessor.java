@@ -73,7 +73,7 @@ public class HearingProcessor {
 
     private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
-        if(existingHearing.getSource() == LIBRA
+        if(receivedHearing.getSource() == LIBRA
           && !StringUtils.equals(receivedHearing.getListNo(), existingHearing.getListNo())) {
             courtCaseMerged = courtCaseMerged.withHearingId(UUID.randomUUID().toString());
         }

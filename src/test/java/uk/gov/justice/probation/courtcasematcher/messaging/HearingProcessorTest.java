@@ -1,12 +1,16 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
@@ -39,6 +43,9 @@ class HearingProcessorTest {
     private MatcherService matcherService;
 
     private HearingProcessor messageProcessor;
+
+    @Captor
+    private ArgumentCaptor<Hearing> hearingArgumentCaptor;
 
     @BeforeEach
     void beforeEach() {
@@ -110,6 +117,94 @@ class HearingProcessorTest {
         verify(courtCaseService).updateProbationStatusDetail(eq(courtCaseMerged));
         verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveHearing(eq(courtCaseMerged));
         verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
+    }
+
+    @DisplayName("Update hearing ID when listNo updated for Libra cases")
+    @Test
+    void when_new_listNo_receivedForExistingLibraCase_createNewHearingId_ThenUpdateAndSave() {
+        var caseId = UUID.randomUUID().toString();
+        var defendantId = UUID.randomUUID().toString();
+
+        var courtCase = Hearing.builder()
+                .source(DataSource.LIBRA)
+                .caseId(caseId)
+                .hearingDays(Collections.singletonList(HearingDay.builder()
+                        .courtCode("SHF")
+                        .listNo("1st")
+                        .build()))
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .crn("X320741")
+                        .defendantId(defendantId)
+                        .build()))
+                .build();
+        var existingCourtCase = Hearing.builder()
+                .caseId(caseId)
+                .hearingId(caseId)
+                .source(DataSource.LIBRA)
+                .defendants(Collections.singletonList(Defendant.builder()
+                        .type(PERSON)
+                        .crn("X320741")
+                        .defendantId(defendantId)
+                        .build()))
+               .hearingDays(Collections.singletonList(HearingDay.builder()
+                    .courtCode("SHF")
+                    .listNo("2nd")
+                    .build()))
+                .build();
+        var courtCaseMerged = HearingMapper.merge(courtCase, existingCourtCase);
+        when(courtCaseService.findHearing(any(Hearing.class))).thenReturn(Mono.just(existingCourtCase));
+        when(courtCaseService.updateProbationStatusDetail(hearingArgumentCaptor.capture())).thenReturn(Mono.just(courtCaseMerged));
+
+        messageProcessor.process(courtCase, MESSAGE_ID);
+
+        verify(courtCaseService).findHearing(any(Hearing.class));
+        verify(courtCaseService).updateProbationStatusDetail(hearingArgumentCaptor.capture());
+        Assertions.assertThat(hearingArgumentCaptor.getValue().getHearingId()).isNotEqualTo(caseId);
+    }
+
+    @DisplayName("Use existing hearing ID when listNo not updated for Libra cases")
+    @Test
+    void when_forExistingLibraCase_listNo_not_changed_useExistingHearingId_ThenUpdateAndSave() {
+        var caseId = UUID.randomUUID().toString();
+        var defendantId = UUID.randomUUID().toString();
+
+        var courtCase = Hearing.builder()
+          .source(DataSource.LIBRA)
+          .caseId(caseId)
+          .hearingDays(Collections.singletonList(HearingDay.builder()
+            .courtCode("SHF")
+            .listNo("1st")
+            .build()))
+          .defendants(Collections.singletonList(Defendant.builder()
+            .type(PERSON)
+            .crn("X320741")
+            .defendantId(defendantId)
+            .build()))
+          .build();
+        var existingCourtCase = Hearing.builder()
+          .caseId(caseId)
+          .hearingId(caseId)
+          .source(DataSource.LIBRA)
+          .defendants(Collections.singletonList(Defendant.builder()
+            .type(PERSON)
+            .crn("X320741")
+            .defendantId(defendantId)
+            .build()))
+          .hearingDays(Collections.singletonList(HearingDay.builder()
+            .courtCode("ABC")
+            .listNo("1st")
+            .build()))
+          .build();
+        var courtCaseMerged = HearingMapper.merge(courtCase, existingCourtCase);
+        when(courtCaseService.findHearing(any(Hearing.class))).thenReturn(Mono.just(existingCourtCase));
+        when(courtCaseService.updateProbationStatusDetail(hearingArgumentCaptor.capture())).thenReturn(Mono.just(courtCaseMerged));
+
+        messageProcessor.process(courtCase, MESSAGE_ID);
+
+        verify(courtCaseService).findHearing(any(Hearing.class));
+        verify(courtCaseService).updateProbationStatusDetail(hearingArgumentCaptor.capture());
+        Assertions.assertThat(hearingArgumentCaptor.getValue().getHearingId()).isEqualTo(caseId);
     }
 
     @DisplayName("Receive a case which has not changed, then just track un changed event")
