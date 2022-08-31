@@ -25,8 +25,8 @@ public class CCSExtendedHearing {
     private List<CCSDefendant> defendants;
     private List<CCSHearingDay> hearingDays;
     private CCSDataSource source;
+    private HearingEventType hearingEventType;
 
-    private String hearingEventType;
     private String hearingType;
 
     public static CCSExtendedHearing of(Hearing hearing) {
@@ -37,7 +37,7 @@ public class CCSExtendedHearing {
                 .urn(hearing.getUrn())
                 .caseNo(hearing.getCaseNo())
                 .source(CCSDataSource.of(hearing.getSource()))
-                .hearingEventType(hearing.getHearingEventAsType().getDescription())
+                .hearingEventType(hearing.getHearingEventType())
                 .hearingDays(hearing.getHearingDays().stream()
                         .map(CCSHearingDay::of)
                         .collect(Collectors.toList()))

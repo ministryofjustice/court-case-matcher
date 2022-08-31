@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ public class CCSExtendedHearingTest {
         assertThat(actual.getUrn()).isEqualTo(courtCase.getUrn());
         assertThat(actual.getSource()).isEqualTo(CCSDataSource.COMMON_PLATFORM);
         assertThat(actual.getHearingType()).isEqualTo("sentenced");
+        assertThat(actual.getHearingEventType()).isEqualTo(HearingEventType.RESULTED);
 
         assertThat(actual.getHearingDays()).asList().containsExactly(CCSHearingDay.builder()
                 .courtCode("B10JQ")

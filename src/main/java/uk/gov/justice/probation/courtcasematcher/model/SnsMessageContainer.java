@@ -61,6 +61,6 @@ public class SnsMessageContainer implements Serializable {
     public HearingEventType getHearingEventType() {
         return Optional.ofNullable(getMessageAttributes())
                 .map(MessageAttributes::getHearingEventType)
-                .orElse(HearingEventType.UNKNOWN);
+                .orElse(null);
     }
 }
