@@ -27,6 +27,7 @@ class CCSHearingTest {
                 .hearingEventType(original.getHearingEventType())
                 .caseNo(original.getCaseNo())
                 .urn(original.getUrn())
+                .hearingEventType(original.getHearingEventType())
 
 
                 .courtCode(original.getCourtCode())

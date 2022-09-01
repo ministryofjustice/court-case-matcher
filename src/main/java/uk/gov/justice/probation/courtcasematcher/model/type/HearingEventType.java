@@ -1,16 +1,17 @@
 package uk.gov.justice.probation.courtcasematcher.model.type;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public enum HearingEventType {
     CONFIRMED_OR_UPDATED("ConfirmedOrUpdated"),
-    RESULTED("Resulted"),
-    UNKNOWN("Unknown");
+    RESULTED("Resulted");
 
     private static final HearingEventType DEFAULT = CONFIRMED_OR_UPDATED;
 
+    @JsonValue
     final String description;
 
     HearingEventType(String description) {

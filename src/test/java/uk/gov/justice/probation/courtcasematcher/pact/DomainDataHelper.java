@@ -1,14 +1,14 @@
 package uk.gov.justice.probation.courtcasematcher.pact;
 
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
-import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
+import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 
 import java.time.LocalDate;
@@ -29,10 +29,10 @@ public class DomainDataHelper {
 
     public static Hearing.HearingBuilder aHearingBuilderWithAllFields() {
         return aMinimalCourtCaseBuilder()
+                .hearingEventType(HearingEventType.RESULTED)
                 .caseNo("case no")
                 .hearingId(HEARING_ID)
                 .hearingType("sentenced")
-                .hearingEventType(HearingEventType.CONFIRMED_OR_UPDATED.getDescription())
                 .urn("urn")
                 .defendants(Collections.singletonList(Defendant.builder()
                         .defendantId(DEFENDANT_ID)

@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +33,7 @@ public class Hearing implements Serializable {
 
     private final DataSource source;
 
-    private final String hearingEventType;
+    private final HearingEventType hearingEventType;
 
     private String hearingType;
 
@@ -82,9 +81,5 @@ public class Hearing implements Serializable {
         return getFirstHearingDay()
                 .map(HearingDay::getListNo)
                 .orElse(null);
-    }
-
-    public HearingEventType getHearingEventAsType() {
-        return HearingEventType.of(hearingEventType);
     }
 }
