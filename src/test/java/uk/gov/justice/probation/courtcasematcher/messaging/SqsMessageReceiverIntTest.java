@@ -23,8 +23,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -83,7 +83,7 @@ public class SqsMessageReceiverIntTest {
     public void givenExistingCase_whenReceivePayload_thenSendExistingCase() throws IOException {
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING","hearingEventType","ConfirmedOrUpdated"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING","hearingEventType","Resulted"));
 
         await()
                 .atMost(1000, TimeUnit.SECONDS)
@@ -92,6 +92,7 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.verify(
                 putRequestedFor(urlMatching("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
                         // Values from incoming case
+                        .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
                         .withRequestBody(matchingJsonPath("urn", equalTo("25GD34377719")))
@@ -139,6 +140,7 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.verify(
                 putRequestedFor(urlMatching("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC"))
                         // Values from incoming case
+                        .withRequestBody(matchingJsonPath("hearingEventType", equalTo("ConfirmedOrUpdated")))
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingType", equalTo("sentence")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC")))
