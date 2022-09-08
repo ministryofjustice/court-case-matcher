@@ -5,12 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
@@ -20,7 +20,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearingComparator.hasCourtHearingChanged;
-import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.LIBRA;
 
 @AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
@@ -41,7 +40,7 @@ public class HearingProcessor {
     public void process(Hearing receivedHearing, String messageId) {
         try {
             // New LIBRA cases will have no case or defendant ID, and we need to assign
-            if (receivedHearing.getSource() == LIBRA && receivedHearing.getCaseId() == null) {
+            if (receivedHearing.getSource() == DataSource.LIBRA && receivedHearing.getCaseId() == null) {
                 receivedHearing = assignUuids(receivedHearing);
             }
             matchAndSaveHearing(receivedHearing, messageId);
@@ -73,10 +72,6 @@ public class HearingProcessor {
 
     private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
-        if(receivedHearing.getSource() == LIBRA
-          && !StringUtils.equals(receivedHearing.getListNo(), existingHearing.getListNo())) {
-            courtCaseMerged = courtCaseMerged.withHearingId(UUID.randomUUID().toString());
-        }
         updateAndSave(courtCaseMerged);
     }
 
