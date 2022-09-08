@@ -168,9 +168,9 @@ class CourtCaseRestClientIntTest {
 
     @Test
     void getHearing_delegatesToLegacyClient() {
-        when(legacyClient.getHearing("court code", "case no")).thenReturn(courtCaseMono);
+        when(legacyClient.getHearing("court code", "case no", "list no")).thenReturn(courtCaseMono);
 
-        final var actualMono = client.getHearing("court code", "case no");
+        final var actualMono = client.getHearing("court code", "case no", "list no");
 
         assertThat(actualMono).isEqualTo(courtCaseMono);
     }

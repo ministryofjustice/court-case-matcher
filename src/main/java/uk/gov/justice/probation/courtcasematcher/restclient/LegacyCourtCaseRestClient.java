@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,8 @@ import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNot
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSHearing;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 
 @Component("legacy-client")
 @Slf4j
@@ -36,11 +39,11 @@ public class LegacyCourtCaseRestClient {
         this.courtCasePutTemplate = courtCasePutTemplate;
     }
 
-    public Mono<Hearing> getHearing(final String courtCode, final String caseNo) throws WebClientResponseException {
+    public Mono<Hearing> getHearing(final String courtCode, final String caseNo, final String listNo) throws WebClientResponseException {
         final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
-        return courtCaseServiceRestHelper.get(path)
+        return courtCaseServiceRestHelper.get(path, Collections.singletonMap("listNo", List.of(listNo)))
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
             .bodyToMono(CCSHearing.class)

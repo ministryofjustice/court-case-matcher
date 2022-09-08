@@ -52,4 +52,4 @@ feature:
 logging:
   level:
     au.com.dius.pact.core.matchers.RequestMatching: DEBUG
-          
+

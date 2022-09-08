@@ -10,7 +10,7 @@ import java.util.List;
 public interface CourtCaseRepository {
     Mono<Hearing> getHearing(String hearingId);
 
-    Mono<Hearing> getHearing(String courtCode, String caseNo) throws WebClientResponseException;
+    Mono<Hearing> getHearing(String courtCode, String caseNo, String listNo) throws WebClientResponseException;
 
     Mono<Void> putHearing(Hearing hearing);
 
