@@ -108,7 +108,7 @@ public class LegacyCourtCaseRestClientIntTest {
                         .build()))
                 .build();
 
-        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, "123456").blockOptional();
+        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, "123456", "2nd").blockOptional();
 
         assertThat(optional.get()).usingRecursiveComparison().isEqualTo(expected);
     }
@@ -116,7 +116,7 @@ public class LegacyCourtCaseRestClientIntTest {
     @Test
     void givenUnknownCaseNo_whenGetCourtCase_thenReturnEmptyOptional() {
 
-        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, NEW_CASE_NO).blockOptional();
+        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, NEW_CASE_NO, "2nd").blockOptional();
 
         assertThat(optional.isPresent()).isFalse();
     }

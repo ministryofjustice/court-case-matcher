@@ -1,7 +1,13 @@
 {
+  "id" : "275aaf40-4ed1-4656-bbb3-cc813e3434ba",
   "request": {
     "method": "GET",
-    "url": "/court/B10JQ/case/123456"
+    "urlPath": "/court/B10JQ/case/123456",
+    "queryParameters" : {
+      "listNo" : {
+        "contains" : "2nd"
+      }
+    }
   },
   "response": {
     "status": 200,

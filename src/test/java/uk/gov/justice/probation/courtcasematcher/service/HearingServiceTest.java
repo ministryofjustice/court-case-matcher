@@ -40,6 +40,7 @@ class HearingServiceTest {
     private static final String DEFENDANT_UUID_2 = "ea66c23c-9c9c-4623-8c47-b882007915c3";
     private static final String COURT_CODE = "B10JQ00";
     private static final String COURT_ROOM = "1";
+    private static final String LIST_NO = "2nd";
     private static final String CASE_NO = "1234567890";
     private static final String CRN = "X340741";
     private static final String CASE_ID = "c468042b-5ecd-4ce9-a77e-20ad07616e2c";
@@ -156,6 +157,7 @@ class HearingServiceTest {
     @Test
     void givenExistingLibraCase_whenGetCourtCase_thenReturn() {
         final var aCase = buildCaseNoMatches()
+
                 .withSource(DataSource.LIBRA);
 
         final var courtCase = Hearing.builder()
@@ -169,12 +171,12 @@ class HearingServiceTest {
                 .source(DataSource.LIBRA)
                 .build();
 
-        when(courtCaseRepo.getHearing(COURT_CODE, CASE_NO)).thenReturn(Mono.just(courtCase));
+        when(courtCaseRepo.getHearing(COURT_CODE, CASE_NO, LIST_NO)).thenReturn(Mono.just(courtCase));
 
         final var updatedCourtCase = courtCaseService.findHearing(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
-        verify(courtCaseRepo).getHearing(COURT_CODE, CASE_NO);
+        verify(courtCaseRepo).getHearing(COURT_CODE, CASE_NO, LIST_NO);
     }
 
     @DisplayName("Incoming Common Platform case returned if exist")
@@ -207,11 +209,11 @@ class HearingServiceTest {
         var aCase = buildCaseNoMatches()
                 .withSource(DataSource.LIBRA);
 
-        when(courtCaseRepo.getHearing(COURT_CODE, CASE_NO)).thenReturn(Mono.empty());
+        when(courtCaseRepo.getHearing(COURT_CODE, CASE_NO, LIST_NO)).thenReturn(Mono.empty());
 
         final var newCourtCase = courtCaseService.findHearing(aCase).block();
 
-        verify(courtCaseRepo).getHearing(COURT_CODE, CASE_NO);
+        verify(courtCaseRepo).getHearing(COURT_CODE, CASE_NO, LIST_NO);
         assertThat(newCourtCase).isNull();
     }
 
@@ -354,6 +356,7 @@ class HearingServiceTest {
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(COURT_CODE)
                         .courtRoom(COURT_ROOM)
+                        .listNo(LIST_NO)
                         .build()))
                 .defendants(List.of(DEFENDANT, defendant2))
                 .caseNo(CASE_NO)

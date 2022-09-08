@@ -68,8 +68,8 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     }
 
     @Override
-    public Mono<Hearing> getHearing(String courtCode, String caseNo) throws WebClientResponseException {
-        return legacyCourtCaseRestClient.getHearing(courtCode, caseNo);
+    public Mono<Hearing> getHearing(String courtCode, String caseNo, String listNo) throws WebClientResponseException {
+        return legacyCourtCaseRestClient.getHearing(courtCode, caseNo, listNo);
     }
 
     @Override

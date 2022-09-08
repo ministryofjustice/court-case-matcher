@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -16,6 +17,9 @@ import reactor.util.retry.RetryBackoffSpec;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import static uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient.EXCEPTION_RETRY_FILTER;
@@ -103,9 +107,17 @@ public class CourtCaseServiceRestHelper {
     }
 
     WebClient.RequestHeadersSpec<?> get(String path) {
+        return get(path, null);
+    }
+
+    WebClient.RequestHeadersSpec<?> get(String path, Map<String, List<String>> queryParams) {
         final WebClient.RequestHeadersSpec<?> spec = webClient
             .get()
-            .uri(uriBuilder -> uriBuilder.path(path).build())
+            .uri(uriBuilder -> {
+                uriBuilder.path(path);
+                Optional.ofNullable(queryParams).ifPresent(stringListMap ->  uriBuilder.queryParams(new MultiValueMapAdapter<>(queryParams)));
+                return uriBuilder.build();
+            })
             .accept(MediaType.APPLICATION_JSON);
 
         return addSpecAuthAttribute(spec, path);
