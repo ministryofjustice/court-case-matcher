@@ -33,9 +33,10 @@ class CourtCaseServiceConsumerPactTest {
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
 
         return builder
-            .given("a hearing exists for court B10JQ and case number 1600028913")
+            .given("a hearing exists for court B10JQ, case number 1600028913 and list number 2nd")
             .uponReceiving("a request for a case by case number")
             .path("/court/B10JQ/case/1600028913")
+            .queryParameterFromProviderState("listNo", "${listNo}", "2nd")
             .method("GET")
             .willRespondWith()
             .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
@@ -49,7 +50,7 @@ class CourtCaseServiceConsumerPactTest {
     @Test
     void getCourtCase(MockServer mockServer) throws IOException {
         var httpResponse = Request
-            .Get(mockServer.getUrl() + "/court/B10JQ/case/1600028913")
+            .Get(mockServer.getUrl() + "/court/B10JQ/case/1600028913?listNo=2nd")
             .execute()
             .returnResponse();
 
