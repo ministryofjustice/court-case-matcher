@@ -36,7 +36,7 @@ class CourtCaseServiceConsumerPactTest {
             .given("a hearing exists for court B10JQ, case number 1600028913 and list number 2nd")
             .uponReceiving("a request for a case by case number")
             .path("/court/B10JQ/case/1600028913")
-            .queryParameterFromProviderState("listNo", "^[a-zA-Z0-9]+$", "2nd")
+            .query("listNo=2nd")
             .method("GET")
             .willRespondWith()
             .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
