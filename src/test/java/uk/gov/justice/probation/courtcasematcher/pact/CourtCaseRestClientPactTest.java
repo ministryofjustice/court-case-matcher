@@ -57,6 +57,25 @@ class CourtCaseRestClientPactTest {
                 .toPact(V4Pact.class);
     }
 
+
+    @Pact(provider="court-case-service", consumer="court-case-matcher")
+    public V4Pact getCourtCaseByCaseNoPact(PactDslWithProvider builder) throws IOException {
+
+        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
+
+        return builder
+                .given("a hearing exists for court B10JQ, case number 1600028913 and list number 2nd")
+                .uponReceiving("a request for a case by case number")
+                .path("/court/B10JQ/case/1600028913")
+                .query("listNo=2nd")
+                .method("GET")
+                .willRespondWith()
+                .headers(Map.of("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .body(body)
+                .status(200)
+                .toPact(V4Pact.class);
+    }
+
     @Pact(provider="court-case-service", consumer="court-case-matcher")
     public V4Pact putMinimalCourtCaseByIdPact(PactDslWithProvider builder) {
 
@@ -188,6 +207,16 @@ class CourtCaseRestClientPactTest {
     void getCourtCaseById() {
         final var courtCase = restClient.getHearing("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f").block();
         assertThat(courtCase.getHearingId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
+    }
+
+
+    @PactTestFor(pactMethod = "getCourtCaseByCaseNoPact")
+    @Test
+    void getCourtCaseByCaseNo() {
+
+        final var actual = restClient.getHearing("B10JQ", "1600028913", "2nd").block();
+
+        assertThat(actual).isNotNull();
     }
 
     @PactTestFor(pactMethod = "putMinimalCourtCaseByIdPact")
