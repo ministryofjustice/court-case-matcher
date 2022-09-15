@@ -7,5 +7,6 @@
   "crn": "X340741",
   "suspendedSentenceOrder": true,
   "breach": true,
-  "preSentenceActivity": true
+  "preSentenceActivity": true,
+  "hearingEventType": "Resulted"
 }
