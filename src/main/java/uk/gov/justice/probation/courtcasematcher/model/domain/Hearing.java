@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.With;
-import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -33,7 +32,7 @@ public class Hearing implements Serializable {
 
     private final DataSource source;
 
-    private final HearingEventType hearingEventType;
+    private String hearingEventType;
 
     private String hearingType;
 

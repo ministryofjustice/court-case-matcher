@@ -9,7 +9,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
-import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,7 +28,7 @@ public class DomainDataHelper {
 
     public static Hearing.HearingBuilder aHearingBuilderWithAllFields() {
         return aMinimalCourtCaseBuilder()
-                .hearingEventType(HearingEventType.RESULTED)
+                .hearingEventType("Resulted")
                 .caseNo("case no")
                 .hearingId(HEARING_ID)
                 .hearingType("sentenced")

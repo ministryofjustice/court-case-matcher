@@ -11,7 +11,6 @@ import lombok.Setter;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
-import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -55,7 +54,7 @@ public class CCSHearing implements Serializable {
     private final Boolean suspendedSentenceOrder;
     private final boolean preSentenceActivity;
     private final boolean awaitingPsr;
-    private final HearingEventType hearingEventType;
+    private final String hearingEventType;
     private final CCSDataSource source;
     private final String hearingType;
 

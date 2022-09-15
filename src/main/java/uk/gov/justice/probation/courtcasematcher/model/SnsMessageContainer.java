@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
-import uk.gov.justice.probation.courtcasematcher.model.type.HearingEventType;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
@@ -58,7 +57,7 @@ public class SnsMessageContainer implements Serializable {
                 .orElse(MessageType.NONE);
     }
 
-    public HearingEventType getHearingEventType() {
+    public String getHearingEventType() {
         return Optional.ofNullable(getMessageAttributes())
                 .map(MessageAttributes::getHearingEventType)
                 .orElse(null);
