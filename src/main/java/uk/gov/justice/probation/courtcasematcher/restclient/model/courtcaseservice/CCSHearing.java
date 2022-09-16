@@ -91,10 +91,10 @@ public class CCSHearing implements Serializable {
                         .probationStatus(getProbationStatusActual())
                         .suspendedSentenceOrder(getSuspendedSentenceOrder())
                         .dateOfBirth(getDefendantDob())
-                        .name(getName().asDomain())
-                        .type(getDefendantType().asDomain())
+                        .type(Optional.ofNullable(getDefendantType())
+                                .map(CCSDefendantType::asDomain)
+                                .orElse(null))
                         .sex(getDefendantSex())
-
                         .name(Optional.ofNullable(getName())
                                 .map(CCSName::asDomain)
                                 .orElse(null))
