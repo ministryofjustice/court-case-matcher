@@ -11,11 +11,25 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.probation.courtcasematcher.application.MessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.*;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPAddress;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCourtCentre;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingDay;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPJurisdictionType;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPLegalEntityDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOffence;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPOrganisation;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPPersonDefendant;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPPersonDetails;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.ProsecutionCaseIdentifier;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
+import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -30,11 +44,33 @@ import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType.COMMON_PLATFORM_HEARING;
 
 @ExtendWith(SpringExtension.class)
 @DisplayName("Message Parser Test")
 @Profile("test")
 class MessageParserTest {
+    @Nested
+    @DisplayName("SNS Message Container Json")
+    @Import(MessagingConfig.class)
+    class SnsMessageContainerJsonMessageParser {
+
+        @Autowired
+        @Qualifier("snsMessageWrapperJsonParser")
+        public MessageParser<SnsMessageContainer> messageParser;
+
+        @Test
+        void whenValidContainer_ThenReturn() throws IOException {
+            var path = "src/test/resources/messages/sns-message-container.json";
+            var content = Files.readString(Paths.get(path));
+
+            var messageContainer = messageParser.parseMessage(content, SnsMessageContainer.class);
+
+            assertThat(messageContainer).isNotNull();
+            assertThat(messageContainer.getMessageAttributes().getMessageType()).isEqualTo(COMMON_PLATFORM_HEARING);
+            assertThat(messageContainer.getMessageAttributes().getHearingEventType().getValue()).isEqualTo("Resulted");
+        }
+    }
 
     @Nested
     @DisplayName("Common Platform Json")

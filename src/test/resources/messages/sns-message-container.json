@@ -1,0 +1,13 @@
+{
+  "Type" : "Notification",
+  "MessageId" : "416d1cbe-e844-5d8e-a856-4720a702d28a",
+  "TopicArn" : "arn:aws:sns:eu-west-2:foo",
+  "Message" : "foo",
+  "Timestamp" : "2022-09-16T10:16:38.165Z",
+  "SignatureVersion" : "1",
+  "Signature" : "foo",
+  "MessageAttributes" : {
+    "messageType" : {"Type":"String","Value":"COMMON_PLATFORM_HEARING"},
+    "hearingEventType" : {"Type":"String","Value":"Resulted"}
+  }
+}
