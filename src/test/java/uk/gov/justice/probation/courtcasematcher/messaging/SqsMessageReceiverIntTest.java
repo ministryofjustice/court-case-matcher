@@ -92,7 +92,6 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.verify(
                 putRequestedFor(urlMatching("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
                         // Values from incoming case
-                        .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
                         .withRequestBody(matchingJsonPath("urn", equalTo("25GD34377719")))
@@ -140,7 +139,6 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.verify(
                 putRequestedFor(urlMatching("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC"))
                         // Values from incoming case
-                        .withRequestBody(matchingJsonPath("hearingEventType", equalTo("ConfirmedOrUpdated")))
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingType", equalTo("sentence")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC")))
@@ -196,7 +194,7 @@ public class SqsMessageReceiverIntTest {
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() throws IOException {
         var hearing = Files.readString(Paths.get(BASE_PATH + "/libra/case.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE", "hearingEventType","Resulted"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE", "String","Resulted"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
