@@ -33,7 +33,9 @@ class SnsMessageContainerTest {
                         .value("Resulted")
                         .build()))
                 .build();
-        assertThat(commonPlatformType.getHearingEventType()).isEqualTo("Resulted");
+        assertThat(commonPlatformType.getHearingEventType()).isEqualTo(HearingEventType.builder()
+                .value("Resulted")
+                .build());
     }
 
 }
