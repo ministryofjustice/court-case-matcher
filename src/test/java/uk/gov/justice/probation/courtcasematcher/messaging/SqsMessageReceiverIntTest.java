@@ -83,7 +83,7 @@ public class SqsMessageReceiverIntTest {
     public void givenExistingCase_whenReceivePayload_thenSendExistingCase() throws IOException {
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING","String","Resulted"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING","hearingEventType","Resulted"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -130,7 +130,7 @@ public class SqsMessageReceiverIntTest {
     public void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "String","ConfirmedOrUpdated"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType","ConfirmedOrUpdated"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -164,7 +164,7 @@ public class SqsMessageReceiverIntTest {
     public void givenNewCase_whenReceivePayloadForOrganisation_thenSendNewCase() throws IOException {
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "String","ConfirmedOrUpdated"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType","ConfirmedOrUpdated"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -220,7 +220,7 @@ public class SqsMessageReceiverIntTest {
 
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/libra/case-org.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE", "String","ConfirmedOrUpdated"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE", "hearingEventType","ConfirmedOrUpdated"));
 
         final var expectedEndpoint = String.format("/hearing/%s", "A0884637-5A70-4622-88E9-7324949B8E7A");
         await()
