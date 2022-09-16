@@ -88,8 +88,6 @@ class HearingExtractorTest {
         );
     }
 
-/*    CONFIRMED_OR_UPDATED("ConfirmedOrUpdated"),
-    RESULTED("Resulted");*/
     @Test
     void whenLibraHearingReceived_thenParseAndReturnHearing() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class))
