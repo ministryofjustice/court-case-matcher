@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
+import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNotFoundException;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSHearing;
 
 import java.nio.charset.StandardCharsets;
@@ -52,18 +53,26 @@ public class LegacyCourtCaseRestClient {
           : courtCaseServiceRestHelper.get(path);
         return getLibraCase
             .retrieve()
-            .onStatus(HttpStatus.NOT_FOUND::equals, (response) -> Mono.empty())
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
             .bodyToMono(CCSHearing.class)
             .map(ccsHearing -> {
                 log.debug("GET succeeded for retrieving the hearing for path {}", path);
                 return ccsHearing.asDomain();
+            })
+            .onErrorResume((e) -> {
+                // This is normal in the context of CCM, don't log
+                return Mono.empty();
             });
     }
 
     private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String courtCode, String caseNo) {
         final HttpStatus httpStatus = clientResponse.statusCode();
-        if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
+        // This is expected for new cases
+        if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
+            log.info("Failed to get case for case number {} and court code {}", caseNo, courtCode);
+            return Mono.error(new HearingNotFoundException(courtCode, caseNo));
+        }
+        else if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
             log.error("HTTP status {} to to GET the case from court case service", httpStatus);
         }
         final var exception = WebClientResponseException.create(httpStatus.value(),
