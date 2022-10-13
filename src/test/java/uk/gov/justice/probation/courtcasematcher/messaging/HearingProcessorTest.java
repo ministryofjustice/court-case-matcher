@@ -71,7 +71,7 @@ class HearingProcessorTest {
 
         messageProcessor.process(courtCase, MESSAGE_ID);
 
-        verify(telemetryService).trackHearingEvent(any(Hearing.class), eq(MESSAGE_ID));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), eq(MESSAGE_ID));
 
         verify(courtCaseService).saveHearing(eq(courtCase));
         verify(courtCaseService).findHearing(any(Hearing.class));

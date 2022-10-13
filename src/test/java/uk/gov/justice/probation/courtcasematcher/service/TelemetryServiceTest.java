@@ -247,7 +247,7 @@ class TelemetryServiceTest {
     @Test
     void whenHearingReceived_thenRecord() {
 
-        telemetryService.trackHearingEvent(hearing, "messageId");
+        telemetryService.trackNewHearingEvent(hearing, "messageId");
 
         verify(telemetryClient).trackEvent(eq("PiCHearingReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -263,7 +263,7 @@ class TelemetryServiceTest {
     @Test
     void whenHearingReceived_andMessageIdIsNull_thenRecord() {
 
-        telemetryService.trackHearingEvent(hearing, null);
+        telemetryService.trackNewHearingEvent(hearing, null);
 
         verify(telemetryClient).trackEvent(eq("PiCHearingReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
@@ -284,7 +284,7 @@ class TelemetryServiceTest {
                 .caseNo(CASE_NO)
                 .build();
 
-        telemetryService.trackHearingEvent(hearingJson, "messageId");
+        telemetryService.trackNewHearingEvent(hearingJson, "messageId");
 
         verify(telemetryClient).trackEvent(eq("PiCHearingReceived"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 

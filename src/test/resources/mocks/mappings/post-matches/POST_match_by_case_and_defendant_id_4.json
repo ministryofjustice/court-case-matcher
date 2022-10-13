@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/defendant/63259cd9-cb18-4563-b72e-d8baf7c35684/grouped-offender-matches"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "Location": "/defendant/63259cd9-cb18-4563-b72e-d8baf7c35684/grouped-offender-matches/6"
+    }
+  }
+}

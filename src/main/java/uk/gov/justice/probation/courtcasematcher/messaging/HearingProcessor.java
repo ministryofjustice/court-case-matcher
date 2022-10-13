@@ -65,7 +65,7 @@ public class HearingProcessor {
                             }
                         },
                         () -> {
-                            telemetryService.trackHearingEvent(receivedHearing, messageId);
+                            telemetryService.trackNewHearingEvent(receivedHearing, messageId);
                             applyMatchesAndSave(receivedHearing);
                         }
                 );

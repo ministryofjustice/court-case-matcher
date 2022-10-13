@@ -128,6 +128,39 @@ public class SqsMessageReceiverIntTest {
     }
 
     @Test
+    public void givenExistingCaseWithNoCrn_whenReceivePayload_thenAttemptMatchAndSendExistingCase() throws IOException {
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing-no-crns.json"));
+
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING","hearingEventType","Resulted"));
+
+        await()
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> countPutRequestsTo("/hearing/f8831ff5-b7d9-455c-b846-444ec8714b8b") == 1);
+
+        MOCK_SERVER.verify(
+                putRequestedFor(urlMatching("/hearing/f8831ff5-b7d9-455c-b846-444ec8714b8b"))
+                        // Values from incoming case
+                        .withRequestBody(matchingJsonPath("caseId", equalTo("8e5cfd34-a8dd-403e-ae96-219704ce7110")))
+                        .withRequestBody(matchingJsonPath("hearingId", equalTo("f8831ff5-b7d9-455c-b846-444ec8714b8b")))
+                        .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
+                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("63259cd9-cb18-4563-b72e-d8baf7c35684")))
+                        .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
+                        // Values from court-case-service
+                        .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("X198765")))
+                        // Values from probation status update
+                        .withRequestBody(matchingJsonPath("defendants[1].probationStatus", equalTo("CURRENT")))
+                        .withRequestBody(matchingJsonPath("defendants[1].breach", equalTo("true")))
+                        .withRequestBody(matchingJsonPath("defendants[1].awaitingPsr", equalTo("false")))
+        );
+
+        verify(telemetryService).withOperation(nullable(String.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
+        verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verifyNoMoreInteractions(telemetryService);
+    }
+
+    @Test
     public void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
 
@@ -157,7 +190,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
@@ -187,7 +220,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
@@ -212,7 +245,7 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }

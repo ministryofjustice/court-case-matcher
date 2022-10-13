@@ -82,7 +82,7 @@ public class TelemetryService {
         telemetryClient.trackEvent(eventType.eventName, properties, Collections.emptyMap());
     }
 
-    public void trackHearingEvent(Hearing hearing, String messageId) {
+    public void trackNewHearingEvent(Hearing hearing, String messageId) {
 
         final var properties = getHearingProperties(hearing);
 

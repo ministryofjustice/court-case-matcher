@@ -1,0 +1,82 @@
+{
+  "caseNo": "8e5cfd34-a8dd-403e-ae96-219704ce7110",
+  "caseId": "8e5cfd34-a8dd-403e-ae96-219704ce7110",
+  "hearingId": "f8831ff5-b7d9-455c-b846-444ec8714b8b",
+  "source": "LIBRA",
+  "defendants": [
+    {
+      "address": {
+        "line1": "Address 1",
+        "line2": "Address 2",
+        "line3": "Address 3",
+        "line4": "Address 4",
+        "line5": "Address 5",
+        "postcode": "CF4 8BK"
+      },
+      "awaitingPsr": true,
+      "breach": true,
+      "crn": "X346204",
+      "cro": "ACRO",
+      "dateOfBirth": "1975-04-03",
+      "name": {
+        "forename1": "Noel",
+        "surname": "RECORD",
+        "title": "Mr"
+      },
+      "offences": [
+        {
+          "act": "Theft act",
+          "offenceSummary": "Did a theft",
+          "offenceTitle": "Thievery"
+        }
+      ],
+      "probationStatus": "NO_RECORD",
+      "sex": "M",
+      "type": "PERSON",
+      "defendantId": "63259cd9-cb18-4563-b72e-d8baf7c35684",
+      "confirmedNoRecord": false
+    },
+    {
+      "address": {
+        "line1": "Address 1",
+        "line2": "Address 2",
+        "line3": "Address 3",
+        "line4": "Address 4",
+        "line5": "Address 5",
+        "postcode": "CF4 8BK"
+      },
+      "dateOfBirth": "1975-04-03",
+      "name": {
+        "forename1": "Nora",
+        "surname": "Cord",
+        "title": "Miss"
+      },
+      "offences": [
+        {
+          "act": "Theft act",
+          "offenceSummary": "Did a theft",
+          "offenceTitle": "Thievery"
+        }
+      ],
+      "probationStatus": "NO_RECORD",
+      "confirmedNoRecord": false,
+      "sex": "F",
+      "type": "PERSON",
+      "defendantId": "8e05e32f-8d2c-4782-bcdc-82983099f3fb"
+    }
+  ],
+  "hearingDays": [
+    {
+      "courtCode": "B10JQ",
+      "courtRoom": "4",
+      "listNo": "4",
+      "sessionStartTime": "2021-08-16T10:16:51"
+    },
+    {
+      "courtCode": "B10JQ",
+      "courtRoom": "3",
+      "listNo": "3",
+      "sessionStartTime": "2021-08-17T10:16:51"
+    }
+  ]
+}
