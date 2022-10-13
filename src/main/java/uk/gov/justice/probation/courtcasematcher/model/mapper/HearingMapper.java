@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.model.mapper;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
@@ -99,6 +100,7 @@ public class HearingMapper {
                 // PK fields
                 .withCaseNo(existingHearing.getCaseNo())
                 .withCaseId(Optional.ofNullable(existingHearing.getCaseId()).orElse(incomingCase.getCaseId()))
+                .withHearingId(Optional.ofNullable(existingHearing.getHearingId()).orElse(incomingCase.getHearingId()))
                 .withHearingEventType(incomingCase.getHearingEventType())
 
                 // Fields to be updated from incoming
