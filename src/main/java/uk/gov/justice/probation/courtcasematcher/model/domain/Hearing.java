@@ -81,4 +81,9 @@ public class Hearing implements Serializable {
                 .map(HearingDay::getListNo)
                 .orElse(null);
     }
+
+    public boolean shouldAttemptMatch() {
+        return defendants.stream()
+                .anyMatch(defendant -> defendant.getCrn() == null);
+    }
 }
