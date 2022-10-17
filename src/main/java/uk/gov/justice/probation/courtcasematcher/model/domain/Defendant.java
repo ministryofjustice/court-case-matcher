@@ -42,6 +42,7 @@ public class Defendant {
     private PhoneNumber phoneNumber;
 
     private Offender offender;
+    private Boolean confirmedNoRecord;
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;

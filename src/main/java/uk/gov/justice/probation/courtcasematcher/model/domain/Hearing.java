@@ -82,8 +82,4 @@ public class Hearing implements Serializable {
                 .orElse(null);
     }
 
-    public boolean shouldAttemptMatch() {
-        return defendants.stream()
-                .anyMatch(defendant -> defendant.getCrn() == null);
-    }
 }
