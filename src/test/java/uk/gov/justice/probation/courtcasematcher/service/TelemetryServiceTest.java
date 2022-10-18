@@ -13,9 +13,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
@@ -317,6 +317,15 @@ class TelemetryServiceTest {
         telemetryService.trackHearingUnChangedEvent(hearing);
 
         verify(telemetryClient).trackEvent(eq("PiCHearingUnchanged"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+
+        assertHearingProperties();
+    }
+
+    @Test
+    void whenProcessingFails_thenRecord() {
+        telemetryService.trackProcessingFailureEvent(hearing);
+
+        verify(telemetryClient).trackEvent(eq("PiCMatcherProcessingFailure"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         assertHearingProperties();
     }

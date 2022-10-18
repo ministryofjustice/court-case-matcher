@@ -7,8 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
@@ -21,7 +21,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.probation.courtcasematcher.model.type.DefendantType.PERSON;
 
 @ExtendWith(MockitoExtension.class)
@@ -202,6 +206,8 @@ class HearingProcessorTest {
 
     @Test
     void givenNullCourtCase_thenThrowRuntimeException() {
-        assertThrows(RuntimeException.class, () -> messageProcessor.process(null, MESSAGE_ID));
+        var hearing = Hearing.builder().build();
+        assertThrows(RuntimeException.class, () -> messageProcessor.process(hearing, MESSAGE_ID));
+        verify(telemetryService, times(1)).trackProcessingFailureEvent(hearing);
     }
 }
