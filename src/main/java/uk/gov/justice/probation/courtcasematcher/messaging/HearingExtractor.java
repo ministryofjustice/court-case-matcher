@@ -65,7 +65,7 @@ public class HearingExtractor {
         final var hearing = cpHearingEvent.asDomain();
         return passHearingIdToCourtCaseService ? hearing
                 .withHearingId(cpHearingEvent.getHearing().getId())
-                .withHearingEventType(snsMessageContainer.getHearingEventType())
+                .withHearingEventType(snsMessageContainer.getHearingEventType().getValue())
                 : hearing;
     }
 

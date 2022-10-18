@@ -444,8 +444,10 @@ class HearingMapperTest {
         void givenLibraCase_whenMergeWithExistingCasewithIds_ThenUseExistingIds() {
 
             final var existingCaseId = "82034D44-B709-4227-9CF9-CBFC67F98041";
+            final var existingHearingId = "2cfd6e1d-7ee9-47e3-9302-92057e269479";
             final var existingDefendantId = "C09C6A23-0390-41BB-948C-08399BD72720";
             final var existingCourtCase = Hearing.builder()
+                    .hearingId(existingHearingId)
                     .caseId(existingCaseId)
                     .defendants(singletonList(Defendant.builder()
                             .defendantId(existingDefendantId)
@@ -455,8 +457,30 @@ class HearingMapperTest {
             var courtCase = HearingMapper.merge(libraCase, existingCourtCase);
 
             assertThat(courtCase.getCaseId()).isEqualTo(existingCaseId);
+            assertThat(courtCase.getHearingId()).isEqualTo(existingHearingId);
             assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(existingDefendantId);
 
+        }
+
+        @DisplayName("Use new libra case hearing Id if existing hearing is empty")
+        @Test
+        void givenLibraCase_whenExistingHearingIdIsNill_ThenUseNewLibraHearingId() {
+
+            final var existingCaseId = "82034D44-B709-4227-9CF9-CBFC67F98041";
+            final var existingDefendantId = "C09C6A23-0390-41BB-948C-08399BD72720";
+            final var existingCourtCase = Hearing.builder()
+                    .hearingId(null)
+                    .caseId(existingCaseId)
+                    .defendants(singletonList(Defendant.builder()
+                            .defendantId(existingDefendantId)
+                            .build()))
+                    .build();
+
+            var courtCase = HearingMapper.merge(libraCase, existingCourtCase);
+
+            assertThat(courtCase.getCaseId()).isEqualTo(existingCaseId);
+            assertThat(courtCase.getHearingId()).isEqualTo(libraCase.getHearingId());
+            assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(existingDefendantId);
         }
 
 
