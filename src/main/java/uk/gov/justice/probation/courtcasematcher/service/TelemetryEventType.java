@@ -10,8 +10,8 @@ public enum TelemetryEventType {
     COURT_LIST_MESSAGE_RECEIVED("PiCCourtListMessageReceived"),
     HEARING_RECEIVED("PiCHearingReceived"),
     HEARING_CHANGED("PiCHearingChanged"),
-    HEARING_UNCHANGED("PiCHearingUnchanged")
-    ;
+    HEARING_UNCHANGED("PiCHearingUnchanged"),
+    PROCESSING_FAILURE("PiCMatcherProcessingFailure");
 
     final String eventName;
 
