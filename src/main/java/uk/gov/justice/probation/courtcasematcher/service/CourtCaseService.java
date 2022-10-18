@@ -32,7 +32,7 @@ public class CourtCaseService {
         if (hearing.getSource() == DataSource.COMMON_PLATFORM) {
             return courtCaseRepository.getHearing(hearing.getHearingId());
         }
-        return courtCaseRepository.getHearing(hearing.getCourtCode(), hearing.getCaseNo());
+        return courtCaseRepository.getHearing(hearing.getCourtCode(), hearing.getCaseNo(), hearing.getListNo());
     }
 
     public void saveHearing(Hearing hearing) {

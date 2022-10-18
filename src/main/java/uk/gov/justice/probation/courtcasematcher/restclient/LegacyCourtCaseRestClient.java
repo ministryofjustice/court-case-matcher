@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
@@ -13,6 +14,8 @@ import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNot
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSHearing;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 
 @Component("legacy-client")
 @Slf4j
@@ -20,7 +23,10 @@ public class LegacyCourtCaseRestClient {
     private final CourtCaseServiceRestHelper courtCaseServiceRestHelper;
 
     @Value("${court-case-service.case-put-url-template}")
-    private String courtCasePutTemplate;
+    private String caseByCaseNoTemplate;
+
+    @Value("${feature.flags.use-list-no-to-fetch-libra-case}")
+    private boolean useListNoToFetchLibraCase;
 
     @Autowired
     public LegacyCourtCaseRestClient(CourtCaseServiceRestHelper courtCaseServiceRestHelper) {
@@ -29,18 +35,23 @@ public class LegacyCourtCaseRestClient {
     }
 
     public LegacyCourtCaseRestClient(CourtCaseServiceRestHelper courtCaseServiceRestHelper,
-                                     String courtCasePutTemplate
+                                     String caseByCaseNoTemplate,
+                                     boolean useListNoToFetchLibraCase
     ) {
         super();
         this.courtCaseServiceRestHelper = courtCaseServiceRestHelper;
-        this.courtCasePutTemplate = courtCasePutTemplate;
+        this.caseByCaseNoTemplate = caseByCaseNoTemplate;
+        this.useListNoToFetchLibraCase = useListNoToFetchLibraCase;
     }
 
-    public Mono<Hearing> getHearing(final String courtCode, final String caseNo) throws WebClientResponseException {
-        final String path = String.format(courtCasePutTemplate, courtCode, caseNo);
+    public Mono<Hearing> getHearing(final String courtCode, final String caseNo, final String listNo) throws WebClientResponseException {
+        final String path = String.format(caseByCaseNoTemplate, courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
-        return courtCaseServiceRestHelper.get(path)
+        WebClient.RequestHeadersSpec<?> getLibraCase = useListNoToFetchLibraCase ?
+          courtCaseServiceRestHelper.get(path, Collections.singletonMap("listNo", List.of(listNo)))
+          : courtCaseServiceRestHelper.get(path);
+        return getLibraCase
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
             .bodyToMono(CCSHearing.class)

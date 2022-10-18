@@ -1,14 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -16,11 +9,11 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -31,7 +24,6 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -43,9 +35,6 @@ public class LegacyCourtCaseRestClientIntTest {
     private static final String NEW_CASE_NO = "1600032981";
     static final int WEB_CLIENT_TIMEOUT_MS = 10000;
 
-    @Mock
-    private Appender<ILoggingEvent> mockAppender;
-
     @Autowired
     private LegacyCourtCaseRestClient restClient;
 
@@ -54,12 +43,6 @@ public class LegacyCourtCaseRestClientIntTest {
     @RegisterExtension
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
 
-    @BeforeEach
-    void beforeEach() {
-        MockitoAnnotations.openMocks(this);
-        Logger logger = (Logger) getLogger(LoggerFactory.getLogger(LegacyCourtCaseRestClient.class).getName());
-        logger.addAppender(mockAppender);
-    }
 
     @Test
     void whenGetCourtCase_thenMakeRestCallToCourtCaseService() {
@@ -108,15 +91,15 @@ public class LegacyCourtCaseRestClientIntTest {
                         .build()))
                 .build();
 
-        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, "123456").blockOptional();
+        Hearing optional = restClient.getHearing(COURT_CODE, "123456", "2nd").block();
 
-        assertThat(optional.get()).usingRecursiveComparison().isEqualTo(expected);
+        assertThat(optional).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test
     void givenUnknownCaseNo_whenGetCourtCase_thenReturnEmptyOptional() {
 
-        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, NEW_CASE_NO).blockOptional();
+        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, NEW_CASE_NO, "2nd").blockOptional();
 
         assertThat(optional.isPresent()).isFalse();
     }
