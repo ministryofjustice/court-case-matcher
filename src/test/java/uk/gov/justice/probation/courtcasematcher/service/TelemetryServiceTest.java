@@ -37,17 +37,24 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.AWAITING_PSR_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_ID_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_NO_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_CODE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.COURT_ROOM_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CRNS_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CRN_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.DEFENDANT_IDS_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.DEFENDANT_ID_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_DATE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.HEARING_ID_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.IN_BREACH_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHED_BY_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHES_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNC_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PREVIOUSLY_KNOWN_TERMINATION_DATE_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PRE_SENTENCE_ACTVITY_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PROBATION_STATUS_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SOURCE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.SQS_MESSAGE_ID_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.URN_KEY;
@@ -74,6 +81,7 @@ class TelemetryServiceTest {
             .build();
     private static final String COURT_ROOM = "01";
     private static final LocalDate DATE_OF_HEARING = LocalDate.of(2020, Month.NOVEMBER, 5);
+    private static final String PROBATION_STATUS = "CURRENT";
     private static Hearing hearing;
 
     @Captor
@@ -328,6 +336,58 @@ class TelemetryServiceTest {
         verify(telemetryClient).trackEvent(eq("PiCMatcherProcessingFailure"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
 
         assertHearingProperties();
+    }
+
+    @Test
+    void whenDefendantProbationStatusUpdated_thenRecord() {
+        final var defendant = Defendant.builder()
+                .defendantId(DEFENDANT_ID_ONE)
+                .crn(CRN)
+                .awaitingPsr(true)
+                .breach(true)
+                .preSentenceActivity(true)
+                .previouslyKnownTerminationDate(DATE_OF_HEARING)
+                .probationStatus(PROBATION_STATUS)
+                .build();
+        telemetryService.trackDefendantProbationStatusUpdatedEvent(defendant);
+
+        verify(telemetryClient).trackEvent(eq("PiCDefendantProbationStatusUpdated"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+
+        final var properties = propertiesCaptor.getValue();
+        assertDefendantProperties(properties);
+    }
+
+    @Test
+    void whenDefendantProbationStatusNotUpdated_thenRecord() {
+        final var defendant = Defendant.builder()
+                .defendantId(DEFENDANT_ID_ONE)
+                .crn(CRN)
+                .awaitingPsr(true)
+                .breach(true)
+                .preSentenceActivity(true)
+                .previouslyKnownTerminationDate(DATE_OF_HEARING)
+                .probationStatus(PROBATION_STATUS)
+                .build();
+
+        telemetryService.trackDefendantProbationStatusNotUpdatedEvent(defendant);
+
+        verify(telemetryClient).trackEvent(eq("PiCDefendantProbationStatusNotUpdated"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+
+        final var properties = propertiesCaptor.getValue();
+        assertDefendantProperties(properties);
+    }
+
+    private void assertDefendantProperties(Map<String, String> properties) {
+        assertThat(properties).hasSize(7);
+        assertThat(properties).contains(
+                entry(DEFENDANT_ID_KEY, DEFENDANT_ID_ONE),
+                entry(CRN_KEY, CRN),
+                entry(AWAITING_PSR_KEY, "true"),
+                entry(IN_BREACH_KEY, "true"),
+                entry(PRE_SENTENCE_ACTVITY_KEY, "true"),
+                entry(PREVIOUSLY_KNOWN_TERMINATION_DATE_KEY, DATE_OF_HEARING.toString()),
+                entry(PROBATION_STATUS_KEY, PROBATION_STATUS)
+        );
     }
 
     private void assertHearingProperties(int size) {

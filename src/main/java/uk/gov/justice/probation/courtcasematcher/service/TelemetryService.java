@@ -34,6 +34,12 @@ public class TelemetryService {
     static final String URN_KEY = "urn";
     static final String HEARING_ID_KEY = "hearingId";
     static final String DEFENDANT_IDS_KEY = "defendantIds";
+    static final String AWAITING_PSR_KEY = "awaitingPsr";
+    static final String IN_BREACH_KEY = "inBreach";
+    static final String PRE_SENTENCE_ACTVITY_KEY = "preSentenceActivity";
+    static final String PREVIOUSLY_KNOWN_TERMINATION_DATE_KEY = "previouslyKnownTerminationData";
+    static final String PROBATION_STATUS_KEY = "status";
+    static final String CRN_KEY = "crn";
 
     static final String DEFENDANT_ID_KEY = "defendantId";
 
@@ -106,25 +112,52 @@ public class TelemetryService {
         telemetryClient.trackEvent(TelemetryEventType.HEARING_UNCHANGED.eventName, properties, Collections.emptyMap());
     }
 
+    public void trackHearingMessageReceivedEvent(String messageID) {
+        Map<String, String> properties = new HashMap<>(MAX_PROPERTY_COUNT);
+        ofNullable(messageID)
+            .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageID));
+        telemetryClient.trackEvent(TelemetryEventType.HEARING_MESSAGE_RECEIVED.eventName, properties, Collections.emptyMap());
+    }
+
+    public AutoCloseable withOperation(String operationId) {
+        telemetryClient.getContext().getOperation().setId(operationId);
+        return () -> telemetryClient.getContext().getOperation().setId(null);
+    }
+
+    public void trackProcessingFailureEvent(Hearing hearing) {
+        final var properties = getHearingProperties(hearing);
+        telemetryClient.trackEvent(TelemetryEventType.PROCESSING_FAILURE.eventName, properties, Collections.emptyMap());
+    }
+
+    public void trackDefendantProbationStatusUpdatedEvent(Defendant defendant) {
+        telemetryClient.trackEvent(TelemetryEventType.PROBATION_STATUS_UPDATED.eventName, getDefendantProperties(defendant), Collections.emptyMap());
+
+    }
+
+    public void trackDefendantProbationStatusNotUpdatedEvent(Defendant defendant) {
+        telemetryClient.trackEvent(TelemetryEventType.PROBATION_STATUS_NOT_UPDATED.eventName, getDefendantProperties(defendant), Collections.emptyMap());
+
+    }
+
     private Map<String, String> getHearingProperties(Hearing hearing) {
         Map<String, String> properties = new HashMap<>(MAX_PROPERTY_COUNT);
         ofNullable(hearing.getCourtCode())
-            .ifPresent((code) -> properties.put(COURT_CODE_KEY, code));
+                .ifPresent((code) -> properties.put(COURT_CODE_KEY, code));
         ofNullable(hearing.getCourtRoom())
-            .ifPresent((courtRoom) -> properties.put(COURT_ROOM_KEY, courtRoom));
+                .ifPresent((courtRoom) -> properties.put(COURT_ROOM_KEY, courtRoom));
         ofNullable(hearing.getCaseNo())
-            .ifPresent((caseNo) -> properties.put(CASE_NO_KEY, caseNo));
+                .ifPresent((caseNo) -> properties.put(CASE_NO_KEY, caseNo));
         ofNullable(hearing.getSessionStartTime())
-          .map(date -> date.format(DateTimeFormatter.ISO_DATE))
-          .ifPresent((date) -> properties.put(HEARING_DATE_KEY, date));
+                .map(date -> date.format(DateTimeFormatter.ISO_DATE))
+                .ifPresent((date) -> properties.put(HEARING_DATE_KEY, date));
         ofNullable(hearing.getCaseId())
-          .ifPresent((caseId) -> properties.put(CASE_ID_KEY, caseId));
+                .ifPresent((caseId) -> properties.put(CASE_ID_KEY, caseId));
         ofNullable(hearing.getSource())
-          .ifPresent((source) -> properties.put(SOURCE_KEY, source.name()));
+                .ifPresent((source) -> properties.put(SOURCE_KEY, source.name()));
         ofNullable(hearing.getUrn())
-          .ifPresent((urn) -> properties.put(URN_KEY, urn));
+                .ifPresent((urn) -> properties.put(URN_KEY, urn));
         ofNullable(hearing.getHearingId())
-          .ifPresent(hearingId -> properties.put(HEARING_ID_KEY, hearingId));
+                .ifPresent(hearingId -> properties.put(HEARING_ID_KEY, hearingId));
         ofNullable(hearing.getDefendants()).ifPresent(defendants -> {
             final var defendantIds = defendants.stream().map(Defendant::getDefendantId).collect(Collectors.joining(","));
             properties.put(DEFENDANT_IDS_KEY, defendantIds);
@@ -142,20 +175,23 @@ public class TelemetryService {
         return properties;
     }
 
-    public void trackHearingMessageReceivedEvent(String messageID) {
+    private Map<String, String> getDefendantProperties(Defendant defendant) {
         Map<String, String> properties = new HashMap<>(MAX_PROPERTY_COUNT);
-        ofNullable(messageID)
-            .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageID));
-        telemetryClient.trackEvent(TelemetryEventType.HEARING_MESSAGE_RECEIVED.eventName, properties, Collections.emptyMap());
-    }
+        ofNullable(defendant.getDefendantId())
+                .ifPresent(defendantId -> properties.put(DEFENDANT_ID_KEY, defendantId));
+        ofNullable(defendant.getCrn())
+                .ifPresent(crn -> properties.put(CRN_KEY, crn));
+        ofNullable(defendant.getAwaitingPsr())
+                .ifPresent(awaitingPsr -> properties.put(AWAITING_PSR_KEY, awaitingPsr.toString()));
+        ofNullable(defendant.getBreach())
+                .ifPresent(breach -> properties.put(IN_BREACH_KEY, breach.toString()));
+        ofNullable(defendant.getPreSentenceActivity())
+                .ifPresent(preSentenceActivity -> properties.put(PRE_SENTENCE_ACTVITY_KEY, preSentenceActivity.toString()));
+        ofNullable(defendant.getPreviouslyKnownTerminationDate())
+                .ifPresent(previouslyKnownTerminationDate -> properties.put(PREVIOUSLY_KNOWN_TERMINATION_DATE_KEY, previouslyKnownTerminationDate.toString()));
+        ofNullable(defendant.getProbationStatus())
+                .ifPresent(probationStatus -> properties.put(PROBATION_STATUS_KEY, probationStatus));
 
-    public AutoCloseable withOperation(String operationId) {
-        telemetryClient.getContext().getOperation().setId(operationId);
-        return () -> telemetryClient.getContext().getOperation().setId(null);
-    }
-
-    public void trackProcessingFailureEvent(Hearing hearing) {
-        final var properties = getHearingProperties(hearing);
-        telemetryClient.trackEvent(TelemetryEventType.PROCESSING_FAILURE.eventName, properties, Collections.emptyMap());
+        return properties;
     }
 }

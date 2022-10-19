@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,10 +10,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
@@ -49,22 +49,18 @@ class HearingServiceTest {
     private static final Defendant DEFENDANT_2 = Defendant.builder().defendantId(DEFENDANT_UUID_2).build();
     private static final List<Defendant> defendants = List.of(DEFENDANT, DEFENDANT_2);
     private static final String CRN_2 = "CRN_2";
-
-    @Captor
-    private ArgumentCaptor<Hearing> courtCaseCaptor;
+    private static final String EXPECTED_PROBATION_STATUS = "CURRENT";
 
     @Mock
-    private CourtCaseRepository courtCaseRepo;
-
+    private TelemetryService telemetryService;
     @Mock
     private OffenderSearchRestClient offenderSearchRestClient;
-
+    @Captor
+    private ArgumentCaptor<Hearing> courtCaseCaptor;
+    @Mock
+    private CourtCaseRepository courtCaseRepo;
     @InjectMocks
     private CourtCaseService courtCaseService;
-    private final GroupedOffenderMatches matches = GroupedOffenderMatches.builder()
-            .matches(Collections.emptyList())
-            .build();
-
     @DisplayName("Save court case. This must be existing because it has a case no and a case id.")
     @Test
     void whenSaveCourtCase() {
@@ -364,6 +360,41 @@ class HearingServiceTest {
                 .hearingId(HEARING_ID)
                 .source(DataSource.COMMON_PLATFORM)
                 .build();
+    }
+
+    @Test
+    public void whenSearchSuccess_thenUpdateProbationStatusAndEmitEvent() {
+        final var probationStatusDetail = ProbationStatusDetail.builder()
+                .status(EXPECTED_PROBATION_STATUS)
+                .awaitingPsr(false)
+                .preSentenceActivity(false)
+                .build();
+        final var searchResponses = SearchResponses.builder()
+                .searchResponses(List.of(SearchResponse.builder()
+                        .probationStatusDetail(probationStatusDetail)
+                        .build()))
+                .build();
+        final var defendant = Defendant.builder().crn(CRN).build();
+        final var expectedDefendant = defendant.withProbationStatus(EXPECTED_PROBATION_STATUS)
+                .withAwaitingPsr(false)
+                .withPreSentenceActivity(false);
+
+        when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.just(searchResponses));
+        final var updatedDefendant = courtCaseService.updateDefendant(defendant).block();
+
+        AssertionsForClassTypes.assertThat(updatedDefendant.getProbationStatus()).isEqualTo(EXPECTED_PROBATION_STATUS);
+        verify(telemetryService).trackDefendantProbationStatusUpdatedEvent(expectedDefendant);
+    }
+
+    @Test
+    public void whenSearchReturnsEmpty_thenReturnExistingStatus() {
+        final var defendant = Defendant.builder().crn(CRN).probationStatus(EXPECTED_PROBATION_STATUS).build();
+
+        when(offenderSearchRestClient.search(CRN)).thenReturn(Mono.empty());
+        final var updatedDefendant = courtCaseService.updateDefendant(defendant).block();
+
+        AssertionsForClassTypes.assertThat(updatedDefendant.getProbationStatus()).isEqualTo(EXPECTED_PROBATION_STATUS);
+        verify(telemetryService).trackDefendantProbationStatusNotUpdatedEvent(defendant);
     }
 
 

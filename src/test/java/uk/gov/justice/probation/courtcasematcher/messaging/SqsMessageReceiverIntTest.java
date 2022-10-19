@@ -89,7 +89,7 @@ public class SqsMessageReceiverIntTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    public void givenExistingCase_whenReceivePayload_thenSendExistingCase(boolean matchOnEveryRecordUpdate) throws IOException {
+    public void givenExistingCase_whenReceivePayload_thenSendUpdatedExistingCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
 
@@ -134,6 +134,7 @@ public class SqsMessageReceiverIntTest {
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
         verify(telemetryService, never()).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService, times(2)).trackDefendantProbationStatusUpdatedEvent(any(Defendant.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -224,12 +225,13 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032981")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
+                        .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
-        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
+        verify(telemetryService).trackDefendantProbationStatusUpdatedEvent(any(Defendant.class));
         verifyNoMoreInteractions(telemetryService);
     }
 

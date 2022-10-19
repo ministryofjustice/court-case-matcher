@@ -31,8 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class LegacyCourtCaseRestClientIntTest {
 
     private static final String COURT_CODE = "B10JQ";
-    private static final String CASE_NO = "12345";
-    private static final String NEW_CASE_NO = "1600032981";
+    private static final String CASE_NO = "1600032981";
     static final int WEB_CLIENT_TIMEOUT_MS = 10000;
 
     @Autowired
@@ -72,8 +71,8 @@ public class LegacyCourtCaseRestClientIntTest {
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
                         .crn("X320741")
-                        .pnc("D/1234560BC")
-                        .probationStatus("CURRENT")
+                        .pnc("2004/0012345U")
+                        .probationStatus("PREVIOUSLY_KNOWN")
                         .breach(Boolean.TRUE)
                         .suspendedSentenceOrder(Boolean.FALSE)
                         .address(address)
@@ -91,7 +90,7 @@ public class LegacyCourtCaseRestClientIntTest {
                         .build()))
                 .build();
 
-        Hearing optional = restClient.getHearing(COURT_CODE, "123456", "2nd").block();
+        Hearing optional = restClient.getHearing(COURT_CODE, "1600032981", "1st").block();
 
         assertThat(optional).usingRecursiveComparison().isEqualTo(expected);
     }
@@ -99,7 +98,7 @@ public class LegacyCourtCaseRestClientIntTest {
     @Test
     void givenUnknownCaseNo_whenGetCourtCase_thenReturnEmptyOptional() {
 
-        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, NEW_CASE_NO, "2nd").blockOptional();
+        Optional<Hearing> optional = restClient.getHearing(COURT_CODE, "NEW_CASE_NO", "2nd").blockOptional();
 
         assertThat(optional.isPresent()).isFalse();
     }

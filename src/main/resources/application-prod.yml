@@ -13,4 +13,5 @@ feature:
     use-offender-search-for-probation-status: true
     pass-hearing-id-to-court-case-service: true
     use-list-no-to-fetch-libra-case: true
+    match-on-every-no-record-update: false
 

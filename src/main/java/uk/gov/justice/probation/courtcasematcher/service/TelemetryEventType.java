@@ -11,7 +11,9 @@ public enum TelemetryEventType {
     HEARING_RECEIVED("PiCHearingReceived"),
     HEARING_CHANGED("PiCHearingChanged"),
     HEARING_UNCHANGED("PiCHearingUnchanged"),
-    PROCESSING_FAILURE("PiCMatcherProcessingFailure");
+    PROCESSING_FAILURE("PiCMatcherProcessingFailure"),
+    PROBATION_STATUS_UPDATED("PiCDefendantProbationStatusUpdated"),
+    PROBATION_STATUS_NOT_UPDATED("PiCDefendantProbationStatusNotUpdated");
 
     final String eventName;
 
