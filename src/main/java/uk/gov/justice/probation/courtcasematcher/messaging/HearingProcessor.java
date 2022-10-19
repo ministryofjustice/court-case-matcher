@@ -76,7 +76,7 @@ public class HearingProcessor {
     private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
 
-        if(featureFlags.getFlags().get("match-on-every-no-record-update")) {
+        if(featureFlags.getFlag("match-on-every-no-record-update")) {
             applyMatches_Or_Update_thenSave(courtCaseMerged);
         } else {
             updateAndSave(courtCaseMerged);

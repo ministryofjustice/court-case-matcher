@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.application;
 
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -16,7 +15,6 @@ import java.util.Map;
 public class FeatureFlags {
 
     @NonNull
-    @Getter
     private final Map<String, Boolean> flags;
 
     public FeatureFlags() {
@@ -36,5 +34,9 @@ public class FeatureFlags {
     @PostConstruct
     public void init() {
         log.info("Feature flags at startup:" + flags.entrySet());
+    }
+
+    public Boolean getFlag(@NonNull String s) {
+        return flags.getOrDefault(s, false);
     }
 }

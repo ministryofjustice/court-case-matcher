@@ -17,7 +17,6 @@ import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -157,7 +156,7 @@ class HearingProcessorTest {
 
         @Test
         void whenThatCaseHasChanged_ThenUpdateAndSave() {
-            when(featureFlags.getFlags()).thenReturn(Map.of("match-on-every-no-record-update", false));
+            when(featureFlags.getFlag("match-on-every-no-record-update")).thenReturn(false);
             var courtCase = Hearing.builder()
                     .caseId(caseId)
                     .hearingDays(Collections.singletonList(HearingDay.builder()
@@ -197,7 +196,7 @@ class HearingProcessorTest {
 
             @BeforeEach
             public void setUp() {
-                when(featureFlags.getFlags()).thenReturn(Map.of("match-on-every-no-record-update", true));
+                when(featureFlags.getFlag("match-on-every-no-record-update")).thenReturn(true);
                 hearing = Hearing.builder()
                         .caseId(caseId)
                         .urn("12345")

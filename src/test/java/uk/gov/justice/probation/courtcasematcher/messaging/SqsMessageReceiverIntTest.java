@@ -13,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,19 +82,15 @@ public class SqsMessageReceiverIntTest {
         MOCK_SERVER.stop();
     }
 
-    @BeforeEach
-    public void setUp() {
-        featureFlags.setFlagValue("match-on-every-no-record-update", false);
-    }
-
     private static final String TOPIC_NAME = "court-case-events-topic";
 
     @Autowired
     private NotificationMessagingTemplate notificationMessagingTemplate;
 
-    @Test
-    // TODO look into this as a means to run the same tests with the feature flag turned off
-    public void givenExistingCase_whenReceivePayload_thenSendExistingCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenExistingCase_whenReceivePayload_thenSendExistingCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "Resulted"));
@@ -139,8 +137,10 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenNewCase_whenReceivePayload_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
@@ -174,8 +174,10 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenNewCase_whenReceivePayloadForOrganisation_thenSendNewCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenNewCase_whenReceivePayloadForOrganisation_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
@@ -204,8 +206,10 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/libra/case.json"));
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE", "String", "Resulted"));
@@ -229,8 +233,10 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
 
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/libra/case-org.json"));
 
@@ -271,7 +277,7 @@ public class SqsMessageReceiverIntTest {
             notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "Resulted"));
 
             await()
-                    .atMost(30, TimeUnit.SECONDS)
+                    .atMost(10, TimeUnit.SECONDS)
                     .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
 
             MOCK_SERVER.verify(

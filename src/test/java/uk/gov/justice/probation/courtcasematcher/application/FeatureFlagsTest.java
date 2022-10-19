@@ -1,19 +1,31 @@
 package uk.gov.justice.probation.courtcasematcher.application;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class FeatureFlagsTest {
 
     private final FeatureFlags featureFlags = new FeatureFlags();
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getFlagReturnsTheExpectedValueForAFlag(boolean value) {
+        featureFlags.setFlagValue("flag-test", value);
 
-    @DisplayName("Set and get toggle value")
+        assertThat(featureFlags.getFlag("flag-test")).isEqualTo(value);
+    }
+
     @Test
-    void testGetSimpleFlag() {
-        featureFlags.setFlagValue("flag-test", false);
+    void getFlagReturnsFalseIfNotSpecified(){
+        assertThat(featureFlags.getFlag("not-set")).isFalse();
+    }
 
-        assertThat(featureFlags.getFlags().get("flag-test")).isFalse();
+    @Test
+    void getFlagRejectsNullParameter(){
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> featureFlags.getFlag(null));
     }
 }
