@@ -105,7 +105,7 @@ dependencies {
     implementation group: 'com.microsoft.azure', name: 'applicationinsights-logging-logback', version: '2.6.4'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.2'
 
-    testImplementation(platform("org.junit:junit-bom:5.9.0"))
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testRuntimeOnly("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
         because 'allows tests to run from IDEs that bundle older version of launcher'
@@ -130,7 +130,7 @@ dependencies {
 
     testImplementation("com.github.tomakehurst:wiremock:2.27.2")
 
-    testImplementation 'au.com.dius.pact.consumer:junit5:4.3.14'
+    testImplementation 'au.com.dius.pact.consumer:junit5:4.3.15'
     testImplementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
 
     agentDeps 'com.microsoft.azure:applicationinsights-agent:3.3.1'

@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
@@ -46,6 +46,7 @@ public class HearingProcessor {
             matchAndSaveHearing(receivedHearing, messageId);
         } catch (Exception ex) {
             log.error("Message processing failed. Error: {} ", ex.getMessage(), ex);
+            telemetryService.trackProcessingFailureEvent(receivedHearing);
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }

@@ -3,8 +3,8 @@ package uk.gov.justice.probation.courtcasematcher.service;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 
 import java.time.format.DateTimeFormatter;
@@ -152,5 +152,10 @@ public class TelemetryService {
     public AutoCloseable withOperation(String operationId) {
         telemetryClient.getContext().getOperation().setId(operationId);
         return () -> telemetryClient.getContext().getOperation().setId(null);
+    }
+
+    public void trackProcessingFailureEvent(Hearing hearing) {
+        final var properties = getHearingProperties(hearing);
+        telemetryClient.trackEvent(TelemetryEventType.PROCESSING_FAILURE.eventName, properties, Collections.emptyMap());
     }
 }
