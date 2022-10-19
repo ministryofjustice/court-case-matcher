@@ -8,19 +8,19 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHear
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
-import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
@@ -123,7 +123,9 @@ public class HearingMapper {
                         .withProbationStatus(existing.getProbationStatus())
                         .withSuspendedSentenceOrder(existing.getSuspendedSentenceOrder())
                         .withPnc(existing.getPnc())
-                        .withPreSentenceActivity(existing.getPreSentenceActivity()))
+                        .withPreSentenceActivity(existing.getPreSentenceActivity())
+                        .withConfirmedOffender(existing.getConfirmedOffender())
+                )
                 .orElse(incoming);
     }
 

@@ -8,6 +8,15 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class DefendantTest {
 
     @Test
+    void givenConfirmedNoRecord_whenShouldMatch_thenReturnFalse() {
+        var courtCase = Defendant.builder()
+                .type(DefendantType.PERSON)
+                .confirmedOffender(true)
+                .build();
+        assertThat(courtCase.shouldMatchToOffender()).isFalse();
+    }
+
+    @Test
     void givenOrg_whenShouldMatch_thenReturnFalse() {
         var courtCase = Defendant.builder()
                 .type(DefendantType.ORGANISATION)

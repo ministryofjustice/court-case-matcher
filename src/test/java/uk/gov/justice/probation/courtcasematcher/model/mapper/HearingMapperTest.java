@@ -9,16 +9,16 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHear
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
-import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
@@ -378,6 +378,7 @@ class HearingMapperTest {
                                     .offenceSummary("summary")
                                     .offenceTitle("title")
                                     .build()))
+                            .confirmedOffender(true)
                             .build()))
                     .build();
 
@@ -563,6 +564,7 @@ class HearingMapperTest {
             assertThat(firstDefendant.getOffences()).hasSize(1);
             assertThat(firstDefendant.getOffences().get(0).getOffenceTitle()).isEqualTo("NEW Theft from a person");
             assertThat(firstDefendant.getOffences().get(0).getSequenceNumber()).isEqualTo(1);
+            assertThat(firstDefendant.getConfirmedOffender()).isEqualTo(true);
         }
     }
 

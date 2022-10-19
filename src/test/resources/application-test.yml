@@ -53,4 +53,5 @@ feature:
 logging:
   level:
     au.com.dius.pact.core.matchers.RequestMatching: DEBUG
+    uk.gov.justice.probation.courtcasematcher: DEBUG
 

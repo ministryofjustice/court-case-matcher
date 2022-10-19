@@ -77,7 +77,7 @@ public class HearingProcessor {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
 
         if(featureFlags.getFlags().get("match-on-every-no-record-update")) {
-            applyMatches_Or_Update_thenSave(receivedHearing);
+            applyMatches_Or_Update_thenSave(courtCaseMerged);
         } else {
             updateAndSave(courtCaseMerged);
         }
@@ -85,8 +85,22 @@ public class HearingProcessor {
 
     private void applyMatches_Or_Update_thenSave(Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
-        matcherService.matchDefendants(hearing)
-                .flatMap(courtCaseService::updateProbationStatusDetail)
+
+        Mono.just(hearing.getDefendants()
+                        .stream()
+                        .map(defendant -> {
+                            if (defendant.shouldMatchToOffender()) {
+                                return matcherService.matchDefendant(defendant, hearing);
+                            } else if (defendant.getCrn() != null) {
+                                return courtCaseService.updateDefendant(defendant);
+                            } else {
+                                return Mono.just(defendant);
+                            }
+                        })
+                        .map(Mono::block)
+                        .collect(Collectors.toList())
+                )
+                .map(hearing::withDefendants)
                 .onErrorReturn(hearing)
                 .doOnSuccess(courtCaseService::saveHearing)
                 .block();
