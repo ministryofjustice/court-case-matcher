@@ -8,5 +8,6 @@
   "suspendedSentenceOrder": true,
   "breach": true,
   "preSentenceActivity": true,
-  "hearingEventType": "Resulted"
+  "hearingEventType": "Resulted",
+  "confirmedOffender": true
 }

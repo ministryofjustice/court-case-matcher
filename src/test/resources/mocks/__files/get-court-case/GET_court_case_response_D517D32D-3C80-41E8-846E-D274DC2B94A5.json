@@ -39,7 +39,8 @@
       "sex": "M",
       "suspendedSentenceOrder": true,
       "type": "PERSON",
-      "defendantId": "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199"
+      "defendantId": "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199",
+      "confirmedOffender": true
     },
     {
       "address": {

@@ -41,7 +41,7 @@ class CourtCaseRestClientPactTest {
     private CourtCaseRestClient restClient;
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public V4Pact getCourtCaseByIdPact(PactDslWithProvider builder) throws IOException {
+    public V4Pact getHearingByIdPact(PactDslWithProvider builder) throws IOException {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8);
 
@@ -59,7 +59,7 @@ class CourtCaseRestClientPactTest {
 
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public V4Pact getCourtCaseByCaseNoPact(PactDslWithProvider builder) throws IOException {
+    public V4Pact getHearingByCaseNoPact(PactDslWithProvider builder) throws IOException {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
 
@@ -77,7 +77,7 @@ class CourtCaseRestClientPactTest {
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public V4Pact putMinimalCourtCaseByIdPact(PactDslWithProvider builder) {
+    public V4Pact putMinimalHearingByIdPact(PactDslWithProvider builder) {
 
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
@@ -129,7 +129,7 @@ class CourtCaseRestClientPactTest {
     }
 
     @Pact(provider="court-case-service", consumer="court-case-matcher")
-    public V4Pact putCourtCaseWithAllFieldsByIdPact(PactDslWithProvider builder) {
+    public V4Pact putHearingWithAllFieldsByIdPact(PactDslWithProvider builder) {
 
         final var body = newJsonBody((rootObject) -> {
             rootObject.stringType("caseId");
@@ -202,33 +202,35 @@ class CourtCaseRestClientPactTest {
                 .toPact(V4Pact.class);
     }
 
-    @PactTestFor(pactMethod = "getCourtCaseByIdPact")
+    @PactTestFor(pactMethod = "getHearingByIdPact")
     @Test
-    void getCourtCaseById() {
-        final var courtCase = restClient.getHearing("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f").block();
-        assertThat(courtCase.getHearingId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
+    void getHearingById() {
+        final var actual = restClient.getHearing("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f").block();
+        assertThat(actual.getHearingId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
+        assertThat(actual.getDefendants().get(0).getConfirmedOffender()).isEqualTo(true);
     }
 
 
-    @PactTestFor(pactMethod = "getCourtCaseByCaseNoPact")
+    @PactTestFor(pactMethod = "getHearingByCaseNoPact")
     @Test
-    void getCourtCaseByCaseNo() {
+    void getHearingByCaseNo() {
 
         final var actual = restClient.getHearing("B10JQ", "1600028913", "2nd").block();
 
         assertThat(actual).isNotNull();
+        assertThat(actual.getDefendants().get(0).getConfirmedOffender()).isEqualTo(true);
     }
 
-    @PactTestFor(pactMethod = "putMinimalCourtCaseByIdPact")
+    @PactTestFor(pactMethod = "putMinimalHearingByIdPact")
     @Test
-    void putMinimalCourtCase() {
+    void putMinimalHearing() {
         final var actual = restClient.putHearing(DomainDataHelper.aMinimalValidCourtCase()).blockOptional();
         assertThat(actual).isEmpty();
     }
 
-    @PactTestFor(pactMethod = "putCourtCaseWithAllFieldsByIdPact")
+    @PactTestFor(pactMethod = "putHearingWithAllFieldsByIdPact")
     @Test
-    void putCourtCaseWithAllFields() {
+    void putHearingWithAllFields() {
 
         final var actual = ((CourtCaseRepository) restClient)
                 .putHearing(DomainDataHelper.aHearingWithAllFields()).blockOptional();

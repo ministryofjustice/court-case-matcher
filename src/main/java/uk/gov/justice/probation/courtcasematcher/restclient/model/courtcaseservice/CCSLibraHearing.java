@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CCSHearing implements Serializable {
+public class CCSLibraHearing implements Serializable {
 
     private final String caseId;
     private final String hearingId;
@@ -57,6 +57,7 @@ public class CCSHearing implements Serializable {
     private final String hearingEventType;
     private final CCSDataSource source;
     private final String hearingType;
+    private final Boolean confirmedOffender;
 
     @JsonIgnore
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
@@ -106,6 +107,7 @@ public class CCSHearing implements Serializable {
                                         .map(CCSOffence::asDomain)
                                         .collect(Collectors.toList()))
                                 .orElse(null))
+                                .confirmedOffender(getConfirmedOffender())
                         .build()))
 
                 .build();

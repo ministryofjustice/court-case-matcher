@@ -59,6 +59,21 @@ class CCSDefendantTest {
         assertThat(actual.getBreach()).isEqualTo(true);
         assertThat(actual.getOffender().getPnc()).isEqualTo("OFFENDER_PNC");
         assertThat(actual.getOffender().getCro()).isEqualTo("OFFENDER_CRO");
+
+        // This field is dynamically calculated on a GET and should not be PUT
+        assertThat(actual.getConfirmedOffender()).isEqualTo(null);
+    }
+
+    @Test
+    public void mapBack() {
+        final var original = buildDefendant();
+
+        final var actual = CCSDefendant.of(original)
+                // confirmedOffender does not get mapped by of() so we need to set it explicitly
+                .withConfirmedOffender(true)
+                .asDomain();
+
+        assertThat(actual).usingRecursiveComparison().isEqualTo(original);
     }
 
     private Defendant buildDefendant() {
@@ -82,14 +97,7 @@ class CCSDefendantTest {
                         .pnc("OFFENDER_PNC")
                         .cro("OFFENDER_CRO")
                         .build())
+                .withConfirmedOffender(true)
                 ;
-    }
-
-    @Test
-    public void mapBack() {
-        final var original = buildDefendant();
-
-        final var actual = CCSDefendant.of(original).asDomain();
-        assertThat(actual).isEqualTo(original);
     }
 }
