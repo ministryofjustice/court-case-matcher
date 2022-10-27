@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/match",
+    "bodyPatterns" : [
+      {
+        "equalToJson" : {
+          "firstName": "Nora",
+          "surname": "CORD",
+          "dateOfBirth": "1997-02-28"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "offender-match/POST_match_single_exact_response_nora_cord.json"
+  }
+}

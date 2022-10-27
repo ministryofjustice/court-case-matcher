@@ -9,8 +9,12 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
+import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
@@ -59,6 +64,9 @@ public class SqsMessageReceiverIntTest {
     @Autowired
     private TelemetryService telemetryService;
 
+    @Autowired
+    private FeatureFlags featureFlags;
+
     private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
 
     @RegisterExtension
@@ -79,11 +87,13 @@ public class SqsMessageReceiverIntTest {
     @Autowired
     private NotificationMessagingTemplate notificationMessagingTemplate;
 
-    @Test
-    public void givenExistingCase_whenReceivePayload_thenSendExistingCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenExistingCase_whenReceivePayload_thenSendUpdatedExistingCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING","hearingEventType","Resulted"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "Resulted"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -124,14 +134,17 @@ public class SqsMessageReceiverIntTest {
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
         verify(telemetryService, never()).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService, times(2)).trackDefendantProbationStatusUpdatedEvent(any(Defendant.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenNewCase_whenReceivePayload_thenSendNewCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenNewCase_whenReceivePayload_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType","ConfirmedOrUpdated"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -157,16 +170,18 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenNewCase_whenReceivePayloadForOrganisation_thenSendNewCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenNewCase_whenReceivePayloadForOrganisation_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType","ConfirmedOrUpdated"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -187,16 +202,18 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/libra/case.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE", "String","Resulted"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE", "String", "Resulted"));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -208,21 +225,24 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032981")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
+                        .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
         );
 
         verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService).trackHearingEvent(any(Hearing.class), any(String.class));
-        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
+        verify(telemetryService).trackDefendantProbationStatusUpdatedEvent(any(Defendant.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
-    @Test
-    public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void givenExistingCase_whenReceivePayloadForOrganisation_thenSendUpdatedCase(boolean matchOnEveryRecordUpdate) throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
 
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/libra/case-org.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE", "hearingEventType","ConfirmedOrUpdated"));
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE", "hearingEventType", "ConfirmedOrUpdated"));
 
         final var expectedEndpoint = String.format("/hearing/%s", "A0884637-5A70-4622-88E9-7324949B8E7A");
         await()
@@ -242,6 +262,49 @@ public class SqsMessageReceiverIntTest {
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
         verifyNoMoreInteractions(telemetryService);
+    }
+
+    @Nested
+    public class GivenMatchOnEveryNoRecordUpdateFlagIsEnabled {
+        @BeforeEach
+        public void setUp() {
+            featureFlags.setFlagValue("match-on-every-no-record-update", true);
+        }
+
+        @Test
+        public void andExistingCaseWithNoCrn_whenReceivePayload_thenAttemptMatchAndSendExistingCase () throws
+        IOException {
+            var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing-no-crns.json"));
+
+            notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "Resulted"));
+
+            await()
+                    .atMost(10, TimeUnit.SECONDS)
+                    .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
+
+            MOCK_SERVER.verify(
+                    putRequestedFor(urlMatching("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
+                            // Values from incoming case
+                            .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                            .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
+                            .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
+                            .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("63259cd9-cb18-4563-b72e-d8baf7c35684")))
+                            .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
+                            // Values from court-case-service
+                            .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("X198765")))
+                            // Values from probation status update
+                            .withRequestBody(matchingJsonPath("defendants[1].probationStatus", equalTo("CURRENT")))
+                            .withRequestBody(matchingJsonPath("defendants[1].breach", equalTo("true")))
+                            .withRequestBody(matchingJsonPath("defendants[1].awaitingPsr", equalTo("true")))
+            );
+
+            verify(telemetryService).withOperation(nullable(String.class));
+            verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+            verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
+            verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+            verifyNoMoreInteractions(telemetryService);
+        }
+
     }
 
     @TestConfiguration

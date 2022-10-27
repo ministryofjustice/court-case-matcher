@@ -42,6 +42,7 @@ public class Defendant {
     private PhoneNumber phoneNumber;
 
     private Offender offender;
+    private Boolean confirmedOffender;
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;
@@ -50,6 +51,7 @@ public class Defendant {
         return Optional.of(this)
                 .filter(defendant -> defendant.getType() == DefendantType.PERSON)
                 .filter(defendant -> !hasText(defendant.getCrn()))
+                .filter(defendant -> defendant.getConfirmedOffender() == null || !defendant.getConfirmedOffender())
                 .isPresent();
     }
 

@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/defendant/8e05e32f-8d2c-4782-bcdc-82983099f3fb/grouped-offender-matches",
+    "bodyPatterns": [
+      {
+        "matches" : ".*X198765.*"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "Location": "/defendant/8e05e32f-8d2c-4782-bcdc-82983099f3fb/grouped-offender-matches/5"
+    }
+  }
+}

@@ -66,6 +66,7 @@ offender-search:
 feature:
   flags:
     pass-hearing-id-to-court-case-service: false
+    match-on-every-no-record-update: true
 
 nomis-oauth:
   ping-path: /auth/ping

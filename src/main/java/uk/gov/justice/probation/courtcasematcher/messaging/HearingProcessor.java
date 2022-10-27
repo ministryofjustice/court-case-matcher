@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
@@ -37,6 +38,8 @@ public class HearingProcessor {
     @NonNull
     private final MatcherService matcherService;
 
+    private final FeatureFlags featureFlags;
+
     public void process(Hearing receivedHearing, String messageId) {
         try {
             // New LIBRA cases will have no case or defendant ID, and we need to assign
@@ -52,7 +55,6 @@ public class HearingProcessor {
     }
 
     private void matchAndSaveHearing(Hearing receivedHearing, String messageId) {
-
         courtCaseService.findHearing(receivedHearing)
                 .blockOptional()
                 .ifPresentOrElse(
@@ -65,7 +67,7 @@ public class HearingProcessor {
                             }
                         },
                         () -> {
-                            telemetryService.trackHearingEvent(receivedHearing, messageId);
+                            telemetryService.trackNewHearingEvent(receivedHearing, messageId);
                             applyMatchesAndSave(receivedHearing);
                         }
                 );
@@ -73,7 +75,36 @@ public class HearingProcessor {
 
     private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
-        updateAndSave(courtCaseMerged);
+
+        if(featureFlags.getFlag("match-on-every-no-record-update")) {
+            applyMatches_Or_Update_thenSave(courtCaseMerged);
+        } else {
+            updateAndSave(courtCaseMerged);
+        }
+    }
+
+    private void applyMatches_Or_Update_thenSave(Hearing hearing) {
+        log.info("Upsert caseId {}", hearing.getCaseId());
+
+        Mono.just(hearing.getDefendants()
+                        .stream()
+                        .map(defendant -> {
+                            if (defendant.shouldMatchToOffender()) {
+                                return matcherService.matchDefendant(defendant, hearing);
+                            } else if (defendant.getCrn() != null) {
+                                return courtCaseService.updateDefendant(defendant);
+                            } else {
+                                return Mono.just(defendant);
+                            }
+                        })
+                        .map(Mono::block)
+                        .collect(Collectors.toList())
+                )
+                .map(hearing::withDefendants)
+                .onErrorReturn(hearing)
+                .doOnSuccess(courtCaseService::saveHearing)
+                .block();
+
     }
 
 

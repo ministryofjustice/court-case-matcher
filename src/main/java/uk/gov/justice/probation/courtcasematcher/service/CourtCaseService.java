@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
@@ -27,6 +27,8 @@ public class CourtCaseService {
     private CourtCaseRepository courtCaseRepository;
 
     private OffenderSearchRestClient offenderSearchRestClient;
+
+    private TelemetryService telemetryService;
 
     public Mono<Hearing> findHearing(Hearing hearing) {
         if (hearing.getSource() == DataSource.COMMON_PLATFORM) {
@@ -64,11 +66,15 @@ public class CourtCaseService {
         return Mono.just(hearing.withDefendants(updatedDefendants));
     }
 
-    private Mono<Defendant> updateDefendant(Defendant defendant) {
+    public Mono<Defendant> updateDefendant(Defendant defendant) {
         return offenderSearchRestClient.search(defendant.getCrn())
                 .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
                 .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
                 .map(probationStatusDetail -> HearingMapper.merge(probationStatusDetail, defendant))
-                .defaultIfEmpty(defendant);
+                .doOnSuccess((updatedDefendant) -> telemetryService.trackDefendantProbationStatusUpdatedEvent(updatedDefendant))
+                .switchIfEmpty(
+                        Mono.just(defendant)
+                        .doOnSuccess((ignored) -> telemetryService.trackDefendantProbationStatusNotUpdatedEvent(defendant))
+                );
     }
 }

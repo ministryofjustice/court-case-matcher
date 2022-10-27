@@ -2,10 +2,10 @@
   "id" : "275aaf40-4ed1-4656-bbb3-cc813e3434ba",
   "request": {
     "method": "GET",
-    "urlPath": "/court/B10JQ/case/123456",
+    "urlPath": "/court/B10JQ/case/1600032981",
     "queryParameters" : {
       "listNo" : {
-        "contains" : "2nd"
+        "contains" : "1st"
       }
     }
   },

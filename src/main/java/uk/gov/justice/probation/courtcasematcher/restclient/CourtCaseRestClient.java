@@ -14,9 +14,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.tuple.Tuple2;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNotFoundException;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSExtendedHearing;
@@ -58,7 +58,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
 
                 .bodyToMono(CCSExtendedHearing.class)
                 .map(response -> {
-                    log.debug("GET succeeded for retrieving the hearing for path {}", path);
+                    log.debug("GET succeeded for the hearing at {}", path);
                     return response.asDomain();
                 })
                 .onErrorResume(HearingNotFoundException.class, (e) -> {
@@ -76,10 +76,11 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     public Mono<Void> putHearing(Hearing hearing) {
         final var ccsExtendedHearing = CCSExtendedHearing.of(hearing);
         final var hearingId = ccsExtendedHearing.getHearingId();
-        final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
+        final var path = String.format(courtCaseByHearingIdTemplate, hearingId);
         return restHelper.putObject(path, ccsExtendedHearing, CCSExtendedHearing.class)
                 .retrieve()
                 .toBodilessEntity()
+                .doOnSuccess(response -> log.debug("PUT succeeded for the hearing at {}", path))
                 .retryWhen(restHelper.buildRetrySpec(
                         String.format("Initial retry failed for hearingId %s", hearingId),
                         (attemptNo, maxAttempts) -> String.format("Retry failed for hearingId %s at attempt %s of %s", hearingId, attemptNo, maxAttempts))

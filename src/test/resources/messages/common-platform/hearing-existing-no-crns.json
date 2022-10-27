@@ -1,0 +1,114 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+      "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+      "roomName": "Crown Court 3-1",
+      "code": "B10JQ00"
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 60,
+        "listingSequence": 0,
+        "sittingDay": "2021-09-08T09:00:00.000Z"
+      },
+      {
+        "listedDurationMinutes": 30,
+        "listingSequence": 1,
+        "sittingDay": "2021-09-09T10:30:00.000Z"
+      }
+    ],
+    "id": "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "63259cd9-cb18-4563-b72e-d8baf7c35684",
+            "offences": [
+              {
+                "id": "a63d9020-aa6b-4997-92fd-72a692b036de",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent",
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+                "listingNumber":  20
+              },
+              {
+                "id": "ea1c2cf1-f155-483b-a908-81158a9b2f9b",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent",
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith"
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "13 Wind Street",
+                  "address2": "Swansea",
+                  "address3": "Wales",
+                  "address4": "UK",
+                  "address5": "Earth",
+                  "postcode": "SA1 1FU"
+                },
+                "dateOfBirth": "1975-01-01",
+                "firstName": "Noel",
+                "gender": "MALE",
+                "lastName": "RECORD",
+                "title": "Mr",
+                "contact": {
+                  "home": "07000000001",
+                  "work": "07000000002",
+                  "mobile": "07000000003"
+                }
+              }
+            },
+            "prosecutionCaseId": "8e5cfd34-a8dd-403e-ae96-219704ce7110"
+          },
+          {
+            "id": "8e05e32f-8d2c-4782-bcdc-82983099f3fb",
+            "offences": [
+              {
+                "id": "1391ADC2-7A43-48DC-8523-3D28B9DCD2B7",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent",
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith"
+              },
+              {
+                "id": "19C08FB0-363B-4EB1-938D-76EF751E5D66",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent",
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith",
+                "listingNumber":  30
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "14 Tottenham Court Road",
+                  "address2": "London Road",
+                  "address3": "England",
+                  "address4": "UK",
+                  "address5": "Earth",
+                  "postcode": "W1T 7RJ"
+                },
+                "dateOfBirth": "1997-02-28",
+                "firstName": "Nora",
+                "gender": "FEMALE",
+                "lastName": "CORD",
+                "contact": {
+                  "work": "07000000005",
+                  "mobile": "07000000006"
+                }
+              }
+            },
+            "prosecutionCaseId": "8e5cfd34-a8dd-403e-ae96-219704ce7110"
+          }
+        ],
+        "id": "f8831ff5-b7d9-455c-b846-444ec8714b8b",
+        "prosecutionCaseIdentifier": {
+          "caseURN": "25GD34377719"
+        }
+      }
+    ]
+  }
+}

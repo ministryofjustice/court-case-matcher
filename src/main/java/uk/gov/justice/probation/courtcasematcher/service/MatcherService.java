@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
@@ -39,7 +39,7 @@ public class MatcherService {
                 ;
     }
 
-    private Mono<Defendant> matchDefendant(Defendant defendant, Hearing hearing) {
+    public Mono<Defendant> matchDefendant(Defendant defendant, Hearing hearing) {
         return Mono.just(defendant)
                 .map(firstDefendant -> matchRequestFactory.buildFrom(firstDefendant))
                 .doOnError(e ->

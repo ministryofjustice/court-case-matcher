@@ -81,4 +81,5 @@ public class Hearing implements Serializable {
                 .map(HearingDay::getListNo)
                 .orElse(null);
     }
+
 }
