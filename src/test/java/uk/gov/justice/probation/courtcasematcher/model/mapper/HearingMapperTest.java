@@ -469,11 +469,13 @@ class HearingMapperTest {
 
             final var existingCaseId = "82034D44-B709-4227-9CF9-CBFC67F98041";
             final var existingDefendantId = "C09C6A23-0390-41BB-948C-08399BD72720";
+            final var existingPersonId = "a70fd29a-a9e3-4629-86e0-7817f052cdd1";
             final var existingCourtCase = Hearing.builder()
                     .hearingId(null)
                     .caseId(existingCaseId)
                     .defendants(singletonList(Defendant.builder()
                             .defendantId(existingDefendantId)
+                            .personId(existingPersonId)
                             .build()))
                     .build();
 
@@ -482,6 +484,7 @@ class HearingMapperTest {
             assertThat(courtCase.getCaseId()).isEqualTo(existingCaseId);
             assertThat(courtCase.getHearingId()).isEqualTo(libraCase.getHearingId());
             assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(existingDefendantId);
+            assertThat(courtCase.getDefendants().get(0).getPersonId()).isEqualTo(existingPersonId);
         }
 
 
@@ -498,6 +501,7 @@ class HearingMapperTest {
                             Defendant.builder()
                                     .defendantId(DEFENDANT_ID)
                                     .crn("expected crn")
+                                    .personId("person id 1")
                                     .build()))
                     .build();
 
@@ -506,10 +510,12 @@ class HearingMapperTest {
             assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
             assertThat(courtCase.getDefendants().get(0).getDefendantId()).isEqualTo(DEFENDANT_ID);
             assertThat(courtCase.getDefendants().get(0).getCrn()).isEqualTo("expected crn");
+            assertThat(courtCase.getDefendants().get(0).getPersonId()).isEqualTo("person id 1");
 
             assertThat(courtCase.getCaseId()).isEqualTo(CASE_ID);
             assertThat(courtCase.getDefendants().get(1).getDefendantId()).isEqualTo(DEFENDANT_ID_2);
             assertThat(courtCase.getDefendants().get(1).getCrn()).isEqualTo(null);
+            assertThat(courtCase.getDefendants().get(1).getPersonId()).isEqualTo(null);
 
         }
 
