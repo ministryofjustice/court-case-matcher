@@ -97,9 +97,15 @@ public class CCSExtendedHearingTest {
 
     @Test
     public void shouldMapBack() {
-        final var original = DomainDataHelper.aHearingWithAllFields();
+        final var aDefendant = DomainDataHelper.aHearingWithAllFields()
+                .getDefendants().get(0)
+                // confirmedOffender should not be mapped back
+                .withConfirmedOffender(null);
+        final var original = DomainDataHelper.aHearingWithAllFields()
+                .withDefendants(List.of(aDefendant));
 
-        final var actual = CCSExtendedHearing.of(original).asDomain();
+        final var actual = CCSExtendedHearing.of(original)
+                .asDomain();
 
         assertThat(actual).isEqualTo(original);
     }

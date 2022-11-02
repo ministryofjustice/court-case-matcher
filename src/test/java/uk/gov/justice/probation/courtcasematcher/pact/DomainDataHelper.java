@@ -73,6 +73,7 @@ public class DomainDataHelper {
                                 .build())
                         .sex("sex")
                         .type(DefendantType.ORGANISATION)
+                        .confirmedOffender(true)
                         .build()))
                 ;
     }

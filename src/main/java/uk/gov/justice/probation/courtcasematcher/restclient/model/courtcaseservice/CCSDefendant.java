@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.With;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Sex;
@@ -43,6 +44,8 @@ public class CCSDefendant {
     private Boolean breach;
     private CCSPhoneNumber phoneNumber;
     private CCSOffender offender;
+    @With
+    private Boolean confirmedOffender;
 
     public static CCSDefendant of(Defendant defendant) {
         return builder()
@@ -110,6 +113,7 @@ public class CCSDefendant {
                                         .cro(o.getCro())
                                         .build()
                                 ).orElse(null))
+                .confirmedOffender(confirmedOffender)
                 .build();
     }
 }

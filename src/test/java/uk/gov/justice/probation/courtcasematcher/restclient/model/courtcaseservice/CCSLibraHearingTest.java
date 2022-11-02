@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CCSHearingTest {
+class CCSLibraHearingTest {
     @Test
     public void mapBack() {
         final var original = DomainDataHelper.aHearingWithAllFields();
 
         final var firstDefendant = original.getDefendants().get(0);
-        final var ccsHearing = CCSHearing.builder()
+        final var ccsHearing = CCSLibraHearing.builder()
                 .source(CCSDataSource.of(original.getSource()))
                 .defendantId(firstDefendant.getDefendantId())
                 .awaitingPsr(firstDefendant.getAwaitingPsr())
@@ -58,6 +58,7 @@ class CCSHearingTest {
                                 .map(CCSOffence::of)
                                 .collect(Collectors.toList()))
                         .orElse(null))
+                .confirmedOffender(true)
                 .build();
 
         final var actual = ccsHearing.asDomain();

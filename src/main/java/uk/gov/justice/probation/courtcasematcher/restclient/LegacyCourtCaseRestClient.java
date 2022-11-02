@@ -11,7 +11,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNotFoundException;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSHearing;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSLibraHearing;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -54,7 +54,7 @@ public class LegacyCourtCaseRestClient {
         return getLibraCase
             .retrieve()
             .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
-            .bodyToMono(CCSHearing.class)
+            .bodyToMono(CCSLibraHearing.class)
             .map(ccsHearing -> {
                 log.debug("GET succeeded for retrieving the hearing for path {}", path);
                 return ccsHearing.asDomain();
