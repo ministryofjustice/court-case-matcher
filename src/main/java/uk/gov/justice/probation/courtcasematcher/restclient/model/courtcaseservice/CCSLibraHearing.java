@@ -58,6 +58,7 @@ public class CCSLibraHearing implements Serializable {
     private final CCSDataSource source;
     private final String hearingType;
     private final Boolean confirmedOffender;
+    private final String personId;
 
     @JsonIgnore
     private final CCSGroupedOffenderMatchesRequest groupedOffenderMatches;
@@ -82,6 +83,7 @@ public class CCSLibraHearing implements Serializable {
 
                 .defendants(Collections.singletonList(Defendant.builder()
                         .defendantId(getDefendantId())
+                        .personId(getPersonId())
                         .awaitingPsr(isAwaitingPsr())
                         .breach(getBreach())
                         .crn(getCrn())
@@ -107,7 +109,7 @@ public class CCSLibraHearing implements Serializable {
                                         .map(CCSOffence::asDomain)
                                         .collect(Collectors.toList()))
                                 .orElse(null))
-                                .confirmedOffender(getConfirmedOffender())
+                        .confirmedOffender(getConfirmedOffender())
                         .build()))
 
                 .build();

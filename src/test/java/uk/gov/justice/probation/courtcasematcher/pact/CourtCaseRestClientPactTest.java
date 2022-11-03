@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 
@@ -107,6 +108,7 @@ class CourtCaseRestClientPactTest {
                 defendant.stringType("sex");
                 defendant.stringValue("type", "PERSON");
                 defendant.stringType("defendantId");
+                defendant.stringType("personId");
             })));
             rootObject.array("hearingDays", (array) -> array.object((hearingDay) -> {
                 hearingDay.stringType("courtCode");
@@ -180,6 +182,7 @@ class CourtCaseRestClientPactTest {
                 defendant.booleanType("awaitingPsr");
                 defendant.booleanType("breach");
                 defendant.stringType("defendantId");
+                defendant.stringType("personId");
             })));
             rootObject.array("hearingDays", (array) -> array.object((hearingDay) -> {
                 hearingDay.stringType("courtCode");
@@ -208,6 +211,7 @@ class CourtCaseRestClientPactTest {
         final var actual = restClient.getHearing("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f").block();
         assertThat(actual.getHearingId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
         assertThat(actual.getDefendants().get(0).getConfirmedOffender()).isEqualTo(true);
+        assertThat(actual.getDefendants()).extracting(Defendant::getPersonId).contains("96624bb7-c64d-46d9-a427-813ec168f95a","25429322-5e82-42dc-8005-858b5d082f80");
     }
 
 
@@ -219,6 +223,7 @@ class CourtCaseRestClientPactTest {
 
         assertThat(actual).isNotNull();
         assertThat(actual.getDefendants().get(0).getConfirmedOffender()).isEqualTo(true);
+        assertThat(actual.getDefendants().get(0).getPersonId()).isEqualTo("96624bb7-c64d-46d9-a427-813ec168f95a");
     }
 
     @PactTestFor(pactMethod = "putMinimalHearingByIdPact")

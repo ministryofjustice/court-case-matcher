@@ -125,6 +125,7 @@ public class HearingMapper {
                         .withPnc(existing.getPnc())
                         .withPreSentenceActivity(existing.getPreSentenceActivity())
                         .withConfirmedOffender(existing.getConfirmedOffender())
+                        .withPersonId(existing.getPersonId())
                 )
                 .orElse(incoming);
     }

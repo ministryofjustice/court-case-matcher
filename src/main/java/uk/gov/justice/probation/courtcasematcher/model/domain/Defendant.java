@@ -43,6 +43,7 @@ public class Defendant {
 
     private Offender offender;
     private Boolean confirmedOffender;
+    private String personId;
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;

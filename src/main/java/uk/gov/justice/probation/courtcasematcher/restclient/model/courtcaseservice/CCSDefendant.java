@@ -46,10 +46,12 @@ public class CCSDefendant {
     private CCSOffender offender;
     @With
     private Boolean confirmedOffender;
+    private String personId;
 
     public static CCSDefendant of(Defendant defendant) {
         return builder()
                 .defendantId(defendant.getDefendantId())
+                .personId(defendant.getPersonId())
                 .name(CCSName.of(defendant.getName()))
                 .dateOfBirth(defendant.getDateOfBirth())
                 .address(Optional.ofNullable(defendant.getAddress()).map(CCSAddress::of).orElse(null))
@@ -83,6 +85,7 @@ public class CCSDefendant {
     public Defendant asDomain() {
         return Defendant.builder()
                 .defendantId(defendantId)
+                .personId(personId)
                 .name(name.asDomain())
                 .dateOfBirth(dateOfBirth)
                 .address(Optional.ofNullable(address)
