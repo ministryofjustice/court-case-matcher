@@ -28,6 +28,7 @@ class CCSLibraHearingTest {
                 .caseNo(original.getCaseNo())
                 .urn(original.getUrn())
                 .hearingEventType(original.getHearingEventType())
+                .personId(firstDefendant.getPersonId())
 
 
                 .courtCode(original.getCourtCode())

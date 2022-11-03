@@ -55,7 +55,6 @@ public class OffenderSearchRestClient {
         super();
         this.webClient = webClient;
     }
-
     public Mono<MatchResponse> match(MatchRequest body){
 
         return post(postMatchUrl)

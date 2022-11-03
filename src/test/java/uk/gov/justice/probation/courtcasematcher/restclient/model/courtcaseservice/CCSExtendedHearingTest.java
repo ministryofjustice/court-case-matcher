@@ -75,6 +75,7 @@ public class CCSExtendedHearingTest {
         assertThat(actualFirstDefendant.getSuspendedSentenceOrder()).isEqualTo(firstDefendant.getSuspendedSentenceOrder());
         assertThat(actualFirstDefendant.getAwaitingPsr()).isEqualTo(firstDefendant.getAwaitingPsr());
         assertThat(actualFirstDefendant.getBreach()).isEqualTo(firstDefendant.getBreach());
+        assertThat(actualFirstDefendant.getPersonId()).isNotBlank().isEqualTo(firstDefendant.getPersonId());
     }
 
     @Test
@@ -84,15 +85,19 @@ public class CCSExtendedHearingTest {
                 .withCaseId(null)
                 .withDefendants(List.of(
                         aCase.getDefendants().get(0)
-                                .withDefendantId("1234"),
+                                .withDefendantId("1234")
+                                .withPersonId("person id 1"),
                         aCase.getDefendants().get(0)
                                 .withDefendantId("5678")
+                                .withPersonId("person id 2")
                 ));
 
         final var actual = CCSExtendedHearing.of(courtCase);
 
         assertThat(actual.getDefendants().get(0).getDefendantId()).isEqualTo("1234");
+        assertThat(actual.getDefendants().get(0).getPersonId()).isEqualTo("person id 1");
         assertThat(actual.getDefendants().get(1).getDefendantId()).isEqualTo("5678");
+        assertThat(actual.getDefendants().get(1).getPersonId()).isEqualTo("person id 2");
     }
 
     @Test

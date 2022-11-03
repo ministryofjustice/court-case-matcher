@@ -21,6 +21,8 @@ public class DomainDataHelper {
     public static String CASE_ID = "D517D32D-3C80-41E8-846E-D274DC2B94A5";
     public static String HEARING_ID = "ABCDD32D-3C80-41E8-846E-D274DC2B94A5";
 
+    public static String PERSON_ID = "6bd70cad-6ebc-4633-88bb-5f5e4e216554";
+
     public static Hearing aHearingWithAllFields() {
         return aHearingBuilderWithAllFields()
                 .build();
@@ -35,6 +37,7 @@ public class DomainDataHelper {
                 .urn("urn")
                 .defendants(Collections.singletonList(Defendant.builder()
                         .defendantId(DEFENDANT_ID)
+                        .personId(PERSON_ID)
                         .probationStatus("Current")
                         .offences(Collections.singletonList(Offence.builder()
                                 .offenceTitle("offence title")

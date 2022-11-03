@@ -59,9 +59,11 @@ class CCSDefendantTest {
         assertThat(actual.getBreach()).isEqualTo(true);
         assertThat(actual.getOffender().getPnc()).isEqualTo("OFFENDER_PNC");
         assertThat(actual.getOffender().getCro()).isEqualTo("OFFENDER_CRO");
+        assertThat(actual.getPersonId()).isEqualTo("person id 1");
 
         // This field is dynamically calculated on a GET and should not be PUT
         assertThat(actual.getConfirmedOffender()).isEqualTo(null);
+
     }
 
     @Test
@@ -98,6 +100,7 @@ class CCSDefendantTest {
                         .cro("OFFENDER_CRO")
                         .build())
                 .withConfirmedOffender(true)
+                .withPersonId("person id 1")
                 ;
     }
 }
