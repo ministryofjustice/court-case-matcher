@@ -92,7 +92,7 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:2.0.1'
     implementation 'org.springframework.cloud:spring-cloud-aws-messaging:2.2.6.RELEASE'
@@ -123,8 +123,8 @@ dependencies {
     testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
     testImplementation "io.rest-assured:json-path:$restAssuredVersion"
     testImplementation "io.rest-assured:xml-path:$restAssuredVersion"
-    testImplementation "com.github.tomakehurst:wiremock-jre8:2.34.0"
-    testImplementation ('org.mockito:mockito-core:4.8.0') {
+    testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.0"
+    testImplementation ('org.mockito:mockito-core:4.8.1') {
         testImplementation("net.bytebuddy:byte-buddy:1.12.18")
     }
     testAnnotationProcessor 'org.projectlombok:lombok'
