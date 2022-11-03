@@ -99,6 +99,7 @@ public class DomainDataHelper {
                         .build()))
                 .defendants(Collections.singletonList(Defendant.builder()
                         .defendantId(DEFENDANT_ID)
+                        .personId(PERSON_ID)
                         .offences(Collections.singletonList(Offence.builder()
                                 .offenceTitle("offence title")
                                 .offenceSummary("offence summary")

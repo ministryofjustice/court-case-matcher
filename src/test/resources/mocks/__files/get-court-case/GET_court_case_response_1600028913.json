@@ -9,5 +9,6 @@
   "breach": true,
   "preSentenceActivity": true,
   "hearingEventType": "Resulted",
-  "confirmedOffender": true
+  "confirmedOffender": true,
+  "personId": "96624bb7-c64d-46d9-a427-813ec168f95a"
 }
