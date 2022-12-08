@@ -8,9 +8,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -177,20 +175,22 @@ public class TelemetryService {
 
     private Map<String, String> getDefendantProperties(Defendant defendant) {
         Map<String, String> properties = new HashMap<>(MAX_PROPERTY_COUNT);
-        ofNullable(defendant.getDefendantId())
-                .ifPresent(defendantId -> properties.put(DEFENDANT_ID_KEY, defendantId));
-        ofNullable(defendant.getCrn())
-                .ifPresent(crn -> properties.put(CRN_KEY, crn));
-        ofNullable(defendant.getAwaitingPsr())
-                .ifPresent(awaitingPsr -> properties.put(AWAITING_PSR_KEY, awaitingPsr.toString()));
-        ofNullable(defendant.getBreach())
-                .ifPresent(breach -> properties.put(IN_BREACH_KEY, breach.toString()));
-        ofNullable(defendant.getPreSentenceActivity())
-                .ifPresent(preSentenceActivity -> properties.put(PRE_SENTENCE_ACTVITY_KEY, preSentenceActivity.toString()));
-        ofNullable(defendant.getPreviouslyKnownTerminationDate())
-                .ifPresent(previouslyKnownTerminationDate -> properties.put(PREVIOUSLY_KNOWN_TERMINATION_DATE_KEY, previouslyKnownTerminationDate.toString()));
-        ofNullable(defendant.getProbationStatus())
-                .ifPresent(probationStatus -> properties.put(PROBATION_STATUS_KEY, probationStatus));
+        Optional.ofNullable(defendant).ifPresent(defendant1 -> {
+            ofNullable(defendant.getDefendantId())
+              .ifPresent(defendantId -> properties.put(DEFENDANT_ID_KEY, defendantId));
+            ofNullable(defendant.getCrn())
+              .ifPresent(crn -> properties.put(CRN_KEY, crn));
+            ofNullable(defendant.getAwaitingPsr())
+              .ifPresent(awaitingPsr -> properties.put(AWAITING_PSR_KEY, awaitingPsr.toString()));
+            ofNullable(defendant.getBreach())
+              .ifPresent(breach -> properties.put(IN_BREACH_KEY, breach.toString()));
+            ofNullable(defendant.getPreSentenceActivity())
+              .ifPresent(preSentenceActivity -> properties.put(PRE_SENTENCE_ACTVITY_KEY, preSentenceActivity.toString()));
+            ofNullable(defendant.getPreviouslyKnownTerminationDate())
+              .ifPresent(previouslyKnownTerminationDate -> properties.put(PREVIOUSLY_KNOWN_TERMINATION_DATE_KEY, previouslyKnownTerminationDate.toString()));
+            ofNullable(defendant.getProbationStatus())
+              .ifPresent(probationStatus -> properties.put(PROBATION_STATUS_KEY, probationStatus));
+        });
 
         return properties;
     }
