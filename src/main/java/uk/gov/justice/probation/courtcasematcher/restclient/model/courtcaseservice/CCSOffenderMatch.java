@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @AllArgsConstructor
 @Builder

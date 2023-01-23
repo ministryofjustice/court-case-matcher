@@ -61,6 +61,6 @@ public class PingerTest {
                 .block();
 
         assertThat(health.getStatus()).isEqualTo(DOWN);
-        assertThat(health.getDetails().get("error")).asString().contains("UnknownHostException");
+        assertThat(health.getDetails().get("error")).asString().contains("org.springframework.web.reactive.function.client.WebClientRequestException: Failed to resolve 'notarealhost' after 6 queries ");
     }
 }

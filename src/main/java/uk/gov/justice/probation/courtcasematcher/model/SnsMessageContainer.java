@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.messaging.HearingEventType;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Optional;
 
