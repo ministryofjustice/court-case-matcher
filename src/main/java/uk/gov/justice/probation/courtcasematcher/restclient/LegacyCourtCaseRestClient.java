@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -53,7 +54,7 @@ public class LegacyCourtCaseRestClient {
           : courtCaseServiceRestHelper.get(path);
         return getLibraCase
             .retrieve()
-            .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
+            .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
             .bodyToMono(CCSLibraHearing.class)
             .map(ccsHearing -> {
                 log.debug("GET succeeded for retrieving the hearing for path {}", path);
@@ -66,21 +67,21 @@ public class LegacyCourtCaseRestClient {
     }
 
     private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String courtCode, String caseNo) {
-        final HttpStatus httpStatus = clientResponse.statusCode();
+        final HttpStatusCode httpStatusCode = clientResponse.statusCode();
         // This is expected for new cases
-        if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
+        if (HttpStatus.NOT_FOUND.equals(httpStatusCode)) {
             log.info("Failed to get case for case number {} and court code {}", caseNo, courtCode);
             return Mono.error(new HearingNotFoundException(courtCode, caseNo));
         }
-        else if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
-            log.error("HTTP status {} to to GET the case from court case service", httpStatus);
+        else if(HttpStatus.UNAUTHORIZED.equals(httpStatusCode) || HttpStatus.FORBIDDEN.equals(httpStatusCode)) {
+            log.error("HTTP status {} to to GET the case from court case service", httpStatusCode);
         }
-        final var exception = WebClientResponseException.create(httpStatus.value(),
-                httpStatus.name(),
+        final var exception = WebClientResponseException.create(httpStatusCode.value(),
+                httpStatusCode.toString(),
                 clientResponse.headers().asHttpHeaders(),
                 clientResponse.toString().getBytes(),
                 StandardCharsets.UTF_8);
-        log.error("Unexpected response code {} getting case number {} and court code {}", httpStatus, caseNo, courtCode, exception);
+        log.error("Unexpected response code {} getting case number {} and court code {}", httpStatusCode, caseNo, courtCode, exception);
         throw exception;
     }
 }

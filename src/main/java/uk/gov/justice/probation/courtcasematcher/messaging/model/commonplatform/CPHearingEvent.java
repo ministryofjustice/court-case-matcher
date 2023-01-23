@@ -1,7 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

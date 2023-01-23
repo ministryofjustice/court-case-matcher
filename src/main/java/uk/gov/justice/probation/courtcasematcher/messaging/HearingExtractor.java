@@ -14,7 +14,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHear
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 
 @Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)

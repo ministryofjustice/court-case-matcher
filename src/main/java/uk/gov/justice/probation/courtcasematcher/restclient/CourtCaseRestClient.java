@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -54,8 +55,7 @@ public class CourtCaseRestClient implements CourtCaseRepository {
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         return restHelper.get(path)
                 .retrieve()
-                .onStatus(HttpStatus::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))
-
+                .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))
                 .bodyToMono(CCSExtendedHearing.class)
                 .map(response -> {
                     log.debug("GET succeeded for the hearing at {}", path);
@@ -112,17 +112,17 @@ public class CourtCaseRestClient implements CourtCaseRepository {
     }
 
     private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String caseId) {
-        final HttpStatus httpStatus = clientResponse.statusCode();
+        final HttpStatusCode httpStatusCode = clientResponse.statusCode();
         // This is expected for new cases
-        if (HttpStatus.NOT_FOUND.equals(httpStatus)) {
+        if (HttpStatus.NOT_FOUND.equals(httpStatusCode)) {
             log.info("Failed to get case for caseId {}", caseId);
             return Mono.error(new HearingNotFoundException(caseId));
         }
-        else if(HttpStatus.UNAUTHORIZED.equals(httpStatus) || HttpStatus.FORBIDDEN.equals(httpStatus)) {
-            log.error("HTTP status {} to to GET the case from court case service", httpStatus);
+        else if(HttpStatus.UNAUTHORIZED.equals(httpStatusCode) || HttpStatus.FORBIDDEN.equals(httpStatusCode)) {
+            log.error("HTTP status {} to to GET the case from court case service", httpStatusCode);
         }
-        throw WebClientResponseException.create(httpStatus.value(),
-                httpStatus.name(),
+        throw WebClientResponseException.create(httpStatusCode.value(),
+                httpStatusCode.toString(),
                 clientResponse.headers().asHttpHeaders(),
                 clientResponse.toString().getBytes(),
                 StandardCharsets.UTF_8);

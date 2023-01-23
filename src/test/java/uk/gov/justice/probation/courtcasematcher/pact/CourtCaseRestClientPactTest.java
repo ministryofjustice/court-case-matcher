@@ -44,7 +44,7 @@ class CourtCaseRestClientPactTest {
     @Pact(provider="court-case-service", consumer="court-case-matcher")
     public V4Pact getHearingByIdPact(PactDslWithProvider builder) throws IOException {
 
-        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8);
+        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8.name());
 
         return builder
                 .given("a hearing exists for hearingId 8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
@@ -62,7 +62,7 @@ class CourtCaseRestClientPactTest {
     @Pact(provider="court-case-service", consumer="court-case-matcher")
     public V4Pact getHearingByCaseNoPact(PactDslWithProvider builder) throws IOException {
 
-        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8);
+        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8.name());
 
         return builder
                 .given("a hearing exists for court B10JQ, case number 1600028913 and list number 2nd")

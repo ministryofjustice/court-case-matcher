@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -21,6 +22,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 
 import java.time.Duration;
 import java.util.function.Predicate;
+
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
@@ -124,7 +126,7 @@ public class OffenderSearchRestClient {
         boolean retry = true;
         if (throwable instanceof WebClientResponseException) {
             WebClientResponseException ex = (WebClientResponseException) throwable;
-            HttpStatus status = ex.getStatusCode();
+            HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
             switch (status) {
                 case NOT_FOUND:
                 case FORBIDDEN:

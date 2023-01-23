@@ -1,13 +1,21 @@
 management:
+  security:
+    enabled: false
   endpoints:
     web:
       exposure:
         include: health,info,loggers
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
   endpoint:
     health:
       show-details: always
       path-mapping: "health"
-
+      probes:
+        enabled: true
 server:
   port: 8180
 
@@ -22,12 +30,17 @@ nomis-oauth:
 
 # Localstack settings
 aws:
-  sqs-endpoint-url: "http://localhost:4566"
-  region_name: eu-west-2
-  access_key_id: foobar
-  secret_access_key: foobar
+  sqs:
+    court_case_matcher_endpoint_url: "http://localhost:4566"
+    court_case_matcher_queue_name: "court-case-matcher-queue"
+    court_case_matcher_dlq_endpoint_url: "court-case-matcher-dlq"
+    court_case_matcher_dlq_access_key_id: foobar
+    court_case_matcher_dlq_secret_access_key: foobar
+    court_case_matcher_access_key_id: foobar
+    court_case_matcher_secret_access_key: foobar
   sns:
     court_case_matcher_endpoint_url: "http://localhost:4566"
+
 
 messaging:
   sqs:
