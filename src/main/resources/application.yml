@@ -36,7 +36,7 @@ spring:
             client-name: offender-search-client
             client-id: ${offender-search-client-id:offender-search-client}
             client-secret: ${offender-search-client-secret:clientsecret}
-            client-authentication-method: basic
+            client-authentication-method: client_secret_basic
             authorization-grant-type: client_credentials
             provider: nomis-oauth-service
         provider:
