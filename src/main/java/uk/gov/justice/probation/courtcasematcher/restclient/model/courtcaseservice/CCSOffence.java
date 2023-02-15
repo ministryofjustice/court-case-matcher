@@ -30,6 +30,8 @@ public class CCSOffence {
 
     private final Integer listNo;
 
+    private final String offenceCode;
+
     private List<CCSJudicialResult> judicialResults;
 
     public static CCSOffence of(Offence offence) {
@@ -39,6 +41,7 @@ public class CCSOffence {
                 .act(offence.getAct())
                 .sequenceNumber(offence.getSequenceNumber())
                 .listNo(offence.getListNo())
+                .offenceCode(offence.getOffenceCode())
                 .judicialResults(Optional.of(offence)
                         .map(Offence::getJudicialResults)
                         .orElse(Collections.emptyList())
@@ -54,6 +57,7 @@ public class CCSOffence {
                 .act(getAct())
                 .sequenceNumber(getSequenceNumber())
                 .listNo(listNo)
+                .offenceCode(getOffenceCode())
                 .judicialResults(Optional.ofNullable(getJudicialResults())
                         .map(judicialResults -> judicialResults.stream()
                                 .map(CCSJudicialResult::asDomain)

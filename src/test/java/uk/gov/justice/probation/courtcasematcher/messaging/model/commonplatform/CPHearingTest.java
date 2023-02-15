@@ -42,7 +42,9 @@ class CPHearingTest {
                 .build());
         assertThat(firstDefendant.getDateOfBirth()).isEqualTo(LocalDate.of(2000, 1, 1));
         assertThat(firstDefendant.getOffences().get(0).getId()).isEqualTo("7AA4F55F-F104-4D07-9732-FEB679230E49");
+        assertThat(firstDefendant.getOffences().get(0).getOffenceCode()).isEqualTo("ABC001");
         assertThat(firstDefendant.getOffences().get(1).getId()).isEqualTo("43AE14D2-6980-49DD-803B-B6A77E7D438E");
+        assertThat(firstDefendant.getOffences().get(1).getOffenceCode()).isEqualTo("EDF002");
 
         final var secondDefendant = hearing.getDefendants().get(1);
         assertThat(secondDefendant.getDefendantId()).isEqualTo("80F2F0CB-11F3-4A65-B587-A9808BC74C02");
@@ -52,6 +54,7 @@ class CPHearingTest {
                 .surname("organisationname")
                 .build());
         assertThat(secondDefendant.getOffences().get(0).getId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
+        assertThat(secondDefendant.getOffences().get(0).getOffenceCode()).isEqualTo("ABC001");
 
         assertThat(hearing.getHearingDays().get(0).getListNo()).isNull();
         assertThat(hearing.getHearingDays().get(1).getListNo()).isNull();
@@ -112,6 +115,7 @@ class CPHearingTest {
                                 .wording("wording")
                                 .offenceTitle("title")
                                 .offenceLegislation("legislation")
+                                .offenceCode("ABC001")
                                 .judicialResults(List.of(CPJudicialResult.builder()
                                         .judicialResultTypeId("judicialResultTypeId")
                                         .build()))
@@ -121,6 +125,7 @@ class CPHearingTest {
                                 .wording("wording2")
                                 .offenceTitle("title2")
                                 .offenceLegislation("legislation2")
+                                .offenceCode("EDF002")
                                 .judicialResults(List.of(CPJudicialResult.builder()
                                         .judicialResultTypeId("judicialResultTypeId")
                                         .build()))
@@ -142,6 +147,7 @@ class CPHearingTest {
                         .wording("wording3")
                         .offenceTitle("title3")
                         .offenceLegislation("legislation3")
+                        .offenceCode("ABC001")
                         .judicialResults(List.of(CPJudicialResult.builder()
                                 .judicialResultTypeId("judicialResultTypeId")
                                 .build()))

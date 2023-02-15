@@ -31,10 +31,12 @@ class CPDefendantTest {
                                 .build())
                         .build())
                 .offences(List.of(CPOffence.builder().id("1")
+                                .offenceCode("ABC001")
                                 .judicialResults(List.of(CPJudicialResult.builder()
                                         .build()))
                                 .build(),
                         CPOffence.builder().id("2")
+                                .offenceCode("ABC002")
                                 .judicialResults(List.of(CPJudicialResult.builder()
                                         .build()))
                                 .build()))
@@ -53,7 +55,9 @@ class CPDefendantTest {
         assertThat(actual.getPnc()).isEqualTo("2007/1234557L");
         assertThat(actual.getAddress().getLine1()).isEqualTo("address1");
         assertThat(actual.getOffences().get(0).getId()).isEqualTo("1");
+        assertThat(actual.getOffences().get(0).getOffenceCode()).isEqualTo("ABC001");
         assertThat(actual.getOffences().get(1).getId()).isEqualTo("2");
+        assertThat(actual.getOffences().get(1).getOffenceCode()).isEqualTo("ABC002");
         assertThat(actual.getPhoneNumber()).isEqualTo(PhoneNumber.builder()
                 .work(TEST_CP_CONTACT.getWork())
                 .mobile(TEST_CP_CONTACT.getMobile())

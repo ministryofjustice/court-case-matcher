@@ -33,14 +33,17 @@
                 "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
                 "offenceTitle": "Wound / inflict grievous bodily harm without intent",
                 "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
-                "listingNumber": 30
+                "listingNumber": 30,
+                "offenceCode": "ABC001"
               },
               {
                 "id": "ea1c2cf1-f155-483b-a908-81158a9b2f9b",
                 "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
                 "offenceTitle": "Wound / inflict grievous bodily harm without intent",
                 "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith",
-                "listingNumber": 20
+                "listingNumber": 20,
+                "offenceCode": "ABC002"
+
               }
             ],
             "personDefendant": {
@@ -69,13 +72,15 @@
                 "id": "50474F6F-65FC-48C7-AA83-16277B55B3BA",
                 "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
                 "offenceTitle": "Wound / inflict grievous bodily harm without intent",
-                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith"
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+                "offenceCode": "ABC001"
               },
               {
                 "id": "7103C6BD-5805-4EF8-B524-D34B9ADD43D1",
                 "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
                 "offenceTitle": "Wound / inflict grievous bodily harm without intent",
-                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith"
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith",
+                "offenceCode": "ABC002"
               }
             ],
             "legalEntityDefendant": {

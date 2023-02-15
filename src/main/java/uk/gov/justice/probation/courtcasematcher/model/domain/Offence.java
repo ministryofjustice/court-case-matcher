@@ -27,5 +27,7 @@ public class Offence {
 
     private final Integer listNo;
 
+    private final String offenceCode;
+
     private List<JudicialResult> judicialResults;
 }
