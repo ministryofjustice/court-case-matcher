@@ -17,6 +17,7 @@ class CPOffenceTest {
                 .offenceLegislation("legislation")
                 .wording("wording")
                 .listingNumber(20)
+                .offenceCode("ABC001")
                 .judicialResults(List.of(CPJudicialResult.builder()
                         .build()))
                 .build()
@@ -28,6 +29,7 @@ class CPOffenceTest {
                 .offenceSummary("wording")
                 .act("legislation")
                 .listNo(20)
+                .offenceCode("ABC001")
                 .judicialResults(List.of(JudicialResult.builder()
                         .build()))
                 .build());

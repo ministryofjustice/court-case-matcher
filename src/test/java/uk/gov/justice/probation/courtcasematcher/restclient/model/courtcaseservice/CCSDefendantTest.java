@@ -23,6 +23,7 @@ class CCSDefendantTest {
                 .offenceSummary("offence summary")
                 .act("offence act")
                 .sequenceNumber(1)
+                .offenceCode("ABC001")
                 .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
                         .isConvictedResult(true)
                         .label("Adjournment")

@@ -27,6 +27,8 @@ public class CPOffence {
     private final String wording;
     private final Integer listingNumber;
 
+    private final String offenceCode;
+
     private List<CPJudicialResult> judicialResults;
 
     public Offence asDomain() {
@@ -36,6 +38,7 @@ public class CPOffence {
                 .offenceTitle(offenceTitle)
                 .offenceSummary(wording)
                 .listNo(listingNumber)
+                .offenceCode(offenceCode)
                 .judicialResults(Optional.ofNullable(getJudicialResults())
                         .map(judicialResults -> judicialResults.stream()
                                 .map(CPJudicialResult::asDomain)

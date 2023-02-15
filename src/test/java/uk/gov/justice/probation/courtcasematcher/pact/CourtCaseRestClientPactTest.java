@@ -99,6 +99,7 @@ class CourtCaseRestClientPactTest {
                     offence.stringType("offenceSummary");
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
+                    offence.stringType("offenceCode");
                     offence.array("judicialResults",  (judicialResults)-> judicialResults.object((judicialResult) -> {
                         judicialResult.booleanType("isConvictedResult");
                         judicialResult.stringType("label");
@@ -164,6 +165,7 @@ class CourtCaseRestClientPactTest {
                     offence.stringType("offenceSummary");
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
+                    offence.stringType("offenceCode");
                     offence.array("judicialResults",  (judicialResults)-> judicialResults.object((judicialResult) -> {
                         judicialResult.booleanType("isConvictedResult");
                         judicialResult.stringType("label");
