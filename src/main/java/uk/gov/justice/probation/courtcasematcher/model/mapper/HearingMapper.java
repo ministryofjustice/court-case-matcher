@@ -73,7 +73,7 @@ public class HearingMapper {
                                 .offenceSummary(libraOffence.getSummary())
                                 .sequenceNumber(libraOffence.getSeq())
                                 .act(libraOffence.getAct())
-                                .offenceCode(libraOffence.getOffenceCode())
+                                .offenceCode(libraOffence.getCode())
                                 .build())
                         .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
