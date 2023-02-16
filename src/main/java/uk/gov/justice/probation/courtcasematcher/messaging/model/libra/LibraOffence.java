@@ -22,5 +22,5 @@ public class LibraOffence {
     private final String summary;
     private final String title;
     private final String act;
-    private final String offenceCode;
+    private final String code;
 }
