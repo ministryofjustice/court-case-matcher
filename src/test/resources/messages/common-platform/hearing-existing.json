@@ -22,6 +22,14 @@
     "jurisdictionType": "CROWN",
     "prosecutionCases": [
       {
+        "caseMarkers": [
+          {
+            "typeDescription": "description 1"
+          },
+          {
+            "typeDescription": "description 2"
+          }
+        ],
         "defendants": [
           {
             "id": "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199",
@@ -34,7 +42,15 @@
                 "offenceTitle": "Wound / inflict grievous bodily harm without intent",
                 "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
                 "listingNumber":  20,
-                "offenceCode": "ABC001"
+                "offenceCode": "ABC001",
+                "plea": {
+                  "value": "value 1",
+                  "date": "2021-09-08"
+                },
+                "verdict": {
+                  "typeDescription": "description 1",
+                  "date": "2021-09-08"
+                }
               },
               {
                 "id": "ea1c2cf1-f155-483b-a908-81158a9b2f9b",

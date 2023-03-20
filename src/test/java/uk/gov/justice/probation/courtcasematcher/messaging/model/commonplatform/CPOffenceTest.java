@@ -3,7 +3,10 @@ package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -18,6 +21,10 @@ class CPOffenceTest {
                 .wording("wording")
                 .listingNumber(20)
                 .offenceCode("ABC001")
+                .plea(Plea.builder()
+                        .build())
+                .verdict(Verdict.builder()
+                        .build())
                 .judicialResults(List.of(CPJudicialResult.builder()
                         .build()))
                 .build()
@@ -30,6 +37,8 @@ class CPOffenceTest {
                 .act("legislation")
                 .listNo(20)
                 .offenceCode("ABC001")
+                .plea(Plea.builder().build())
+                .verdict(Verdict.builder().build())
                 .judicialResults(List.of(JudicialResult.builder()
                         .build()))
                 .build());

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCaseMarker;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCourtCentre;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearing;
@@ -23,6 +24,8 @@ import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -72,6 +75,8 @@ class HearingExtractorTest {
                                                 .build())
                                         .offences(Collections.emptyList())
                                         .build()))
+                                        .caseMarkers(Collections.singletonList(CPCaseMarker.builder()
+                                                .build()))
                                 .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                                 .build()))
                         .build())
@@ -117,6 +122,21 @@ class HearingExtractorTest {
 
         assertThat(hearing).isNotNull();
         assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
+    }
+
+    @Test
+    void whenCommonPlatformHearingEventReceived_thenParseAndReturnHearingWithCaseMarkers() throws JsonProcessingException {
+        when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
+                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
+                        .value("ConfirmedOrUpdated")
+                        .build()))
+                .build());
+        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
+
+        var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+
+        assertThat(hearing).isNotNull();
+        assertThat(hearing.getCaseMarkers().size()).isEqualTo(1);
     }
 
     @Test

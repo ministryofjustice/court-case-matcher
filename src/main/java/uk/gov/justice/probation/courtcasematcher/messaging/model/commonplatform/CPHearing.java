@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
@@ -13,6 +14,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,8 +56,21 @@ public class CPHearing {
                         .stream()
                         .map(CPDefendant::asDomain)
                         .collect(Collectors.toList()))
+                .caseMarkers(buildCaseMarkers(prosecutionCases))
                 .urn(prosecutionCases.get(0).getProsecutionCaseIdentifier().getCaseUrn())
                 .hearingType(Optional.ofNullable(type).map(CPHearingType::getDescription).orElse(null))
                 .build();
+    }
+
+    private List<CaseMarker> buildCaseMarkers(List<CPProsecutionCase> prosecutionCases) {
+        if(prosecutionCases.get(0).getCaseMarkers() != null) {
+            return this.prosecutionCases.get(0).getCaseMarkers()
+                    .stream()
+                    .map(cpCaseMarker -> CaseMarker.builder()
+                            .typeDescription(cpCaseMarker.getTypeDescription())
+                            .build())
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 }

@@ -73,16 +73,6 @@ public class HearingProcessor {
                 );
     }
 
-    private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
-        var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
-
-        if(featureFlags.getFlag("match-on-every-no-record-update")) {
-            applyMatches_Or_Update_thenSave(courtCaseMerged);
-        } else {
-            updateAndSave(courtCaseMerged);
-        }
-    }
-
     private void applyMatches_Or_Update_thenSave(Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
 
@@ -107,6 +97,16 @@ public class HearingProcessor {
 
     }
 
+
+    private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
+        var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
+
+        if(featureFlags.getFlag("match-on-every-no-record-update")) {
+            applyMatches_Or_Update_thenSave(courtCaseMerged);
+        } else {
+            updateAndSave(courtCaseMerged);
+        }
+    }
 
     private void applyMatchesAndSave(final Hearing hearing) {
         matcherService.matchDefendants(hearing)

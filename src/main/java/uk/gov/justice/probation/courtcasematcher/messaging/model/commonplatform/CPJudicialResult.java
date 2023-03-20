@@ -17,11 +17,14 @@ public class CPJudicialResult {
     private String label;
     private String judicialResultTypeId;
 
+    private String resultText;
+
     public JudicialResult asDomain(){
         return JudicialResult.builder()
                 .isConvictedResult(isConvictedResult)
                 .label(label)
                 .judicialResultTypeId(judicialResultTypeId)
+                .resultText(resultText)
                 .build();
     }
 

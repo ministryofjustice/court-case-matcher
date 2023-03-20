@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
@@ -75,6 +76,9 @@ class HearingProcessorTest {
                     .defendants(Collections.singletonList(Defendant.builder()
                             .cro("CRO")
                             .type(PERSON)
+                            .build()))
+                    .caseMarkers(Collections.singletonList(CaseMarker.builder()
+                                    .typeDescription("description")
                             .build()))
                     .build();
 

@@ -20,12 +20,14 @@ public class CCSJudicialResult {
     private boolean isConvictedResult;
     private String label;
     private String judicialResultTypeId;
+    private String resultText;
 
     public static CCSJudicialResult of(JudicialResult judicialResult) {
         return CCSJudicialResult.builder()
                 .isConvictedResult(judicialResult.isConvictedResult())
                 .label(judicialResult.getLabel())
                 .judicialResultTypeId(judicialResult.getJudicialResultTypeId())
+                .resultText(judicialResult.getResultText())
                 .build();
     }
 
@@ -34,6 +36,7 @@ public class CCSJudicialResult {
                 .isConvictedResult(isConvictedResult())
                 .label(getLabel())
                 .judicialResultTypeId(getJudicialResultTypeId())
+                .resultText(getResultText())
                 .build();
 
     }
