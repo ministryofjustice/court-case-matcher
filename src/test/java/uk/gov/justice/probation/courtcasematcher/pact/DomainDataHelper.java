@@ -122,6 +122,7 @@ public class DomainDataHelper {
                                         .isConvictedResult(true)
                                         .label("Adjournment")
                                         .judicialResultTypeId("judicialResultTypeId")
+                                        .resultText("resultText")
                                         .build()))
                                 .build()))
                         .name(Name.builder()
