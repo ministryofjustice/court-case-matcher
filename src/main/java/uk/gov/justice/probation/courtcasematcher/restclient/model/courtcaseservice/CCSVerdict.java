@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -21,8 +22,8 @@ public class CCSVerdict {
 
     public static CCSVerdict of(Verdict verdict) {
         return CCSVerdict.builder()
-                .typeDescription(verdict.getTypeDescription())
-                .date(verdict.getDate())
+                .typeDescription(Optional.ofNullable(verdict).map(Verdict::getTypeDescription).orElse(null))
+                .date(Optional.ofNullable(verdict).map(Verdict::getDate).orElse(null))
                 .build();
     }
 

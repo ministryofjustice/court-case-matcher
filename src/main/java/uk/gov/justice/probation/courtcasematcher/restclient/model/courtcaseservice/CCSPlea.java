@@ -11,6 +11,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -23,8 +24,8 @@ public class CCSPlea {
 
     public static CCSPlea of(Plea plea) {
         return CCSPlea.builder()
-                .value(plea.getValue())
-                .date(plea.getDate())
+                .value(Optional.ofNullable(plea).map(Plea::getValue).orElse(null))
+                .date(Optional.ofNullable(plea).map(Plea::getDate).orElse(null))
                 .build();
     }
 
