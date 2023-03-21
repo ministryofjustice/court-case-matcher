@@ -64,7 +64,7 @@ public class CPHearing {
 
     private List<CaseMarker> buildCaseMarkers(List<CPProsecutionCase> prosecutionCases) {
         if(prosecutionCases.get(0).getCaseMarkers() != null) {
-            return this.prosecutionCases.get(0).getCaseMarkers()
+            return prosecutionCases.get(0).getCaseMarkers()
                     .stream()
                     .map(cpCaseMarker -> CaseMarker.builder()
                             .typeDescription(cpCaseMarker.getTypeDescription())

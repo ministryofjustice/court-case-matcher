@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
+import javax.swing.text.html.Option;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Builder
@@ -52,12 +54,11 @@ public class CCSExtendedHearing {
     }
 
     private static List<CCSCaseMarker> getCCSCaseMarkersIfExist(Hearing hearing) {
-        if(hearing.getCaseMarkers() != null) {
-            return hearing.getCaseMarkers().stream()
-                    .map(CCSCaseMarker::of)
-                    .collect(Collectors.toList());
-        }
-        return null;
+        return Optional.ofNullable(hearing.getCaseMarkers())
+                .map(caseMarkersList ->
+                        caseMarkersList.stream()
+                                .map(CCSCaseMarker::of)
+                                .collect(Collectors.toList())).orElse(null);
     }
 
     public Hearing asDomain() {
@@ -82,11 +83,10 @@ public class CCSExtendedHearing {
     }
 
     private List<CaseMarker> getCaseMarkersIfExist() {
-        if(caseMarkers != null) {
-            return caseMarkers.stream()
-                    .map(CCSCaseMarker::asDomain)
-                    .collect(Collectors.toList());
-        }
-        return null;
+        return Optional.ofNullable(caseMarkers)
+                .map(caseMarkers -> caseMarkers.stream()
+                        .map(CCSCaseMarker::asDomain)
+                        .collect(Collectors.toList())).orElse(null);
+
     }
 }
