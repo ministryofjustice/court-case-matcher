@@ -60,10 +60,13 @@ public class CCSExtendedHearingTest {
                 .act("offence act")
                 .sequenceNumber(1)
                 .offenceCode("ABC001")
+                .plea(CCSPlea.builder().value("value 1").date(LocalDate.now()).build())
+                .verdict(CCSVerdict.builder().typeDescription("description 1").date(LocalDate.now()).build())
                 .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
                         .isConvictedResult(true)
                         .label("Adjournment")
                         .judicialResultTypeId("judicialResultTypeId")
+                        .resultText("resultText")
                         .build()))
                 .build()));
 

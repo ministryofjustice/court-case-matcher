@@ -6,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,8 @@ public class CCSExtendedHearing {
 
     private String hearingType;
 
+    private List<CCSCaseMarker> caseMarkers;
+
     public static CCSExtendedHearing of(Hearing hearing) {
         return CCSExtendedHearing.builder()
                 .caseId(hearing.getCaseId())
@@ -40,10 +44,20 @@ public class CCSExtendedHearing {
                 .hearingDays(hearing.getHearingDays().stream()
                         .map(CCSHearingDay::of)
                         .collect(Collectors.toList()))
+                .caseMarkers(getCCSCaseMarkersIfExist(hearing))
                 .defendants(hearing.getDefendants().stream()
                         .map(CCSDefendant::of)
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    private static List<CCSCaseMarker> getCCSCaseMarkersIfExist(Hearing hearing) {
+        if(hearing.getCaseMarkers() != null) {
+            return hearing.getCaseMarkers().stream()
+                    .map(CCSCaseMarker::of)
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 
     public Hearing asDomain() {
@@ -63,6 +77,16 @@ public class CCSExtendedHearing {
                         .map(CCSDefendant::asDomain)
                         .collect(Collectors.toList())
                 )
+                .caseMarkers(getCaseMarkersIfExist())
                 .build();
+    }
+
+    private List<CaseMarker> getCaseMarkersIfExist() {
+        if(caseMarkers != null) {
+            return caseMarkers.stream()
+                    .map(CCSCaseMarker::asDomain)
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 }

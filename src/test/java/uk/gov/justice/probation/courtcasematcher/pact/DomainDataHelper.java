@@ -8,6 +8,8 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 
 import java.time.LocalDate;
@@ -45,10 +47,19 @@ public class DomainDataHelper {
                                 .act("offence act")
                                 .sequenceNumber(1)
                                 .offenceCode("ABC001")
+                                .plea(Plea.builder()
+                                        .value("value 1")
+                                        .date(LocalDate.now())
+                                        .build())
+                                .verdict(Verdict.builder()
+                                        .typeDescription("description 1")
+                                        .date(LocalDate.now())
+                                        .build())
                                 .judicialResults(Collections.singletonList(JudicialResult.builder()
                                         .isConvictedResult(true)
                                         .label("Adjournment")
                                         .judicialResultTypeId("judicialResultTypeId")
+                                        .resultText("resultText")
                                         .build()))
                                 .build()))
                         .crn("crn")

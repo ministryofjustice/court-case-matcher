@@ -36,9 +36,9 @@ public class CCSOffence {
 
     private List<CCSJudicialResult> judicialResults;
 
-    private Plea plea;
+    private CCSPlea plea;
 
-    private Verdict verdict;
+    private CCSVerdict verdict;
 
     public static CCSOffence of(Offence offence) {
         return CCSOffence.builder()
@@ -48,8 +48,8 @@ public class CCSOffence {
                 .sequenceNumber(offence.getSequenceNumber())
                 .listNo(offence.getListNo())
                 .offenceCode(offence.getOffenceCode())
-                .plea(offence.getPlea())
-                .verdict(offence.getVerdict())
+                .plea(CCSPlea.of(offence.getPlea()))
+                .verdict(CCSVerdict.of(offence.getVerdict()))
                 .judicialResults(Optional.of(offence)
                         .map(Offence::getJudicialResults)
                         .orElse(Collections.emptyList())
@@ -66,8 +66,8 @@ public class CCSOffence {
                 .sequenceNumber(getSequenceNumber())
                 .listNo(listNo)
                 .offenceCode(getOffenceCode())
-                .plea(getPlea())
-                .verdict(getVerdict())
+                .plea(plea.asDomain())
+                .verdict(verdict.asDomain())
                 .judicialResults(Optional.ofNullable(getJudicialResults())
                         .map(judicialResults -> judicialResults.stream()
                                 .map(CCSJudicialResult::asDomain)
