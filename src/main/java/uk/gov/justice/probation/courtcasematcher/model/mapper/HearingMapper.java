@@ -104,7 +104,9 @@ public class HearingMapper {
                 .withHearingEventType(incomingCase.getHearingEventType())
 
                 // Fields to be updated from incoming
-                .withDefendants(mergeDefendants(incomingCase.getDefendants(), existingHearing.getDefendants(), incomingCase.getSource()));
+                .withDefendants(mergeDefendants(incomingCase.getDefendants(), existingHearing.getDefendants(), incomingCase.getSource()))
+                .withCaseMarkers(existingHearing.getCaseMarkers());
+
     }
 
     private static List<Defendant> mergeDefendants(List<Defendant> incoming, List<Defendant> existingDefendants, DataSource source) {

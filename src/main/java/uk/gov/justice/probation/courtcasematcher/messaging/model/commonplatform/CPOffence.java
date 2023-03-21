@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSJudicialResult;
 
 import jakarta.validation.constraints.NotBlank;
@@ -31,6 +33,9 @@ public class CPOffence {
 
     private List<CPJudicialResult> judicialResults;
 
+    private Plea plea;
+    private Verdict verdict;
+
     public Offence asDomain() {
         return Offence.builder()
                 .id(id)
@@ -39,6 +44,8 @@ public class CPOffence {
                 .offenceSummary(wording)
                 .listNo(listingNumber)
                 .offenceCode(offenceCode)
+                .plea(plea)
+                .verdict(verdict)
                 .judicialResults(Optional.ofNullable(getJudicialResults())
                         .map(judicialResults -> judicialResults.stream()
                                 .map(CPJudicialResult::asDomain)

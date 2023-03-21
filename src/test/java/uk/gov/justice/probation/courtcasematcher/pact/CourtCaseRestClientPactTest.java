@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 
@@ -41,7 +42,7 @@ class CourtCaseRestClientPactTest {
     @Autowired
     private CourtCaseRestClient restClient;
 
-    @Pact(provider="court-case-service", consumer="court-case-matcher")
+    @Pact(provider = "court-case-service", consumer = "court-case-matcher")
     public V4Pact getHearingByIdPact(PactDslWithProvider builder) throws IOException {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8.name());
@@ -59,7 +60,7 @@ class CourtCaseRestClientPactTest {
     }
 
 
-    @Pact(provider="court-case-service", consumer="court-case-matcher")
+    @Pact(provider = "court-case-service", consumer = "court-case-matcher")
     public V4Pact getHearingByCaseNoPact(PactDslWithProvider builder) throws IOException {
 
         String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8.name());
@@ -77,7 +78,7 @@ class CourtCaseRestClientPactTest {
                 .toPact(V4Pact.class);
     }
 
-    @Pact(provider="court-case-service", consumer="court-case-matcher")
+    @Pact(provider = "court-case-service", consumer = "court-case-matcher")
     public V4Pact putMinimalHearingByIdPact(PactDslWithProvider builder) {
 
         final var body = newJsonBody((rootObject) -> {
@@ -88,22 +89,31 @@ class CourtCaseRestClientPactTest {
                 defendant.object("address", (addressObj -> {
                     addressObj.stringType("line1");
                 }));
-                defendant.date("dateOfBirth","yyyy-MM-dd");
+                defendant.date("dateOfBirth", "yyyy-MM-dd");
                 defendant.object("name", (name -> {
                     name.stringType("title");
                     name.stringType("forename1");
                     name.stringType("surname");
                 }));
-                defendant.array("offences",  (offences)-> offences.object((offence) -> {
+                defendant.array("offences", (offences) -> offences.object((offence) -> {
                     offence.stringType("offenceTitle");
                     offence.stringType("offenceSummary");
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
                     offence.stringType("offenceCode");
-                    offence.array("judicialResults",  (judicialResults)-> judicialResults.object((judicialResult) -> {
+                    offence.object("plea", (pleaObject -> {
+                        pleaObject.stringType("value");
+                        pleaObject.date("date");
+                    }));
+                    offence.object("verdict", (verdictObject -> {
+                        verdictObject.stringType("typeDescription");
+                        verdictObject.date("date");
+                    }));
+                    offence.array("judicialResults", (judicialResults) -> judicialResults.object((judicialResult) -> {
                         judicialResult.booleanType("isConvictedResult");
                         judicialResult.stringType("label");
                         judicialResult.stringType("judicialResultTypeId");
+                        judicialResult.stringType("resultText");
                     }));
                 }));
                 defendant.stringType("sex");
@@ -131,7 +141,7 @@ class CourtCaseRestClientPactTest {
                 .toPact(V4Pact.class);
     }
 
-    @Pact(provider="court-case-service", consumer="court-case-matcher")
+    @Pact(provider = "court-case-service", consumer = "court-case-matcher")
     public V4Pact putHearingWithAllFieldsByIdPact(PactDslWithProvider builder) {
 
         final var body = newJsonBody((rootObject) -> {
@@ -152,7 +162,7 @@ class CourtCaseRestClientPactTest {
                     addressObj.stringType("line5");
                     addressObj.stringType("postcode");
                 }));
-                defendant.date("dateOfBirth","yyyy-MM-dd");
+                defendant.date("dateOfBirth", "yyyy-MM-dd");
                 defendant.object("name", (name -> {
                     name.stringType("title");
                     name.stringType("forename1");
@@ -160,16 +170,25 @@ class CourtCaseRestClientPactTest {
                     name.stringType("forename3");
                     name.stringType("surname");
                 }));
-                defendant.array("offences",  (offences)-> offences.object((offence) -> {
+                defendant.array("offences", (offences) -> offences.object((offence) -> {
                     offence.stringType("offenceTitle");
                     offence.stringType("offenceSummary");
                     offence.stringType("act");
                     offence.integerType("sequenceNumber");
                     offence.stringType("offenceCode");
-                    offence.array("judicialResults",  (judicialResults)-> judicialResults.object((judicialResult) -> {
+                    offence.object("plea", (pleaObject -> {
+                        pleaObject.stringType("value");
+                        pleaObject.date("date");
+                    }));
+                    offence.object("verdict", (verdictObject -> {
+                        verdictObject.stringType("typeDescription");
+                        verdictObject.date("date");
+                    }));
+                    offence.array("judicialResults", (judicialResults) -> judicialResults.object((judicialResult) -> {
                         judicialResult.booleanType("isConvictedResult");
                         judicialResult.stringType("label");
                         judicialResult.stringType("judicialResultTypeId");
+                        judicialResult.stringType("resultText");
                     }));
                 }));
                 defendant.stringType("probationStatus", "CURRENT");
@@ -213,7 +232,7 @@ class CourtCaseRestClientPactTest {
         final var actual = restClient.getHearing("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f").block();
         assertThat(actual.getHearingId()).isEqualTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f");
         assertThat(actual.getDefendants().get(0).getConfirmedOffender()).isEqualTo(true);
-        assertThat(actual.getDefendants()).extracting(Defendant::getPersonId).contains("96624bb7-c64d-46d9-a427-813ec168f95a","25429322-5e82-42dc-8005-858b5d082f80");
+        assertThat(actual.getDefendants()).extracting(Defendant::getPersonId).contains("96624bb7-c64d-46d9-a427-813ec168f95a", "25429322-5e82-42dc-8005-858b5d082f80");
     }
 
 

@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +36,10 @@ public class CCSOffence {
 
     private List<CCSJudicialResult> judicialResults;
 
+    private CCSPlea plea;
+
+    private CCSVerdict verdict;
+
     public static CCSOffence of(Offence offence) {
         return CCSOffence.builder()
                 .offenceTitle(offence.getOffenceTitle())
@@ -42,6 +48,8 @@ public class CCSOffence {
                 .sequenceNumber(offence.getSequenceNumber())
                 .listNo(offence.getListNo())
                 .offenceCode(offence.getOffenceCode())
+                .plea(CCSPlea.of(offence.getPlea()))
+                .verdict(CCSVerdict.of(offence.getVerdict()))
                 .judicialResults(Optional.of(offence)
                         .map(Offence::getJudicialResults)
                         .orElse(Collections.emptyList())
@@ -58,6 +66,8 @@ public class CCSOffence {
                 .sequenceNumber(getSequenceNumber())
                 .listNo(listNo)
                 .offenceCode(getOffenceCode())
+                .plea(Optional.ofNullable(plea).map(CCSPlea::asDomain).orElse(null))
+                .verdict(Optional.ofNullable(verdict).map(CCSVerdict::asDomain).orElse(null))
                 .judicialResults(Optional.ofNullable(getJudicialResults())
                         .map(judicialResults -> judicialResults.stream()
                                 .map(CCSJudicialResult::asDomain)

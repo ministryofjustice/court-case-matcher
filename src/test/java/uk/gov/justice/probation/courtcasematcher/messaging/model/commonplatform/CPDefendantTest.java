@@ -1,6 +1,8 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
 
@@ -32,11 +34,15 @@ class CPDefendantTest {
                         .build())
                 .offences(List.of(CPOffence.builder().id("1")
                                 .offenceCode("ABC001")
+                                .plea(Plea.builder().build())
+                                .verdict(Verdict.builder().build())
                                 .judicialResults(List.of(CPJudicialResult.builder()
                                         .build()))
                                 .build(),
                         CPOffence.builder().id("2")
                                 .offenceCode("ABC002")
+                                .plea(Plea.builder().build())
+                                .verdict(Verdict.builder().build())
                                 .judicialResults(List.of(CPJudicialResult.builder()
                                         .build()))
                                 .build()))
@@ -56,8 +62,12 @@ class CPDefendantTest {
         assertThat(actual.getAddress().getLine1()).isEqualTo("address1");
         assertThat(actual.getOffences().get(0).getId()).isEqualTo("1");
         assertThat(actual.getOffences().get(0).getOffenceCode()).isEqualTo("ABC001");
+        assertThat(actual.getOffences().get(0).getPlea()).isEqualTo(Plea.builder().build());
+        assertThat(actual.getOffences().get(0).getVerdict()).isEqualTo(Verdict.builder().build());
         assertThat(actual.getOffences().get(1).getId()).isEqualTo("2");
         assertThat(actual.getOffences().get(1).getOffenceCode()).isEqualTo("ABC002");
+        assertThat(actual.getOffences().get(1).getPlea()).isEqualTo(Plea.builder().build());
+        assertThat(actual.getOffences().get(1).getVerdict()).isEqualTo(Verdict.builder().build());
         assertThat(actual.getPhoneNumber()).isEqualTo(PhoneNumber.builder()
                 .work(TEST_CP_CONTACT.getWork())
                 .mobile(TEST_CP_CONTACT.getMobile())

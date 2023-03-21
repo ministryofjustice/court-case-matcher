@@ -25,4 +25,7 @@ public class CPProsecutionCase {
     @NotNull
     @Valid
     private final ProsecutionCaseIdentifier prosecutionCaseIdentifier;
+
+    @Valid
+    private final List<CPCaseMarker> caseMarkers;
 }

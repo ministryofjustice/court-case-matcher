@@ -7,14 +7,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.With;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @With
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class JudicialResult {
-    private boolean isConvictedResult;
-    private String label;
-    private String judicialResultTypeId;
-    private String resultText;
+public class Plea {
+    private String value;
+    private LocalDate date;
 }
