@@ -30,11 +30,11 @@ public class PersonMatchScoreRestClient {
     private String postMatchUrl;
 
     @Setter
-    @Value("${offender-search.max-retries:3}")
+    @Value("${person-match-score.max-retries:3}")
     private int maxRetries;
 
     @Setter
-    @Value("${offender-search.min-backoff-seconds:5}")
+    @Value("${person-match-score.min-backoff-seconds:5}")
     private int minBackOffSeconds;
 
     private final WebClient webClient;

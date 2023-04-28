@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,22 @@ class PersonMatchScoreRestClientIntTest {
       assertThat(response).isEqualTo(
         PersonMatchScoreResponse.builder()
           .matchProbability(PersonMatchScoreParameter.of(0.9172587927, null)).build());
+  }
+
+  @Test
+  public void givenPersonMatchScoreRequest_whenMatchReturnsHttpError_thenReturnMonoError() {
+
+    PersonMatchScoreRequest personMatchScoreRequest = PersonMatchScoreRequest.builder()
+      .firstName(PersonMatchScoreParameter.of("Throw", "Error"))
+      .surname(PersonMatchScoreParameter.of("Robinson", "Robibnson"))
+      .pnc(PersonMatchScoreParameter.of("2001/0141640Y", "None"))
+      .dateOfBirth(PersonMatchScoreParameter.of("2009-07-06", "2009-07-06"))
+      .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
+      .uniqueId(PersonMatchScoreParameter.of("1111", "4444"))
+      .build();
+    Assertions.assertThrows(RuntimeException.class, () -> {
+      personMatchScoreRestClient.match(personMatchScoreRequest).block();
+    });
   }
 
 }

@@ -65,6 +65,8 @@ offender-search:
 
 person-match-score:
   post-match-url: /match
+  max-retries: 0
+  min-backoff-seconds: 5
 
 feature:
   flags:

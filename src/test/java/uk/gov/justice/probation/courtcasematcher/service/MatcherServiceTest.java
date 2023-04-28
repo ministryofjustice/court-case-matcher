@@ -296,6 +296,33 @@ class MatcherServiceTest {
     }
 
     @Test
+    void givenMatchesToSingleOffender_whenPersonMatchScoreThrowsError_thenIgnoreAndPostMatches() {
+        when(matchRequestFactory.buildFrom(FIRST_DEFENDANT)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(SECOND_DEFENDANT)).thenReturn(matchRequest2);
+        when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(singleExactMatch));
+        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(singleExactMatch));
+
+        when(personMatchScoreRestClient.match(any()))
+          .thenReturn(Mono.error(new RuntimeException("Call to person match score API failed")));
+
+        var updatedCase = matcherService.matchDefendants(COURT_CASE).block();
+
+        assertThat(updatedCase).isNotNull();
+        final var defendant = updatedCase.getDefendants().get(0);
+        assertThat(defendant.getProbationStatus()).isEqualTo(PROBATION_STATUS);
+        assertThat(defendant.getPreviouslyKnownTerminationDate()).isEqualTo(PREVIOUSLY_KNOWN_TERMINATION_DATE);
+        assertThat(defendant.getBreach()).isEqualTo(BREACH);
+        assertThat(defendant.getPreSentenceActivity()).isEqualTo(PRE_SENTENCE_ACTIVITY);
+        assertThat(defendant.getAwaitingPsr()).isEqualTo(AWAITING_PSR);
+
+        var groupedOffenderMatches = defendant.getGroupedOffenderMatches();
+        assertThat(groupedOffenderMatches.getMatches()).hasSize(1);
+        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchType()).isSameAs(MatchType.NAME_DOB_PNC);
+        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchIdentifiers().getPnc()).isSameAs(PNC);
+        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchProbability()).isNull();
+    }
+
+    @Test
     void givenZeroMatches_whenSearchResponse_thenReturn() {
         when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(0))).thenReturn(matchRequest1);
         when(matchRequestFactory.buildFrom(COURT_CASE.getDefendants().get(1))).thenReturn(matchRequest2);

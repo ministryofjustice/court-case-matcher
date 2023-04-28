@@ -23,7 +23,6 @@ public class PersonMatchScoreRequest {
   @JsonProperty("first_name")
   private PersonMatchScoreParameter<String> firstName;
 
-  @JsonProperty("surname")
   private PersonMatchScoreParameter<String> surname;
 
   @JsonProperty("dob")

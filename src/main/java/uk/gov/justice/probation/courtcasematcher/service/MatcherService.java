@@ -62,12 +62,15 @@ public class MatcherService {
                     log.error(throwable.getMessage());
                     telemetryService.trackOffenderMatchFailureEvent(defendant, hearing);
                 })
-                .doOnSuccess(matchResponse -> enrichWithMatchScore(hearing, defendant, matchResponse))
+                .map(matchResponse -> {
+                  enrichWithMatchScore(hearing, defendant, matchResponse);
+                  return matchResponse;
+                })
                 .map(matchResponse -> HearingMapper.updateDefendantWithMatches(defendant, matchResponse))
                 ;
     }
 
-  private Mono<MatchResponse> enrichWithMatchScore(Hearing hearing, Defendant defendant, MatchResponse matchResponse) {
+  private void enrichWithMatchScore(Hearing hearing, Defendant defendant, MatchResponse matchResponse) {
       var matchRequest = matchRequestFactory.buildFrom(defendant);
       var sourceDataset = PersonMatchScoreParameter.of(hearing.getSource().name(), "DELIUS");
       if (matchResponse.getMatchCount() > 0) {
@@ -76,13 +79,15 @@ public class MatcherService {
           PersonMatchScoreRequest request = buildPersonMatchScoreRequest(defendant, matchRequest, sourceDataset, match.getOffender());
           personMatchScoreRestClient.match(request)
             .doOnSuccess(personMatchScoreResponse -> match.setMatchProbability(personMatchScoreResponse.getMatchProbability().getValue0()))
-            .doOnError(throwable ->
-              log.warn("Error occurred while getting person match score for defendant id {}", defendant.getDefendantId(), throwable)
+            .onErrorComplete(throwable ->
+              {
+                log.warn("Error occurred while getting person match score for defendant id {}", defendant.getDefendantId(), throwable);
+                return true;
+              }
             )
             .block();
         });
       }
-      return Mono.just(matchResponse);
   }
 
   private static PersonMatchScoreRequest buildPersonMatchScoreRequest(Defendant defendant, MatchRequest matchRequest, PersonMatchScoreParameter sourceDataSet, OSOffender osOffender) {
