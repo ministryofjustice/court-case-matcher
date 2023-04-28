@@ -29,6 +29,9 @@ nomis-oauth:
   disable-authentication: true
   ping-path: /ping
 
+person-match-score:
+  base-url: http://localhost:8090
+
 ou-code-length: 5
 
 # Localstack settings

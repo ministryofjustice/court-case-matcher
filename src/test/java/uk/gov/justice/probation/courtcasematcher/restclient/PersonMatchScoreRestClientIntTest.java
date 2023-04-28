@@ -1,7 +1,49 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreDoubleParameter;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreStringParameter;
+import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
+import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@Import(TestMessagingConfig.class)
 class PersonMatchScoreRestClientIntTest {
+  @Autowired
+  private PersonMatchScoreRestClient personMatchScoreRestClient;
+
+  private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
+
+  @RegisterExtension
+  static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
+
+  @Test
+  public void givenPersonMatchScoreRequest_whenMatch_thenReturnMatchScoreResponse() {
+
+    PersonMatchScoreRequest personMatchScoreRequest = PersonMatchScoreRequest.builder()
+      .firstName(PersonMatchScoreStringParameter.of("Lily", "Lily"))
+      .surname(PersonMatchScoreStringParameter.of("Robinson", "Robibnson"))
+      .pnc(PersonMatchScoreStringParameter.of("2001/0141640Y", "None"))
+      .dateOfBirth(PersonMatchScoreStringParameter.of("2009-07-06", "2009-07-06"))
+      .sourceDataset(PersonMatchScoreStringParameter.of("COMMON_PLATFORM", "DELIUS"))
+      .uniqueId(PersonMatchScoreStringParameter.of("1111", "4444"))
+      .build();
+      var response = personMatchScoreRestClient.match(personMatchScoreRequest).block();
+      assertThat(response).isEqualTo(
+        PersonMatchScoreResponse.builder()
+          .matchProbability(PersonMatchScoreDoubleParameter.builder()
+            .platformValue(0.9172587927).build()).build());
+  }
 
 }

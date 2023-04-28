@@ -12,14 +12,12 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
