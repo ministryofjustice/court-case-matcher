@@ -24,4 +24,5 @@ public class OffenderMatch {
     private final Boolean confirmed;
     @NotNull
     private final Boolean rejected;
+    private final Double matchProbability;
 }

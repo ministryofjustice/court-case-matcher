@@ -11,8 +11,15 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.PersonMatchScoreRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreStringParameter;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +29,8 @@ import java.util.stream.Collectors;
 public class MatcherService {
 
     private final OffenderSearchRestClient offenderSearchRestClient;
+
+    private final PersonMatchScoreRestClient personMatchScoreRestClient;
 
     private final MatchRequest.Factory matchRequestFactory;
 
@@ -53,8 +62,38 @@ public class MatcherService {
                     log.error(throwable.getMessage());
                     telemetryService.trackOffenderMatchFailureEvent(defendant, hearing);
                 })
+                .doOnSuccess(matchResponse -> enrichWithMatchScore(hearing, defendant, matchResponse))
                 .map(matchResponse -> HearingMapper.updateDefendantWithMatches(defendant, matchResponse))
                 ;
     }
 
+  private Mono<MatchResponse> enrichWithMatchScore(Hearing hearing, Defendant defendant, MatchResponse matchResponse) {
+      var matchRequest = matchRequestFactory.buildFrom(defendant);
+      var sourceDataset = PersonMatchScoreStringParameter.of(hearing.getSource().name(), "DELIUS");
+      if (matchResponse.getMatchCount() > 0) {
+
+        matchResponse.getMatches().stream().forEach(match -> {
+          PersonMatchScoreRequest request = buildPersonMatchScoreRequest(defendant, matchRequest, sourceDataset, match.getOffender());
+          personMatchScoreRestClient.match(request)
+            .doOnSuccess(personMatchScoreResponse -> match.setMatchProbability(personMatchScoreResponse.getMatchProbability().getPlatformValue()))
+            .doOnError(throwable ->
+              log.warn("Error occurred while getting person match score for defendant id {}", defendant.getDefendantId(), throwable)
+            )
+            .block();
+        });
+      }
+      return Mono.just(matchResponse);
+  }
+
+  private static PersonMatchScoreRequest buildPersonMatchScoreRequest(Defendant defendant, MatchRequest matchRequest, PersonMatchScoreStringParameter sourceDataSet, OSOffender osOffender) {
+
+    return PersonMatchScoreRequest.builder()
+      .firstName(PersonMatchScoreStringParameter.of(matchRequest.getFirstName(), osOffender.getFirstName()))
+      .surname(PersonMatchScoreStringParameter.of(matchRequest.getSurname(), osOffender.getSurname()))
+      .dateOfBirth(PersonMatchScoreStringParameter.of(matchRequest.getDateOfBirth(), defendant.getDateOfBirth().format(DateTimeFormatter.ISO_DATE)))
+      .uniqueId(PersonMatchScoreStringParameter.of(defendant.getDefendantId(), defendant.getDefendantId()))
+      .pnc(PersonMatchScoreStringParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
+      .sourceDataset(sourceDataSet)
+      .build();
+  }
 }

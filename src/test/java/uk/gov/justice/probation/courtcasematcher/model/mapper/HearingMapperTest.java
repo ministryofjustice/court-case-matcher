@@ -130,6 +130,7 @@ class HearingMapperTest {
                             .offenderAliases(offenderAliases)
                             .probationStatus(ProbationStatusDetail.builder().status("CURRENT").preSentenceActivity(true).awaitingPsr(true).build())
                             .build())
+                    .matchProbability(0.91)
                     .build();
 
             var defendant = HearingMapper.newFromLibraHearing(aLibraHearing)
@@ -154,7 +155,7 @@ class HearingMapperTest {
             assertThat(newDefendant.getPreSentenceActivity()).isTrue();
             assertThat(newDefendant.getAwaitingPsr()).isTrue();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, OFFENDER_SEARCH_CRO, OFFENDER_SEARCH_PNC, offenderAliases);
+            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, OFFENDER_SEARCH_CRO, OFFENDER_SEARCH_PNC, offenderAliases, 0.91);
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
         }
 
@@ -271,11 +272,15 @@ class HearingMapperTest {
         }
 
         private OffenderMatch buildOffenderMatch(MatchType matchType, String crn, String cro, String pnc, List<OffenderAlias> offenderAliases) {
+            return buildOffenderMatch(matchType, crn, cro, pnc, offenderAliases, null);
+        }
+        private OffenderMatch buildOffenderMatch(MatchType matchType, String crn, String cro, String pnc, List<OffenderAlias> offenderAliases, Double matchProbability) {
             return OffenderMatch.builder()
                     .matchType(matchType)
                     .confirmed(false)
                     .rejected(false)
                     .matchIdentifiers(MatchIdentifiers.builder().pnc(pnc).cro(cro).crn(crn).aliases(offenderAliases).build())
+                    .matchProbability(matchProbability)
                     .build();
         }
     }

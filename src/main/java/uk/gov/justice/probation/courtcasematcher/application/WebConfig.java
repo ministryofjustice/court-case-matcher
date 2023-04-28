@@ -25,6 +25,9 @@ public class WebConfig {
     @Value("${offender-search.base-url}")
     private String offenderSearchBaseUrl;
 
+    @Value("${person-match-score.base-url}")
+    private String personMatchScoreBaseUrl;
+
     @Value("${nomis-oauth.base-url}")
     private String nomisOauthBaseUrl;
 
@@ -56,6 +59,14 @@ public class WebConfig {
         return defaultWebClientBuilder()
                 .baseUrl(this.offenderSearchBaseUrl)
                 .filter(oauth2Client)
+                .build();
+    }
+
+    @Bean
+    public WebClient personMatchScoreWebClient(OAuth2AuthorizedClientManager authorizedClientManager)
+    {
+        return defaultWebClientBuilder()
+                .baseUrl(this.personMatchScoreBaseUrl)
                 .build();
     }
 
