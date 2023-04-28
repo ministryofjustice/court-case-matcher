@@ -15,5 +15,5 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PersonMatchScoreResponse {
   @JsonProperty("match_probability")
-  private PersonMatchScoreDoubleParameter matchProbability;
+  private PersonMatchScoreParameter<Double> matchProbability;
 }

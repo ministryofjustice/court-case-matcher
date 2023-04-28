@@ -8,7 +8,11 @@ import ch.qos.logback.core.Appender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.AdditionalMatchers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -27,10 +31,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreDoubleParameter;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreStringParameter;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -154,20 +155,20 @@ class MatcherServiceTest {
       .build();
 
     private final PersonMatchScoreRequest personMatchScoreReq1 = PersonMatchScoreRequest.builder()
-      .firstName(PersonMatchScoreStringParameter.of("Arthur", "Aur"))
-      .surname(PersonMatchScoreStringParameter.of("MORGAN", "Mork"))
-      .pnc(PersonMatchScoreStringParameter.of(PNC, PNC))
-      .dateOfBirth(PersonMatchScoreStringParameter.of("2000-06-17", "2000-06-17"))
-      .sourceDataset(PersonMatchScoreStringParameter.of("COMMON_PLATFORM", "DELIUS"))
-      .uniqueId(PersonMatchScoreStringParameter.of("id1", "id1"))
+      .firstName(PersonMatchScoreParameter.of("Arthur", "Aur"))
+      .surname(PersonMatchScoreParameter.of("MORGAN", "Mork"))
+      .pnc(PersonMatchScoreParameter.of(PNC, PNC))
+      .dateOfBirth(PersonMatchScoreParameter.of("2000-06-17", "2000-06-17"))
+      .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
+      .uniqueId(PersonMatchScoreParameter.of("id1", "id1"))
       .build();
     private final PersonMatchScoreRequest personMatchScoreReq2 = PersonMatchScoreRequest.builder()
-      .firstName(PersonMatchScoreStringParameter.of("John", "Jon"))
-      .surname(PersonMatchScoreStringParameter.of("Marston", "Barston"))
-      .dateOfBirth(PersonMatchScoreStringParameter.of("2001-06-17", "2001-06-17"))
-      .pnc(PersonMatchScoreStringParameter.of(PNC_2, PNC_2))
-      .sourceDataset(PersonMatchScoreStringParameter.of("COMMON_PLATFORM", "DELIUS"))
-      .uniqueId(PersonMatchScoreStringParameter.of("id2", "id2"))
+      .firstName(PersonMatchScoreParameter.of("John", "Jon"))
+      .surname(PersonMatchScoreParameter.of("Marston", "Barston"))
+      .dateOfBirth(PersonMatchScoreParameter.of("2001-06-17", "2001-06-17"))
+      .pnc(PersonMatchScoreParameter.of(PNC_2, PNC_2))
+      .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
+      .uniqueId(PersonMatchScoreParameter.of("id2", "id2"))
       .build();
 
     @Mock
@@ -245,8 +246,8 @@ class MatcherServiceTest {
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
 
         when(personMatchScoreRestClient.match(any()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreDoubleParameter.builder().platformValue(0.91).build()).build()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreDoubleParameter.builder().platformValue(0.81).build()).build()));
+          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()))
+          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.81, null)).build()));
 
         var updatedCase = matcherService.matchDefendants(COURT_CASE).block();
 
@@ -275,7 +276,7 @@ class MatcherServiceTest {
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(singleExactMatch));
 
         when(personMatchScoreRestClient.match(any()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreDoubleParameter.builder().platformValue(0.91).build()).build()));
+          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
 
         var updatedCase = matcherService.matchDefendants(COURT_CASE).block();
 

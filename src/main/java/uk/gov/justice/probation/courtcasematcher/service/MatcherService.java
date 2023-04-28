@@ -15,7 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.PersonMatchScoreRest
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreStringParameter;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
 
 import java.time.format.DateTimeFormatter;
@@ -69,13 +69,13 @@ public class MatcherService {
 
   private Mono<MatchResponse> enrichWithMatchScore(Hearing hearing, Defendant defendant, MatchResponse matchResponse) {
       var matchRequest = matchRequestFactory.buildFrom(defendant);
-      var sourceDataset = PersonMatchScoreStringParameter.of(hearing.getSource().name(), "DELIUS");
+      var sourceDataset = PersonMatchScoreParameter.of(hearing.getSource().name(), "DELIUS");
       if (matchResponse.getMatchCount() > 0) {
 
         matchResponse.getMatches().stream().forEach(match -> {
           PersonMatchScoreRequest request = buildPersonMatchScoreRequest(defendant, matchRequest, sourceDataset, match.getOffender());
           personMatchScoreRestClient.match(request)
-            .doOnSuccess(personMatchScoreResponse -> match.setMatchProbability(personMatchScoreResponse.getMatchProbability().getPlatformValue()))
+            .doOnSuccess(personMatchScoreResponse -> match.setMatchProbability(personMatchScoreResponse.getMatchProbability().getValue0()))
             .doOnError(throwable ->
               log.warn("Error occurred while getting person match score for defendant id {}", defendant.getDefendantId(), throwable)
             )
@@ -85,14 +85,14 @@ public class MatcherService {
       return Mono.just(matchResponse);
   }
 
-  private static PersonMatchScoreRequest buildPersonMatchScoreRequest(Defendant defendant, MatchRequest matchRequest, PersonMatchScoreStringParameter sourceDataSet, OSOffender osOffender) {
+  private static PersonMatchScoreRequest buildPersonMatchScoreRequest(Defendant defendant, MatchRequest matchRequest, PersonMatchScoreParameter sourceDataSet, OSOffender osOffender) {
 
     return PersonMatchScoreRequest.builder()
-      .firstName(PersonMatchScoreStringParameter.of(matchRequest.getFirstName(), osOffender.getFirstName()))
-      .surname(PersonMatchScoreStringParameter.of(matchRequest.getSurname(), osOffender.getSurname()))
-      .dateOfBirth(PersonMatchScoreStringParameter.of(matchRequest.getDateOfBirth(), defendant.getDateOfBirth().format(DateTimeFormatter.ISO_DATE)))
-      .uniqueId(PersonMatchScoreStringParameter.of(defendant.getDefendantId(), defendant.getDefendantId()))
-      .pnc(PersonMatchScoreStringParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
+      .firstName(PersonMatchScoreParameter.of(matchRequest.getFirstName(), osOffender.getFirstName()))
+      .surname(PersonMatchScoreParameter.of(matchRequest.getSurname(), osOffender.getSurname()))
+      .dateOfBirth(PersonMatchScoreParameter.of(matchRequest.getDateOfBirth(), defendant.getDateOfBirth().format(DateTimeFormatter.ISO_DATE)))
+      .uniqueId(PersonMatchScoreParameter.of(defendant.getDefendantId(), defendant.getDefendantId()))
+      .pnc(PersonMatchScoreParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
       .sourceDataset(sourceDataSet)
       .build();
   }

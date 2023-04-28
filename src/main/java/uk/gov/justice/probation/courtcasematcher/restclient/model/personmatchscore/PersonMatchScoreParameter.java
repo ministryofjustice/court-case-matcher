@@ -2,12 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchsc
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
@@ -15,7 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
-public class PersonMatchScoreDoubleParameter {
+public class PersonMatchScoreParameter<T> {
   @JsonProperty("0")
-  private Double platformValue;
+  private T value0;
+  @JsonProperty("1")
+  private T value1;
+
+  public static <E> PersonMatchScoreParameter of(E value0, E value1) {
+    return PersonMatchScoreParameter.builder().value0(value0).value1(value1).build();
+  }
 }

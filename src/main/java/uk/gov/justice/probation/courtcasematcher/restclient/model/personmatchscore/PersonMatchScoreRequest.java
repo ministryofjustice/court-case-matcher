@@ -18,21 +18,21 @@ import lombok.NoArgsConstructor;
 @Data
 public class PersonMatchScoreRequest {
   @JsonProperty("unique_id")
-  private PersonMatchScoreStringParameter uniqueId;
+  private PersonMatchScoreParameter<String> uniqueId;
 
   @JsonProperty("first_name")
-  private PersonMatchScoreStringParameter firstName;
+  private PersonMatchScoreParameter<String> firstName;
 
   @JsonProperty("surname")
-  private PersonMatchScoreStringParameter surname;
+  private PersonMatchScoreParameter<String> surname;
 
   @JsonProperty("dob")
-  private PersonMatchScoreStringParameter dateOfBirth;
+  private PersonMatchScoreParameter<String> dateOfBirth;
 
   @JsonProperty("pnc_number")
-  private PersonMatchScoreStringParameter pnc;
+  private PersonMatchScoreParameter<String> pnc;
 
   @JsonProperty("source_dataset")
-  private PersonMatchScoreStringParameter sourceDataset;
+  private PersonMatchScoreParameter<String> sourceDataset;
 
 }
