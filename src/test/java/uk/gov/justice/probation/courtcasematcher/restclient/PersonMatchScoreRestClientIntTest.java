@@ -14,6 +14,8 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchsco
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
+import javax.management.BadAttributeValueExpException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -56,9 +58,8 @@ class PersonMatchScoreRestClientIntTest {
       .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
       .uniqueId(PersonMatchScoreParameter.of("1111", "4444"))
       .build();
-    Assertions.assertThrows(RuntimeException.class, () -> {
+    Assertions.assertThrows(IllegalStateException.class, () -> {
       personMatchScoreRestClient.match(personMatchScoreRequest).block();
     });
   }
-
 }
