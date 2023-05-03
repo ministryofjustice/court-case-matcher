@@ -31,6 +31,7 @@ nomis-oauth:
 
 person-match-score:
   base-url: http://localhost:8090
+  post-match-url: /person-match
 
 ou-code-length: 5
 

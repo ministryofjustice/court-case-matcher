@@ -4,27 +4,24 @@
     "url": "/person-match",
     "bodyPatterns" : [
       {
-        "equalToJson" : {
+        "equalToJson": {
+          "surname": {
+            "0": "CORD",
+            "1": "Cord"
+          },
           "unique_id": {
-            "0": "1111",
-            "1": "4444"
+            "0": "8e05e32f-8d2c-4782-bcdc-82983099f3fb",
+            "1": "8e05e32f-8d2c-4782-bcdc-82983099f3fb"
           },
           "first_name": {
-            "0": "Lily",
-            "1": "Lily"
-          },
-          "surname": {
-            "0": "Robinson",
-            "1": "Robibnson"
+            "0": "Nora",
+            "1": "Nora"
           },
           "dob": {
-            "0": "2009-07-06",
-            "1": "2009-07-06"
+            "0": "1997-02-28",
+            "1": "1997-02-28"
           },
-          "pnc_number": {
-            "0": "2001/0141640Y",
-            "1": "None"
-          },
+          "pnc_number": {},
           "source_dataset": {
             "0": "COMMON_PLATFORM",
             "1": "DELIUS"
@@ -40,7 +37,7 @@
     },
     "jsonBody": {
       "match_probability": {
-        "0": 0.9172587927
+        "0": 0.99
       }
     }
   }
