@@ -1,14 +1,10 @@
 package uk.gov.justice.probation.courtcasematcher.model.domain;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 
 @AllArgsConstructor
 @Builder
@@ -24,5 +20,6 @@ public class OffenderMatch {
     private final Boolean confirmed;
     @NotNull
     private final Boolean rejected;
-    private final Double matchProbability;
+    @Builder.Default
+    private final Mono<Double> matchProbability = Mono.empty();
 }

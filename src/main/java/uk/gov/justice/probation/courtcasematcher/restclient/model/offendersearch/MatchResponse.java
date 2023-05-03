@@ -1,11 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +11,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class MatchResponse {
+    @With
     private final List<Match> matches;
     private final OffenderSearchMatchType matchedBy;
 

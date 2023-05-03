@@ -8,30 +8,23 @@ import ch.qos.logback.core.Appender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.AdditionalMatchers;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
-import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
+import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.PersonMatchScoreRestClient;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.*;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.*;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreResponse;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -44,13 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @ExtendWith(MockitoExtension.class)
@@ -256,10 +243,10 @@ class MatcherServiceTest {
         assertThat(groupedOffenderMatches.getMatches()).hasSize(2);
         assertThat(groupedOffenderMatches.getMatches().get(0).getMatchType()).isSameAs(MatchType.NAME_DOB_PNC);
         assertThat(groupedOffenderMatches.getMatches().get(0).getMatchIdentifiers().getCrn()).isSameAs(CRN);
-        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchProbability()).isEqualTo(0.91);
+        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchProbability().block()).isEqualTo(0.91);
         assertThat(groupedOffenderMatches.getMatches().get(1).getMatchType()).isSameAs(MatchType.NAME_DOB_PNC);
         assertThat(groupedOffenderMatches.getMatches().get(1).getMatchIdentifiers().getCrn()).isSameAs(CRN);
-        assertThat(groupedOffenderMatches.getMatches().get(1).getMatchProbability()).isEqualTo(0.81);
+        assertThat(groupedOffenderMatches.getMatches().get(1).getMatchProbability().block()).isEqualTo(0.81);
 
         verify(telemetryService).trackOffenderMatchEvent(FIRST_DEFENDANT, COURT_CASE, multipleExactMatches);
         verify(telemetryService).trackOffenderMatchEvent(SECOND_DEFENDANT, COURT_CASE, noMatches);
@@ -292,7 +279,7 @@ class MatcherServiceTest {
         assertThat(groupedOffenderMatches.getMatches()).hasSize(1);
         assertThat(groupedOffenderMatches.getMatches().get(0).getMatchType()).isSameAs(MatchType.NAME_DOB_PNC);
         assertThat(groupedOffenderMatches.getMatches().get(0).getMatchIdentifiers().getPnc()).isSameAs(PNC);
-        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchProbability()).isEqualTo(0.91);
+        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchProbability().block()).isEqualTo(0.91);
     }
 
     @Test
@@ -319,7 +306,7 @@ class MatcherServiceTest {
         assertThat(groupedOffenderMatches.getMatches()).hasSize(1);
         assertThat(groupedOffenderMatches.getMatches().get(0).getMatchType()).isSameAs(MatchType.NAME_DOB_PNC);
         assertThat(groupedOffenderMatches.getMatches().get(0).getMatchIdentifiers().getPnc()).isSameAs(PNC);
-        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchProbability()).isNull();
+        assertThat(groupedOffenderMatches.getMatches().get(0).getMatchProbability().block()).isNull();
     }
 
     @Test
