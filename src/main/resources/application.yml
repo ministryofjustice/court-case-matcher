@@ -67,6 +67,7 @@ feature:
   flags:
     pass-hearing-id-to-court-case-service: false
     match-on-every-no-record-update: true
+    save_person_id_to_court_case_service: true
 
 nomis-oauth:
   ping-path: /auth/ping
