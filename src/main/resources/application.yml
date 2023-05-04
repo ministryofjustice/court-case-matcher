@@ -63,6 +63,11 @@ offender-search:
   ignore-titles: "MISS,MRS,MS,MASTER,MR,MX,DR"
   use-dob-with-pnc: false
 
+person-match-score:
+  post-match-url: /match
+  max-retries: 0
+  min-backoff-seconds: 5
+
 feature:
   flags:
     pass-hearing-id-to-court-case-service: false

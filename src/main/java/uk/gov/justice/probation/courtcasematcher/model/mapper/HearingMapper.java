@@ -206,6 +206,7 @@ public class HearingMapper {
                 .rejected(false)
                 .confirmed(false)
                 .matchType(matchType)
+                .matchProbability(match.getMatchProbability())
                 .matchIdentifiers(MatchIdentifiers.builder()
                         .pnc(match.getOffender().getOtherIds().getPncNumber())
                         .cro(match.getOffender().getOtherIds().getCroNumber())

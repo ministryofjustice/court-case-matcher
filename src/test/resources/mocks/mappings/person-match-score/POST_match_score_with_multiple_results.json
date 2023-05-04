@@ -1,0 +1,47 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/person-match",
+    "bodyPatterns" : [
+      {
+        "equalToJson" : {
+          "unique_id": {
+            "0": "1111",
+            "1": "4444"
+          },
+          "first_name": {
+            "0": "Lily",
+            "1": "Lily"
+          },
+          "surname": {
+            "0": "Robinson",
+            "1": "Robibnson"
+          },
+          "dob": {
+            "0": "2009-07-06",
+            "1": "2009-07-06"
+          },
+          "pnc_number": {
+            "0": "2001/0141640Y",
+            "1": "None"
+          },
+          "source_dataset": {
+            "0": "COMMON_PLATFORM",
+            "1": "DELIUS"
+          }
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "match_probability": {
+        "0": 0.9172587927
+      }
+    }
+  }
+}

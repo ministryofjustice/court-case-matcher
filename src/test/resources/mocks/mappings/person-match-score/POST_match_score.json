@@ -1,0 +1,44 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/person-match",
+    "bodyPatterns" : [
+      {
+        "equalToJson": {
+          "surname": {
+            "0": "CORD",
+            "1": "Cord"
+          },
+          "unique_id": {
+            "0": "8e05e32f-8d2c-4782-bcdc-82983099f3fb",
+            "1": "8e05e32f-8d2c-4782-bcdc-82983099f3fb"
+          },
+          "first_name": {
+            "0": "Nora",
+            "1": "Nora"
+          },
+          "dob": {
+            "0": "1997-02-28",
+            "1": "1997-02-28"
+          },
+          "pnc_number": {},
+          "source_dataset": {
+            "0": "COMMON_PLATFORM",
+            "1": "DELIUS"
+          }
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "match_probability": {
+        "0": 0.99
+      }
+    }
+  }
+}

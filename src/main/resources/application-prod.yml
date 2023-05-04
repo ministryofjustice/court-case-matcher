@@ -8,6 +8,9 @@ court-case-service:
 nomis-oauth:
   base-url: https://sign-in.hmpps.service.justice.gov.uk
 
+person-match-score:
+  base-url: https://hmpps-person-match-score.hmpps.service.justice.gov.uk
+
 feature:
   flags:
     use-offender-search-for-probation-status: true

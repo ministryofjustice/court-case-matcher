@@ -44,7 +44,9 @@ import java.util.concurrent.TimeUnit;
 import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
@@ -284,7 +286,7 @@ public class SqsMessageReceiverIntTest {
             notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "Resulted"));
 
             await()
-                    .atMost(10, TimeUnit.SECONDS)
+                    .atMost(15, TimeUnit.SECONDS)
                     .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
 
             MOCK_SERVER.verify(
@@ -301,6 +303,11 @@ public class SqsMessageReceiverIntTest {
                             .withRequestBody(matchingJsonPath("defendants[1].probationStatus", equalTo("CURRENT")))
                             .withRequestBody(matchingJsonPath("defendants[1].breach", equalTo("true")))
                             .withRequestBody(matchingJsonPath("defendants[1].awaitingPsr", equalTo("true")))
+            );
+
+            MOCK_SERVER.verify(postRequestedFor(urlEqualTo("/person-match"))
+              .withRequestBody(matchingJsonPath("unique_id.0", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
+              .withRequestBody(matchingJsonPath("unique_id.1", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
             );
 
             verify(telemetryService).withOperation(nullable(String.class));

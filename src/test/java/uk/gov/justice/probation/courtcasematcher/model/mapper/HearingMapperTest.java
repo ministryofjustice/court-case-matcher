@@ -4,27 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraOffence;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
-import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
-import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
-import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
-import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
+import uk.gov.justice.probation.courtcasematcher.model.domain.*;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderSearchMatchType;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -130,6 +118,7 @@ class HearingMapperTest {
                             .offenderAliases(offenderAliases)
                             .probationStatus(ProbationStatusDetail.builder().status("CURRENT").preSentenceActivity(true).awaitingPsr(true).build())
                             .build())
+                    .matchProbability(Mono.just(0.91d))
                     .build();
 
             var defendant = HearingMapper.newFromLibraHearing(aLibraHearing)
@@ -154,8 +143,12 @@ class HearingMapperTest {
             assertThat(newDefendant.getPreSentenceActivity()).isTrue();
             assertThat(newDefendant.getAwaitingPsr()).isTrue();
             assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
-            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, OFFENDER_SEARCH_CRO, OFFENDER_SEARCH_PNC, offenderAliases);
-            assertThat(newDefendant.getGroupedOffenderMatches().getMatches()).containsExactly(offenderMatch1);
+            OffenderMatch offenderMatch1 = buildOffenderMatch(MatchType.NAME_DOB, CRN, OFFENDER_SEARCH_CRO, OFFENDER_SEARCH_PNC, offenderAliases, Mono.just(0.91));
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches().get(0))
+                    .usingRecursiveComparison()
+                    .ignoringFields("matchProbability")
+                    .isEqualTo(offenderMatch1);
+            assertThat(newDefendant.getGroupedOffenderMatches().getMatches().get(0).getMatchProbability().block()).isEqualTo(0.91);
         }
 
         @DisplayName("Map a defendant to a new defendant when search response has yielded a single non-exact match")
@@ -271,11 +264,15 @@ class HearingMapperTest {
         }
 
         private OffenderMatch buildOffenderMatch(MatchType matchType, String crn, String cro, String pnc, List<OffenderAlias> offenderAliases) {
+            return buildOffenderMatch(matchType, crn, cro, pnc, offenderAliases, Mono.empty());
+        }
+        private OffenderMatch buildOffenderMatch(MatchType matchType, String crn, String cro, String pnc, List<OffenderAlias> offenderAliases, Mono<Double> matchProbability) {
             return OffenderMatch.builder()
                     .matchType(matchType)
                     .confirmed(false)
                     .rejected(false)
                     .matchIdentifiers(MatchIdentifiers.builder().pnc(pnc).cro(cro).crn(crn).aliases(offenderAliases).build())
+                    .matchProbability(matchProbability)
                     .build();
         }
     }

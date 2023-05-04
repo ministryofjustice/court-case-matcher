@@ -11,8 +11,17 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.PersonMatchScoreRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +31,8 @@ import java.util.stream.Collectors;
 public class MatcherService {
 
     private final OffenderSearchRestClient offenderSearchRestClient;
+
+    private final PersonMatchScoreRestClient personMatchScoreRestClient;
 
     private final MatchRequest.Factory matchRequestFactory;
 
@@ -40,6 +51,7 @@ public class MatcherService {
     }
 
     public Mono<Defendant> matchDefendant(Defendant defendant, Hearing hearing) {
+        var sourceDataset = PersonMatchScoreParameter.of(hearing.getSource().name(), "DELIUS");
         return Mono.just(defendant)
                 .map(firstDefendant -> matchRequestFactory.buildFrom(firstDefendant))
                 .doOnError(e ->
@@ -52,9 +64,44 @@ public class MatcherService {
                 .doOnError(throwable -> {
                     log.error(throwable.getMessage());
                     telemetryService.trackOffenderMatchFailureEvent(defendant, hearing);
+                }).map(response -> {
+                    if (response.getMatchCount() > 0)
+                        return response.withMatches(enrichMatchList(defendant, matchRequestFactory.buildFrom(defendant), sourceDataset, response));
+                    else
+                        return response;
                 })
                 .map(matchResponse -> HearingMapper.updateDefendantWithMatches(defendant, matchResponse))
                 ;
     }
 
+    private List<Match> enrichMatchList(Defendant defendant, MatchRequest matchRequest, PersonMatchScoreParameter sourceDataset, MatchResponse response) {
+        return response.getMatches()
+                .stream()
+                .map(match -> enrichMatchScore(match, buildPersonMatchScoreRequest(defendant, matchRequest, sourceDataset, match.getOffender()), defendant))
+                .collect(Collectors.toList());
+    }
+
+    private Match enrichMatchScore(Match match, PersonMatchScoreRequest request, Defendant defendant) {
+        var probability = personMatchScoreRestClient.match(request)
+                .map(personMatchScoreResponse -> personMatchScoreResponse.getMatchProbability().getValue0())
+                .onErrorComplete(throwable ->
+                        {
+                            log.warn("Error occurred while getting person match score for defendant id {}", defendant.getDefendantId(), throwable);
+                            return true;
+                        }
+                );
+        return match.withMatchProbability(probability);
+    }
+
+    private static PersonMatchScoreRequest buildPersonMatchScoreRequest(Defendant defendant, MatchRequest matchRequest, PersonMatchScoreParameter sourceDataSet, OSOffender osOffender) {
+
+        return PersonMatchScoreRequest.builder()
+                .firstName(PersonMatchScoreParameter.of(matchRequest.getFirstName(), osOffender.getFirstName()))
+                .surname(PersonMatchScoreParameter.of(matchRequest.getSurname(), osOffender.getSurname()))
+                .dateOfBirth(PersonMatchScoreParameter.of(matchRequest.getDateOfBirth(), defendant.getDateOfBirth().format(DateTimeFormatter.ISO_DATE)))
+                .uniqueId(PersonMatchScoreParameter.of(defendant.getDefendantId(), defendant.getDefendantId()))
+                .pnc(PersonMatchScoreParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
+                .sourceDataset(sourceDataSet)
+                .build();
+    }
 }

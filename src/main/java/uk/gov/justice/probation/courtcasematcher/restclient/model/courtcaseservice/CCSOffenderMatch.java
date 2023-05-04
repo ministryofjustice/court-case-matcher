@@ -5,11 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.Optional;
 
 @AllArgsConstructor
 @Builder
@@ -25,6 +28,8 @@ public class CCSOffenderMatch {
     private final Boolean confirmed;
     @NotNull
     private final Boolean rejected;
+    @NotNull
+    private final Double matchProbability;
 
     public static CCSOffenderMatch of(OffenderMatch offenderMatch) {
         return CCSOffenderMatch.builder()
@@ -32,6 +37,7 @@ public class CCSOffenderMatch {
                 .confirmed(offenderMatch.getConfirmed())
                 .matchIdentifiers(CCSMatchIdentifiers.of(offenderMatch.getMatchIdentifiers()))
                 .rejected(offenderMatch.getRejected())
+                .matchProbability(Optional.ofNullable(offenderMatch.getMatchProbability()).map(Mono::block).orElse(null))
                 .build();
     }
 }
