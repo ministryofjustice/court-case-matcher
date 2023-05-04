@@ -17,4 +17,5 @@ feature:
     pass-hearing-id-to-court-case-service: true
     use-list-no-to-fetch-libra-case: true
     match-on-every-no-record-update: false
+    save_person_id_to_court_case_service: false
 
