@@ -25,6 +25,8 @@ public class CCSOffenderMatch {
     private final Boolean confirmed;
     @NotNull
     private final Boolean rejected;
+    @NotNull
+    private final Double matchProbability;
 
     public static CCSOffenderMatch of(OffenderMatch offenderMatch) {
         return CCSOffenderMatch.builder()
@@ -32,6 +34,7 @@ public class CCSOffenderMatch {
                 .confirmed(offenderMatch.getConfirmed())
                 .matchIdentifiers(CCSMatchIdentifiers.of(offenderMatch.getMatchIdentifiers()))
                 .rejected(offenderMatch.getRejected())
+                .matchProbability(offenderMatch.getMatchProbability().block())
                 .build();
     }
 }
