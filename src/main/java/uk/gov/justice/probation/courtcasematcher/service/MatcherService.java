@@ -64,12 +64,7 @@ public class MatcherService {
                 .doOnError(throwable -> {
                     log.error(throwable.getMessage());
                     telemetryService.trackOffenderMatchFailureEvent(defendant, hearing);
-                })
-
-                // Option 1: Make Defendant.matchProbability a Mono
-                // Option 2: Defer matchProbability using something like `transformDeferred`
-                // Option 3: Refactor to use Kotlin coroutines and hope it makes things more intuitive
-                .map(response -> {
+                }).map(response -> {
                     if (response.getMatchCount() > 0)
                         return response.withMatches(enrichMatchList(defendant, matchRequestFactory.buildFrom(defendant), sourceDataset, response));
                     else

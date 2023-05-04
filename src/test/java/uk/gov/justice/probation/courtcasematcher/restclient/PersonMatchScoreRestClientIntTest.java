@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
@@ -58,7 +59,7 @@ class PersonMatchScoreRestClientIntTest {
       .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
       .uniqueId(PersonMatchScoreParameter.of("1111", "4444"))
       .build();
-    Assertions.assertThrows(IllegalStateException.class, () -> {
+    Assertions.assertThrows(WebClientResponseException.NotFound.class, () -> {
       personMatchScoreRestClient.match(personMatchScoreRequest).block();
     });
   }

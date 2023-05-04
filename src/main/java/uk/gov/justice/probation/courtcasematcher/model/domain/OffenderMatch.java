@@ -20,6 +20,5 @@ public class OffenderMatch {
     private final Boolean confirmed;
     @NotNull
     private final Boolean rejected;
-    @Builder.Default
-    private final Mono<Double> matchProbability = Mono.empty();
+    private final Mono<Double> matchProbability;
 }
