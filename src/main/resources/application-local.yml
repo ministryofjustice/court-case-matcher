@@ -31,6 +31,9 @@ person-match-score:
 nomis-oauth:
   base-url: https://sign-in-dev.hmpps.service.justice.gov.uk
 
+person-record-service:
+  base-url: http://localhost:8083/
+
 # Localstack settings
 aws:
   sqs:

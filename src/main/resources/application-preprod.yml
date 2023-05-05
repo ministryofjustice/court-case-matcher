@@ -12,6 +12,10 @@ nomis-oauth:
 person-match-score:
   base-url: https://hmpps-person-match-score-preprod.hmpps.service.justice.gov.uk
 
+person-record-service:
+  base-url: https://hmpps-person-record-preprod.hmpps.service.justice.gov.uk
+
+
 feature:
   flags:
     pass-hearing-id-to-court-case-service: true

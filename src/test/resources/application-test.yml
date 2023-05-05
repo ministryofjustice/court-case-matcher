@@ -24,6 +24,11 @@ offender-search:
   max-retries: 1
   use-dob-with-pnc: true
 
+person-record-service:
+  base-url: http://localhost:8090/
+  person-search-url: /person/search
+  create-person-url: /person
+
 nomis-oauth:
   base-url: http://localhost:8090
   disable-authentication: true

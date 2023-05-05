@@ -16,6 +16,9 @@ court-case-service:
 offender-search:
   base-url: https://probation-offender-search-dev.hmpps.service.justice.gov.uk
 
+person-record-service:
+  base-url: https://hmpps-person-record-dev.hmpps.service.justice.gov.uk
+
 nomis-oauth:
   base-url: https://sign-in-dev.hmpps.service.justice.gov.uk
 

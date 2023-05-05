@@ -31,6 +31,9 @@ public class WebConfig {
     @Value("${nomis-oauth.base-url}")
     private String nomisOauthBaseUrl;
 
+    @Value("${person-record-service.base-url}")
+    private String personRecordServiceBaseUrl;
+
     @Value("${web.client.connect-timeout-ms}")
     private int connectTimeoutMs;
 
@@ -77,6 +80,17 @@ public class WebConfig {
                 new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
         return defaultWebClientBuilder()
                 .baseUrl(this.nomisOauthBaseUrl)
+                .filter(oauth2Client)
+                .build();
+    }
+
+    @Bean
+    public WebClient personRecordServiceWebClient(OAuth2AuthorizedClientManager authorizedClientManager)
+    {
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
+                new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        return defaultWebClientBuilder()
+                .baseUrl(this.personRecordServiceBaseUrl)
                 .filter(oauth2Client)
                 .build();
     }
