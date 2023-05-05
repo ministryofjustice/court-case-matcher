@@ -58,7 +58,7 @@ import static uk.gov.justice.probation.courtcasematcher.restclient.LegacyCourtCa
 @ActiveProfiles("test")
 @Import(TestMessagingConfig.class)
 @ExtendWith(MockitoExtension.class)
-class CourtCaseRestClientIntTest {
+class CourtCaseServiceClientIntTest {
     public static final String HEARING_ID_SERVER_ERROR = "771F1C21-D2CA-4235-8659-5C3C7D7C58B6";
     @Mock
     private Appender<ILoggingEvent> mockAppender;
@@ -70,7 +70,7 @@ class CourtCaseRestClientIntTest {
     private LegacyCourtCaseRestClient legacyClient;
 
     @Autowired
-    private CourtCaseRestClient client;
+    private CourtCaseServiceClient client;
 
     private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
 
@@ -80,7 +80,7 @@ class CourtCaseRestClientIntTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        Logger logger = (Logger) getLogger(LoggerFactory.getLogger(CourtCaseRestClient.class).getName());
+        Logger logger = (Logger) getLogger(LoggerFactory.getLogger(CourtCaseServiceClient.class).getName());
         logger.addAppender(mockAppender);
     }
 

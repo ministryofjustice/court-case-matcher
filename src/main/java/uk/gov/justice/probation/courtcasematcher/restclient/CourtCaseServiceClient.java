@@ -30,7 +30,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 @Slf4j
-public class CourtCaseRestClient {
+public class CourtCaseServiceClient {
 
     private static final String ERR_MSG_FORMAT_POST_MATCHES = "Unexpected exception when POST matches for case id '%s'";
     private static final String ERROR_MSG_FORMAT_INITIAL_POST_MATCHES = "Initial error from POST of the offender matches for case id %s for defendant id %s, Will retry.";

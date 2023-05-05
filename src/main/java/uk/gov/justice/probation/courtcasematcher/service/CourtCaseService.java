@@ -10,7 +10,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
-import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class CourtCaseService {
 
-    private CourtCaseRestClient courtCaseRestClient;
+    private CourtCaseServiceClient courtCaseServiceClient;
 
     private OffenderSearchRestClient offenderSearchRestClient;
 
@@ -29,9 +29,9 @@ public class CourtCaseService {
 
     public Mono<Hearing> findHearing(Hearing hearing) {
         if (hearing.getSource() == DataSource.COMMON_PLATFORM) {
-            return courtCaseRestClient.getHearing(hearing.getHearingId());
+            return courtCaseServiceClient.getHearing(hearing.getHearingId());
         }
-        return courtCaseRestClient.getHearing(hearing.getCourtCode(), hearing.getCaseNo(), hearing.getListNo());
+        return courtCaseServiceClient.getHearing(hearing.getCourtCode(), hearing.getCaseNo(), hearing.getListNo());
     }
 
     public void saveHearing(Hearing hearing) {
@@ -42,14 +42,14 @@ public class CourtCaseService {
             updatedHearing = hearing.withCaseNo(updatedHearing.getCaseId());
         }
 
-        courtCaseRestClient.putHearing(updatedHearing)
+        courtCaseServiceClient.putHearing(updatedHearing)
                 .doOnError(throwable -> {
                     log.error("Save court case failed for case id {} with {}", hearing.getCaseId(), throwable.getMessage());
                     throw new RuntimeException(throwable.getMessage());
                 })
                 .block();
 
-        courtCaseRestClient.postOffenderMatches(updatedHearing.getCaseId(), updatedHearing.getDefendants())
+        courtCaseServiceClient.postOffenderMatches(updatedHearing.getCaseId(), updatedHearing.getDefendants())
                 .block();
 
     }

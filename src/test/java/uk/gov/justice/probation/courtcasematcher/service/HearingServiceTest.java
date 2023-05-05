@@ -15,7 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDetail;
-import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
@@ -58,7 +58,7 @@ class HearingServiceTest {
     @Captor
     private ArgumentCaptor<Hearing> courtCaseCaptor;
     @Mock
-    private CourtCaseRestClient courtCaseRestClient;
+    private CourtCaseServiceClient courtCaseServiceClient;
     @InjectMocks
     private CourtCaseService courtCaseService;
     @DisplayName("Save court case. This must be existing because it has a case no and a case id.")
@@ -73,13 +73,13 @@ class HearingServiceTest {
                 .defendants(defendants)
                 .source(DataSource.LIBRA)
                 .build();
-        when(courtCaseRestClient.putHearing(courtCase)).thenReturn(Mono.empty());
-        when(courtCaseRestClient.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
+        when(courtCaseServiceClient.putHearing(courtCase)).thenReturn(Mono.empty());
+        when(courtCaseServiceClient.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         courtCaseService.saveHearing(courtCase);
 
-        verify(courtCaseRestClient).putHearing(courtCase);
-        verify(courtCaseRestClient).postOffenderMatches(CASE_ID, defendants);
+        verify(courtCaseServiceClient).putHearing(courtCase);
+        verify(courtCaseServiceClient).postOffenderMatches(CASE_ID, defendants);
     }
 
     @DisplayName("Save court case with no caseNo but with a caseId. Indicates a new CP case.")
@@ -93,19 +93,19 @@ class HearingServiceTest {
                 .defendants(defendants)
                 .caseId(CASE_ID)
                 .build();
-        when(courtCaseRestClient.putHearing(courtCaseCaptor.capture())).thenReturn(Mono.empty());
-        when(courtCaseRestClient.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
+        when(courtCaseServiceClient.putHearing(courtCaseCaptor.capture())).thenReturn(Mono.empty());
+        when(courtCaseServiceClient.postOffenderMatches(CASE_ID, defendants)).thenReturn(Mono.empty());
 
         courtCaseService.saveHearing(courtCase);
 
-        verify(courtCaseRestClient).putHearing(notNull());
+        verify(courtCaseServiceClient).putHearing(notNull());
 
         final var capturedCase = courtCaseCaptor.getValue();
         assertThat(capturedCase.getCaseId()).isEqualTo(CASE_ID);
         assertThat(capturedCase.getCaseNo()).isEqualTo(capturedCase.getCaseId());
 
-        verify(courtCaseRestClient).postOffenderMatches(CASE_ID, defendants);
-        verifyNoMoreInteractions(courtCaseRestClient);
+        verify(courtCaseServiceClient).postOffenderMatches(CASE_ID, defendants);
+        verifyNoMoreInteractions(courtCaseServiceClient);
     }
 
     @DisplayName("Save court case with no caseId but with a caseNo and no defendant ID. Indicates a new LIBRA case.")
@@ -125,12 +125,12 @@ class HearingServiceTest {
             .defendants(List.of(Defendant.builder().defendantId(defendantId).build(), Defendant.builder().defendantId(defendantIdAnother).build()))
             .caseNo(CASE_NO)
             .build();
-        when(courtCaseRestClient.putHearing(courtCaseCaptor.capture())).thenReturn(Mono.empty());
-        when(courtCaseRestClient.postOffenderMatches(notNull(), notNull())).thenReturn(Mono.empty());
+        when(courtCaseServiceClient.putHearing(courtCaseCaptor.capture())).thenReturn(Mono.empty());
+        when(courtCaseServiceClient.postOffenderMatches(notNull(), notNull())).thenReturn(Mono.empty());
 
         courtCaseService.saveHearing(courtCase);
 
-        verify(courtCaseRestClient).putHearing(courtCaseCaptor.capture());
+        verify(courtCaseServiceClient).putHearing(courtCaseCaptor.capture());
 
         Hearing actual = courtCaseCaptor.getValue();
         assertThat(actual).isNotNull();
@@ -145,8 +145,8 @@ class HearingServiceTest {
         assertThat(capturedCase.getDefendants().get(1).getDefendantId()).hasSameSizeAs(DEFENDANT_UUID_1);
         assertThat(capturedCase.getCaseNo()).isEqualTo(CASE_NO);
 
-        verify(courtCaseRestClient).postOffenderMatches(notNull(), notNull());
-        verifyNoMoreInteractions(courtCaseRestClient);
+        verify(courtCaseServiceClient).postOffenderMatches(notNull(), notNull());
+        verifyNoMoreInteractions(courtCaseServiceClient);
     }
 
     @DisplayName("Incoming Libra case returned if exist")
@@ -167,12 +167,12 @@ class HearingServiceTest {
                 .source(DataSource.LIBRA)
                 .build();
 
-        when(courtCaseRestClient.getHearing(COURT_CODE, CASE_NO, LIST_NO)).thenReturn(Mono.just(courtCase));
+        when(courtCaseServiceClient.getHearing(COURT_CODE, CASE_NO, LIST_NO)).thenReturn(Mono.just(courtCase));
 
         final var updatedCourtCase = courtCaseService.findHearing(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
-        verify(courtCaseRestClient).getHearing(COURT_CODE, CASE_NO, LIST_NO);
+        verify(courtCaseServiceClient).getHearing(COURT_CODE, CASE_NO, LIST_NO);
     }
 
     @DisplayName("Incoming Common Platform case returned if exist")
@@ -191,12 +191,12 @@ class HearingServiceTest {
                 .source(DataSource.COMMON_PLATFORM)
                 .build();
 
-        when(courtCaseRestClient.getHearing(HEARING_ID)).thenReturn(Mono.just(courtCase));
+        when(courtCaseServiceClient.getHearing(HEARING_ID)).thenReturn(Mono.just(courtCase));
 
         final var updatedCourtCase = courtCaseService.findHearing(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
-        verify(courtCaseRestClient).getHearing(HEARING_ID);
+        verify(courtCaseServiceClient).getHearing(HEARING_ID);
     }
 
     @DisplayName("Get court case which is new, return a null")
@@ -205,11 +205,11 @@ class HearingServiceTest {
         var aCase = buildCaseNoMatches()
                 .withSource(DataSource.LIBRA);
 
-        when(courtCaseRestClient.getHearing(COURT_CODE, CASE_NO, LIST_NO)).thenReturn(Mono.empty());
+        when(courtCaseServiceClient.getHearing(COURT_CODE, CASE_NO, LIST_NO)).thenReturn(Mono.empty());
 
         final var newCourtCase = courtCaseService.findHearing(aCase).block();
 
-        verify(courtCaseRestClient).getHearing(COURT_CODE, CASE_NO, LIST_NO);
+        verify(courtCaseServiceClient).getHearing(COURT_CODE, CASE_NO, LIST_NO);
         assertThat(newCourtCase).isNull();
     }
 
@@ -226,14 +226,14 @@ class HearingServiceTest {
                 .hearingId(HEARING_ID)
                 .caseNo(CASE_NO)
                 .build();
-        when(courtCaseRestClient.putHearing(courtCase)).thenThrow(new RuntimeException("bang!"));
+        when(courtCaseServiceClient.putHearing(courtCase)).thenThrow(new RuntimeException("bang!"));
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> courtCaseService.saveHearing(courtCase))
                 .withMessage("bang!");
 
-        verify(courtCaseRestClient).putHearing(courtCase);
-        verifyNoMoreInteractions(courtCaseRestClient);
+        verify(courtCaseServiceClient).putHearing(courtCase);
+        verifyNoMoreInteractions(courtCaseServiceClient);
     }
 
     @DisplayName("Fetch and update probation status")
