@@ -39,6 +39,13 @@ spring:
             client-authentication-method: client_secret_basic
             authorization-grant-type: client_credentials
             provider: nomis-oauth-service
+          person-record-search-client:
+            client-name: person-record-search-client
+            client-id: ${person-record-search-client-id:person-record-search-client}
+            client-secret: ${person-record-search-client-secret:clientsecret}
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: client_credentials
+            provider: nomis-oauth-service
         provider:
           nomis-oauth-service:
             token-uri: ${nomis-oauth.base-url:http://oauth:8095}/auth/oauth/token
@@ -67,6 +74,11 @@ person-match-score:
   post-match-url: /match
   max-retries: 0
   min-backoff-seconds: 5
+
+person-record-service:
+  person-search-url: /person/search
+  create-person-url: /person
+
 
 feature:
   flags:

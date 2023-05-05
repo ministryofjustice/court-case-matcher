@@ -1,0 +1,16 @@
+[
+  {
+    "personId": "e374e376-e2a3-11ed-b5ea-0242ac120002",
+    "givenName": "Gerwin",
+    "middleNames": [
+      "Dafydd",
+      "Jenkins"
+    ],
+    "familyName": "Evans",
+    "dateOfBirth": "1969-04-30",
+    "otherIdentifiers": {
+      "crn": "X12345",
+      "pncNumber": "PNC33333"
+    }
+  }
+]
