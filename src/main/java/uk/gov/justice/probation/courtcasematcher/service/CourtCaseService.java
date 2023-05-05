@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
-import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
+import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 
 import java.util.stream.Collectors;
@@ -22,9 +21,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class CourtCaseService {
 
-
-    @Qualifier("court-case-rest-client")
-    private CourtCaseRepository courtCaseRepository;
+    private CourtCaseRestClient courtCaseRestClient;
 
     private OffenderSearchRestClient offenderSearchRestClient;
 
@@ -32,9 +29,9 @@ public class CourtCaseService {
 
     public Mono<Hearing> findHearing(Hearing hearing) {
         if (hearing.getSource() == DataSource.COMMON_PLATFORM) {
-            return courtCaseRepository.getHearing(hearing.getHearingId());
+            return courtCaseRestClient.getHearing(hearing.getHearingId());
         }
-        return courtCaseRepository.getHearing(hearing.getCourtCode(), hearing.getCaseNo(), hearing.getListNo());
+        return courtCaseRestClient.getHearing(hearing.getCourtCode(), hearing.getCaseNo(), hearing.getListNo());
     }
 
     public void saveHearing(Hearing hearing) {
@@ -45,14 +42,14 @@ public class CourtCaseService {
             updatedHearing = hearing.withCaseNo(updatedHearing.getCaseId());
         }
 
-        courtCaseRepository.putHearing(updatedHearing)
+        courtCaseRestClient.putHearing(updatedHearing)
                 .doOnError(throwable -> {
                     log.error("Save court case failed for case id {} with {}", hearing.getCaseId(), throwable.getMessage());
                     throw new RuntimeException(throwable.getMessage());
                 })
                 .block();
 
-        courtCaseRepository.postOffenderMatches(updatedHearing.getCaseId(), updatedHearing.getDefendants())
+        courtCaseRestClient.postOffenderMatches(updatedHearing.getCaseId(), updatedHearing.getDefendants())
                 .block();
 
     }

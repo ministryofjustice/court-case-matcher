@@ -18,7 +18,6 @@ import reactor.tuple.Tuple2;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
-import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.exception.HearingNotFoundException;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSExtendedHearing;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSGroupedOffenderMatchesRequest;
@@ -31,7 +30,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 @Slf4j
-public class CourtCaseRestClient implements CourtCaseRepository {
+public class CourtCaseRestClient {
 
     private static final String ERR_MSG_FORMAT_POST_MATCHES = "Unexpected exception when POST matches for case id '%s'";
     private static final String ERROR_MSG_FORMAT_INITIAL_POST_MATCHES = "Initial error from POST of the offender matches for case id %s for defendant id %s, Will retry.";
@@ -67,12 +66,11 @@ public class CourtCaseRestClient implements CourtCaseRepository {
                 });
     }
 
-    @Override
     public Mono<Hearing> getHearing(String courtCode, String caseNo, String listNo) throws WebClientResponseException {
         return legacyCourtCaseRestClient.getHearing(courtCode, caseNo, listNo);
     }
 
-    @Override
+
     public Mono<Void> putHearing(Hearing hearing) {
         final var ccsExtendedHearing = CCSExtendedHearing.of(hearing);
         final var hearingId = ccsExtendedHearing.getHearingId();
@@ -104,7 +102,6 @@ public class CourtCaseRestClient implements CourtCaseRepository {
             .then();
     }
 
-    @Override
     public Mono<Void> postOffenderMatches(String caseId, List<Defendant> defendants) {
         return Flux.fromStream(defendants.stream())
                 .flatMap(defendant -> postOffenderMatches(caseId, defendant.getDefendantId(), defendant.getGroupedOffenderMatches()))

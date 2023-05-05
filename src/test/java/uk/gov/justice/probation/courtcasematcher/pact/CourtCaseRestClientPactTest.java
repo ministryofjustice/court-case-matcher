@@ -16,8 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
-import uk.gov.justice.probation.courtcasematcher.repository.CourtCaseRepository;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseRestClient;
 
 import java.io.File;
@@ -258,7 +256,7 @@ class CourtCaseRestClientPactTest {
     @Test
     void putHearingWithAllFields() {
 
-        final var actual = ((CourtCaseRepository) restClient)
+        final var actual = restClient
                 .putHearing(DomainDataHelper.aHearingWithAllFields()).blockOptional();
 
         assertThat(actual).isEmpty();

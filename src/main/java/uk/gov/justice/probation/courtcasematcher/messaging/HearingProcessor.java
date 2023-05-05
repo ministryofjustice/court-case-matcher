@@ -94,7 +94,6 @@ public class HearingProcessor {
                 .onErrorReturn(hearing)
                 .doOnSuccess(courtCaseService::saveHearing)
                 .block();
-
     }
 
 

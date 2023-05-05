@@ -46,8 +46,7 @@ public class MatcherService {
                         .map(Mono::block)
                         .collect(Collectors.toList())
                 )
-                .map(hearing::withDefendants)
-                ;
+                .map(hearing::withDefendants);
     }
 
     public Mono<Defendant> matchDefendant(Defendant defendant, Hearing hearing) {
@@ -70,8 +69,7 @@ public class MatcherService {
                     else
                         return response;
                 })
-                .map(matchResponse -> HearingMapper.updateDefendantWithMatches(defendant, matchResponse))
-                ;
+                .map(matchResponse -> HearingMapper.updateDefendantWithMatches(defendant, matchResponse));
     }
 
     private List<Match> enrichMatchList(Defendant defendant, MatchRequest matchRequest, PersonMatchScoreParameter sourceDataset, MatchResponse response) {
