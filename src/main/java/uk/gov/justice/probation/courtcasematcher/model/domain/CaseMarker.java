@@ -13,6 +13,6 @@ import lombok.With;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class CaseMarker {
-    private String typeDescription;
+    private String markerTypeDescription;
 
 }

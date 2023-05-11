@@ -24,10 +24,10 @@
       {
         "caseMarkers": [
           {
-            "typeDescription": "description 1"
+            "markerTypeDescription": "description 1"
           },
           {
-            "typeDescription": "description 2"
+            "markerTypeDescription": "description 2"
           }
         ],
         "defendants": [

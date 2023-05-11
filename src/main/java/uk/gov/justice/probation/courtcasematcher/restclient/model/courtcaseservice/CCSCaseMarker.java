@@ -12,17 +12,17 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class CCSCaseMarker {
-    private String typeDescription;
+    private String markerTypeDescription;
 
     public static CCSCaseMarker of(CaseMarker caseMarker) {
         return CCSCaseMarker.builder()
-                .typeDescription(caseMarker.getTypeDescription())
+                .markerTypeDescription(caseMarker.getMarkerTypeDescription())
                 .build();
     }
 
     public CaseMarker asDomain() {
         return CaseMarker.builder()
-                .typeDescription(typeDescription)
+                .markerTypeDescription(markerTypeDescription)
                 .build();
     }
 }

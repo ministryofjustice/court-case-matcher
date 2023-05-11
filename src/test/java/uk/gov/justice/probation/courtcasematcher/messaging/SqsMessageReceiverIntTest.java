@@ -107,6 +107,8 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
                         .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
+                        .withRequestBody(matchingJsonPath("caseMarkers[0].markerTypeDescription", equalTo("description 1")))
+                        .withRequestBody(matchingJsonPath("caseMarkers[1].markerTypeDescription", equalTo("description 2")))
                         .withRequestBody(matchingJsonPath("urn", equalTo("25GD34377719")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
