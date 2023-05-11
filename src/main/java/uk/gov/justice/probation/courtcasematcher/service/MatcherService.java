@@ -12,12 +12,15 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.PersonMatchScoreRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.PersonRecordServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchRequest;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.PersonSearchRequest;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -38,6 +41,9 @@ public class MatcherService {
 
     private TelemetryService telemetryService;
 
+    private PersonRecordServiceClient personRecordServiceClient;
+
+
     public Mono<Hearing> matchDefendants(Hearing hearing) {
 
         return Mono.just(hearing.getDefendants()
@@ -56,6 +62,7 @@ public class MatcherService {
                 .doOnError(e ->
                         log.warn(String.format("Unable to create MatchRequest for defendantId: %s", defendant.getDefendantId()), e))
                 .flatMap(offenderSearchRestClient::match)
+                .doOnNext(response -> searchPersonRecord(defendant, response))
 
                 .doOnSuccess(searchResponse -> log.info(String.format("Match results for defendantId: %s - matchedBy: %s, matchCount: %s",
                         defendant.getDefendantId(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size())))
@@ -101,5 +108,9 @@ public class MatcherService {
                 .pnc(PersonMatchScoreParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
                 .sourceDataset(sourceDataSet)
                 .build();
+    }
+
+    private Mono<List<Person>> searchPersonRecord(Defendant defendant, MatchResponse response){
+        return personRecordServiceClient.search(PersonSearchRequest.of(defendant));
     }
 }

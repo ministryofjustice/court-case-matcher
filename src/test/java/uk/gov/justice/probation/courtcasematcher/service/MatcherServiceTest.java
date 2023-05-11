@@ -21,6 +21,7 @@ import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.PersonMatchScoreRestClient;
+import uk.gov.justice.probation.courtcasematcher.restclient.PersonRecordServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.*;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
@@ -44,7 +45,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 class MatcherServiceTest {
     private static final String CRN = "X123456";
     private static final String PROBATION_STATUS = "CURRENT";
-    private static final LocalDate PREVIOUSLY_KNOWN_TERMINATION_DATE = LocalDate.of(2021, 9,29);
+    private static final LocalDate PREVIOUSLY_KNOWN_TERMINATION_DATE = LocalDate.of(2021, 9, 29);
     private static final boolean PRE_SENTENCE_ACTIVITY = true;
     private static final boolean BREACH = true;
     private static final boolean AWAITING_PSR = true;
@@ -87,6 +88,7 @@ class MatcherServiceTest {
                 .defendants(List.of(defendant1, defendant2))
                 .build();
     }
+
     private static final Defendant FIRST_DEFENDANT = COURT_CASE.getDefendants().get(0);
     private static final Defendant SECOND_DEFENDANT = COURT_CASE.getDefendants().get(1);
 
@@ -96,18 +98,18 @@ class MatcherServiceTest {
             .pncNumber(PNC)
             .build();
     private final OSOffender offender = OSOffender.builder()
-      .firstName("Aur")
-      .surname("Mork")
-      .dateOfBirth("1975-01-01")
-      .otherIds(otherIds)
-      .probationStatus(ProbationStatusDetail.builder()
-        .status(PROBATION_STATUS)
-        .previouslyKnownTerminationDate(PREVIOUSLY_KNOWN_TERMINATION_DATE)
-        .inBreach(BREACH)
-        .preSentenceActivity(PRE_SENTENCE_ACTIVITY)
-        .awaitingPsr(AWAITING_PSR)
-        .build())
-      .build();
+            .firstName("Aur")
+            .surname("Mork")
+            .dateOfBirth("1975-01-01")
+            .otherIds(otherIds)
+            .probationStatus(ProbationStatusDetail.builder()
+                    .status(PROBATION_STATUS)
+                    .previouslyKnownTerminationDate(PREVIOUSLY_KNOWN_TERMINATION_DATE)
+                    .inBreach(BREACH)
+                    .preSentenceActivity(PRE_SENTENCE_ACTIVITY)
+                    .awaitingPsr(AWAITING_PSR)
+                    .build())
+            .build();
     private final MatchResponse singleExactMatch = MatchResponse.builder()
             .matches(singletonList(Match.builder()
                     .offender(offender)
@@ -129,34 +131,34 @@ class MatcherServiceTest {
             .matches(Collections.emptyList())
             .build();
     private final MatchRequest matchRequest1 = MatchRequest.builder()
-      .pncNumber(PNC)
-      .firstName("Arthur")
-      .surname("MORGAN")
-      .dateOfBirth("2000-06-17")
-      .build();
+            .pncNumber(PNC)
+            .firstName("Arthur")
+            .surname("MORGAN")
+            .dateOfBirth("2000-06-17")
+            .build();
     private final MatchRequest matchRequest2 = MatchRequest.builder()
-      .pncNumber(PNC_2)
-      .firstName("John")
-      .surname("Marston")
-      .dateOfBirth("2001-06-17")
-      .build();
+            .pncNumber(PNC_2)
+            .firstName("John")
+            .surname("Marston")
+            .dateOfBirth("2001-06-17")
+            .build();
 
     private final PersonMatchScoreRequest personMatchScoreReq1 = PersonMatchScoreRequest.builder()
-      .firstName(PersonMatchScoreParameter.of("Arthur", "Aur"))
-      .surname(PersonMatchScoreParameter.of("MORGAN", "Mork"))
-      .pnc(PersonMatchScoreParameter.of(PNC, PNC))
-      .dateOfBirth(PersonMatchScoreParameter.of("2000-06-17", "2000-06-17"))
-      .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
-      .uniqueId(PersonMatchScoreParameter.of("id1", "id1"))
-      .build();
+            .firstName(PersonMatchScoreParameter.of("Arthur", "Aur"))
+            .surname(PersonMatchScoreParameter.of("MORGAN", "Mork"))
+            .pnc(PersonMatchScoreParameter.of(PNC, PNC))
+            .dateOfBirth(PersonMatchScoreParameter.of("2000-06-17", "2000-06-17"))
+            .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
+            .uniqueId(PersonMatchScoreParameter.of("id1", "id1"))
+            .build();
     private final PersonMatchScoreRequest personMatchScoreReq2 = PersonMatchScoreRequest.builder()
-      .firstName(PersonMatchScoreParameter.of("John", "Jon"))
-      .surname(PersonMatchScoreParameter.of("Marston", "Barston"))
-      .dateOfBirth(PersonMatchScoreParameter.of("2001-06-17", "2001-06-17"))
-      .pnc(PersonMatchScoreParameter.of(PNC_2, PNC_2))
-      .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
-      .uniqueId(PersonMatchScoreParameter.of("id2", "id2"))
-      .build();
+            .firstName(PersonMatchScoreParameter.of("John", "Jon"))
+            .surname(PersonMatchScoreParameter.of("Marston", "Barston"))
+            .dateOfBirth(PersonMatchScoreParameter.of("2001-06-17", "2001-06-17"))
+            .pnc(PersonMatchScoreParameter.of(PNC_2, PNC_2))
+            .sourceDataset(PersonMatchScoreParameter.of("COMMON_PLATFORM", "DELIUS"))
+            .uniqueId(PersonMatchScoreParameter.of("id2", "id2"))
+            .build();
 
     @Mock
     private OffenderSearchRestClient offenderSearchRestClient;
@@ -172,6 +174,9 @@ class MatcherServiceTest {
     @Mock
     private PersonMatchScoreRestClient personMatchScoreRestClient;
 
+    @Mock
+    private PersonRecordServiceClient personRecordServiceClient;
+
     @Captor
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
 
@@ -184,7 +189,7 @@ class MatcherServiceTest {
         Logger logger = (Logger) getLogger(LoggerFactory.getLogger(MatcherService.class).getName());
         logger.addAppender(mockAppender);
 
-        matcherService = new MatcherService(offenderSearchRestClient, personMatchScoreRestClient, matchRequestFactory, telemetryService);
+        matcherService = new MatcherService(offenderSearchRestClient, personMatchScoreRestClient, matchRequestFactory, telemetryService, personRecordServiceClient);
     }
 
     @Test
@@ -233,8 +238,8 @@ class MatcherServiceTest {
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
 
         when(personMatchScoreRestClient.match(any()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.81, null)).build()));
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.81, null)).build()));
 
         var updatedCase = matcherService.matchDefendants(COURT_CASE).block();
 
@@ -252,7 +257,7 @@ class MatcherServiceTest {
         verify(telemetryService).trackOffenderMatchEvent(SECOND_DEFENDANT, COURT_CASE, noMatches);
 
         verify(personMatchScoreRestClient, times(2)).match(AdditionalMatchers.or(
-            eq(personMatchScoreReq1), eq(personMatchScoreReq2)));
+                eq(personMatchScoreReq1), eq(personMatchScoreReq2)));
     }
 
     @Test
@@ -263,7 +268,7 @@ class MatcherServiceTest {
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(singleExactMatch));
 
         when(personMatchScoreRestClient.match(any()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
 
         var updatedCase = matcherService.matchDefendants(COURT_CASE).block();
 
@@ -290,7 +295,7 @@ class MatcherServiceTest {
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(singleExactMatch));
 
         when(personMatchScoreRestClient.match(any()))
-          .thenReturn(Mono.error(new RuntimeException("Call to person match score API failed")));
+                .thenReturn(Mono.error(new RuntimeException("Call to person match score API failed")));
 
         var updatedCase = matcherService.matchDefendants(COURT_CASE).block();
 
