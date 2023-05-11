@@ -78,7 +78,7 @@ class HearingProcessorTest {
                             .type(PERSON)
                             .build()))
                     .caseMarkers(Collections.singletonList(CaseMarker.builder()
-                                    .typeDescription("description")
+                                    .markerTypeDescription("description")
                             .build()))
                     .build();
 

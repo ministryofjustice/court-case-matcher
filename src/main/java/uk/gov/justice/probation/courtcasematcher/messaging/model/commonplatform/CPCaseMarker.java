@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CPCaseMarker {
-    private final String typeDescription;
+    private final String markerTypeDescription;
 }
