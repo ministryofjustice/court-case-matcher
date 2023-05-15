@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offender;
 import uk.gov.justice.probation.courtcasematcher.model.domain.PhoneNumber;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper;
 
 import java.time.LocalDate;
@@ -25,8 +24,8 @@ class CCSDefendantTest {
                 .act("offence act")
                 .sequenceNumber(1)
                 .offenceCode("ABC001")
-                .plea(CCSPlea.builder().value("value 1").date(LocalDate.now()).build())
-                .verdict(CCSVerdict.builder().typeDescription("description 1").date(LocalDate.now()).build())
+                .plea(CCSPlea.builder().pleaValue("value 1").pleaDate(LocalDate.now()).build())
+                .verdict(CCSVerdict.builder().verdictType(CCSVerdictType.builder().description("description 1").build()).verdictDate(LocalDate.now()).build())
                 .judicialResults(Collections.singletonList(CCSJudicialResult.builder()
                         .isConvictedResult(true)
                         .label("Adjournment")

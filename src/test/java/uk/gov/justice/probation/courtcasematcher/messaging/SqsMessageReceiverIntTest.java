@@ -49,8 +49,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -129,8 +128,10 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[1].awaitingPsr", equalTo("false")))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("20")))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("ABC001")))
-                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea.value", equalTo("value 1")))
-                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict.typeDescription", equalTo("description 1")))
+                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea.pleaValue", equalTo("value 1")))
+                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea.pleaDate", equalTo("2021-09-08")))
+                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict.verdictType.description", equalTo("description 1")))
+                        .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict.verdictDate", equalTo("2021-09-08")))
                         .withRequestBody(matchingJsonPath("defendants[1].offences[1].listNo", equalTo("30")))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[1].offenceCode", equalTo("ABC002")))
                         .withRequestBody(matchingJsonPath("defendants[1].phoneNumber.home", absent()))
