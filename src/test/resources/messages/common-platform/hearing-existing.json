@@ -44,12 +44,14 @@
                 "listingNumber":  20,
                 "offenceCode": "ABC001",
                 "plea": {
-                  "value": "value 1",
-                  "date": "2021-09-08"
+                  "pleaValue": "value 1",
+                  "pleaDate": "2021-09-08"
                 },
                 "verdict": {
-                  "typeDescription": "description 1",
-                  "date": "2021-09-08"
+                  "verdictType": {
+                    "description": "description 1"
+                  },
+                  "verdictDate": "2021-09-08"
                 }
               },
               {
