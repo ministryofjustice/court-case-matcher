@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
+import uk.gov.justice.probation.courtcasematcher.model.domain.VerdictType;
 
 import java.time.LocalDate;
 
@@ -14,14 +15,14 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @AllArgsConstructor
 public class CPVerdict {
-    private String typeDescription;
-    private LocalDate date;
+    private CPVerdictType verdictType;
+    private LocalDate verdictDate;
 
 
     public Verdict asDomain(){
         return Verdict.builder()
-                .typeDescription(typeDescription)
-                .date(date)
+                .verdictType(VerdictType.builder().description(verdictType.getDescription()).build())
+                .verdictDate(verdictDate)
                 .build();
     }
 }

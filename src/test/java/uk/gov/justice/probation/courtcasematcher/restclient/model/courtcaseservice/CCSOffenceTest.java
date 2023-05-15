@@ -5,6 +5,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.JudicialResult;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
+import uk.gov.justice.probation.courtcasematcher.model.domain.VerdictType;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -37,12 +38,12 @@ class CCSOffenceTest {
                 .sequenceNumber(1)
                 .listNo(30)
                 .plea(Plea.builder()
-                        .value("value")
-                        .date(LocalDate.now())
+                        .pleaValue("value")
+                        .pleaDate(LocalDate.now())
                         .build())
                 .verdict(Verdict.builder()
-                        .typeDescription("description")
-                        .date(LocalDate.now())
+                        .verdictType(VerdictType.builder().description("description").build())
+                        .verdictDate(LocalDate.now())
                         .build())
                 .judicialResults(Collections.singletonList(JudicialResult.builder()
                                 .isConvictedResult(false)

@@ -16,6 +16,6 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class Verdict {
 
-    private String typeDescription;
-    private LocalDate date;
+    private VerdictType verdictType;
+    private LocalDate verdictDate;
 }
