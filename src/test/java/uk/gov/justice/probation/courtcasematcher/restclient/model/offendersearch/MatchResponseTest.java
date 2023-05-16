@@ -21,7 +21,7 @@ class MatchResponseTest {
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
 
-        assertThat(matchResponse.isExactMatch()).isTrue();
+        assertThat(matchResponse.isExactOffenderMatch()).isTrue();
     }
 
     @DisplayName("Search with one match for anything but ALL_SUPPLIED is NOT exact")
@@ -32,7 +32,7 @@ class MatchResponseTest {
             .matchedBy(OffenderSearchMatchType.PARTIAL_NAME)
             .build();
 
-        assertThat(matchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactOffenderMatch()).isFalse();
     }
 
     @DisplayName("Search with multiple matches is always NOT exact")
@@ -45,7 +45,7 @@ class MatchResponseTest {
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
 
-        assertThat(matchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactOffenderMatch()).isFalse();
     }
 
     @DisplayName("Search with no matches is always NOT exact")
@@ -55,12 +55,12 @@ class MatchResponseTest {
             .matchedBy(OffenderSearchMatchType.NOTHING)
             .build();
 
-        assertThat(matchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactOffenderMatch()).isFalse();
 
         matchResponse = MatchResponse.builder()
             .matchedBy(OffenderSearchMatchType.ALL_SUPPLIED)
             .build();
 
-        assertThat(matchResponse.isExactMatch()).isFalse();
+        assertThat(matchResponse.isExactOffenderMatch()).isFalse();
     }
 }

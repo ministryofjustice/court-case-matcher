@@ -77,7 +77,7 @@ public class TelemetryService {
             }));
 
         TelemetryEventType eventType = TelemetryEventType.OFFENDER_PARTIAL_MATCH;
-        if (matchResponse.isExactMatch()) {
+        if (matchResponse.isExactOffenderMatch()) {
             eventType = TelemetryEventType.OFFENDER_EXACT_MATCH;
         }
         else if (matchCount == 0){

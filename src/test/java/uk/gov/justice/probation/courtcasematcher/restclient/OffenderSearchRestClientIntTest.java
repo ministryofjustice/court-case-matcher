@@ -47,7 +47,7 @@ public class OffenderSearchRestClientIntTest {
             assertThat(match).isPresent();
             assertThat(match.get().getMatchedBy()).isEqualTo(OffenderSearchMatchType.ALL_SUPPLIED);
             assertThat(match.get().getMatches().size()).isEqualTo(1);
-            assertThat(match.get().isExactMatch()).isTrue();
+            assertThat(match.get().isExactOffenderMatch()).isTrue();
 
             var offender = match.get().getMatches().get(0).getOffender();
             assertThat(offender.getOtherIds().getCrn()).isEqualTo("X346204");
@@ -68,7 +68,7 @@ public class OffenderSearchRestClientIntTest {
             assertThat(match).isPresent();
             assertThat(match.get().getMatchedBy()).isEqualTo(OffenderSearchMatchType.ALL_SUPPLIED);
             assertThat(match.get().getMatches().size()).isEqualTo(1);
-            assertThat(match.get().isExactMatch()).isTrue();
+            assertThat(match.get().isExactOffenderMatch()).isTrue();
 
             var offender = match.get().getMatches().get(0).getOffender();
             assertThat(offender.getOtherIds().getCrn()).isEqualTo("X346204");
@@ -85,7 +85,7 @@ public class OffenderSearchRestClientIntTest {
             assertThat(match).isPresent();
             assertThat(match.get().getMatchedBy()).isEqualTo(OffenderSearchMatchType.ALL_SUPPLIED);
             assertThat(match.get().getMatches().size()).isEqualTo(1);
-            assertThat(match.get().isExactMatch()).isTrue();
+            assertThat(match.get().isExactOffenderMatch()).isTrue();
 
             var offender = match.get().getMatches().get(0).getOffender();
             assertThat(offender.getOtherIds().getCrn()).isEqualTo("X346204");
@@ -115,7 +115,7 @@ public class OffenderSearchRestClientIntTest {
             assertThat(match).isPresent();
             assertThat(match.get().getMatchedBy()).isEqualTo(OffenderSearchMatchType.NAME);
             assertThat(match.get().getMatches().size()).isEqualTo(1);
-            assertThat(match.get().isExactMatch()).isFalse();
+            assertThat(match.get().isExactOffenderMatch()).isFalse();
         }
 
         @Test

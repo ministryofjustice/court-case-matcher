@@ -162,7 +162,7 @@ public class HearingMapper {
         var newDefendant = defendant
                 .withGroupedOffenderMatches(buildGroupedOffenderMatch(matchResponse.getMatches(), matchType));
 
-        if (matchResponse.isExactMatch()) {
+        if (matchResponse.isExactOffenderMatch()) {
             var offender = matchResponse.getMatches().get(0).getOffender();
             var probationStatus = offender.getProbationStatus();
             newDefendant = buildDefendant(offender, newDefendant, probationStatus);
