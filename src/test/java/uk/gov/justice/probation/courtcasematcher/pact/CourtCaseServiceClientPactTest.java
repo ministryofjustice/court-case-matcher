@@ -100,12 +100,14 @@ class CourtCaseServiceClientPactTest {
                     offence.integerType("sequenceNumber");
                     offence.stringType("offenceCode");
                     offence.object("plea", (pleaObject -> {
-                        pleaObject.stringType("value");
-                        pleaObject.date("date");
+                        pleaObject.stringType("pleaValue");
+                        pleaObject.date("pleaDate");
                     }));
                     offence.object("verdict", (verdictObject -> {
-                        verdictObject.stringType("typeDescription");
-                        verdictObject.date("date");
+                        verdictObject.object("verdictType", (verdictTypeObject -> {
+                            verdictTypeObject.stringType("description");
+                        }));
+                        verdictObject.date("verdictDate");
                     }));
                     offence.array("judicialResults", (judicialResults) -> judicialResults.object((judicialResult) -> {
                         judicialResult.booleanType("isConvictedResult");
@@ -175,12 +177,14 @@ class CourtCaseServiceClientPactTest {
                     offence.integerType("sequenceNumber");
                     offence.stringType("offenceCode");
                     offence.object("plea", (pleaObject -> {
-                        pleaObject.stringType("value");
-                        pleaObject.date("date");
+                        pleaObject.stringType("pleaValue");
+                        pleaObject.date("pleaDate");
                     }));
                     offence.object("verdict", (verdictObject -> {
-                        verdictObject.stringType("typeDescription");
-                        verdictObject.date("date");
+                        verdictObject.object("verdictType", (verdictTypeObject -> {
+                            verdictTypeObject.stringType("description");
+                        }));
+                        verdictObject.date("verdictDate");
                     }));
                     offence.array("judicialResults", (judicialResults) -> judicialResults.object((judicialResult) -> {
                         judicialResult.booleanType("isConvictedResult");

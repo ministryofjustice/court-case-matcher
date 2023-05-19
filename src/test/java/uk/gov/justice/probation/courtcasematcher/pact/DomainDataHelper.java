@@ -10,6 +10,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
+import uk.gov.justice.probation.courtcasematcher.model.domain.VerdictType;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
 
 import java.time.LocalDate;
@@ -48,12 +49,12 @@ public class DomainDataHelper {
                                 .sequenceNumber(1)
                                 .offenceCode("ABC001")
                                 .plea(Plea.builder()
-                                        .value("value 1")
-                                        .date(LocalDate.now())
+                                        .pleaValue("value 1")
+                                        .pleaDate(LocalDate.now())
                                         .build())
                                 .verdict(Verdict.builder()
-                                        .typeDescription("description 1")
-                                        .date(LocalDate.now())
+                                        .verdictType(VerdictType.builder().description("description 1").build())
+                                        .verdictDate(LocalDate.now())
                                         .build())
                                 .judicialResults(Collections.singletonList(JudicialResult.builder()
                                         .isConvictedResult(true)
@@ -119,12 +120,12 @@ public class DomainDataHelper {
                                 .sequenceNumber(1)
                                 .offenceCode("RT88108")
                                 .plea(Plea.builder()
-                                        .value("value 1")
-                                        .date(LocalDate.now())
+                                        .pleaValue("value 1")
+                                        .pleaDate(LocalDate.now())
                                         .build())
                                 .verdict(Verdict.builder()
-                                        .typeDescription("description 1")
-                                        .date(LocalDate.now())
+                                        .verdictType(VerdictType.builder().description("description 1").build())
+                                        .verdictDate(LocalDate.now())
                                         .build())
                                 .judicialResults(Collections.singletonList(JudicialResult.builder()
                                         .isConvictedResult(true)

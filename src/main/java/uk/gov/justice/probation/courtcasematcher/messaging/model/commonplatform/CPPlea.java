@@ -15,14 +15,14 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CPPlea {
 
-    private String value;
+    private String pleaValue;
 
-    private LocalDate date;
+    private LocalDate pleaDate;
 
     public Plea asDomain(){
         return Plea.builder()
-                .value(value)
-                .date(date)
+                .pleaValue(pleaValue)
+                .pleaDate(pleaDate)
                 .build();
     }
 }

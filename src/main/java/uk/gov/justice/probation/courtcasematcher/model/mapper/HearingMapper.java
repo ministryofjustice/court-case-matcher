@@ -105,7 +105,7 @@ public class HearingMapper {
 
                 // Fields to be updated from incoming
                 .withDefendants(mergeDefendants(incomingCase.getDefendants(), existingHearing.getDefendants(), incomingCase.getSource()))
-                .withCaseMarkers(existingHearing.getCaseMarkers());
+                .withCaseMarkers(incomingCase.getCaseMarkers());
 
     }
 

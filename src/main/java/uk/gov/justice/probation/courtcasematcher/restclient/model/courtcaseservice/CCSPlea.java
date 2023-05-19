@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 
 import java.time.LocalDate;
@@ -18,21 +17,21 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class CCSPlea {
-    private String value;
+    private String pleaValue;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate date;
+    private LocalDate pleaDate;
 
     public static CCSPlea of(Plea plea) {
         return CCSPlea.builder()
-                .value(Optional.ofNullable(plea).map(Plea::getValue).orElse(null))
-                .date(Optional.ofNullable(plea).map(Plea::getDate).orElse(null))
+                .pleaValue(Optional.ofNullable(plea).map(Plea::getPleaValue).orElse(null))
+                .pleaDate(Optional.ofNullable(plea).map(Plea::getPleaDate).orElse(null))
                 .build();
     }
 
     public Plea asDomain() {
         return Plea.builder()
-                .value(value)
-                .date(date)
+                .pleaValue(pleaValue)
+                .pleaDate(pleaDate)
                 .build();
     }
 }
