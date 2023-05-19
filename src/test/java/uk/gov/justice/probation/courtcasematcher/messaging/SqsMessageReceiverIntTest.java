@@ -179,6 +179,7 @@ public class SqsMessageReceiverIntTest {
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService, times(2)).trackPersonRecordCreatedEvent(any(Defendant.class), any(Hearing.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
@@ -211,6 +212,7 @@ public class SqsMessageReceiverIntTest {
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService, times(2)).trackPersonRecordCreatedEvent(any(Defendant.class), any(Hearing.class));
         verifyNoMoreInteractions(telemetryService);
     }
 

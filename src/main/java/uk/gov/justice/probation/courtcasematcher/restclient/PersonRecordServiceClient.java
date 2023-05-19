@@ -43,7 +43,6 @@ public class PersonRecordServiceClient {
                 .onErrorResume(throwable -> {
                     log.error("Person search with {} returned with error {}", personSearchRequest, throwable.getMessage());
                     return Mono.error(throwable);
-
                 });
     }
 
@@ -56,7 +55,6 @@ public class PersonRecordServiceClient {
                 .onErrorResume(throwable -> {
                     log.error("Create person with {} returned with error {}", person, throwable.getMessage());
                     return Mono.error(throwable);
-
                 });
     }
 
@@ -64,7 +62,6 @@ public class PersonRecordServiceClient {
         return webClient
                 .post()
                 .uri(uri);
-
     }
 
 }

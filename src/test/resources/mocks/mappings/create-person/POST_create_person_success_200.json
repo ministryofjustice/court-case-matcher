@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/person",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "crn": "CRN8474",
+          "givenName": "Billy",
+          "familyName": "Jones",
+          "middleNames": [
+            "Danny",
+            "Alex"
+          ],
+          "dateOfBirth": [1968,8,15]
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "create-person/create_person_200_response.json"
+  }
+}

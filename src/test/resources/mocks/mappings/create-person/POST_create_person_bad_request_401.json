@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/person",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "crn": "CRN400",
+          "givenName": "Stephen"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
