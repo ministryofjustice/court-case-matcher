@@ -1,0 +1,14 @@
+{
+  "priority": 3,
+  "request": {
+    "method": "POST",
+    "url": "/person"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "create-person/create_person_200_response.json"
+  }
+}

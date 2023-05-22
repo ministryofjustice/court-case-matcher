@@ -51,6 +51,7 @@ import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.IN_BREACH_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHED_BY_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.MATCHES_KEY;
+import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PERSON_ID_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PNC_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PREVIOUSLY_KNOWN_TERMINATION_DATE_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.PRE_SENTENCE_ACTVITY_KEY;
@@ -375,6 +376,32 @@ class TelemetryServiceTest {
 
         final var properties = propertiesCaptor.getValue();
         assertDefendantProperties(properties);
+    }
+
+    @Test
+    void shouldRecordPersonCreatedRecordEvent() {
+        // Given
+        final var defendant = Defendant.builder()
+                .defendantId(DEFENDANT_ID_ONE)
+                .crn(CRN)
+                .pnc(PNC)
+                .personId("098098sf098sf09s8f")
+                .build();
+
+        // When
+        telemetryService.trackPersonRecordCreatedEvent(defendant, hearing);
+
+        // Then
+        verify(telemetryClient).trackEvent(eq("PiCPersonRecordCreated"), propertiesCaptor.capture(), eq(Collections.emptyMap()));
+
+        var properties = propertiesCaptor.getValue();
+        assertThat(properties).hasSize(5)
+            .contains(
+                entry(HEARING_ID_KEY, hearing.getHearingId()),
+                entry(PNC_KEY, defendant.getPnc()),
+                entry(PERSON_ID_KEY, defendant.getPersonId()),
+                entry(DEFENDANT_ID_KEY, defendant.getDefendantId()),
+                entry(CASE_ID_KEY, hearing.getCaseId()));
     }
 
     private void assertDefendantProperties(Map<String, String> properties) {

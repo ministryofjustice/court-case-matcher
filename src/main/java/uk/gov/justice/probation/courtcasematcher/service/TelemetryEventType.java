@@ -13,7 +13,8 @@ public enum TelemetryEventType {
     HEARING_UNCHANGED("PiCHearingUnchanged"),
     PROCESSING_FAILURE("PiCMatcherProcessingFailure"),
     PROBATION_STATUS_UPDATED("PiCDefendantProbationStatusUpdated"),
-    PROBATION_STATUS_NOT_UPDATED("PiCDefendantProbationStatusNotUpdated");
+    PROBATION_STATUS_NOT_UPDATED("PiCDefendantProbationStatusNotUpdated"),
+    PERSON_RECORD_CREATED("PiCPersonRecordCreated");
 
     final String eventName;
 

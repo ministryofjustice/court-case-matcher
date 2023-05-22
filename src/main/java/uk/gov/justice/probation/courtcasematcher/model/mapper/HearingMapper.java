@@ -185,8 +185,7 @@ public class HearingMapper {
                         .pnc(offender.getOtherIds().getPncNumber())
                         .cro(offender.getOtherIds().getCroNumber())
                         .build() : null
-                )
-                ;
+                );
     }
 
     public static GroupedOffenderMatches buildGroupedOffenderMatch(List<Match> matches, MatchType matchType) {
