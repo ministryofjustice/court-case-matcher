@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
@@ -20,7 +21,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.PersonSearchRequest;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -37,22 +37,41 @@ public class MatcherService {
 
     private final PersonMatchScoreRestClient personMatchScoreRestClient;
 
+    private final PersonRecordServiceClient personRecordServiceClient;
+
     private final MatchRequest.Factory matchRequestFactory;
 
     private TelemetryService telemetryService;
 
-    private PersonRecordServiceClient personRecordServiceClient;
-
+    private final FeatureFlags featureFlags;
 
     public Mono<Hearing> matchDefendants(Hearing hearing) {
-
         return Mono.just(hearing.getDefendants()
                         .stream()
+                        .map(defendant -> this.createPersonRecord(defendant, hearing))
                         .map(defendant -> defendant.shouldMatchToOffender() ? matchDefendant(defendant, hearing) : Mono.just(defendant))
                         .map(Mono::block)
                         .collect(Collectors.toList())
                 )
                 .map(hearing::withDefendants);
+    }
+
+    public Defendant createPersonRecord(Defendant defendant, Hearing hearing) {
+
+        Person person = Person.from(defendant);
+        Person createdPerson  = personRecordServiceClient.createPerson(person)
+            .doOnError(throwable -> {
+                log.error("Unable to create person in person record service", throwable);
+            })
+            .block();
+
+        log.info("Successfully created person in Person Record service");
+        if (featureFlags.getFlag("save_person_id_to_court_case_service")) {
+            defendant.setPersonId(createdPerson.getPersonId().toString());
+        }
+        telemetryService.trackPersonRecordCreatedEvent(defendant, hearing);
+
+        return defendant;
     }
 
     public Mono<Defendant> matchDefendant(Defendant defendant, Hearing hearing) {
@@ -62,7 +81,6 @@ public class MatcherService {
                 .doOnError(e ->
                         log.warn(String.format("Unable to create MatchRequest for defendantId: %s", defendant.getDefendantId()), e))
                 .flatMap(offenderSearchRestClient::match)
-                .doOnNext(response -> searchPersonRecord(defendant, response))
 
                 .doOnSuccess(searchResponse -> log.info(String.format("Match results for defendantId: %s - matchedBy: %s, matchCount: %s",
                         defendant.getDefendantId(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size())))
@@ -108,9 +126,5 @@ public class MatcherService {
                 .pnc(PersonMatchScoreParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
                 .sourceDataset(sourceDataSet)
                 .build();
-    }
-
-    private Mono<List<Person>> searchPersonRecord(Defendant defendant, MatchResponse response){
-        return personRecordServiceClient.search(PersonSearchRequest.of(defendant));
     }
 }

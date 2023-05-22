@@ -1,0 +1,14 @@
+{
+  "personId": "205d8379-69d3-44d5-872c-ed5a13a31aad",
+  "givenName": "Stephen",
+  "middleNames": [
+    "Danny",
+    "Alex"
+  ],
+  "familyName": "Jones",
+  "dateOfBirth": "1968-08-15",
+  "otherIdentifiers": {
+    "crn": "CRN8474",
+    "pncNumber": "PNC1234"
+  }
+}
