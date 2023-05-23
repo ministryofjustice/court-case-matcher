@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -25,6 +26,9 @@ public class PersonRecordServiceClient {
 
     @Value("${person-record-service.create-person-url}")
     private String createPersonUrl;
+
+    @Value("${person-record-service.disable-authentication:false}")
+    private Boolean disableAuthentication;
 
     private final WebClient webClient;
 
@@ -59,9 +63,14 @@ public class PersonRecordServiceClient {
     }
 
     private WebClient.RequestBodySpec post(String uri) {
-        return webClient
+        WebClient.RequestBodySpec spec = webClient
                 .post()
                 .uri(uri);
-    }
 
+        if (disableAuthentication) {
+            return spec;
+        }
+
+        return spec.attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId("person-record-search-client"));
+    }
 }
