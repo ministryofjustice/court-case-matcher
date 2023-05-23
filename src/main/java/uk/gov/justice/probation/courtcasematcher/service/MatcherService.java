@@ -21,11 +21,14 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreParameter;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.PersonSearchRequest;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
 
 @Service
 @Slf4j
@@ -81,7 +84,7 @@ public class MatcherService {
                 .doOnError(e ->
                         log.warn(String.format("Unable to create MatchRequest for defendantId: %s", defendant.getDefendantId()), e))
                 .flatMap(offenderSearchRestClient::match)
-
+                .doOnNext(response -> setPersonRecordId(defendant, response))
                 .doOnSuccess(searchResponse -> log.info(String.format("Match results for defendantId: %s - matchedBy: %s, matchCount: %s",
                         defendant.getDefendantId(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size())))
                 .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(defendant, hearing, result))
@@ -126,5 +129,24 @@ public class MatcherService {
                 .pnc(PersonMatchScoreParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
                 .sourceDataset(sourceDataSet)
                 .build();
+    }
+
+    private Mono<MatchResponse> setPersonRecordId(Defendant defendant, MatchResponse offenderSearchResponse) {
+        if (offenderSearchResponse.isExactOffenderMatch()  && featureFlags.getFlag("save_person_id_to_court_case_service")) {
+            var personSearchResponse = personRecordServiceClient.search(PersonSearchRequest.of(defendant))
+                    .doOnError(throwable -> {
+                        log.error("Unable to search a person in person record service", throwable);
+                    })
+                    .block();
+            if (isExactPersonRecord(personSearchResponse)) {
+                defendant.setPersonId(personSearchResponse.get(0).getPersonId().toString());
+            }
+        }
+        return Mono.just(offenderSearchResponse);
+
+    }
+
+    private boolean isExactPersonRecord(List<Person> personSearchResponse){
+        return !isNull(personSearchResponse) && personSearchResponse.size() == 1;
     }
 }
