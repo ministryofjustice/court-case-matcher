@@ -22,6 +22,18 @@ env:
         name: court-case-matcher-secrets
         key: nomis-oauth-client-id
 
+  - name: PERSON_RECORD_SEARCH_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: court-case-matcher-secrets
+        key: nomis-oauth-client-id
+
+  - name: PERSON_RECORD_SEARCH_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: court-case-matcher-secrets
+        key: nomis-oauth-client-secret
+
   - name: APPINSIGHTS_INSTRUMENTATIONKEY
     valueFrom:
       secretKeyRef:
