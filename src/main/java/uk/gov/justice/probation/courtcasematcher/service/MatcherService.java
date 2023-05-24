@@ -62,11 +62,11 @@ public class MatcherService {
     public Defendant createPersonRecord(Defendant defendant, Hearing hearing) {
 
         Person person = Person.from(defendant);
-        Person createdPerson  = personRecordServiceClient.createPerson(person)
-            .doOnError(throwable -> {
-                log.error("Unable to create person in person record service", throwable);
-            })
-            .block();
+        Person createdPerson = personRecordServiceClient.createPerson(person)
+                .doOnError(throwable -> {
+                    log.error("Unable to create person in person record service", throwable);
+                })
+                .block();
 
         log.info("Successfully created person in Person Record service");
         if (featureFlags.getFlag("save_person_id_to_court_case_service")) {
@@ -84,7 +84,7 @@ public class MatcherService {
                 .doOnError(e ->
                         log.warn(String.format("Unable to create MatchRequest for defendantId: %s", defendant.getDefendantId()), e))
                 .flatMap(offenderSearchRestClient::match)
-                .doOnNext(response -> setPersonRecordId(defendant, response))
+                .map(response -> setPersonRecordId(defendant, response))
                 .doOnSuccess(searchResponse -> log.info(String.format("Match results for defendantId: %s - matchedBy: %s, matchCount: %s",
                         defendant.getDefendantId(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size())))
                 .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(defendant, hearing, result))
@@ -131,22 +131,24 @@ public class MatcherService {
                 .build();
     }
 
-    private Mono<MatchResponse> setPersonRecordId(Defendant defendant, MatchResponse offenderSearchResponse) {
-        if (offenderSearchResponse.isExactOffenderMatch()  && featureFlags.getFlag("save_person_id_to_court_case_service")) {
-            var personSearchResponse = personRecordServiceClient.search(PersonSearchRequest.of(defendant))
+    private MatchResponse setPersonRecordId(Defendant defendant, MatchResponse offenderSearchResponse) {
+        if (offenderSearchResponse.isExactOffenderMatch() && featureFlags.getFlag("save_person_id_to_court_case_service")) {
+            personRecordServiceClient.search(PersonSearchRequest.of(defendant))
                     .doOnError(throwable -> {
                         log.error("Unable to search a person in person record service", throwable);
                     })
-                    .block();
-            if (isExactPersonRecord(personSearchResponse)) {
-                defendant.setPersonId(personSearchResponse.get(0).getPersonId().toString());
-            }
-        }
-        return Mono.just(offenderSearchResponse);
+                    .filterWhen(this::isExactPersonRecord)
+                    .map(searchResponse -> {
+                        defendant.setPersonId(searchResponse.get(0).getPersonId().toString());
+                        log.info("Successfully set the person id");
+                        return offenderSearchResponse;
+                    });
 
+        }
+        return offenderSearchResponse;
     }
 
-    private boolean isExactPersonRecord(List<Person> personSearchResponse){
-        return !isNull(personSearchResponse) && personSearchResponse.size() == 1;
+    private Mono<Boolean> isExactPersonRecord(List<Person> personSearchResponse) {
+        return Mono.just(!isNull(personSearchResponse) && personSearchResponse.size() == 1);
     }
 }

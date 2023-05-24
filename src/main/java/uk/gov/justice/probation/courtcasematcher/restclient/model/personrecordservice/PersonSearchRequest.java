@@ -32,7 +32,7 @@ public class PersonSearchRequest {
                 .surname(builder().surname)
                 .dateOfBirth(defendant.getDateOfBirth())
                 .pncNumber(defendant.getPnc())
-                //TODO middle names
+                .middleNames(Person.getMiddleNames(defendant))
                 .build();
     }
 }

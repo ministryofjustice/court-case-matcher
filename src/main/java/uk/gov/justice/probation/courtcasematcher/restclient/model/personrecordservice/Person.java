@@ -47,9 +47,9 @@ public class Person {
                 .build();
     }
 
-    private static List<String> getMiddleNames(Defendant defendant) {
+    public static List<String> getMiddleNames(Defendant defendant) {
         if (null != defendant.getName()) {
-            return Stream.of(defendant.getName().getForename2(), defendant.getName().getForename2())
+            return Stream.of(defendant.getName().getForename2(), defendant.getName().getForename3())
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         } else {
