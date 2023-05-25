@@ -219,6 +219,49 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
+    @Test
+    public void givenNewCase_whenExactPersonRecordFound_thenSetPersonIdOnDefendant() throws IOException {
+        featureFlags.setFlagValue("save_person_id_to_court_case_service", true);
+        var orgJson = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
+
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
+
+        await()
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
+
+        MOCK_SERVER.verify(
+                putRequestedFor(urlMatching("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC"))
+                        .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
+                        .withRequestBody(matchingJsonPath("hearingId", equalTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC")))
+                        .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
+                        .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
+                        .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
+                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                        // set by create person
+                       // .withRequestBody(matchingJsonPath("defendants[0].personId", equalTo("205d8379-69d3-44d5-872c-ed5a13a31aad")))
+                        //updated by person search
+                        .withRequestBody(matchingJsonPath("defendants[0].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
+
+                        .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
+                        .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
+                        .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
+                        //set by create person
+                        .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("205d8379-69d3-44d5-872c-ed5a13a31aad")))
+                        //updated by person search
+                        .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
+
+
+        );
+
+        verify(telemetryService).withOperation(nullable(String.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService, times(2)).trackPersonRecordCreatedEvent(any(Defendant.class), any(Hearing.class));
+        verifyNoMoreInteractions(telemetryService);
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     public void givenMatchedExistingCase_whenReceivePayload_thenSendUpdatedCase(boolean matchOnEveryRecordUpdate) throws IOException {

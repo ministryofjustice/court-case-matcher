@@ -84,7 +84,7 @@ public class MatcherService {
                 .doOnError(e ->
                         log.warn(String.format("Unable to create MatchRequest for defendantId: %s", defendant.getDefendantId()), e))
                 .flatMap(offenderSearchRestClient::match)
-                .map(response -> setPersonRecordId(defendant, response))
+                .flatMap(response -> setPersonRecordId(defendant, response))
                 .doOnSuccess(searchResponse -> log.info(String.format("Match results for defendantId: %s - matchedBy: %s, matchCount: %s",
                         defendant.getDefendantId(), searchResponse.getMatchedBy(), searchResponse.getMatches() == null ? "null" : searchResponse.getMatches().size())))
                 .doOnSuccess(result -> telemetryService.trackOffenderMatchEvent(defendant, hearing, result))
@@ -131,9 +131,9 @@ public class MatcherService {
                 .build();
     }
 
-    private MatchResponse setPersonRecordId(Defendant defendant, MatchResponse offenderSearchResponse) {
+    private Mono<MatchResponse> setPersonRecordId(Defendant defendant, MatchResponse offenderSearchResponse) {
         if (offenderSearchResponse.isExactOffenderMatch() && featureFlags.getFlag("save_person_id_to_court_case_service")) {
-            personRecordServiceClient.search(PersonSearchRequest.of(defendant))
+          return  personRecordServiceClient.search(PersonSearchRequest.of(defendant))
                     .doOnError(throwable -> {
                         log.error("Unable to search a person in person record service", throwable);
                     })
@@ -142,10 +142,10 @@ public class MatcherService {
                         defendant.setPersonId(searchResponse.get(0).getPersonId().toString());
                         log.info("Successfully set the person id");
                         return offenderSearchResponse;
-                    });
+                    }).or(Mono.just(offenderSearchResponse));
 
         }
-        return offenderSearchResponse;
+        return Mono.just(offenderSearchResponse);
     }
 
     private Mono<Boolean> isExactPersonRecord(List<Person> personSearchResponse) {

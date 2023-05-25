@@ -348,7 +348,7 @@ class MatcherServiceTest {
     }
 
     @Test
-    void shouldSetDefendantWithPersonIdWhenFlagIsSetAndOffenderSearchReturnWithExactMatch() {
+    void RshouldSetDefendantWithPersonIdWhenFlagIsSetAndOffenderSearchReturnWithExactMatch() {
         // Given
         when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
 
