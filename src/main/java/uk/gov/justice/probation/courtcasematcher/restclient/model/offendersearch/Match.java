@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearc
 
 import lombok.*;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
 
 @Getter
 @Builder

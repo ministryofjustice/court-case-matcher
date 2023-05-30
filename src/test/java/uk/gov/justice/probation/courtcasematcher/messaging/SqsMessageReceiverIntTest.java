@@ -247,7 +247,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
                         //set by create person
-                        .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("205d8379-69d3-44d5-872c-ed5a13a31aad")))
+                       // .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("205d8379-69d3-44d5-872c-ed5a13a31aad")))
                         //updated by person search
                         .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
 
