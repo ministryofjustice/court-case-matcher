@@ -1,9 +1,12 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
-import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.With;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,17 +19,6 @@ public class MatchResponse {
     @With
     private final List<Match> matches;
     private final OffenderSearchMatchType matchedBy;
-
-
-    @With
-    @Builder.Default
-    private  final Mono<Person> personMatch = Mono.empty();
-
-    @With
-    @Builder.Default
-    private  final Mono<String> personRecordId = Mono.empty();
-
-
 
     @JsonIgnore
     public boolean isExactOffenderMatch() {

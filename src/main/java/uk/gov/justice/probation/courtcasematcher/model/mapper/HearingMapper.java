@@ -162,7 +162,6 @@ public class HearingMapper {
                 .orElse(MatchType.UNKNOWN);
 
         var newDefendant = defendant
-              //  .withPersonId(Optional.ofNullable(matchResponse.getPersonRecordId()).map(Mono::block).orElse(null))
                 .withGroupedOffenderMatches(buildGroupedOffenderMatch(matchResponse.getMatches(), matchType));
 
         if (matchResponse.isExactOffenderMatch()) {
