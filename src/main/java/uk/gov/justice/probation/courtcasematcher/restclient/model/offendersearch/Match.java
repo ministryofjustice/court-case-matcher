@@ -1,8 +1,12 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.With;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
 
 @Getter
 @Builder
