@@ -83,15 +83,12 @@ class HearingProcessorTest {
                     .build();
 
             when(matcherService.matchDefendants(any(Hearing.class))).thenReturn(Mono.just(courtCase));
-            when(matcherService.matchPersonRecord(any(Hearing.class))).thenReturn(Mono.just(courtCase));
-
 
             hearingProcessor.process(courtCase, MESSAGE_ID);
 
             verify(telemetryService).trackNewHearingEvent(any(Hearing.class), eq(MESSAGE_ID));
 
             verify(matcherService).matchDefendants(any(Hearing.class));
-            verify(matcherService).matchPersonRecord(any(Hearing.class));
             verify(courtCaseService).saveHearing(eq(courtCase));
             verify(courtCaseService).findHearing(any(Hearing.class));
             verifyNoMoreInteractions(courtCaseService, telemetryService);

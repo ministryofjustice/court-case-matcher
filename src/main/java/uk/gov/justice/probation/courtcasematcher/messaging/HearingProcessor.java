@@ -109,7 +109,6 @@ public class HearingProcessor {
 
     private void applyMatchesAndSave(final Hearing hearing) {
         matcherService.matchDefendants(hearing)
-                .flatMap(matcherService::matchPersonRecord)
                 .onErrorReturn(hearing)
                 .doOnSuccess(courtCaseService::saveHearing)
                 .block();
