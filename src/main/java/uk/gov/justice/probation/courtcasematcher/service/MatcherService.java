@@ -25,6 +25,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordse
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -51,7 +52,7 @@ public class MatcherService {
     public Mono<Hearing> matchDefendants(Hearing hearing) {
         return Mono.just(hearing.getDefendants()
                         .stream()
-                        .map(defendant -> this.createPersonRecord(defendant, hearing))
+                        .map(defendant -> this.matchPersonAndSetPersonRecordId(defendant, hearing))
                         .map(defendant -> defendant.shouldMatchToOffender() ? matchDefendant(defendant, hearing) : Mono.just(defendant))
                         .map(Mono::block)
                         .collect(Collectors.toList())
@@ -59,32 +60,36 @@ public class MatcherService {
                 .map(hearing::withDefendants);
     }
 
-    public Mono<Hearing> matchPersonRecord(Hearing hearing) {
-        return Mono.just(hearing.getDefendants()
-                        .stream()
-                        .map(this::setPersonRecordId)
-                        .map(Mono::block)
-                        .collect(Collectors.toList())
-                )
-                .map(hearing::withDefendants);
-    }
-
-    public Defendant createPersonRecord(Defendant defendant, Hearing hearing) {
-
-        Person person = Person.from(defendant);
-        Person createdPerson = personRecordServiceClient.createPerson(person)
-                .doOnError(throwable -> {
-                    log.error("Unable to create person in person record service", throwable);
-                })
-                .block();
-
-        log.info("Successfully created person in Person Record service");
+    private Defendant matchPersonAndSetPersonRecordId(Defendant defendant, Hearing hearing) {
         if (featureFlags.getFlag("save_person_id_to_court_case_service")) {
-            defendant.setPersonId(createdPerson.getPersonId().toString());
-        }
-        telemetryService.trackPersonRecordCreatedEvent(defendant, hearing);
+            var personSearchResponse = personRecordServiceClient.search(PersonSearchRequest.of(defendant))
+                    .doOnError(throwable -> {
+                        log.error("Unable to search a person in person record service", throwable);
+                    })
+                    .block();
 
+            if (isExactPersonRecord(personSearchResponse)) {
+                log.info("Successfully found an exact match in Person Record service");
+
+                defendant.setPersonId(personSearchResponse.get(0).getPersonId().toString());
+            } else {
+
+                Person person = Person.from(defendant);
+                Person createdPerson = personRecordServiceClient.createPerson(person)
+                        .doOnError(throwable -> {
+                            log.error("Unable to create person in person record service", throwable);
+                        })
+                        .block();
+
+                log.info("Successfully created person in Person Record service");
+                defendant.setPersonId(Optional.ofNullable(createdPerson).map(Person::getPersonIdString).orElse(null));
+                telemetryService.trackPersonRecordCreatedEvent(defendant, hearing);
+
+            }
+            return defendant;
+        }
         return defendant;
+
     }
 
     public Mono<Defendant> matchDefendant(Defendant defendant, Hearing hearing) {
@@ -142,7 +147,7 @@ public class MatcherService {
     }
 
 
-    private Mono<Defendant> setPersonRecordId(Defendant defendant) {
+    private Defendant setPersonRecordId(Defendant defendant) {
         if (featureFlags.getFlag("save_person_id_to_court_case_service")) {
             var personSearchResponse = personRecordServiceClient.search(PersonSearchRequest.of(defendant))
                     .doOnError(throwable -> {
@@ -154,7 +159,7 @@ public class MatcherService {
                 defendant.setPersonId(personSearchResponse.get(0).getPersonId().toString());
             }
         }
-        return Mono.just(defendant);
+        return defendant;
 
     }
 

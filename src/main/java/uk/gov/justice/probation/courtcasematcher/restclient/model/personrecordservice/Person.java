@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -57,5 +58,10 @@ public class Person {
         } else {
             return null;
         }
+    }
+
+    @JsonIgnore
+    public String getPersonIdString(){
+        return personId.toString();
     }
 }
