@@ -216,6 +216,32 @@ class MatcherServiceTest {
     }
 
     @Test
+    void shouldAllowMatchingOfDefendantsWithNullDateOfBirth() {
+        // Given
+        defendant1.setDateOfBirth(null);
+        defendant2.setDateOfBirth(null);
+        matchRequest2.setDateOfBirth(null);
+
+        when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
+        when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(multipleExactMatches));
+        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
+
+        when(personMatchScoreRestClient.match(any()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.81, null)).build()));
+
+        // When
+        matcherService.matchDefendants(hearing).block();
+
+        // Then
+        personMatchScoreReq1.setDateOfBirth(PersonMatchScoreParameter.of("2000-06-17", null));
+        personMatchScoreReq2.setDateOfBirth(PersonMatchScoreParameter.of(null, null));
+        verify(personMatchScoreRestClient, times(2)).match(AdditionalMatchers.or(
+                eq(personMatchScoreReq1), eq(personMatchScoreReq2)));
+    }
+
+    @Test
     void givenMatchesToSingleOffender_whenSearchResponse_thenReturnWithProbationStatus() {
         when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
         when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
