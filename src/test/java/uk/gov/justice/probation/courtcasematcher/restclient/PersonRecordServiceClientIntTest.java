@@ -84,9 +84,6 @@ public class PersonRecordServiceClientIntTest {
                     .middleNames(List.of("Danny", "Alex"))
                     .build();
 
-            String s = new ObjectMapper().registerModule(new JSR310Module()).writeValueAsString(person);
-            System.out.println(s);
-
             // When
             Person result = personRecordServiceClient.createPerson(person).block();
 
