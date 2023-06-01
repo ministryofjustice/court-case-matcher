@@ -144,6 +144,8 @@ class MatcherServiceTest {
         when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
         when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(noMatches));
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
+        when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
+
 
         var updatedCase = matcherService.matchDefendants(hearing).take(Duration.ofSeconds(5)).block();
 
@@ -299,6 +301,10 @@ class MatcherServiceTest {
 
         when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person));
 
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Collections.emptyList()));
+
         when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
         when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
         when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(noMatches));
@@ -348,7 +354,7 @@ class MatcherServiceTest {
     }
 
     @Test
-    void RshouldSetDefendantWithPersonIdWhenFlagIsSetAndOffenderSearchReturnWithExactMatch() {
+    void shouldSetDefendantWithPersonIdWhenFlagIsSetAndOffenderSearchReturnWithExactMatch() {
         // Given
         when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
 
@@ -357,7 +363,6 @@ class MatcherServiceTest {
                 .personId(personId)
                 .build();
 
-        when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person));
 
         when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
                 .thenReturn(Mono.just(Collections.singletonList(person)));
@@ -389,8 +394,6 @@ class MatcherServiceTest {
                 .personId(personId)
                 .build();
 
-        when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person));
-
 
         when(personMatchScoreRestClient.match(any()))
                 .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
@@ -404,7 +407,7 @@ class MatcherServiceTest {
         var updatedCase = matcherService.matchDefendants(hearing).block();
 
         // Then
-        verify(personRecordServiceClient, times(2)).createPerson(any(Person.class));
+        verify(personRecordServiceClient, times(0)).createPerson(any(Person.class));
         verify(personRecordServiceClient, times(0)).search(any(PersonSearchRequest.class));
 
     }
@@ -420,6 +423,9 @@ class MatcherServiceTest {
                 .build();
 
         when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person));
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Collections.emptyList()));
 
 
         when(personMatchScoreRestClient.match(any()))
