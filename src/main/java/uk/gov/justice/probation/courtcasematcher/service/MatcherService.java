@@ -134,7 +134,7 @@ public class MatcherService {
         return PersonMatchScoreRequest.builder()
                 .firstName(PersonMatchScoreParameter.of(matchRequest.getFirstName(), osOffender.getFirstName()))
                 .surname(PersonMatchScoreParameter.of(matchRequest.getSurname(), osOffender.getSurname()))
-                .dateOfBirth(PersonMatchScoreParameter.of(matchRequest.getDateOfBirth(), defendant.getDateOfBirth().format(DateTimeFormatter.ISO_DATE)))
+                .dateOfBirth(PersonMatchScoreParameter.of(matchRequest.getDateOfBirth(), Optional.ofNullable(defendant.getDateOfBirth()).map(dob -> dob.format(DateTimeFormatter.ISO_DATE)).orElse(null)))
                 .uniqueId(PersonMatchScoreParameter.of(defendant.getDefendantId(), defendant.getDefendantId()))
                 .pnc(PersonMatchScoreParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
                 .sourceDataset(sourceDataSet)
