@@ -146,6 +146,8 @@ class MatcherServiceTest {
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
         when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
 
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Arrays.asList(Person.builder().personId(UUID.randomUUID()).build(), Person.builder().personId(UUID.randomUUID()).build())));
 
         var updatedCase = matcherService.matchDefendants(hearing).take(Duration.ofSeconds(5)).block();
 
@@ -380,7 +382,7 @@ class MatcherServiceTest {
     }
 
     @Test
-    void shouldSetDefendantWithPersonIdWhenFlagIsSetAndOffenderSearchReturnWithExactMatch() {
+    void shouldSetDefendantWithPersonIdWhenFlagIsSetAndPersonRecordSearchReturnWithExactMatch() {
         // Given
         when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
 
@@ -411,7 +413,7 @@ class MatcherServiceTest {
     }
 
     @Test
-    void shouldNotSetDefendantWithPersonIdWhenFlagIsNotSetAndOffenderSearchReturnWithExactMatch() {
+    void shouldNotSetDefendantWithPersonIdWhenFlagIsNotSet() {
         // Given
         when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(false);
 
@@ -439,7 +441,7 @@ class MatcherServiceTest {
     }
 
     @Test
-    void shouldNotSetDefendantWithPersonIdWhenFlagIsSetAndOffenderSearchReturnWithMultipleExactMatch() {
+    void shouldCreatePersonRecordAndSetDefendantWithPersonIdWhenFlagIsSetAndPersonRecordSearchSearchReturnEmpty() {
         // Given
         when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
 
@@ -467,7 +469,42 @@ class MatcherServiceTest {
 
         // Then
         verify(personRecordServiceClient, times(2)).createPerson(any(Person.class));
-        verify(personRecordServiceClient, times(0)).search(any(PersonSearchRequest.class));
+
+    }
+
+    @Test
+    void shouldCreatePersonRecordAndSetDefendantWithPersonIdWhenFlagIsSetAndPersonRecordSearchSearchReturnMoreResults() {
+        // Given
+        when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
+
+        UUID personId = UUID.randomUUID();
+        Person person1 = Person.builder()
+                .personId(personId)
+                .build();
+
+        Person person2 = Person.builder()
+                .personId(UUID.randomUUID())
+                .build();
+
+        when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person1));
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Arrays.asList(person1,person2)));
+
+
+        when(personMatchScoreRestClient.match(any()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
+
+        when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
+        when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(multipleExactMatches));
+        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(multipleExactMatches));
+
+        // When
+        var updatedCase = matcherService.matchDefendants(hearing).block();
+
+        // Then
+        verify(personRecordServiceClient, times(2)).createPerson(any(Person.class));
 
     }
 

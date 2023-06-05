@@ -60,7 +60,7 @@ public class MatcherService {
                 .map(hearing::withDefendants);
     }
 
-    private Defendant matchPersonAndSetPersonRecordId(Defendant defendant, Hearing hearing) {
+    public Defendant matchPersonAndSetPersonRecordId(Defendant defendant, Hearing hearing) {
         if (featureFlags.getFlag("save_person_id_to_court_case_service")) {
             var personSearchResponse = personRecordServiceClient.search(PersonSearchRequest.of(defendant))
                     .doOnError(throwable -> {

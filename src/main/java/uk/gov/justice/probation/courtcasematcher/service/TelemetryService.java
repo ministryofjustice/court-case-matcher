@@ -79,6 +79,9 @@ public class TelemetryService {
 
         TelemetryEventType eventType = TelemetryEventType.OFFENDER_PARTIAL_MATCH;
         if (matchResponse.isExactOffenderMatch()) {
+            ofNullable(defendant.getPersonId())
+                    .ifPresent(personId -> properties.put(PERSON_ID_KEY, personId));
+
             eventType = TelemetryEventType.OFFENDER_EXACT_MATCH;
         }
         else if (matchCount == 0){
