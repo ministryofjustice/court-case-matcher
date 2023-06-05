@@ -25,7 +25,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordse
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -144,23 +143,6 @@ public class MatcherService {
                 .pnc(PersonMatchScoreParameter.of(matchRequest.getPncNumber(), Optional.ofNullable(osOffender.getOtherIds()).map(o -> o.getPncNumber()).orElse(null)))
                 .sourceDataset(sourceDataSet)
                 .build();
-    }
-
-
-    private Defendant setPersonRecordId(Defendant defendant) {
-        if (featureFlags.getFlag("save_person_id_to_court_case_service")) {
-            var personSearchResponse = personRecordServiceClient.search(PersonSearchRequest.of(defendant))
-                    .doOnError(throwable -> {
-                        log.error("Unable to search a person in person record service", throwable);
-                    })
-                    .block();
-
-            if (isExactPersonRecord(personSearchResponse)) {
-                defendant.setPersonId(personSearchResponse.get(0).getPersonId().toString());
-            }
-        }
-        return defendant;
-
     }
 
     private boolean isExactPersonRecord(List<Person> personSearchResponse) {

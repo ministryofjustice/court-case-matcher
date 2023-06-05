@@ -62,6 +62,6 @@ public class Person {
 
     @JsonIgnore
     public String getPersonIdString(){
-        return personId.toString();
+        return Optional.ofNullable(personId).map(UUID::toString).orElse(null);
     }
 }
