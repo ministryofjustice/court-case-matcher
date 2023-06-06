@@ -180,7 +180,7 @@ class MatcherServiceTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> matcherService.matchDefendants(courtCase).block());
 
-        LoggingEvent loggingEvent = captureLogEvent(1);
+        LoggingEvent loggingEvent = captureLogEvent(0);
         assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
         assertThat(loggingEvent.getFormattedMessage().trim())
                 .contains("Unable to create MatchRequest for defendantId: id1");
