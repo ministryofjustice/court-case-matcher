@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.With;
+import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 
 import java.time.LocalDate;
@@ -47,13 +50,18 @@ public class Person {
                 .build();
     }
 
-    private static List<String> getMiddleNames(Defendant defendant) {
+    public static List<String> getMiddleNames(Defendant defendant) {
         if (null != defendant.getName()) {
-            return Stream.of(defendant.getName().getForename2(), defendant.getName().getForename2())
+            return Stream.of(defendant.getName().getForename2(), defendant.getName().getForename3())
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         } else {
             return null;
         }
+    }
+
+    @JsonIgnore
+    public String getPersonIdString(){
+        return Optional.ofNullable(personId).map(UUID::toString).orElse(null);
     }
 }

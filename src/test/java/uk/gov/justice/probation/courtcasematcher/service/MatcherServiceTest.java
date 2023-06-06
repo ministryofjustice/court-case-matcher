@@ -28,6 +28,7 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchsco
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreRequest;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchscore.PersonMatchScoreResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.PersonSearchRequest;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -48,7 +49,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 class MatcherServiceTest {
     private static final String CRN = "X123456";
     private static final String PROBATION_STATUS = "CURRENT";
-    private static final LocalDate PREVIOUSLY_KNOWN_TERMINATION_DATE = LocalDate.of(2021, 9,29);
+    private static final LocalDate PREVIOUSLY_KNOWN_TERMINATION_DATE = LocalDate.of(2021, 9, 29);
     private static final boolean PRE_SENTENCE_ACTIVITY = true;
     private static final boolean BREACH = true;
     private static final boolean AWAITING_PSR = true;
@@ -74,17 +75,17 @@ class MatcherServiceTest {
 
 
     private final MatchRequest matchRequest1 = MatchRequest.builder()
-      .pncNumber(PNC)
-      .firstName("Arthur")
-      .surname("MORGAN")
-      .dateOfBirth("2000-06-17")
-      .build();
+            .pncNumber(PNC)
+            .firstName("Arthur")
+            .surname("MORGAN")
+            .dateOfBirth("2000-06-17")
+            .build();
     private final MatchRequest matchRequest2 = MatchRequest.builder()
-      .pncNumber(PNC_2)
-      .firstName("John")
-      .surname("Marston")
-      .dateOfBirth("2001-06-17")
-      .build();
+            .pncNumber(PNC_2)
+            .firstName("John")
+            .surname("Marston")
+            .dateOfBirth("2001-06-17")
+            .build();
 
     private PersonMatchScoreRequest personMatchScoreReq1;
 
@@ -137,13 +138,16 @@ class MatcherServiceTest {
     }
 
 
-
     @Test
     void givenIncomingDefendantDoesNotMatchAnOffender_whenMatchCalled_thenLog() {
         when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
         when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
         when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(noMatches));
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
+        when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Arrays.asList(Person.builder().personId(UUID.randomUUID()).build(), Person.builder().personId(UUID.randomUUID()).build())));
 
         var updatedCase = matcherService.matchDefendants(hearing).take(Duration.ofSeconds(5)).block();
 
@@ -176,7 +180,7 @@ class MatcherServiceTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> matcherService.matchDefendants(courtCase).block());
 
-        LoggingEvent loggingEvent = captureLogEvent(1);
+        LoggingEvent loggingEvent = captureLogEvent(0);
         assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
         assertThat(loggingEvent.getFormattedMessage().trim())
                 .contains("Unable to create MatchRequest for defendantId: id1");
@@ -193,8 +197,8 @@ class MatcherServiceTest {
         when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
 
         when(personMatchScoreRestClient.match(any()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()))
-          .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.81, null)).build()));
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.81, null)).build()));
 
         var updatedCase = matcherService.matchDefendants(hearing).block();
 
@@ -212,7 +216,7 @@ class MatcherServiceTest {
         verify(telemetryService).trackOffenderMatchEvent(defendant2, hearing, noMatches);
 
         verify(personMatchScoreRestClient, times(2)).match(AdditionalMatchers.or(
-            eq(personMatchScoreReq1), eq(personMatchScoreReq2)));
+                eq(personMatchScoreReq1), eq(personMatchScoreReq2)));
     }
 
     @Test
@@ -325,6 +329,10 @@ class MatcherServiceTest {
 
         when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person));
 
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Collections.emptyList()));
+
         when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
         when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
         when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(noMatches));
@@ -337,7 +345,7 @@ class MatcherServiceTest {
         verify(personRecordServiceClient, times(2)).createPerson(any(Person.class));
         verify(telemetryService, times(2)).trackPersonRecordCreatedEvent(any(Defendant.class), any(Hearing.class));
         assertThat(updatedCase.getDefendants())
-            .allMatch(defendant -> defendant.getPersonId().equals(personId.toString()));
+                .allMatch(defendant -> defendant.getPersonId().equals(personId.toString()));
     }
 
     @Test
@@ -372,8 +380,134 @@ class MatcherServiceTest {
         assertThat(updatedCase).isEqualTo(courtCase);
         verifyNoMoreInteractions(offenderSearchRestClient);
     }
-    
-    
+
+    @Test
+    void shouldSetDefendantWithPersonIdWhenFlagIsSetAndPersonRecordSearchReturnWithExactMatch() {
+        // Given
+        when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
+
+        UUID personId = UUID.randomUUID();
+        Person person = Person.builder()
+                .personId(personId)
+                .build();
+
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Collections.singletonList(person)));
+
+        when(personMatchScoreRestClient.match(any()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
+
+        when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
+        when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(singleExactMatch));
+        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(singleExactMatch));
+
+        // When
+        var updatedCase = matcherService.matchDefendants(hearing).block();
+
+        // Then
+        verify(personRecordServiceClient, times(2)).search(any(PersonSearchRequest.class));
+        assertThat(updatedCase.getDefendants())
+                .allMatch(defendant -> defendant.getPersonId().equals(personId.toString()));
+    }
+
+    @Test
+    void shouldNotSetDefendantWithPersonIdWhenFlagIsNotSet() {
+        // Given
+        when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(false);
+
+        UUID personId = UUID.randomUUID();
+        Person person = Person.builder()
+                .personId(personId)
+                .build();
+
+
+        when(personMatchScoreRestClient.match(any()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
+
+        when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
+        when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(singleExactMatch));
+        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(singleExactMatch));
+
+        // When
+        var updatedCase = matcherService.matchDefendants(hearing).block();
+
+        // Then
+        verify(personRecordServiceClient, times(0)).createPerson(any(Person.class));
+        verify(personRecordServiceClient, times(0)).search(any(PersonSearchRequest.class));
+
+    }
+
+    @Test
+    void shouldCreatePersonRecordAndSetDefendantWithPersonIdWhenFlagIsSetAndPersonRecordSearchSearchReturnEmpty() {
+        // Given
+        when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
+
+        UUID personId = UUID.randomUUID();
+        Person person = Person.builder()
+                .personId(personId)
+                .build();
+
+        when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person));
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Collections.emptyList()));
+
+
+        when(personMatchScoreRestClient.match(any()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
+
+        when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
+        when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(multipleExactMatches));
+        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(multipleExactMatches));
+
+        // When
+        var updatedCase = matcherService.matchDefendants(hearing).block();
+
+        // Then
+        verify(personRecordServiceClient, times(2)).createPerson(any(Person.class));
+
+    }
+
+    @Test
+    void shouldCreatePersonRecordAndSetDefendantWithPersonIdWhenFlagIsSetAndPersonRecordSearchSearchReturnMoreResults() {
+        // Given
+        when(featureFlags.getFlag("save_person_id_to_court_case_service")).thenReturn(true);
+
+        UUID personId = UUID.randomUUID();
+        Person person1 = Person.builder()
+                .personId(personId)
+                .build();
+
+        Person person2 = Person.builder()
+                .personId(UUID.randomUUID())
+                .build();
+
+        when(personRecordServiceClient.createPerson(any(Person.class))).thenReturn(Mono.just(person1));
+
+        when(personRecordServiceClient.search(any(PersonSearchRequest.class)))
+                .thenReturn(Mono.just(Arrays.asList(person1,person2)));
+
+
+        when(personMatchScoreRestClient.match(any()))
+                .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()));
+
+        when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequest1);
+        when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
+        when(offenderSearchRestClient.match(matchRequest1)).thenReturn(Mono.just(multipleExactMatches));
+        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(multipleExactMatches));
+
+        // When
+        var updatedCase = matcherService.matchDefendants(hearing).block();
+
+        // Then
+        verify(personRecordServiceClient, times(2)).createPerson(any(Person.class));
+
+    }
+
 
     private LoggingEvent captureLogEvent(int index) {
         verify(mockAppender, atLeastOnce()).doAppend(captorLoggingEvent.capture());

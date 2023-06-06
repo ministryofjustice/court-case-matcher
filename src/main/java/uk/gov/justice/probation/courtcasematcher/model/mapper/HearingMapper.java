@@ -3,6 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.model.mapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
@@ -24,6 +25,7 @@ import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.Match;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.MatchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OSOffender;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
 
 import java.util.Collections;
 import java.util.List;
@@ -162,7 +164,7 @@ public class HearingMapper {
         var newDefendant = defendant
                 .withGroupedOffenderMatches(buildGroupedOffenderMatch(matchResponse.getMatches(), matchType));
 
-        if (matchResponse.isExactMatch()) {
+        if (matchResponse.isExactOffenderMatch()) {
             var offender = matchResponse.getMatches().get(0).getOffender();
             var probationStatus = offender.getProbationStatus();
             newDefendant = buildDefendant(offender, newDefendant, probationStatus);
