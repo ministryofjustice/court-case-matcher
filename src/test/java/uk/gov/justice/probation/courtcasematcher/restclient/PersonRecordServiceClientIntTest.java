@@ -69,6 +69,22 @@ public class PersonRecordServiceClientIntTest {
                     postRequestedFor(urlEqualTo("/person/search"))
             );
         }
+
+        @Test
+        public void shouldReturnBadRequestWhenPersonSurnameIsNotProvided() {
+            // Given
+            PersonSearchRequest personSearchRequest = PersonSearchRequest.builder()
+                    .crn("CRN0001")
+                    .build();
+
+            // When
+            Mono<List<Person>> result = personRecordServiceClient.search(personSearchRequest);
+
+            // Then
+            StepVerifier.create(result)
+                    .expectError(WebClientResponseException.BadRequest.class)
+                    .verify();
+        }
     }
 
     @Nested
