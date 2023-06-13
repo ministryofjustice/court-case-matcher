@@ -8,9 +8,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Builder
@@ -29,7 +31,7 @@ public class PersonSearchRequest {
     public static PersonSearchRequest of(Defendant defendant){
         return PersonSearchRequest.builder()
                 .crn(defendant.getCrn())
-                .surname(builder().surname)
+                .surname(Optional.ofNullable(defendant.getName()).map(Name::getSurname).orElse(null))
                 .dateOfBirth(defendant.getDateOfBirth())
                 .pncNumber(defendant.getPnc())
                 .middleNames(Person.getMiddleNames(defendant))
