@@ -62,11 +62,14 @@ public class MatcherService {
     public Defendant matchPersonAndSetPersonRecordId(Defendant defendant, Hearing hearing) {
         if (featureFlags.getFlag("save_person_id_to_court_case_service")) {
             var personSearchResponse = personRecordServiceClient.search(PersonSearchRequest.of(defendant))
-                    .doOnError(throwable -> {
+                    .onErrorComplete(throwable -> { // doOnError is a side effect which doesn't stop throwing error - we should be using onErrorComplete if we want to ignore
                         log.error("Unable to search a person in person record service", throwable);
+                        return true;
                     })
                     .block();
 
+            // should we check if there are matches at all or if the above call failed?
+            // below code attempts to create new person on all search errors - is that right?
             if (isExactPersonRecord(personSearchResponse)) {
                 log.info("Successfully found an exact match in Person Record service");
 
@@ -75,15 +78,17 @@ public class MatcherService {
 
                 Person person = Person.from(defendant);
                 Person createdPerson = personRecordServiceClient.createPerson(person)
-                        .doOnError(throwable -> {
+                        .onErrorComplete(throwable -> { // guessing we want to ignore this as well?
                             log.error("Unable to create person in person record service", throwable);
+                            return true;
                         })
                         .block();
 
-                log.info("Successfully created person in Person Record service");
-                defendant.setPersonId(Optional.ofNullable(createdPerson).map(Person::getPersonIdString).orElse(null));
-                telemetryService.trackPersonRecordCreatedEvent(defendant, hearing);
-
+                Optional.ofNullable(createdPerson).ifPresent(person1 -> {
+                    log.info("Successfully created person in Person Record service");
+                    defendant.setPersonId(person1.getPersonIdString());
+                    telemetryService.trackPersonRecordCreatedEvent(defendant, hearing);
+                });
             }
             return defendant;
         }
