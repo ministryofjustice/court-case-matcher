@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.OtherIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.Person;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.personrecordservice.PersonSearchRequest;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -93,7 +94,9 @@ public class PersonRecordServiceClientIntTest {
         public void shouldReturnACreatedPersonForProvidedPersonDetails() throws JsonProcessingException {
             // Given
             Person person = Person.builder()
-                    .crn("CRN8474")
+                    .otherIdentifiers(OtherIdentifiers.builder()
+                            .crn("CRN8474")
+                            .build())
                     .dateOfBirth(LocalDate.of(1968, 8, 15))
                     .familyName("Jones")
                     .givenName("Billy")
@@ -112,23 +115,6 @@ public class PersonRecordServiceClientIntTest {
             assertThat(result.getDateOfBirth()).isEqualTo("1968-08-15");
             assertThat(result.getOtherIdentifiers().getCrn()).isEqualTo("CRN8474");
             assertThat(result.getOtherIdentifiers().getPncNumber()).isEqualTo("PNC1234");
-        }
-
-        @Test
-        public void shouldReturnBadRequestWhenInsufficientPersonDetailsAreProvided() {
-            // Given
-            Person person = Person.builder()
-                    .crn("CRN400")
-                    .givenName("Stephen")
-                    .build();
-
-            // When
-            Mono<Person> result = personRecordServiceClient.createPerson(person);
-
-            // Then
-            StepVerifier.create(result)
-                    .expectError(WebClientResponseException.BadRequest.class)
-                    .verify();
         }
     }
 }

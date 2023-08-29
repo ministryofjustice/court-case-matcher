@@ -25,16 +25,20 @@ public class PersonSearchRequest {
     private String pncNumber;
     private String forename;
     private String surname;
-    private List<String> middleNames;
     private LocalDate dateOfBirth;
+    private String forenameOne;
+    private String forenameTwo;
+    private String forenameThree;
 
     public static PersonSearchRequest of(Defendant defendant){
         return PersonSearchRequest.builder()
                 .crn(defendant.getCrn())
+                .forenameOne(Optional.ofNullable(defendant.getName()).map(Name::getForename1).orElse(null))
+                .forenameTwo(Optional.ofNullable(defendant.getName()).map(Name::getForename2).orElse(null))
+                .forenameThree(Optional.ofNullable(defendant.getName()).map(Name::getForename3).orElse(null))
                 .surname(Optional.ofNullable(defendant.getName()).map(Name::getSurname).orElse(null))
                 .dateOfBirth(defendant.getDateOfBirth())
                 .pncNumber(defendant.getPnc())
-                .middleNames(Person.getMiddleNames(defendant))
                 .build();
     }
 }
