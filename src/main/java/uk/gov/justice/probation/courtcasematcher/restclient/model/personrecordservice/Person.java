@@ -29,13 +29,12 @@ import java.util.stream.Stream;
 @Data
 public class Person {
     private UUID personId;
-    private String crn;
-    private String pncNumber;
     private String givenName;
     private String familyName;
     private List<String> middleNames;
     private LocalDate dateOfBirth;
     private OtherIdentifiers otherIdentifiers;
+    private String defendantId;
 
     public static Person from(Defendant defendant) {
         return Person.builder()
@@ -43,6 +42,7 @@ public class Person {
                 .familyName(defendant.getName() != null ? Optional.ofNullable(defendant.getName().getSurname()).orElse(null) : null)
                 .middleNames(getMiddleNames(defendant))
                 .dateOfBirth(defendant.getDateOfBirth())
+                .defendantId(defendant.getDefendantId())
                 .otherIdentifiers(OtherIdentifiers.builder()
                         .crn(Optional.ofNullable(defendant.getCrn()).orElse(null))
                         .pncNumber(Optional.ofNullable(defendant.getPnc()).orElse(null))
