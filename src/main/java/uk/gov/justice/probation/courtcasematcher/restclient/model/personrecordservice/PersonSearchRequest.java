@@ -23,7 +23,6 @@ import java.util.Optional;
 public class PersonSearchRequest {
     private String crn;
     private String pncNumber;
-    private String forename;
     private String surname;
     private LocalDate dateOfBirth;
     private String forenameOne;
