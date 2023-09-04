@@ -1,5 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+import io.awspring.cloud.messaging.listener.SqsMessageDeletionPolicy;
+import io.awspring.cloud.messaging.listener.annotation.SqsListener;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,8 +10,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
-import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;

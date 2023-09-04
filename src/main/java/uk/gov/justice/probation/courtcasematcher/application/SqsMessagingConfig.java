@@ -1,8 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.application;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,25 +22,21 @@ public class SqsMessagingConfig {
     @Primary
     @Bean(name = "courtCaseMatcherSqsQueue")
     public AmazonSQSAsync courtCaseMatcherSqsQueue(@Value("${aws.region-name}") final String regionName,
-                                                   @Value("${aws.sqs.court_case_matcher_endpoint_url}") final String awsEndpointUrl,
-                                                   @Value("${aws.sqs.court_case_matcher_access_key_id}") final String awsAccessKeyId,
-                                                   @Value("${aws.sqs.court_case_matcher_secret_access_key}") final String awsSecretAccessKey) {
-        return getAmazonSQSAsync(awsAccessKeyId, awsSecretAccessKey, awsEndpointUrl, regionName);
+                                                   @Value("${aws.sqs.court_case_matcher_endpoint_url}") final String awsEndpointUrl) {
+        return getAmazonSQSAsync(awsEndpointUrl, regionName);
     }
 
     @Bean(name = "courtCaseMatcherSqsDlq")
     public AmazonSQSAsync courtCaseMatcherSqsDlq(@Value("${aws.region-name}") final String regionName,
-                                                 @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}") final String awsEndpointUrl,
-                                                 @Value("${aws.sqs.court_case_matcher_dlq_access_key_id}") final String awsAccessKeyId,
-                                                 @Value("${aws.sqs.court_case_matcher_dlq_secret_access_key}") final String awsSecretAccessKey) {
-        return getAmazonSQSAsync(awsAccessKeyId, awsSecretAccessKey, awsEndpointUrl, regionName);
+                                                 @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}") final String awsEndpointUrl)
+    {
+        return getAmazonSQSAsync(awsEndpointUrl, regionName);
     }
 
-    private AmazonSQSAsync getAmazonSQSAsync(String awsAccessKeyId, String awsSecretAccessKey, String awsEndpointUrl, String regionName) {
+    private AmazonSQSAsync getAmazonSQSAsync(String awsEndpointUrl, String regionName) {
         return AmazonSQSAsyncClientBuilder
                 .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKeyId, awsSecretAccessKey)))
-                .withEndpointConfiguration(new EndpointConfiguration(awsEndpointUrl, regionName))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(awsEndpointUrl, regionName))
                 .build();
     }
 

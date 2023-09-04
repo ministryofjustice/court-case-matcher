@@ -94,8 +94,10 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
-    implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:2.0.3'
-    implementation 'org.springframework.cloud:spring-cloud-aws-messaging:2.2.6.RELEASE'
+    implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:2.1.1'
+    implementation 'io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.4'
+    implementation 'com.amazonaws:aws-java-sdk-sts:1.12.543'
+
     implementation 'org.projectlombok:lombok:1.18.24'
 
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
