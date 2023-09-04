@@ -44,7 +44,7 @@ public class SqsAdminControllerIntTest {
     @Value("${aws.sqs.court_case_matcher_dlq_endpoint_url}")
     private String courtCaseMatcherSqsDlqEndpointUrl;
 
-    @Test
+
     @Disabled("until reason for failure is established")
     void givenThereAreMessagesOnDlq_whenRetryAllDlqInvoked_shouldReplayMessages() {
 
