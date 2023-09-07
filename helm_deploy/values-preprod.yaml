@@ -19,7 +19,7 @@ ingress:
   path: /
 
 env:
-  JAVA_OPTS: "-Xmx512m"
+  JAVA_OPTS: "-Xmx1024m"
 
 spring:
   profile: preprod,instrumented
@@ -30,5 +30,5 @@ resources:
     limit: 1000m
     request: 100m
   memory:
-    limit: 1000Mi
-    request: 500Mi
+    limit: 2Gi
+    request: 1Gi
