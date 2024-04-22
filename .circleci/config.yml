@@ -264,7 +264,6 @@ workflows:
           env: dev
           chart_name: court-case-matcher
       - deploy_dev:
-          context: court-probation-live-dev
           requires:
             - build_docker
           filters:
