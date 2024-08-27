@@ -209,19 +209,25 @@ jobs:
           project: '${CIRCLE_PROJECT_REPONAME}/latest'
           organization: 'digital-probation-services'
   deploy_dev:
-    executor: hmpps/default_small
+    executor:
+      name: hmpps/default_small
+      tag: 3.12.4
     steps:
       - deploy_to_env:
           env: "dev"
           cluster: "live"
   deploy_preprod:
-    executor: hmpps/default_small
+    executor:
+      name: hmpps/default_small
+      tag: 3.12.4
     steps:
       - deploy_to_env:
           env: "preprod"
           cluster: "live"
   deploy_prod:
-    executor: hmpps/default_small
+    executor:
+      name: hmpps/default_small
+      tag: 3.12.4
     steps:
       - deploy_to_env:
           env: "prod"
