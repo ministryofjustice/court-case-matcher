@@ -73,7 +73,3 @@ curl -X GET http://localhost:8080/ping
 
 
 
-### Feature Flags
-
-
-
