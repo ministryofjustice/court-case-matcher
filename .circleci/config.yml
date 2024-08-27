@@ -151,7 +151,9 @@ jobs:
           path: build/reports/tests
 
   build_docker:
-    executor: hmpps/default
+    executor:
+      name: hmpps/default
+      tag: 3.12.4
     steps:
       - checkout
       - attach_workspace:
