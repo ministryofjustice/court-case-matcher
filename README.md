@@ -23,7 +23,8 @@ aws sqs send-message --region eu-west-2 --endpoint-url http://localhost:4566  --
 ```
 
 ```
-docker-compose up localstack
+docker compose up localstack
+./src/test/resources/localstack/setup-sqs.sh
 ```
 
 ### Environment 
@@ -70,10 +71,6 @@ curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRA
 curl -X GET http://localhost:8080/ping
 ```
 
-
-
-
-### Feature Flags
 
 
 
