@@ -36,7 +36,7 @@ resources:
 
 generic-prometheus-alerts:
   targetApplication: court-case-matcher
-  alertSeverity: slack-hmpps-user-preferences
+  alertSeverity: probation_in_court_alerts_prod
   sqsNumberAlertQueueNames:
     - "probation-in-court-prod-court-case-matcher-queue"
     - "probation-in-court-prod-court-case-matcher-dead-letter-queue"
