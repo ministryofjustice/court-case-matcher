@@ -1,5 +1,11 @@
 version: 2.1
 machine: true
+
+parameters:
+  alerts-slack-channel:
+    type: string
+    default: probation_in_court_dev
+
 commands:
   setup:
     description: "Install tools and configure kubectl"
@@ -57,7 +63,6 @@ orbs:
   aws-cli: circleci/aws-cli@4.1.0
   kubernetes: circleci/kubernetes@1.3.1
   helm: circleci/helm@2.0.1
-  snyk: snyk/snyk@1.7.2
   hmpps: ministryofjustice/hmpps@10
   slack: circleci/slack@4.4.2
 
@@ -181,33 +186,6 @@ jobs:
              docker push quay.io/hmpps/court-case-matcher:latest
             fi
 
-  app-scan:
-    executor:
-      name: hmpps/java
-      tag: "19.0"
-    steps:
-      - checkout
-      - snyk/scan:
-          fail-on-issues: false
-          monitor-on-build: true
-          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}'
-          organization: 'digital-probation-services'
-
-  image-scan:
-    executor:
-      name: hmpps/java
-      tag: "19.0"
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - snyk/scan:
-          docker-image-name: 'quay.io/hmpps/court-case-matcher:latest'
-          target-file: 'Dockerfile'
-          fail-on-issues: false
-          monitor-on-build: true
-          project: '${CIRCLE_PROJECT_REPONAME}/latest'
-          organization: 'digital-probation-services'
   deploy_dev:
     executor:
       name: hmpps/default_small
@@ -244,8 +222,19 @@ workflows:
               only:
                 - main
     jobs:
-      - app-scan
-      - image-scan
+      - hmpps/gradle_owasp_dependency_check:
+          slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          context:
+            - hmpps-common-vars
+      - hmpps/trivy_latest_scan:
+          slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          context:
+            - hmpps-common-vars
+      - hmpps/veracode_pipeline_scan:
+          slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          context:
+            - hmpps-common-vars
+            - veracode-credentials
 
   test-integration:
     jobs:
