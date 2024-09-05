@@ -32,3 +32,12 @@ resources:
   memory:
     limit: 1200Mi
     request: 350Mi
+
+generic-prometheus-alerts:
+  targetApplication: court-case-matcher
+  alertSeverity: slack-hmpps-user-preferences
+  businessHoursOnly: true
+  sqsNumberAlertQueueNames:
+    - "probation-in-court-team-development-court-case-matcher-queue"
+    - "probation-in-court-team-development-court-case-matcher-dead-letter-queue"
+  sqsAlertsTotalMessagesThreshold: 1
