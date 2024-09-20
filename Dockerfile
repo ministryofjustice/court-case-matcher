@@ -1,4 +1,4 @@
-FROM openjdk:19-jdk-slim-buster
+FROM openjdk:21-jdk-slim-buster
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
 ENV TZ=Europe/London
