@@ -27,3 +27,10 @@
 
 *secrets*.yaml
 !secrets-example.yaml
+
+.editorconfig
+.trivyignore
+dps-gradle-spring-boot-suppressions.xml
+gradle.properties
+sonar-project.properties
+

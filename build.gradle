@@ -2,10 +2,8 @@ import java.time.Instant
 import java.time.LocalDate
 
 plugins {
+    id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.4"
     id 'java'
-    id 'org.springframework.boot' version '3.0.2'
-    id 'io.spring.dependency-management' version '1.1.0'
-    id 'com.github.ben-manes.versions' version '0.43.0'
     id "au.com.dius.pact" version "4.6.14"
 }
 
@@ -15,8 +13,8 @@ repositories {
 
 apply plugin: 'idea'
 
-project.sourceCompatibility = JavaVersion.VERSION_19
-project.targetCompatibility = JavaVersion.VERSION_19
+project.sourceCompatibility = JavaVersion.VERSION_21
+project.targetCompatibility = JavaVersion.VERSION_21
 
 group = 'uk.gov.justice.probation'
 
@@ -53,24 +51,6 @@ jar {
     }
 }
 
-springBoot {
-    buildInfo {
-        properties {
-            artifact = rootProject.name
-            group = 'uk.gov.justice.probation'
-            name = rootProject.name
-            version = System.getenv('CI') ? "${todaysDate}.${System.getenv('CIRCLE_BUILD_NUM')}" : todaysDate
-            time = Instant.now().toString()
-            additional = [
-                    by                   : System.properties['user.name'],
-                    operatingSystem      : "${System.properties['os.name']} (${System.properties['os.version']})",
-                    continuousIntegration: System.getenv('CI') ? true : false,
-                    machine              : InetAddress.localHost.hostName
-            ]
-        }
-    }
-}
-
 ext {
     restAssuredVersion = '5.5.0'
 }
@@ -81,9 +61,6 @@ dependencies {
 
     runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
@@ -91,9 +68,9 @@ dependencies {
 
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.3'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.3'
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:2.1.1'
     implementation 'io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.4'
     implementation 'com.amazonaws:aws-java-sdk-sts:1.12.543'
@@ -116,7 +93,6 @@ dependencies {
         because 'allows tests to run from IDEs that bundle older version of launcher'
     }
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
     testImplementation 'io.projectreactor:reactor-test'
 
 
@@ -193,11 +169,6 @@ task integrationTest(type: Test) {
         excludeTestsMatching "*PactTest*"
         excludeTestsMatching '*WIP*'
     }
-}
-
-task copyAgent(type: Copy) {
-    from configurations.agentDeps
-    into "$buildDir/libs"
 }
 
 task copyAgentConfig(type: Copy) {
