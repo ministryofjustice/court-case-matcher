@@ -289,7 +289,7 @@ class HearingMapperTest {
                     .courtRoom("00")
                     .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
                     .caseNo("123")
-                    .cId("1391998")
+                    .cid("1391998")
                     .build();
             final var actual = HearingMapper.newFromLibraHearing(nullCase);
             assertThat(actual).isNotNull();
