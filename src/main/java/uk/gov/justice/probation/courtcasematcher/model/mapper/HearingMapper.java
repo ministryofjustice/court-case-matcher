@@ -62,6 +62,7 @@ public class HearingMapper {
                 .source(DataSource.LIBRA)
                 .caseNo(aLibraHearing.getCaseNo())
                 .urn(aLibraHearing.getUrn())
+                .caseId(aLibraHearing.getCid())
 
                 .build();
     }
