@@ -62,7 +62,6 @@ public class Replay404HearingsController {
     private static Supplier<String> replay404s(String path, CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client, String bucketName, MessageParser<CPHearingEvent> commonPlatformParser) {
         return () -> {
             try {
-                System.out.println("About to read file");
                 // Input
                 // CSV Data from AppInsights with the hearings
                 for (String hearing : Files.readAllLines(Paths.get(path), UTF_8)) {
