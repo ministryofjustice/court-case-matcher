@@ -56,8 +56,6 @@ public class LibraHearing {
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
 
-    private final String cid;
-
     public Hearing asDomain() {
         return HearingMapper.newFromLibraHearing(this);
     }
