@@ -108,3 +108,6 @@ health:
 hmpps:
   sqs:
     queueAdminRole: COURT_CASE_MATCHER_QUEUE_ADMIN
+
+replay404:
+  path-to-csv: "src/main/resources/replay404hearings/hearings.csv"
