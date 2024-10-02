@@ -16,6 +16,12 @@ env:
   - name: OFFENDER_SEARCH_USE_DOB_WITH_PNC
     value: "true"
 
+  - name: CRIME_PORTAL_GATEWAY_S3_BUCKET
+    valueFrom:
+      secretKeyRef:
+        name: crime-portal-gateway-s3-credentials
+        key: bucket_name
+
   - name: OFFENDER_SEARCH_CLIENT_ID
     valueFrom:
       secretKeyRef:

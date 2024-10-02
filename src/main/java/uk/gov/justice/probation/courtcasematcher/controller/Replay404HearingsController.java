@@ -1,10 +1,14 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 
 import java.nio.file.Files;
@@ -21,26 +25,28 @@ public class Replay404HearingsController {
 
     private final String pathToCsv;
     private final CourtCaseServiceClient courtCaseServiceClient;
+    private final AmazonS3 s3Client;
+    private final String bucketName;
+    private final MessageParser<CPHearingEvent> commonPlatformParser;
 
-    public Replay404HearingsController(@Value("${replay404.path-to-csv}") String pathToCsv, CourtCaseServiceClient courtCaseServiceClient){
+    public Replay404HearingsController(@Value("${replay404.path-to-csv}") String pathToCsv,
+                                       CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client,
+                                       @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
+                                       final MessageParser<CPHearingEvent> commonPlatformParser){
         this.pathToCsv = pathToCsv;
         this.courtCaseServiceClient = courtCaseServiceClient;
+        this.s3Client = s3Client;
+        this.bucketName = bucketName;
+        this.commonPlatformParser = commonPlatformParser;
     }
+
 
     @PostMapping("/replay404Hearings")
     public String replay404Hearings() {
         // put some proper exception handling in place
 
-
-        // if inputted-hearing has a last updated date > court-case-service hearing
-        // then call the court case matcher hearing processor
-
         // check how long thread timeout is
-        CompletableFuture.supplyAsync(replay404s(pathToCsv, courtCaseServiceClient));
-        // should provide logs to show progression
-
-        // Output
-        // HTTP status
+        CompletableFuture.supplyAsync(replay404s(pathToCsv, courtCaseServiceClient, s3Client, bucketName, commonPlatformParser));
 
         // How to test end-2-end
         // put a few updated hearings (minor updates) in dev/preprod to the S3 bucket
@@ -53,13 +59,14 @@ public class Replay404HearingsController {
     }
 
     @NotNull
-    private static Supplier<String> replay404s(String path, CourtCaseServiceClient courtCaseServiceClient) {
+    private static Supplier<String> replay404s(String path, CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client, String bucketName, MessageParser<CPHearingEvent> commonPlatformParser) {
         return () -> {
             try {
                 System.out.println("About to read file");
                 // Input
                 // CSV Data from AppInsights with the hearings
                 for (String hearing : Files.readAllLines(Paths.get(path), UTF_8)) {
+                    // should provide logs to show progression
                     String[] hearingDetails = hearing.split(",");
                     String id = hearingDetails[0];
                     String s3Path = hearingDetails[1];
@@ -72,14 +79,14 @@ public class Replay404HearingsController {
                             // check court-case-service and compare the last updated date with the inputted-hearing
                             if (existingHearing.getLastUpdated().isBefore(received)) {
                                 System.out.println("Processing hearing " + id + " as it has not been updated since " + existingHearing.getLastUpdated());
-                                processNewOrUpdatedHearing();
+                                processNewOrUpdatedHearing(s3Client, bucketName, s3Path, commonPlatformParser);
                             }else {
                                 System.out.println("Discarding hearing " + id + " as we have a later version of it on " + existingHearing.getLastUpdated());
                             }
                         },
                         () -> {
                             System.out.println("Processing hearing " + id + " as it is new");
-                            processNewOrUpdatedHearing();
+                            processNewOrUpdatedHearing(s3Client, bucketName, s3Path, commonPlatformParser);
                         }
                     );
 
@@ -98,8 +105,27 @@ public class Replay404HearingsController {
         };
     }
 
-    private static void processNewOrUpdatedHearing() {
-        System.out.println("Processing hearing ");
+    private static void processNewOrUpdatedHearing(AmazonS3 s3Client, String bucketName, String s3Path, MessageParser<CPHearingEvent> commonPlatformParser) {
+
+
+        String message  = s3Client.getObjectAsString(bucketName, s3Path);
+        CPHearingEvent cpHearingEvent = null;
+        try {
+            // gets this far, looks like it is in wrong format. compare message format to CPHearingEvent. Maybe get a model class from CHER?
+            cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        // might need to import the hearing classes from CHER if this is too different
+        final var hearing = cpHearingEvent.asDomain()
+            .withHearingId(cpHearingEvent.getHearing().getId())
+            .withHearingEventType("CONFIRM_UPDATE");
+
+        // save hearing
+
+        // mark hearing as processed somehow?
+        // tag S3 object?
+        System.out.println("Processing hearing " + hearing);
     }
 
 
