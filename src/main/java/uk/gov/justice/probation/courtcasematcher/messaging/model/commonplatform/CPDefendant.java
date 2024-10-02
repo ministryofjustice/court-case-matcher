@@ -37,6 +37,7 @@ public class CPDefendant {
     private final CPPersonDefendant personDefendant;
     @Valid
     private final CPLegalEntityDefendant legalEntityDefendant;
+    private final boolean isYouth;
 
     public Defendant asDomain() {
         if (personDefendant == null && legalEntityDefendant == null) {
@@ -44,6 +45,7 @@ public class CPDefendant {
         }
 
         return Optional.of(this)
+                .filter(cpDefendant -> !cpDefendant.isYouth) //do not include youth defendants
                 .map(CPDefendant::getPersonDefendant)
                 .map(CPPersonDefendant::getPersonDetails)
                 .map(personDetails -> commonFieldsBuilder()
@@ -56,12 +58,7 @@ public class CPDefendant {
                         .phoneNumber(Optional.ofNullable(personDetails.getContact())
                                 .map(CPContact::asPhoneNumber).orElse(null))
                         .build())
-                .orElseGet(() -> commonFieldsBuilder()
-                            .type(DefendantType.ORGANISATION)
-                            .name(getLegalEntityDefendant()
-                                    .getOrganisation()
-                                    .asName())
-                            .build());
+                .orElseGet(this::getLegalDefendant);
     }
 
     private Defendant.DefendantBuilder commonFieldsBuilder() {
@@ -87,5 +84,15 @@ public class CPDefendant {
                     log.debug("Will not correct PNC {} as it is not in the expected format {}", pncId, PNC_REGEX);
                     return pncId;
                 });
+    }
+
+    private Defendant getLegalDefendant() {
+        return Optional.ofNullable(legalEntityDefendant)
+            .map(legalEntityDefendant -> commonFieldsBuilder()
+                .type(DefendantType.ORGANISATION)
+                .name(getLegalEntityDefendant()
+                    .getOrganisation()
+                    .asName())
+                .build()).orElse(null);
     }
 }

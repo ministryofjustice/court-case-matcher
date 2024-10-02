@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -14,6 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.doThrow;
@@ -40,6 +42,7 @@ class SqsMessageReceiverTest {
 
     private Hearing commonPlatformHearing = Hearing.builder()
             .source(DataSource.COMMON_PLATFORM)
+            .defendants(List.of(Defendant.builder().crn("12345").build()))
             .build();
     private SqsMessageReceiver sqsMessageReceiver;
 
@@ -72,9 +75,7 @@ class SqsMessageReceiverTest {
     @Test
     void givenCommonPlatformMessage_whenReceived_ThenProcess() throws Exception {
         when(telemetryService.withOperation("operationId")).thenReturn(operation);
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(Hearing.builder()
-                .source(DataSource.COMMON_PLATFORM)
-                .build());
+        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(commonPlatformHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId");
 
