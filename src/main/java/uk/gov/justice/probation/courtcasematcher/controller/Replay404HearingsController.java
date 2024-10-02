@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.justice.probation.courtcasematcher.messaging.HearingProcessor;
 import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
@@ -27,16 +28,19 @@ public class Replay404HearingsController {
     private final AmazonS3 s3Client;
     private final String bucketName;
     private final MessageParser<CPHearingEvent> commonPlatformParser;
+    private final HearingProcessor hearingProcessor;
 
     public Replay404HearingsController(@Value("${replay404.path-to-csv}") String pathToCsv,
                                        CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client,
                                        @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
-                                       final MessageParser<CPHearingEvent> commonPlatformParser){
+                                       final MessageParser<CPHearingEvent> commonPlatformParser,
+                                       final HearingProcessor hearingProcessor){
         this.pathToCsv = pathToCsv;
         this.courtCaseServiceClient = courtCaseServiceClient;
         this.s3Client = s3Client;
         this.bucketName = bucketName;
         this.commonPlatformParser = commonPlatformParser;
+        this.hearingProcessor = hearingProcessor;
     }
 
     @PostMapping("/replay404Hearings")
@@ -86,11 +90,7 @@ public class Replay404HearingsController {
                             processNewOrUpdatedHearing(s3Path);
                         }
                     );
-
-
                     //dry run mode here
-
-
                 }
 
             } catch (Exception e) {
@@ -117,14 +117,9 @@ public class Replay404HearingsController {
             .withHearingId(cpHearingEvent.getHearing().getId())
             .withHearingEventType("CONFIRM_UPDATE");
 
-        // save hearing
-
         // mark hearing as processed somehow?
         // tag S3 object?
-        // do not log full hearing
-        System.out.println("Processing hearing " + hearing);
-
+        // save hearing
+        hearingProcessor.process(hearing, "some-id"); //TODO see if this can be retrieved. It is only used for logging
     }
-
-
 }
