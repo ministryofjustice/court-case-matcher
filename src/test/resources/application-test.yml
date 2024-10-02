@@ -67,4 +67,4 @@ logging:
     uk.gov.justice.probation.courtcasematcher: DEBUG
 
 replay404:
-  path-to-csv: "src/test/resources/replay404hearings/hearings.csv"
+  path-to-csv: "src/test/resources/replay404hearings/test-hearings.csv"
