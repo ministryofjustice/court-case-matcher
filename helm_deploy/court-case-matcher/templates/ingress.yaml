@@ -24,6 +24,10 @@ metadata:
         deny all;
         return 401;
       }
+      location /{{ template "app.fullname" . }}/replay404Hearings {
+        deny all;
+        return 401;
+      }
 spec:
   ingressClassName: modsec
   tls:
