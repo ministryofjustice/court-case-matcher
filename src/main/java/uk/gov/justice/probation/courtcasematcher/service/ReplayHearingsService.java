@@ -74,19 +74,21 @@ public class ReplayHearingsService {
                         (existingHearing) -> {
                             // check court-case-service and compare the last updated date with the inputted-hearing
                             if (existingHearing.getLastUpdated().isBefore(received)) {
-                                System.out.println("Processing hearing " + id + " as it has not been updated since " + existingHearing.getLastUpdated());
+                                log.info("Processing hearing {} as it has not been updated since {}", id, existingHearing.getLastUpdated());
                                 processNewOrUpdatedHearing(s3Path, id);
                             } else {
-                                System.out.println("Discarding hearing " + id + " as we have a later version of it on " + existingHearing.getLastUpdated());
+                                log.info("Discarding hearing {} as we have a later version of it on {}", id, existingHearing.getLastUpdated());
                                 trackHearingProcessedEvent(existingHearing.getHearingId(), "ignored");
                             }
                         },
                         () -> {
-                            System.out.println("Processing hearing " + id + " as it is new");
+                            log.info("Processing new hearing {}", id);
                             processNewOrUpdatedHearing(s3Path, id);
                         }
                     );
-                    log.info("Processed hearing number {} of {}", ++count, numberToProcess);
+                    if (count % 100 == 0) {
+                        log.info("Processed hearing number {} of {}", ++count, numberToProcess);
+                    }
                 }
                 log.info("Processing complete. {} of {} processed",count,numberToProcess);
             } catch (Exception e) {
