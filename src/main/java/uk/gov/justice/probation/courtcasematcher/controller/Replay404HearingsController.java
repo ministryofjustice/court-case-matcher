@@ -32,18 +32,22 @@ public class Replay404HearingsController {
     private final String bucketName;
     private final MessageParser<CPHearingEvent> commonPlatformParser;
     private final HearingProcessor hearingProcessor;
+    private final boolean dryRunEnabled;
 
     public Replay404HearingsController(@Value("${replay404.path-to-csv}") String pathToCsv,
                                        CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client,
                                        @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
                                        final MessageParser<CPHearingEvent> commonPlatformParser,
-                                       final HearingProcessor hearingProcessor){
+                                       final HearingProcessor hearingProcessor,
+                                       @Value("${replay404.dry-run}") boolean dryRunEnabled)
+    {
         this.pathToCsv = pathToCsv;
         this.courtCaseServiceClient = courtCaseServiceClient;
         this.s3Client = s3Client;
         this.bucketName = bucketName;
         this.commonPlatformParser = commonPlatformParser;
         this.hearingProcessor = hearingProcessor;
+        this.dryRunEnabled = dryRunEnabled;
     }
 
     @PostMapping("/replay404Hearings")
@@ -73,13 +77,10 @@ public class Replay404HearingsController {
                 int count = 0;
                 for (String hearing : hearingsWith404) {
 
-
                     String[] hearingDetails = hearing.split(",");
                     String id = hearingDetails[0];
                     String s3Path = hearingDetails[1];
                     LocalDateTime received = LocalDateTime.from(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").parse(hearingDetails[2])); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
-
-                    System.out.println("ID " +  id + " Path = "+ s3Path);
 
                     courtCaseServiceClient.getHearing(id).blockOptional().ifPresentOrElse(
                         (existingHearing) -> {
@@ -125,6 +126,10 @@ public class Replay404HearingsController {
         // mark hearing as processed somehow?
         // tag S3 object?
         // dry run part here
-        hearingProcessor.process(hearing, "some-id"); //TODO see if this can be retrieved. It is only used for logging
+            if (dryRunEnabled) {
+                log.info("Dry run - processNewOrUpdatedHearing for hearing: {}", cpHearingEvent.getHearing().getId());
+            } else {
+                hearingProcessor.process(hearing, "some-id"); //TODO see if this can be retrieved. It is only used for logging
+            }
     }
 }

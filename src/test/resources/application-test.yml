@@ -68,6 +68,7 @@ logging:
 
 replay404:
   path-to-csv: "src/test/resources/replay404hearings/test-hearings.csv"
+  dry-run: false
 
 crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"
 

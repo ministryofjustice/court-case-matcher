@@ -3,6 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.controller;
 import com.amazonaws.services.s3.AmazonS3;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +78,6 @@ public class Replay404HearingsControllerIntTest {
     }
     @Test
     void replays404Hearings() throws InterruptedException {
-
         WebClient webClient = WebClient.builder()
             .build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
@@ -95,6 +95,34 @@ public class Replay404HearingsControllerIntTest {
             putRequestedFor(urlEqualTo("/hearing/d11ee8c1-7526-4509-9579-b253868943d9"))
         );
         MOCK_SERVER.verify(
+            putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
+        );
+        assertThat(OK.equals("OK")).isTrue();
+
+    }
+
+    @Test
+    @Disabled
+    void givenDryRunEnabled_then_replay_404Hearings() throws InterruptedException {
+        WebClient webClient = WebClient.builder()
+            .build();
+        String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
+        String OK = webClient.post().uri(URI.create(replay404HearingsUrl))
+            .retrieve().bodyToMono(String.class).block();
+        Thread.sleep(2000);
+
+        // TODO maybe some stronger checks about the format of the put body here?
+        // Or just try it against a locally running Court Case Service?
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
+        );
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/d11ee8c1-7526-4509-9579-b253868943d9"))
+        );
+        MOCK_SERVER.verify(
+            0,
             putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
         assertThat(OK.equals("OK")).isTrue();

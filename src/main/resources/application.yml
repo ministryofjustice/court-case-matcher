@@ -111,3 +111,4 @@ hmpps:
 
 replay404:
   path-to-csv: "src/main/resources/replay404hearings/hearings.csv"
+  dry-run: true
