@@ -71,6 +71,9 @@ curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRA
 curl -X GET http://localhost:8080/ping
 ```
 
+### Updating environment variables in a kubernetes pod
 
-
+```
+kubectl set env deployment/court-case-matcher REPLAY404_DRY_RUN=false -n namespace
+```
 

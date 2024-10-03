@@ -14,7 +14,8 @@ public enum TelemetryEventType {
     PROCESSING_FAILURE("PiCMatcherProcessingFailure"),
     PROBATION_STATUS_UPDATED("PiCDefendantProbationStatusUpdated"),
     PROBATION_STATUS_NOT_UPDATED("PiCDefendantProbationStatusNotUpdated"),
-    PERSON_RECORD_CREATED("PiCPersonRecordCreated");
+    PERSON_RECORD_CREATED("PiCPersonRecordCreated"),
+    MISSING_HEARING_EVENT_PROCESSED("PiC404HearingEventProcessed");
 
     final String eventName;
 
