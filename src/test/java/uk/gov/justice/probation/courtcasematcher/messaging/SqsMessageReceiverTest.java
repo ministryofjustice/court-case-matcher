@@ -20,6 +20,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +45,11 @@ class SqsMessageReceiverTest {
             .source(DataSource.COMMON_PLATFORM)
             .defendants(List.of(Defendant.builder().crn("12345").build()))
             .build();
+
+    private Hearing invalidCommonPlatformHearing = Hearing.builder()
+        .source(DataSource.COMMON_PLATFORM)
+        .build();
+
     private SqsMessageReceiver sqsMessageReceiver;
 
     @BeforeAll
@@ -82,6 +88,20 @@ class SqsMessageReceiverTest {
         verify(telemetryService).withOperation("operationId");
         verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
         verify(caseProcessor).process(commonPlatformHearing, MESSAGE_ID);
+        verify(operation).close();
+    }
+
+    @DisplayName("Given an invalid Common Platform JSON message then do not process message")
+    @Test
+    void givenInvalidCommonPlatformMessage_whenReceived_ThenDoNotProcess() throws Exception {
+        when(telemetryService.withOperation("operationId")).thenReturn(operation);
+        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(invalidCommonPlatformHearing);
+
+        sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID, "operationId");
+
+        verify(telemetryService).withOperation("operationId");
+        verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
+        verifyNoInteractions(caseProcessor); //Common Platform hearing with no defendants should not be processed
         verify(operation).close();
     }
 
