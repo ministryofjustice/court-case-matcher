@@ -66,8 +66,6 @@ public class CourtCaseServiceRestHelper {
         if (disableAuthentication) {
             return spec;
         }
-
-        log.info(String.format("Authenticating with %s for call to %s", "offender-search-client", path));
         return spec.attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId("offender-search-client"));
     }
 

@@ -22,7 +22,7 @@
         </appender>
     </springProfile>
 
-    <logger name="uk.gov.justice.probation.courtcasematcher" additivity="false" level="DEBUG">
+    <logger name="uk.gov.justice.probation.courtcasematcher" additivity="false" level="INFO">
         <appender-ref ref="consoleAppender"/>
     </logger>
 
