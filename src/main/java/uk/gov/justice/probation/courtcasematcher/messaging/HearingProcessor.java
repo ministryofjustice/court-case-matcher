@@ -42,8 +42,8 @@ public class HearingProcessor {
 
     public void process(Hearing receivedHearing, String messageId) {
         try {
-            // New LIBRA cases don't use case Id and instead use cId. Defendants will need uuid generating.
-            if (receivedHearing.getSource() == DataSource.LIBRA) {
+            // New LIBRA cases will have no case or defendant ID, and we need to assign
+            if (receivedHearing.getSource() == DataSource.LIBRA && receivedHearing.getCaseId() == null) {
                 receivedHearing = assignUuids(receivedHearing);
             }
             matchAndSaveHearing(receivedHearing, messageId);
@@ -123,12 +123,13 @@ public class HearingProcessor {
     }
 
     Hearing assignUuids(Hearing hearing) {
-        var updatedHearing = hearing.withHearingId(UUID.randomUUID().toString());
+        // Apply the new case ID
+        final var caseId = UUID.randomUUID().toString();
+        var updatedHearing = hearing.withCaseId(caseId).withHearingId(caseId);
 
         // We want to retain the LIBRA case no if present
         if (hearing.getCaseNo() == null) {
-            updatedHearing = updatedHearing.withCaseNo(hearing.getCaseId());
-            hearing = hearing.withCaseNo(hearing.getCaseId());
+            updatedHearing = updatedHearing.withCaseNo(caseId);
         }
 
         // Assign defendant IDs
