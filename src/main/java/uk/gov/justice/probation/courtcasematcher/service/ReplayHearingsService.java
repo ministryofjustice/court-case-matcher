@@ -6,6 +6,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.messaging.HearingProcessor;
 import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
@@ -24,6 +25,7 @@ import java.util.function.Supplier;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
+@Service
 public class ReplayHearingsService {
 
     private final String pathToCsv;
@@ -73,7 +75,7 @@ public class ReplayHearingsService {
                             // check court-case-service and compare the last updated date with the inputted-hearing
                             if (existingHearing.getLastUpdated().isBefore(received)) {
                                 System.out.println("Processing hearing " + id + " as it has not been updated since " + existingHearing.getLastUpdated());
-                                processNewOrUpdatedHearing(s3Path);
+                                processNewOrUpdatedHearing(s3Path, id);
                             } else {
                                 System.out.println("Discarding hearing " + id + " as we have a later version of it on " + existingHearing.getLastUpdated());
                                 trackHearingProcessedEvent(existingHearing.getHearingId(), "ignored");
@@ -81,7 +83,7 @@ public class ReplayHearingsService {
                         },
                         () -> {
                             System.out.println("Processing hearing " + id + " as it is new");
-                            processNewOrUpdatedHearing(s3Path);
+                            processNewOrUpdatedHearing(s3Path, id);
                         }
                     );
                     log.info("Processed hearing number {} of {}", ++count, numberToProcess);
@@ -96,21 +98,22 @@ public class ReplayHearingsService {
         };
     }
 
-    private void processNewOrUpdatedHearing(String s3Path) {
-
+    private void processNewOrUpdatedHearing(String s3Path, String hearingId) {
         String message  = s3Client.getObjectAsString(bucketName, s3Path);
         CPHearingEvent cpHearingEvent;
         try {
             cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            log.error("Error processing hearing with id {}", hearingId);
+            log.error(e.getMessage());
+            trackHearingProcessedEvent(hearingId, "failed");
+            return;
         }
         // might need to import the hearing classes from CHER if this is too different
         final var hearing = cpHearingEvent.asDomain()
             .withHearingId(cpHearingEvent.getHearing().getId())
             .withHearingEventType("CONFIRM_UPDATE");
 
-        // mark hearing as processed somehow? (how to know which hearings succeeded or failed)
         if (dryRunEnabled) {
             log.info("Dry run - processNewOrUpdatedHearing for hearing: {}", cpHearingEvent.getHearing().getId());
         } else {
