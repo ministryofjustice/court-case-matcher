@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "url": "/hearing/UPDATEDSINCE404HEARINGd11ee8c1-7526-4509-9579-b253868943d9"
+    "url": "/hearing/d11ee8c1-7526-4509-9579-b253868943d9"
   },
   "response": {
     "status": 200,

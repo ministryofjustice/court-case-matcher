@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,12 +16,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @RestController
+@Slf4j
 public class Replay404HearingsController {
 
     private final String pathToCsv;
@@ -48,6 +51,7 @@ public class Replay404HearingsController {
         // put some proper exception handling in place
 
         // check how long thread timeout is
+        log.info("Starting to replay 404 hearings");
         CompletableFuture.supplyAsync(replay404s());
 
         // How to test end-2-end
@@ -55,7 +59,6 @@ public class Replay404HearingsController {
         // call this endpoint to pick up on those unprocessed hearings in the s3 bucket and process them
 
         // dry run option?
-        System.out.println("Finished processing");
 
         return "OK";
     }
@@ -64,10 +67,13 @@ public class Replay404HearingsController {
     private Supplier<String> replay404s() {
         return () -> {
             try {
-                // Input
-                // CSV Data from AppInsights with the hearings
-                for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
-                    // should provide logs to show progression
+                List<String> hearingsWith404 = Files.readAllLines(Paths.get(pathToCsv), UTF_8);
+                int numberToProcess = hearingsWith404.size();
+                log.info("Total number of hearings {}", numberToProcess);
+                int count = 0;
+                for (String hearing : hearingsWith404) {
+
+
                     String[] hearingDetails = hearing.split(",");
                     String id = hearingDetails[0];
                     String s3Path = hearingDetails[1];
@@ -81,7 +87,7 @@ public class Replay404HearingsController {
                             if (existingHearing.getLastUpdated().isBefore(received)) {
                                 System.out.println("Processing hearing " + id + " as it has not been updated since " + existingHearing.getLastUpdated());
                                 processNewOrUpdatedHearing(s3Path);
-                            }else {
+                            } else {
                                 System.out.println("Discarding hearing " + id + " as we have a later version of it on " + existingHearing.getLastUpdated());
                             }
                         },
@@ -90,14 +96,15 @@ public class Replay404HearingsController {
                             processNewOrUpdatedHearing(s3Path);
                         }
                     );
+                    log.info("Processed hearing number {} of {}", ++count, numberToProcess);
                     //dry run mode here
                 }
-
+                log.info("Processing complete. {} of {} processed",count,numberToProcess);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 throw new RuntimeException(e);
             }
-            System.out.println("file has been read");
+
             return "Finished!";
         };
     }
@@ -107,7 +114,6 @@ public class Replay404HearingsController {
         String message  = s3Client.getObjectAsString(bucketName, s3Path);
         CPHearingEvent cpHearingEvent;
         try {
-            // gets this far, looks like it is in wrong format. compare message format to CPHearingEvent. Maybe get a model class from CHER?
             cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -119,7 +125,7 @@ public class Replay404HearingsController {
 
         // mark hearing as processed somehow?
         // tag S3 object?
-        // save hearing
+
         hearingProcessor.process(hearing, "some-id"); //TODO see if this can be retrieved. It is only used for logging
     }
 }

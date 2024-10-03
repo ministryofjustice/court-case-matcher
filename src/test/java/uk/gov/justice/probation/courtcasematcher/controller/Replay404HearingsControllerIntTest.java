@@ -41,7 +41,6 @@ public class Replay404HearingsControllerIntTest {
     @RegisterExtension
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
 
-
     @Autowired
     private AmazonS3 s3Client;
 
@@ -53,14 +52,18 @@ public class Replay404HearingsControllerIntTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        MOCK_SERVER.addMockServiceRequestListener(
-            Replay404HearingsControllerIntTest::requestReceived);
+        boolean logWiremock = false;
+        if(logWiremock) {
+            MOCK_SERVER.addMockServiceRequestListener(
+                Replay404HearingsControllerIntTest::requestReceived);
+        }
         for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
             String[] hearingDetails = hearing.split(",");
             String id = hearingDetails[0];
             String s3Path = hearingDetails[1];
-            // might need to get this file, replace the ID on line 25 with the actual ID
-            s3Client.putObject(bucketName, s3Path, Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id));
+
+            String fileWithCorrectId = Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id);
+            s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
         }
     }
 
@@ -81,20 +84,23 @@ public class Replay404HearingsControllerIntTest {
         String OK = webClient.post().uri(URI.create(replay404HearingsUrl))
             .retrieve().bodyToMono(String.class).block();
         Thread.sleep(2000);
-        assertThat(OK.equals("OK")).isTrue();
-        // proper assertions here that put was called twice for new and updated records and not for the other one
-//        MOCK_SERVER.findAllUnmatchedRequests();
+
+        // TODO maybe some stronger checks about the format of the put body here?
+        // Or just try it against a locally running Court Case Service?
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
         );
         MOCK_SERVER.verify(
-            putRequestedFor(urlEqualTo("/hearing/NEWHEARINGf0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
+            0,
+            putRequestedFor(urlEqualTo("/hearing/d11ee8c1-7526-4509-9579-b253868943d9"))
         );
         MOCK_SERVER.verify(
-            0,
-            putRequestedFor(urlEqualTo("/hearing/UPDATEDSINCE404HEARINGd11ee8c1-7526-4509-9579-b253868943d9"))
+            putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
+        assertThat(OK.equals("OK")).isTrue();
+
     }
+
     protected static void requestReceived(com.github.tomakehurst.wiremock.http.Request inRequest,
                                           com.github.tomakehurst.wiremock.http.Response inResponse) {
         System.out.printf("WireMock request at URL: %s", inRequest.getAbsoluteUrl());
