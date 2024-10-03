@@ -97,7 +97,6 @@ public class Replay404HearingsController {
                         }
                     );
                     log.info("Processed hearing number {} of {}", ++count, numberToProcess);
-                    //dry run mode here
                 }
                 log.info("Processing complete. {} of {} processed",count,numberToProcess);
             } catch (Exception e) {
@@ -125,7 +124,7 @@ public class Replay404HearingsController {
 
         // mark hearing as processed somehow?
         // tag S3 object?
-
+        // dry run part here
         hearingProcessor.process(hearing, "some-id"); //TODO see if this can be retrieved. It is only used for logging
     }
 }
