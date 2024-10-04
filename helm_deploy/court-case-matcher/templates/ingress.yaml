@@ -20,11 +20,11 @@ metadata:
     # Secure the retry all dlqs endpoint from outside of the Kubernetes ingress
     nginx.ingress.kubernetes.io/configuration-snippet: |
       server_tokens off;
-      location /{{ template "app.fullname" . }}/queue-admin/retry-all-dlqs {
+      location /queue-admin/retry-all-dlqs {
         deny all;
         return 401;
       }
-      location /{{ template "app.fullname" . }}/replay404Hearings {
+      location /replay404Hearings {
         deny all;
         return 401;
       }
