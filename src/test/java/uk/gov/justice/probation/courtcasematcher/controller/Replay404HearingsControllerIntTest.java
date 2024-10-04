@@ -11,8 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
@@ -77,11 +80,18 @@ public class Replay404HearingsControllerIntTest {
         }
     }
     @Test
-    void replays404Hearings() throws InterruptedException {
+    @Disabled("strange upload error -  curl -vv -F file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8180/replay404Hearings works fine")
+    void replays404Hearings() throws InterruptedException, IOException {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+//
+        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv)));
         WebClient webClient = WebClient.builder()
             .build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
-        String OK = webClient.post().uri(URI.create(replay404HearingsUrl))
+        String OK = webClient.post()
+            .uri(URI.create(replay404HearingsUrl))
+            .contentType(MediaType.parseMediaType("multipart/form-data; boundary=------------------------WVYuKPhkvydQGkHSFHmKE2"))
+            .body(BodyInserters.fromMultipartData(builder.build()))
             .retrieve().bodyToMono(String.class).block();
         Thread.sleep(2000);
 
@@ -103,11 +113,13 @@ public class Replay404HearingsControllerIntTest {
 
     @Test
     @Disabled
-    void givenDryRunEnabled_then_replay_404Hearings() throws InterruptedException {
+    void givenDryRunEnabled_then_replay_404Hearings() throws InterruptedException, IOException {
         WebClient webClient = WebClient.builder()
             .build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
-        String OK = webClient.post().uri(URI.create(replay404HearingsUrl))
+        String OK = webClient.post()
+            .uri(URI.create(replay404HearingsUrl))
+            .body(BodyInserters.fromValue(Files.readString(Paths.get(pathToCsv))))
             .retrieve().bodyToMono(String.class).block();
         Thread.sleep(2000);
 
