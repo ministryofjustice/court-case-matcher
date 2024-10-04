@@ -54,42 +54,42 @@ public class ReplayHearingsService {
     @NotNull
     public Supplier<String> replay(List<Hearing404> hearingsWith404) {
         return () -> {
-            try {
-
                 int numberToProcess = hearingsWith404.size();
                 log.info("Total number of hearings {}", numberToProcess);
                 int count = 0;
                 for (Hearing404 hearing : hearingsWith404) {
+                    try {
+                        String id = hearing.getId();
+                        String s3Path = hearing.getS3Path();
+                        LocalDateTime received = hearing.getReceived(); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
 
-                    String id = hearing.getId();
-                    String s3Path = hearing.getS3Path();
-                    LocalDateTime received = hearing.getReceived(); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
-
-                    courtCaseServiceClient.getHearing(id).blockOptional().ifPresentOrElse(
-                        (existingHearing) -> {
-                            // check court-case-service and compare the last updated date with the inputted-hearing
-                            if (existingHearing.getLastUpdated().isBefore(received)) {
-                                log.info("Processing hearing {} as it has not been updated since {}", id, existingHearing.getLastUpdated());
+                        courtCaseServiceClient.getHearing(id).blockOptional().ifPresentOrElse(
+                            (existingHearing) -> {
+                                // check court-case-service and compare the last updated date with the inputted-hearing
+                                if (existingHearing.getLastUpdated().isBefore(received)) {
+                                    log.info("Processing hearing {} as it has not been updated since {}", id, existingHearing.getLastUpdated());
+                                    processNewOrUpdatedHearing(s3Path, id);
+                                } else {
+                                    log.info("Discarding hearing {} as we have a later version of it on {}", id, existingHearing.getLastUpdated());
+                                    trackHearingProcessedEvent(existingHearing.getHearingId(), "ignored");
+                                }
+                            },
+                            () -> {
+                                log.info("Processing new hearing {}", id);
                                 processNewOrUpdatedHearing(s3Path, id);
-                            } else {
-                                log.info("Discarding hearing {} as we have a later version of it on {}", id, existingHearing.getLastUpdated());
-                                trackHearingProcessedEvent(existingHearing.getHearingId(), "ignored");
                             }
-                        },
-                        () -> {
-                            log.info("Processing new hearing {}", id);
-                            processNewOrUpdatedHearing(s3Path, id);
+                        );
+                        if (count % 100 == 0) {
+                            log.info("Processed hearing number {} of {}", ++count, numberToProcess);
                         }
-                    );
-                    if (count % 100 == 0) {
-                        log.info("Processed hearing number {} of {}", ++count, numberToProcess);
+                    }
+                    catch (Exception e) {
+                        log.error("Error processing hearing with id {}", hearing.getId());
+                        log.error(e.getMessage());
+                        trackHearingProcessedEvent(hearing.getId(), "failed");
                     }
                 }
                 log.info("Processing complete. {} of {} processed",count,numberToProcess);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                throw new RuntimeException(e);
-            }
 
             return "Finished!";
         };
@@ -101,7 +101,7 @@ public class ReplayHearingsService {
         try {
             cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);
         } catch (JsonProcessingException e) {
-            log.error("Error processing hearing with id {}", hearingId);
+            log.error("JsonProcessingException: failed whilst processing hearing with id {}", hearingId);
             log.error(e.getMessage());
             trackHearingProcessedEvent(hearingId, "failed");
             return;
