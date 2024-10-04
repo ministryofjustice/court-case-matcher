@@ -61,11 +61,13 @@ public class ReplayHearingsService {
                     try {
                         String id = hearing.getId();
                         String s3Path = hearing.getS3Path();
-                        LocalDateTime received = hearing.getReceived(); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
+                        LocalDateTime received = hearing.getReceived().plusHours(1); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
 
                         courtCaseServiceClient.getHearing(id).blockOptional().ifPresentOrElse(
                             (existingHearing) -> {
                                 // check court-case-service and compare the last updated date with the inputted-hearing
+
+                                // existingHearing.getLastUpdated() is using UK timezone (BST)
                                 if (existingHearing.getLastUpdated().isBefore(received)) {
                                     log.info("Processing hearing {} as it has not been updated since {}", id, existingHearing.getLastUpdated());
                                     processNewOrUpdatedHearing(s3Path, id);
