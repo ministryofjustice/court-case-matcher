@@ -80,11 +80,9 @@ public class Replay404HearingsControllerIntTest {
         }
     }
     @Test
-    @Disabled("strange upload error -  curl -vv -F file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8180/replay404Hearings works fine")
     void replays404Hearings() throws InterruptedException, IOException {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
-//
-        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv)));
+        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv))).header("Content-Disposition", "form-data; name=file; filename=file");
         WebClient webClient = WebClient.builder()
             .build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
