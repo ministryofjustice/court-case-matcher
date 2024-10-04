@@ -81,12 +81,14 @@ public class ReplayHearingsService {
                                 processNewOrUpdatedHearing(s3Path, id);
                             }
                         );
-                        log.info("Processed hearing number {} of {}", ++count, numberToProcess);
                     }
                     catch (Exception e) {
                         log.error("Error processing hearing with id {}", hearing.getId());
                         log.error(e.getMessage());
                         trackHearingProcessedEvent(hearing.getId(), "failed");
+                    }
+                    finally {
+                        log.info("Processed hearing number {} of {}", ++count, numberToProcess);
                     }
                 }
                 log.info("Processing complete. {} of {} processed",count,numberToProcess);
