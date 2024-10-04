@@ -7,28 +7,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.justice.probation.courtcasematcher.controller.Hearing404;
 import uk.gov.justice.probation.courtcasematcher.messaging.HearingProcessor;
 import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 @Slf4j
 @Service
 public class ReplayHearingsService {
 
-    private final String pathToCsv;
+
     private final CourtCaseServiceClient courtCaseServiceClient;
     private final AmazonS3 s3Client;
     private final String bucketName;
@@ -37,14 +33,14 @@ public class ReplayHearingsService {
     private final boolean dryRunEnabled;
     private final TelemetryClient telemetryClient;
 
-    public ReplayHearingsService(@Value("${replay404.path-to-csv}") String pathToCsv,
+    public ReplayHearingsService(
                                  CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client,
                                  @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
                                  final MessageParser<CPHearingEvent> commonPlatformParser,
                                  final HearingProcessor hearingProcessor,
                                  @Value("${replay404.dry-run}") boolean dryRunEnabled, TelemetryClient telemetryClient)
     {
-        this.pathToCsv = pathToCsv;
+
         this.courtCaseServiceClient = courtCaseServiceClient;
         this.s3Client = s3Client;
         this.bucketName = bucketName;
@@ -56,19 +52,18 @@ public class ReplayHearingsService {
 
 
     @NotNull
-    public Supplier<String> replay() {
+    public Supplier<String> replay(List<Hearing404> hearingsWith404) {
         return () -> {
             try {
-                List<String> hearingsWith404 = Files.readAllLines(Paths.get(pathToCsv), UTF_8);
+
                 int numberToProcess = hearingsWith404.size();
                 log.info("Total number of hearings {}", numberToProcess);
                 int count = 0;
-                for (String hearing : hearingsWith404) {
+                for (Hearing404 hearing : hearingsWith404) {
 
-                    String[] hearingDetails = hearing.split(",");
-                    String id = hearingDetails[0];
-                    String s3Path = hearingDetails[1];
-                    LocalDateTime received = LocalDateTime.from(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").parse(hearingDetails[2])); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
+                    String id = hearing.getId();
+                    String s3Path = hearing.getS3Path();
+                    LocalDateTime received = hearing.getReceived(); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
 
                     courtCaseServiceClient.getHearing(id).blockOptional().ifPresentOrElse(
                         (existingHearing) -> {
