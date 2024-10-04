@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-@Controller
+@RestController
 @Slf4j
 public class Replay404HearingsController {
 

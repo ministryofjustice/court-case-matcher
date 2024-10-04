@@ -79,9 +79,7 @@ public class ReplayHearingsService {
                                 processNewOrUpdatedHearing(s3Path, id);
                             }
                         );
-                        if (count % 100 == 0) {
-                            log.info("Processed hearing number {} of {}", ++count, numberToProcess);
-                        }
+                        log.info("Processed hearing number {} of {}", ++count, numberToProcess);
                     }
                     catch (Exception e) {
                         log.error("Error processing hearing with id {}", hearing.getId());
