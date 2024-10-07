@@ -17,7 +17,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestPropertySource(properties = {"replay404.dry-run = true"})
-public class Replay404HearingsControllerDryRunIntTest extends Replay404HearingsControllerIntTest {
+public class Replay404HearingsControllerDryRunIntTest extends Replay404HearingsControllerIntTestBase {
     @Test
     void givenDryRunEnabled_then_replay_404Hearings() throws InterruptedException, IOException {
 

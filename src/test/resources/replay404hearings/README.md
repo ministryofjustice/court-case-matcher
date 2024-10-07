@@ -52,8 +52,6 @@ Convert file upload to use csv mime type and simplify requests
 
 Log dry run as property in all events
 
-Get test passing with dry run on
-
 Test calls to telemetry?
 
 Check speed, consider multi threading
