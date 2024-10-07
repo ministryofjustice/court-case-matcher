@@ -11,13 +11,16 @@ Fortunately a filter wrote the message payloads to S3 before returning the 404
 
 This will involve pausing the consumption of new messages from Common Platform, which will delay hearings from appearing on PACFS.
 
-We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com/#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2FMicrosoft.Insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA22QzU6EQBCE7z5Fhws%252FAdFkr5xMTPaiRr0ZQ0amhVmZGexp2NX48A4swmbjtbrq6%252B4i%252FOzRsbv4gX2DhFC1tpflo23xTmiEooCgsj1x1qAgZeoMBzScEVaoBqRgCRK6vuUbK6fQ5mqzTGyHJFhZUy7Ih%252FunZ8iTZIzjgdFImPlbCQUwKV16MQrzMGXreJxErmsVRz21aTib8zB%252BuX6NY0%252BxJJHg7QtYaf%252BQ0J0XO7I7rHhlpzDGV096ctxW%252BoTrtfbebwRBdanFIVq9STzyF5Z376wy8KGMLJQxfj2TqNCBNefYYxEe5ESN4HHEbq%252B4geBWtb70Lj9p4t1LZmpqLSIAJwaUwBYukyCd9AkTHQlBOsOnMv75%252Bw%252F6CyZi4krxAQAA/timespan/2024-09-19T14%3A00%3A55.000Z%2F2024-09-30T16%3A31%3A55.000Z)
+We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2FMicrosoft.Insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA22QzU7DQAyE7zyFlUt%252BlBCQes0JCakXQMANoWjJmnZLdjd4nbQgHh43LWlUcR3PfLaH8LPHwOHiB7ZrJISm9b2uH32Ld8oiVBVEje%252BJizUqMm5V4ICOC8IGzYAUTUHC0Ld84%252FUYWlwtponvkBQb7%252BoJ%252BXD%252F9Axllu3juGN0Go78pYYKmIytRUziMs6BfeD9KAldazjpqc0hPtrLOH25fk1T4XjSSPD2BWysvKRsJ2JHfoMNn%252Bg5jPnJk8%252FOW2pJhN5a8X4jKFrVVu2SmTdL9wsmmNg33jj4ME5XxjnZz6QaDODdOffQhZCCWiEIjzhsDa8hujWt9N6VszLeRXJjWacuIghqQC11wGUW5YfByEkOCNGO%252BLGPf17%252Fw87%252B%252FwXkEv%252FoAQIAAA%253D%253D/timespan/2024-09-19T14%3A00%3A55.000Z%2F2024-09-30T16%3A31%3A55.000Z/limit/30000)
 
 To note, AppInsights Azure logs have a limit of 30,000 results so the above query is a sample size of the issue.
 
 // TODO check query is up-to-date
 
-Export the results of this query to CSV, making sure to take into account the 30,000 results limit.
+Export the results of this query to CSV, making sure to:
+- take into account the 30,000 results limit.
+- remove the column names from the first row of the CSV.
+
 Then write an endpoint on `court-case-matcher`. 
 
 - Subscribe `court-case-matcher` to an empty queue to avoid race conditions when processing updates
@@ -35,12 +38,12 @@ This will forward `http://localhost:8080` on your machine to the deployed `court
 
 You can then post a file in the format of [test-hearings.csv](src/test/resources/replay404hearings/test-hearings.csv) like this:
 
-`curl -X post file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8180/replay404Hearings`
+`curl -X POST file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8080/replay404Hearings`
 // TODO check the above works
 
 ## Dry run mode
 
-In dry run mode, the hearing will be retrieved from S3 and the last modified date will be checked against the date the hearing was written to S3. The hearing will not be saved.
+In dry run mode, the hearing will be retrieved from S3 and the last modified date will be checked against the datetime the hearing was written to S3. The hearing will not be saved.
 Log statements and telemetry will indicate if the hearing would have been updated, created or discarded as a more recent version is in the database.
 
 
@@ -53,8 +56,6 @@ kubectl set env deployment/court-case-matcher REPLAY404_DRY_RUN=false -n namespa
 TODO
 
 Convert file upload to use csv mime type and simplify requests
-
-Log dry run as property in all events
 
 Test calls to telemetry?
 
