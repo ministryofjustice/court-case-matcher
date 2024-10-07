@@ -24,7 +24,6 @@ public class Replay404HearingsControllerDryRunIntTest extends Replay404HearingsC
         String OK = replayHearings();
         Thread.sleep(2000);
 
-        // TODO maybe some stronger checks about the format of the put body here?
         MOCK_SERVER.verify(
             0,
             putRequestedFor(urlEqualTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
