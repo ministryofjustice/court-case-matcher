@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -24,16 +25,7 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
 
     @Test
     void replays404Hearings() throws InterruptedException, IOException {
-        MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv))).header("Content-Disposition", "form-data; name=file; filename=file");
-        WebClient webClient = WebClient.builder()
-            .build();
-        String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
-        String OK = webClient.post()
-            .uri(URI.create(replay404HearingsUrl))
-            .contentType(MediaType.parseMediaType("multipart/form-data; boundary=------------------------WVYuKPhkvydQGkHSFHmKE2"))
-            .body(BodyInserters.fromMultipartData(builder.build()))
-            .retrieve().bodyToMono(String.class).block();
+        String OK = replayHearings();
         Thread.sleep(2000);
 
         // TODO maybe some stronger checks about the format of the put body here?
