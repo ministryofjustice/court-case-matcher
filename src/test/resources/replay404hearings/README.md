@@ -17,7 +17,8 @@ To note, AppInsights Azure logs have a limit of 30,000 results so the above quer
 
 // TODO check query is up-to-date
 
-Export the results of this query to CSV, then write an endpoint on `court-case-matcher`. 
+Export the results of this query to CSV, making sure to take into account the 30,000 results limit.
+Then write an endpoint on `court-case-matcher`. 
 
 - Subscribe `court-case-matcher` to an empty queue to avoid race conditions when processing updates
 - Post the CSV to the `/replay404hearings` endpoint.
