@@ -140,6 +140,7 @@ public class ReplayHearingsService {
         Map<String, String> properties = new HashMap<>(10);
         properties.put("hearingId", hearingId);
         properties.put("status", status);
+        properties.put("dryRun", dryRunEnabled ? "true" : "false");
         return properties;
     }
 }
