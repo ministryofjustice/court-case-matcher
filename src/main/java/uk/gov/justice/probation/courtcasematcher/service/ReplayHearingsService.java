@@ -116,6 +116,7 @@ public class ReplayHearingsService {
 
         if (dryRunEnabled) {
             log.info("Dry run - processNewOrUpdatedHearing for hearing: {}", cpHearingEvent.getHearing().getId());
+            trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), "succeeded for dry run");
         } else {
             try {
                 hearingProcessor.process(hearing, "pic4207-data-fix");
