@@ -13,10 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class Replay404HearingsControllerIntTest extends Replay404HearingsControllerIntTestBase{
-
-    @Value("${replay404.path-to-csv}")
-    protected String pathToCsv;
-
+    
     @Test
     void replays404Hearings() throws InterruptedException, IOException {
         String OK = replayHearings();
