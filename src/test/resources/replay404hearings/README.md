@@ -12,7 +12,10 @@ Fortunately a filter wrote the message payloads to S3 before returning the 404
 This will involve pausing the consumption of new messages from Common Platform, which will delay hearings from appearing on PACFS.
 
 We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com/#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2FMicrosoft.Insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA22QzU6EQBCE7z5Fhws%252FAdFkr5xMTPaiRr0ZQ0amhVmZGexp2NX48A4swmbjtbrq6%252B4i%252FOzRsbv4gX2DhFC1tpflo23xTmiEooCgsj1x1qAgZeoMBzScEVaoBqRgCRK6vuUbK6fQ5mqzTGyHJFhZUy7Ih%252FunZ8iTZIzjgdFImPlbCQUwKV16MQrzMGXreJxErmsVRz21aTib8zB%252BuX6NY0%252BxJJHg7QtYaf%252BQ0J0XO7I7rHhlpzDGV096ctxW%252BoTrtfbebwRBdanFIVq9STzyF5Z376wy8KGMLJQxfj2TqNCBNefYYxEe5ESN4HHEbq%252B4geBWtb70Lj9p4t1LZmpqLSIAJwaUwBYukyCd9AkTHQlBOsOnMv75%252Bw%252F6CyZi4krxAQAA/timespan/2024-09-19T14%3A00%3A55.000Z%2F2024-09-30T16%3A31%3A55.000Z)
-// TODO check query is up to date
+
+To note, AppInsights Azure logs have a limit of 30,000 results so the above query is a sample size of the issue.
+
+// TODO check query is up-to-date
 
 Export the results of this query to CSV, then write an endpoint on `court-case-matcher`. 
 
