@@ -116,6 +116,7 @@ public class ReplayHearingsService {
 
         if (dryRunEnabled) {
             log.info("Dry run - processNewOrUpdatedHearing for hearing: {}", cpHearingEvent.getHearing().getId());
+            trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), "succeeded for dry run");
         } else {
             try {
                 hearingProcessor.process(hearing, "pic4207-data-fix");
@@ -133,7 +134,7 @@ public class ReplayHearingsService {
 
         final var properties = getHearingProperties(hearingId, status);
 
-        telemetryClient.trackEvent(TelemetryEventType.MISSING_HEARING_EVENT_PROCESSED.name(), properties, Collections.emptyMap());
+        telemetryClient.trackEvent(TelemetryEventType.MISSING_HEARING_EVENT_PROCESSED.eventName, properties, Collections.emptyMap());
     }
 
     private Map<String, String> getHearingProperties(String hearingId, String status) {

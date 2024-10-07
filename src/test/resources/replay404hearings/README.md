@@ -38,8 +38,7 @@ This will forward `http://localhost:8080` on your machine to the deployed `court
 
 You can then post a file in the format of [test-hearings.csv](src/test/resources/replay404hearings/test-hearings.csv) like this:
 
-`curl -X POST file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8080/replay404Hearings`
-// TODO check the above works
+`curl -X POST -F file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8080/replay404Hearings`
 
 ## Dry run mode
 
