@@ -133,7 +133,7 @@ public class ReplayHearingsService {
 
         final var properties = getHearingProperties(hearingId, status);
 
-        telemetryClient.trackEvent(TelemetryEventType.MISSING_HEARING_EVENT_PROCESSED.name(), properties, Collections.emptyMap());
+        telemetryClient.trackEvent(TelemetryEventType.MISSING_HEARING_EVENT_PROCESSED.eventName, properties, Collections.emptyMap());
     }
 
     private Map<String, String> getHearingProperties(String hearingId, String status) {
