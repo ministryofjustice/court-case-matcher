@@ -52,6 +52,10 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${nomis-oauth.issuer-base-url:${nomis-oauth.base-url}}/auth/issuer
+  servlet:
+    multipart:
+      max-file-size: 2GB
+      max-request-size: 2GB
 
 court-case-service:
   case-put-url-template: /court/%s/case/%s

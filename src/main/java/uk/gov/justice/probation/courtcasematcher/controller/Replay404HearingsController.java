@@ -34,12 +34,12 @@ public class Replay404HearingsController {
 
         InputStream inputStream = file.getInputStream();
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        List<Hearing404> hearing404s = br.lines().map(hearing -> {
-            String[] hearingDetails = hearing.split(",");
-            String id = hearingDetails[0];
-            String s3Path = hearingDetails[1];
-            LocalDateTime received = LocalDateTime.from(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").parse(hearingDetails[2])); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
-            return new Hearing404(id, s3Path, received);
+        List<Hearing404> hearing404s = br.lines().filter(it -> !it.isEmpty()).map(hearing -> {
+                String[] hearingDetails = hearing.split(",");
+                String id = hearingDetails[0];
+                String s3Path = hearingDetails[1];
+                LocalDateTime received = LocalDateTime.from(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").parse(hearingDetails[2])); // THIS IS UTC and therefore 1 hour behind the time in the S3 path
+                return new Hearing404(id, s3Path, received);
         }).collect(Collectors.toList());
 
         log.info("Starting to replay 404 hearings");

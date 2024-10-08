@@ -11,7 +11,23 @@ Fortunately a filter wrote the message payloads to S3 before returning the 404
 
 This will involve pausing the consumption of new messages from Common Platform, which will delay hearings from appearing on PACFS.
 
-We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2FMicrosoft.Insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA22QzU7DQAyE7zyFlUt%252BlBCQes0JCakXQMANoWjJmnZLdjd4nbQgHh43LWlUcR3PfLaH8LPHwOHiB7ZrJISm9b2uH32Ld8oiVBVEje%252BJizUqMm5V4ICOC8IGzYAUTUHC0Ld84%252FUYWlwtponvkBQb7%252BoJ%252BXD%252F9Axllu3juGN0Go78pYYKmIytRUziMs6BfeD9KAldazjpqc0hPtrLOH25fk1T4XjSSPD2BWysvKRsJ2JHfoMNn%252Bg5jPnJk8%252FOW2pJhN5a8X4jKFrVVu2SmTdL9wsmmNg33jj4ME5XxjnZz6QaDODdOffQhZCCWiEIjzhsDa8hujWt9N6VszLeRXJjWacuIghqQC11wGUW5YfByEkOCNGO%252BLGPf17%252Fw87%252B%252FwXkEv%252FoAQIAAA%253D%253D/timespan/2024-09-19T14%3A00%3A55.000Z%2F2024-09-30T16%3A31%3A55.000Z/limit/30000)
+We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2FMicrosoft.Insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA22QTU%252FDMAyG7%252FwKq5d%252BqKMg7YTUExLaDgMEuyFUhcZsGU1SHHcfiB9P2m5dQeQW%252B30f2y%252FhZ4OO3cU37NZICGVlG1k82QrvhUbIcwhK2xBP1ihImdUEt2h4Qlii2iIFg5HQNRXfWtmZplfToWNrJMHKmmJAPj48LyFLktaOe0Yj4cifS8iBSenCF6MwC1Ng67htRa6uFEcNVSmER3kWxi%252FXr3HsOZYkErwdgJX2Jwld%252B2JNdoMln%252BkpdP5Bk47Wm0vvcI3WXvuFIGhVaLGPRtokbgcMMC%252FfWGXgQxmZK2P8fCZRogNr%252FnL7LDzJiRWC5xG7neI1BHeq8rnX2SiMd18yXVjnLAJwYovSxwGXSZD2jY4T9QhfO%252BK7PE4oS1owo1yqjtf%252FCykY28NG1wUH%252F7LFIpMSZrMbrW%252BcC%252BL%252FQzwtmP7m%252FwBka4WlTwIAAA%253D%253D/timespan/2024-09-19T14%3A00%3A55.000Z%2F2024-09-30T16%3A31%3A55.000Z)
+
+Text of query (note especially datetime formatting to remove MS):
+```requests
+| where cloud_RoleName == "court-hearing-event-receiver"
+| where resultCode == 404
+| where operation_Name == "POST /**"
+| extend hearingId = trim_end('/', tostring(split(url, 'hearing/')[1]))
+| order by timestamp
+| project hearingId, url, timestamp, operation_Id
+| summarize arg_max(timestamp, *) by hearingId
+| join kind=inner traces on operation_Id
+| where message startswith "File cp/"
+| extend filename = trim_end(" saved to .*", trim_start("File ", message))
+| extend formattedTime = format_datetime(timestamp,"yyyy-MM-dd HH:mm:ss")
+| project hearingId, filename, formattedTime```
+
 
 To note, AppInsights Azure logs have a limit of 30,000 results so the above query is a sample size of the issue.
 
@@ -52,10 +68,30 @@ Log statements and telemetry will indicate if the hearing would have been update
 kubectl set env deployment/court-case-matcher REPLAY404_DRY_RUN=false -n namespace
 ```
 
+### Reporting on the replay
+
+```customEvents
+| where cloud_RoleName == 'court-case-matcher'
+| where name == 'PiC404HearingEventProcessed'
+| where tostring(customDimensions.dryRun) == 'false'
+| summarize count() by tostring(customDimensions.status)```
+
+This will summarise all events which have been processed by whether they have succeeded, failed or been ignored as we have a more recent version. We will need to do something about the failures
+
 TODO
 
-Convert file upload to use csv mime type and simplify requests
-
-Test calls to telemetry?
-
 Check speed, consider multi threading
+
+There are a lot of problems in preprod - DLQ clear? Fix errors?
+
+Before trying this in live
+
+Do a hearing with court applications
+
+Error handling around S3 call?
+Build in a retry mechanism? Might not be necessary in production
+
+Review code in CHER to make sure it does not modify. Pretty confident in this. It only seems to exist to provide resilience by introducing a queue
+What else is needed for go/no-go?
+Manual database snapshot
+Does taking a snapshot interfere with a running process/thread?

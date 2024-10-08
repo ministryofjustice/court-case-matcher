@@ -55,23 +55,32 @@ public class Replay404HearingsControllerIntTestBase {
         if (logWiremock) {
             MOCK_SERVER.addMockServiceRequestListener(Replay404HearingsControllerIntTestBase::requestReceived);
         }
-        for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
-            String[] hearingDetails = hearing.split(",");
-            String id = hearingDetails[0];
-            String s3Path = hearingDetails[1];
+        Files.readAllLines(Paths.get(pathToCsv), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(this::publishToS3);
 
+    }
+
+    private void publishToS3(String hearing)  {
+        String[] hearingDetails = hearing.split(",");
+        String id = hearingDetails[0];
+        String s3Path = hearingDetails[1];
+        try {
             String fileWithCorrectId = Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id);
             s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
     @AfterEach
     void tearDown() throws IOException {
-        for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
-            String[] hearingDetails = hearing.split(",");
-            String s3Path = hearingDetails[1];
-            s3Client.deleteObject(bucketName, s3Path);
-        }
+        Files.readAllLines(Paths.get(pathToCsv), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(this::deleteFromS3);
+    }
+
+    private void deleteFromS3(String hearing) {
+        String[] hearingDetails = hearing.split(",");
+        String s3Path = hearingDetails[1];
+        s3Client.deleteObject(bucketName, s3Path);
     }
 
     protected String replayHearings() throws IOException {
