@@ -15,7 +15,7 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
 
     @Test
     void replays404Hearings() throws InterruptedException, IOException {
-        String OK = replayHearings(pathToCsv);
+        String OK = replayHearings(hearingsWhichCanBeProcessed);
         Thread.sleep(2000);
 
         MOCK_SERVER.verify(

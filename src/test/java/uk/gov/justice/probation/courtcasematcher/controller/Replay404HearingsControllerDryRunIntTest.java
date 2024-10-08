@@ -14,7 +14,7 @@ public class Replay404HearingsControllerDryRunIntTest extends Replay404HearingsC
     @Test
     void givenDryRunEnabled_then_replay_404Hearings() throws InterruptedException, IOException {
 
-        String OK = replayHearings(pathToCsv);
+        String OK = replayHearings(hearingsWhichCanBeProcessed);
         Thread.sleep(2000);
 
         MOCK_SERVER.verify(
