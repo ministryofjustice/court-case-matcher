@@ -46,46 +46,49 @@ public class Replay404HearingsControllerIntTestBase {
     @Value("${crime-portal-gateway-s3-bucket}")
     private String bucketName;
 
-    @Value("${replay404.path-to-csv}")
-    protected String pathToCsv;
-
+    protected String hearingsWhichCanBeProcessed = "src/test/resources/replay404hearings/test-hearings.csv";
+    protected String hearingsWhichCannotBeProcessed = "src/test/resources/replay404hearings/test-hearings-with-no-prosecution-cases.csv";
     @BeforeEach
     void setUp() throws IOException {
         boolean logWiremock = false;
         if (logWiremock) {
             MOCK_SERVER.addMockServiceRequestListener(Replay404HearingsControllerIntTestBase::requestReceived);
         }
-        Files.readAllLines(Paths.get(pathToCsv), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(this::publishToS3);
+        publishToS3(hearingsWhichCanBeProcessed, "src/test/resources/replay404hearings/hearingFromS3.json");
+        publishToS3(hearingsWhichCannotBeProcessed, "src/test/resources/replay404hearings/hearingWithNoProsecutionCases.json");
 
     }
-
-    private void publishToS3(String hearing)  {
-        String[] hearingDetails = hearing.split(",");
-        String id = hearingDetails[0];
-        String s3Path = hearingDetails[1];
-        try {
-            String fileWithCorrectId = Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id);
-            s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+    private void publishToS3(String pathToHearings, String hearingTemplate) throws IOException {
+        Files.readAllLines(Paths.get(pathToHearings), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(hearing -> {
+            String[] hearingDetails = hearing.split(",");
+            String id = hearingDetails[0];
+            String s3Path = hearingDetails[1];
+            try {
+                String fileWithCorrectId = Files.readString(Paths.get(hearingTemplate)).replace("|REPLACEMEID|", id);
+                s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @AfterEach
     void tearDown() throws IOException {
-        Files.readAllLines(Paths.get(pathToCsv), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(this::deleteFromS3);
+        deleteFromS3(hearingsWhichCanBeProcessed);
+        deleteFromS3(hearingsWhichCannotBeProcessed);
     }
 
-    private void deleteFromS3(String hearing) {
-        String[] hearingDetails = hearing.split(",");
-        String s3Path = hearingDetails[1];
-        s3Client.deleteObject(bucketName, s3Path);
+    private void deleteFromS3(String pathToHearings) throws IOException {
+        Files.readAllLines(Paths.get(pathToHearings), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(hearing -> {
+            String[] hearingDetails = hearing.split(",");
+            String s3Path = hearingDetails[1];
+            s3Client.deleteObject(bucketName, s3Path);
+        });
     }
 
-    protected String replayHearings() throws IOException {
+    protected String replayHearings(String pathToHearings) throws IOException {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv))).header("Content-Disposition", "form-data; name=file; filename=file");
+        builder.part("file", Files.readAllBytes(Paths.get(pathToHearings))).header("Content-Disposition", "form-data; name=file; filename=file");
         WebClient webClient = WebClient.builder()
             .build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);

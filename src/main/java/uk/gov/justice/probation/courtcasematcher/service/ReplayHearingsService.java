@@ -83,9 +83,14 @@ public class ReplayHearingsService {
                         );
                     }
                     catch (Exception e) {
-                        log.error("Error processing hearing with id {}", hearing.getId());
-                        log.error(e.getMessage());
-                        trackHearingProcessedEvent(hearing.getId(), "failed");
+                        if("hearing.prosecutionCases: must not be empty".equals(e.getMessage())){
+                            log.info("Discarding hearing {} as it has no prosecutionCases", hearing.getId());
+                            trackHearingProcessedEvent(hearing.getId(), "ignored");
+                        } else {
+                            log.error("Error processing hearing with id {}", hearing.getId());
+                            log.error(e.getMessage());
+                            trackHearingProcessedEvent(hearing.getId(), "failed");
+                        }
                     }
                     finally {
                         log.info("Processed hearing number {} of {}", ++count, numberToProcess);
@@ -108,8 +113,6 @@ public class ReplayHearingsService {
             trackHearingProcessedEvent(hearingId, "failed");
             return;
         }
-        // might need to import the hearing classes from CHER if this is too different
-        // TODO test all the way through in PREPROD ASAP
         final var hearing = cpHearingEvent.asDomain()
             .withHearingId(cpHearingEvent.getHearing().getId())
             .withHearingEventType("ConfirmedOrUpdated");
