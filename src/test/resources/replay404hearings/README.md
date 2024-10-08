@@ -80,15 +80,9 @@ This will summarise all events which have been processed by whether they have su
 
 TODO
 
-Convert file upload to use csv mime type and simplify requests
-
-Test calls to telemetry?
-
 Check speed, consider multi threading
 
-Deploy to production
-
-Clear dead letter queue in preproduction?
+There are a lot of problems in preprod - DLQ clear? Fix errors?
 
 Before trying this in live
 
@@ -96,9 +90,11 @@ Do a hearing with court applications
 
 Error handling around S3 call?
 Build in a retry mechanism? Might not be necessary in production
-How big a deal are the retries?
-Dashboard/reporting
+
 Review code in CHER to make sure it does not modify. Pretty confident in this. It only seems to exist to provide resilience by introducing a queue
 What else is needed for go/no-go?
 Manual database snapshot
 Does taking a snapshot interfere with a running process/thread?
+
+Convert file upload to use csv mime type and simplify requests
+took 5 minutes to load 28000 records locally then failed

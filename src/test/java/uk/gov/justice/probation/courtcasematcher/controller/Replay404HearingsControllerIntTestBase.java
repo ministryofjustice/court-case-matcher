@@ -56,6 +56,9 @@ public class Replay404HearingsControllerIntTestBase {
             MOCK_SERVER.addMockServiceRequestListener(Replay404HearingsControllerIntTestBase::requestReceived);
         }
         for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
+            if(hearing.isEmpty()){
+                continue;
+            }
             String[] hearingDetails = hearing.split(",");
             String id = hearingDetails[0];
             String s3Path = hearingDetails[1];
@@ -68,9 +71,11 @@ public class Replay404HearingsControllerIntTestBase {
     @AfterEach
     void tearDown() throws IOException {
         for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
-            String[] hearingDetails = hearing.split(",");
-            String s3Path = hearingDetails[1];
-            s3Client.deleteObject(bucketName, s3Path);
+            if(!hearing.isEmpty()) {
+                String[] hearingDetails = hearing.split(",");
+                String s3Path = hearingDetails[1];
+                s3Client.deleteObject(bucketName, s3Path);
+            }
         }
     }
 
