@@ -95,6 +95,3 @@ Review code in CHER to make sure it does not modify. Pretty confident in this. I
 What else is needed for go/no-go?
 Manual database snapshot
 Does taking a snapshot interfere with a running process/thread?
-
-Convert file upload to use csv mime type and simplify requests
-took 5 minutes to load 28000 records locally then failed
