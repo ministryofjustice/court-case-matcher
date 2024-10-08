@@ -1,7 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 
@@ -16,7 +15,7 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
 
     @Test
     void replays404Hearings() throws InterruptedException, IOException {
-        String OK = replayHearings();
+        String OK = replayHearings(pathToCsv);
         Thread.sleep(2000);
 
         MOCK_SERVER.verify(

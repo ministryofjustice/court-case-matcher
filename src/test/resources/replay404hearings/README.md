@@ -14,7 +14,9 @@ This will involve pausing the consumption of new messages from Common Platform, 
 We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2FMicrosoft.Insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA22QTU%252FDMAyG7%252FwKq5d%252BqKMg7YTUExLaDgMEuyFUhcZsGU1SHHcfiB9P2m5dQeQW%252B30f2y%252FhZ4OO3cU37NZICGVlG1k82QrvhUbIcwhK2xBP1ihImdUEt2h4Qlii2iIFg5HQNRXfWtmZplfToWNrJMHKmmJAPj48LyFLktaOe0Yj4cifS8iBSenCF6MwC1Ng67htRa6uFEcNVSmER3kWxi%252FXr3HsOZYkErwdgJX2Jwld%252B2JNdoMln%252BkpdP5Bk47Wm0vvcI3WXvuFIGhVaLGPRtokbgcMMC%252FfWGXgQxmZK2P8fCZRogNr%252FnL7LDzJiRWC5xG7neI1BHeq8rnX2SiMd18yXVjnLAJwYovSxwGXSZD2jY4T9QhfO%252BK7PE4oS1owo1yqjtf%252FCykY28NG1wUH%252F7LFIpMSZrMbrW%252BcC%252BL%252FQzwtmP7m%252FwBka4WlTwIAAA%253D%253D/timespan/2024-09-19T14%3A00%3A55.000Z%2F2024-09-30T16%3A31%3A55.000Z)
 
 Text of query (note especially datetime formatting to remove MS):
-```requests
+```
+
+requests
 | where cloud_RoleName == "court-hearing-event-receiver"
 | where resultCode == 404
 | where operation_Name == "POST /**"
@@ -25,8 +27,10 @@ Text of query (note especially datetime formatting to remove MS):
 | join kind=inner traces on operation_Id
 | where message startswith "File cp/"
 | extend filename = trim_end(" saved to .*", trim_start("File ", message))
-| extend formattedTime = format_datetime(timestamp,"yyyy-MM-dd HH:mm:ss")
-| project hearingId, filename, formattedTime```
+| extend formattedTime = format_datetime(timestamp,"dd/MM/yyyy HH:mm:ss")
+| project hearingId, filename, formattedTime
+
+```
 
 
 To note, AppInsights Azure logs have a limit of 30,000 results so the above query is a sample size of the issue.

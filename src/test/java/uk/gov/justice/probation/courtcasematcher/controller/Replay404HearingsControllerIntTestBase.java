@@ -55,22 +55,23 @@ public class Replay404HearingsControllerIntTestBase {
         if (logWiremock) {
             MOCK_SERVER.addMockServiceRequestListener(Replay404HearingsControllerIntTestBase::requestReceived);
         }
-        Files.readAllLines(Paths.get(pathToCsv), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(this::publishToS3);
+        publishToS3();
 
     }
-
-    private void publishToS3(String hearing)  {
-        String[] hearingDetails = hearing.split(",");
-        String id = hearingDetails[0];
-        String s3Path = hearingDetails[1];
-        try {
-            String fileWithCorrectId = Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id);
-            s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+    private void publishToS3() throws IOException {
+        Files.readAllLines(Paths.get(pathToCsv), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(hearing -> {
+            String[] hearingDetails = hearing.split(",");
+            String id = hearingDetails[0];
+            String s3Path = hearingDetails[1];
+            try {
+                String fileWithCorrectId = Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id);
+                s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
+
 
     @AfterEach
     void tearDown() throws IOException {
@@ -83,9 +84,9 @@ public class Replay404HearingsControllerIntTestBase {
         s3Client.deleteObject(bucketName, s3Path);
     }
 
-    protected String replayHearings() throws IOException {
+    protected String replayHearings(String pathToCsv1) throws IOException {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv))).header("Content-Disposition", "form-data; name=file; filename=file");
+        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv1))).header("Content-Disposition", "form-data; name=file; filename=file");
         WebClient webClient = WebClient.builder()
             .build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
