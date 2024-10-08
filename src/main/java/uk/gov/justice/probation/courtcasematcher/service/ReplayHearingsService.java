@@ -108,8 +108,6 @@ public class ReplayHearingsService {
             trackHearingProcessedEvent(hearingId, "failed");
             return;
         }
-        // might need to import the hearing classes from CHER if this is too different
-        // TODO test all the way through in PREPROD ASAP
         final var hearing = cpHearingEvent.asDomain()
             .withHearingId(cpHearingEvent.getHearing().getId())
             .withHearingEventType("ConfirmedOrUpdated");

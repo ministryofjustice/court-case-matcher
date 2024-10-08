@@ -36,6 +36,7 @@ To note, AppInsights Azure logs have a limit of 30,000 results so the above quer
 Export the results of this query to CSV, making sure to:
 - take into account the 30,000 results limit.
 - remove the column names from the first row of the CSV.
+- remove any quotes
 
 Then write an endpoint on `court-case-matcher`. 
 
@@ -70,28 +71,25 @@ kubectl set env deployment/court-case-matcher REPLAY404_DRY_RUN=false -n namespa
 
 ### Reporting on the replay
 
-```customEvents
+```
+customEvents
 | where cloud_RoleName == 'court-case-matcher'
 | where name == 'PiC404HearingEventProcessed'
 | where tostring(customDimensions.dryRun) == 'false'
-| summarize count() by tostring(customDimensions.status)```
+| summarize count() by tostring(customDimensions.status)
+```
 
 This will summarise all events which have been processed by whether they have succeeded, failed or been ignored as we have a more recent version. We will need to do something about the failures
 
 TODO
 
-Check speed, consider multi threading
+Omit hearings with no prosecutionCases. Retry in preprod until we have no failures.
 
 There are a lot of problems in preprod - DLQ clear? Fix errors?
-
-Before trying this in live
-
-Do a hearing with court applications
 
 Error handling around S3 call?
 Build in a retry mechanism? Might not be necessary in production
 
-Review code in CHER to make sure it does not modify. Pretty confident in this. It only seems to exist to provide resilience by introducing a queue
 What else is needed for go/no-go?
 Manual database snapshot
 Does taking a snapshot interfere with a running process/thread?
