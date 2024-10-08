@@ -54,17 +54,17 @@ public class Replay404HearingsControllerIntTestBase {
         if (logWiremock) {
             MOCK_SERVER.addMockServiceRequestListener(Replay404HearingsControllerIntTestBase::requestReceived);
         }
-        publishToS3(hearingsWhichCanBeProcessed);
-        publishToS3(hearingsWhichCannotBeProcessed);
+        publishToS3(hearingsWhichCanBeProcessed, "src/test/resources/replay404hearings/hearingFromS3.json");
+        publishToS3(hearingsWhichCannotBeProcessed, "src/test/resources/replay404hearings/hearingWithNoProsecutionCases.json");
 
     }
-    private void publishToS3(String pathToHearings) throws IOException {
+    private void publishToS3(String pathToHearings, String hearingTemplate) throws IOException {
         Files.readAllLines(Paths.get(pathToHearings), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(hearing -> {
             String[] hearingDetails = hearing.split(",");
             String id = hearingDetails[0];
             String s3Path = hearingDetails[1];
             try {
-                String fileWithCorrectId = Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id);
+                String fileWithCorrectId = Files.readString(Paths.get(hearingTemplate)).replace("|REPLACEMEID|", id);
                 s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -86,9 +86,9 @@ public class Replay404HearingsControllerIntTestBase {
         });
     }
 
-    protected String replayHearings(String pathToCsv1) throws IOException {
+    protected String replayHearings(String pathToHearings) throws IOException {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", Files.readAllBytes(Paths.get(pathToCsv1))).header("Content-Disposition", "form-data; name=file; filename=file");
+        builder.part("file", Files.readAllBytes(Paths.get(pathToHearings))).header("Content-Disposition", "form-data; name=file; filename=file");
         WebClient webClient = WebClient.builder()
             .build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);

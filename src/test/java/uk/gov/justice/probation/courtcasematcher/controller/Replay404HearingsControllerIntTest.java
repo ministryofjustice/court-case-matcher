@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class Replay404HearingsControllerIntTest extends Replay404HearingsControllerIntTestBase{
 
     @Test
-    void replays404Hearings() throws InterruptedException, IOException {
+    void replays404HearingsWhichCanBeProcessed() throws InterruptedException, IOException {
         String OK = replayHearings(hearingsWhichCanBeProcessed);
         Thread.sleep(2000);
 
@@ -40,6 +40,23 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         );
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
+        );
+        assertThat(OK).isEqualTo("OK");
+
+    }
+
+    @Test
+    void replays404HearingsWhichCannotBeProcessed() throws InterruptedException, IOException {
+        String OK = replayHearings(hearingsWhichCannotBeProcessed);
+        Thread.sleep(2000);
+
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/1bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
+        );
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/e0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
         assertThat(OK).isEqualTo("OK");
 
