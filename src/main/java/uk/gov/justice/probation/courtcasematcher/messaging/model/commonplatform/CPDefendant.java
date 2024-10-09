@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,8 +37,6 @@ public class CPDefendant {
     private final CPPersonDefendant personDefendant;
     @Valid
     private final CPLegalEntityDefendant legalEntityDefendant;
-    @JsonProperty(value="isYouth")
-    private final boolean isYouth;
 
     public Defendant asDomain() {
         if (personDefendant == null && legalEntityDefendant == null) {
@@ -47,7 +44,6 @@ public class CPDefendant {
         }
 
         return Optional.of(this)
-                .filter(cpDefendant -> !cpDefendant.isYouth) //do not include youth defendants
                 .map(CPDefendant::getPersonDefendant)
                 .map(CPPersonDefendant::getPersonDetails)
                 .map(personDetails -> commonFieldsBuilder()
@@ -60,7 +56,12 @@ public class CPDefendant {
                         .phoneNumber(Optional.ofNullable(personDetails.getContact())
                                 .map(CPContact::asPhoneNumber).orElse(null))
                         .build())
-                .orElseGet(this::getLegalDefendant);
+                .orElseGet(() -> commonFieldsBuilder()
+                            .type(DefendantType.ORGANISATION)
+                            .name(getLegalEntityDefendant()
+                                    .getOrganisation()
+                                    .asName())
+                            .build());
     }
 
     private Defendant.DefendantBuilder commonFieldsBuilder() {
@@ -86,15 +87,5 @@ public class CPDefendant {
                     log.debug("Will not correct PNC {} as it is not in the expected format {}", pncId, PNC_REGEX);
                     return pncId;
                 });
-    }
-
-    private Defendant getLegalDefendant() {
-        return Optional.ofNullable(legalEntityDefendant)
-            .map(legalEntityDefendant -> commonFieldsBuilder()
-                .type(DefendantType.ORGANISATION)
-                .name(getLegalEntityDefendant()
-                    .getOrganisation()
-                    .asName())
-                .build()).orElse(null);
     }
 }
