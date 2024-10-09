@@ -86,9 +86,12 @@ public class Hearing implements Serializable {
     }
 
     public boolean isValidHearingForProcessing() {
-        //Do not process hearing if hearing has no defendants
-        return (this.getSource() == DataSource.COMMON_PLATFORM && this.getDefendants() != null && !this.getDefendants().isEmpty())
+        return (this.getSource() == DataSource.COMMON_PLATFORM && commonPlatformHearingHasDefendants())
             || this.getSource() == DataSource.LIBRA;
+    }
+
+    public boolean commonPlatformHearingHasDefendants() {
+        return this.getDefendants() != null && !this.getDefendants().isEmpty();
     }
 
 }

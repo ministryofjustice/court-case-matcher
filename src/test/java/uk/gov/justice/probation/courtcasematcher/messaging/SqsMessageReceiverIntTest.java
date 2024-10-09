@@ -310,6 +310,15 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
+    @Test
+    public void givenNewCase_whenReceivePayload_thenSendNewCaseIsYouth() throws IOException {
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/youthDefendantHearing.json"));
+
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
+
+        verifyNoMoreInteractions(telemetryService);
+    }
+
     @Nested
     public class GivenMatchOnEveryNoRecordUpdateFlagIsEnabled {
         @BeforeEach
