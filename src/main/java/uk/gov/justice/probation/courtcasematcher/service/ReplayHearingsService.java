@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,16 +82,14 @@ public class ReplayHearingsService {
                             }
                         );
                     }
-                    catch (Exception e) {
-                        if("hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank".equals(e.getMessage()) ||
-                            "hearing.prosecutionCases: must not be empty".equals(e.getMessage())){
+                    catch (ConstraintViolationException e) {
                             log.info("Discarding hearing {} as it is not in the correct format", hearing.getId());
                             trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.INVALID, Map.of("reason", e.getMessage()));
-                        } else {
+                    }
+                    catch (Exception e) {
                             log.error("Error processing hearing with id {}", hearing.getId());
                             log.error(e.getMessage());
                             trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.FAILED, Collections.EMPTY_MAP);
-                        }
                     }
                     finally {
                         log.info("Processed hearing number {} of {}", ++count, numberToProcess);
