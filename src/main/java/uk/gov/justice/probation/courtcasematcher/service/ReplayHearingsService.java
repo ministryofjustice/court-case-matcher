@@ -83,8 +83,9 @@ public class ReplayHearingsService {
                         );
                     }
                     catch (Exception e) {
-                        if("hearing.prosecutionCases: must not be empty".equals(e.getMessage())){
-                            log.info("Discarding hearing {} as it has no prosecutionCases", hearing.getId());
+                        if("hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank".equals(e.getMessage()) ||
+                            "hearing.prosecutionCases: must not be empty".equals(e.getMessage())){
+                            log.info("Discarding hearing {} as it is not in the correct format", hearing.getId());
                             trackHearingProcessedEvent(hearing.getId(), "ignored");
                         } else {
                             log.error("Error processing hearing with id {}", hearing.getId());

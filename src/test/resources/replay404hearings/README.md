@@ -35,17 +35,14 @@ requests
 
 To note, AppInsights Azure logs have a limit of 30,000 results so the above query is a sample size of the issue.
 
-// TODO check query is up-to-date
 
 Export the results of this query to CSV, making sure to:
-- take into account the 30,000 results limit.
-- remove the column names from the first row of the CSV.
+- take into account the 30,000 results limit
+- remove the column names from the first row of the CSV
 - remove any quotes
-
-Then write an endpoint on `court-case-matcher`. 
+- check that the date format is `dd/MM/yyyy HH:mm:ss` so that it looks like `28/09/2024 16:32:04`
 
 - Subscribe `court-case-matcher` to an empty queue to avoid race conditions when processing updates
-- Post the CSV to the `/replay404hearings` endpoint.
 - Each hearing will be saved to the database unless a more recent version exists
 - Once processing has completed, subscribe `court-case-matcher` to the court-case-events queue once more. 
 
@@ -53,37 +50,47 @@ Then write an endpoint on `court-case-matcher`.
 
 The endpoint `/replay404Hearings` is only available from within the k8s cluster.  
 Set up a port-forward from your machine to the `court-case-matcher` application like this: 
-`kubectl -n court-probation-dev port-forward deployments/court-case-matcher 8080:8080`
+`kubectl -n court-probation-preprod port-forward deployments/court-case-matcher 8080:8080`
 
-This will forward `http://localhost:8080` on your machine to the deployed `court-case-matcher`
+This will forward `http://localhost:8080` on your machine to one of the `court-case-matcher` pods in the chosen namespace
 
 You can then post a file in the format of [test-hearings.csv](src/test/resources/replay404hearings/test-hearings.csv) like this:
 
-`curl -X POST -F file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8080/replay404Hearings`
-
+`curl -vv -F file=@src/main/resources/replay404hearings/hearings.csv http://localhost:8080/replay404Hearings`
+ 
 ## Dry run mode
 
 In dry run mode, the hearing will be retrieved from S3 and the last modified date will be checked against the datetime the hearing was written to S3. The hearing will not be saved.
 Log statements and telemetry will indicate if the hearing would have been updated, created or discarded as a more recent version is in the database.
 
+### Modifying environment variables on running instances
 
-### modifying environment variables on running instances
+#### Disabling Dry Run mode
 
 ```
 kubectl set env deployment/court-case-matcher REPLAY404_DRY_RUN=false -n namespace
 ```
 
+Note that this will restart all pods in the deployment
+
+#### Enabling Dry Run mode
+
+```
+kubectl set env deployment/court-case-matcher REPLAY404_DRY_RUN=true -n namespace
+```
+
 ### Reporting on the replay
+
+Run the following AppInsights query - amend the line `| where tostring(customDimensions.dryRun) == 'false'` as applicable
 
 ```
 customEvents
 | where cloud_RoleName == 'court-case-matcher'
 | where name == 'PiC404HearingEventProcessed'
-| where tostring(customDimensions.dryRun) == 'false'
 | summarize count() by tostring(customDimensions.status)
 ```
 
-This will summarise all events which have been processed by whether they have succeeded, failed or been ignored as we have a more recent version. We will need to do something about the failures
+This will summarise all events which have been processed by whether they have succeeded, failed or been ignored as we have a more recent version or cannot process them (e.g. they have no prosectionCases). We will need to do something about the failures
 
 TODO
 
