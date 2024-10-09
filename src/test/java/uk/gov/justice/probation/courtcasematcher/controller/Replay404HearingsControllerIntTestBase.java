@@ -56,7 +56,6 @@ public class Replay404HearingsControllerIntTestBase {
     protected String hearingsWhichCanBeProcessed = "src/test/resources/replay404hearings/test-hearings.csv";
     protected String hearingsWithNoProsecutionCases = "src/test/resources/replay404hearings/test-hearings-with-no-prosecution-cases.csv";
     protected String hearingsWithNoCaseUrns = "src/test/resources/replay404hearings/test-hearings-with-no-case-urns.csv";
-    protected String hearingsWhichError = "src/test/resources/replay404hearings/test-hearings-which-error.csv";
     @BeforeEach
     void setUp() throws IOException {
         boolean logWiremock = false;
@@ -66,7 +65,6 @@ public class Replay404HearingsControllerIntTestBase {
         publishToS3(hearingsWhichCanBeProcessed, "src/test/resources/replay404hearings/hearingFromS3.json");
         publishToS3(hearingsWithNoProsecutionCases, "src/test/resources/replay404hearings/hearingWithNoProsecutionCases.json");
         publishToS3(hearingsWithNoCaseUrns, "src/test/resources/replay404hearings/hearingWithNoCaseUrn.json");
-        publishToS3(hearingsWhichError, "src/test/resources/replay404hearings/hearingWithError.json");
     }
 
     private void publishToS3(String pathToHearings, String hearingTemplate) throws IOException {
@@ -88,7 +86,6 @@ public class Replay404HearingsControllerIntTestBase {
         deleteFromS3(hearingsWhichCanBeProcessed);
         deleteFromS3(hearingsWithNoProsecutionCases);
         deleteFromS3(hearingsWithNoCaseUrns);
-        deleteFromS3(hearingsWhichError);
     }
 
     private void deleteFromS3(String pathToHearings) throws IOException {
