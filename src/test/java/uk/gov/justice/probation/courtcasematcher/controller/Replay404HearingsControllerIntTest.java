@@ -84,13 +84,17 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         Map<String, String> firstHearing = Map.of(
             "hearingId", "1bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
             "status", Replay404HearingProcessStatus.INVALID.status,
-            "dryRun","false");
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases: must not be empty"
+        );
         verify(telemetryService).track404HearingProcessedEvent(firstHearing);
 
         Map<String, String> secondHearing = Map.of(
             "hearingId", "e0b1b82c-9728-4ab0-baca-b744c50ba9c8",
             "status", Replay404HearingProcessStatus.INVALID.status,
-            "dryRun","false");
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases: must not be empty"
+        );
         verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
 
