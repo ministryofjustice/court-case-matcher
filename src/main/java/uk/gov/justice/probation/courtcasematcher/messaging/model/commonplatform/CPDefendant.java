@@ -38,7 +38,7 @@ public class CPDefendant {
     private final CPPersonDefendant personDefendant;
     @Valid
     private final CPLegalEntityDefendant legalEntityDefendant;
-    @JsonProperty(value="isYouth")
+    //@JsonProperty(value="isYouth")
     private final boolean isYouth;
 
     public Defendant asDomain() {
