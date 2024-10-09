@@ -11,6 +11,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 
@@ -18,8 +21,6 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
 
     @Test
     void replays404HearingsWhichCanBeProcessed() throws InterruptedException, IOException {
-
-
         String OK = replayHearings(hearingsWhichCanBeProcessed);
         Thread.sleep(2000);
 
@@ -128,6 +129,23 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
             "reason", "hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank"
         );
         verify(telemetryService).track404HearingProcessedEvent(secondHearing);
+    }
+
+    @Test
+    void replays404HearingsWhichThrowErrorsWhenProcessing() throws InterruptedException, IOException {
+        doThrow(new RuntimeException("fake exception")).when(telemetryService).trackNewHearingEvent(any(), anyString());
+        String OK = replayHearings(hearingsWhichCanBeProcessed);
+        Thread.sleep(2000);
+        verify(telemetryService).trackNewHearingEvent(any(), anyString());
+
+        assertThat(OK).isEqualTo("OK");
+
+        Map<String, String> thirdHearing = Map.of(
+            "hearingId", "f0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.FAILED.status,
+            "reason", "fake exception",
+            "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
 
 }
