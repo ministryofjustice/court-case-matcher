@@ -148,4 +148,20 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
 
+    @Test
+    void replays404HearingsWhichThrowErrorsWithNullWhenProcessing() throws InterruptedException, IOException {
+
+        String OK = replayHearings(hearingsWhichError);
+        Thread.sleep(2000);
+
+        assertThat(OK).isEqualTo("OK");
+
+        Map<String, String> thirdHearing = Map.of(
+            "hearingId", "f0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.FAILED.status,
+            "reason", "Unknown",
+            "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
+    }
+
 }
