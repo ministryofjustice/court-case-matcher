@@ -2,7 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.microsoft.applicationinsights.TelemetryClient;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,14 +31,14 @@ public class ReplayHearingsService {
     private final MessageParser<CPHearingEvent> commonPlatformParser;
     private final HearingProcessor hearingProcessor;
     private final boolean dryRunEnabled;
-    private final TelemetryClient telemetryClient;
+    private final TelemetryService telemetryService;
 
     public ReplayHearingsService(
                                  CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client,
                                  @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
                                  final MessageParser<CPHearingEvent> commonPlatformParser,
                                  final HearingProcessor hearingProcessor,
-                                 @Value("${replay404.dry-run}") boolean dryRunEnabled, TelemetryClient telemetryClient)
+                                 @Value("${replay404.dry-run}") boolean dryRunEnabled, TelemetryService telemetryService)
     {
 
         this.courtCaseServiceClient = courtCaseServiceClient;
@@ -47,7 +47,7 @@ public class ReplayHearingsService {
         this.commonPlatformParser = commonPlatformParser;
         this.hearingProcessor = hearingProcessor;
         this.dryRunEnabled = dryRunEnabled;
-        this.telemetryClient = telemetryClient;
+        this.telemetryService = telemetryService;
     }
 
 
@@ -73,7 +73,7 @@ public class ReplayHearingsService {
                                     processNewOrUpdatedHearing(s3Path, id);
                                 } else {
                                     log.info("Discarding hearing {} as we have a later version of it on {}", id, existingHearing.getLastUpdated());
-                                    trackHearingProcessedEvent(existingHearing.getHearingId(), "ignored");
+                                    trackHearingProcessedEvent(id, Replay404HearingProcessStatus.OUTDATED, Collections.EMPTY_MAP);
                                 }
                             },
                             () -> {
@@ -82,16 +82,14 @@ public class ReplayHearingsService {
                             }
                         );
                     }
-                    catch (Exception e) {
-                        if("hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank".equals(e.getMessage()) ||
-                            "hearing.prosecutionCases: must not be empty".equals(e.getMessage())){
+                    catch (ConstraintViolationException e) {
                             log.info("Discarding hearing {} as it is not in the correct format", hearing.getId());
-                            trackHearingProcessedEvent(hearing.getId(), "ignored");
-                        } else {
+                            trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.INVALID, Map.of("reason", e.getMessage()));
+                    }
+                    catch (Exception e) {
                             log.error("Error processing hearing with id {}", hearing.getId());
                             log.error(e.getMessage());
-                            trackHearingProcessedEvent(hearing.getId(), "failed");
-                        }
+                            trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.FAILED, Collections.EMPTY_MAP);
                     }
                     finally {
                         log.info("Processed hearing number {} of {}", ++count, numberToProcess);
@@ -111,7 +109,7 @@ public class ReplayHearingsService {
         } catch (JsonProcessingException e) {
             log.error("JsonProcessingException: failed whilst processing hearing with id {}", hearingId);
             log.error(e.getMessage());
-            trackHearingProcessedEvent(hearingId, "failed");
+            trackHearingProcessedEvent(hearingId, Replay404HearingProcessStatus.FAILED, Collections.EMPTY_MAP);
             return;
         }
         final var hearing = cpHearingEvent.asDomain()
@@ -120,32 +118,33 @@ public class ReplayHearingsService {
 
         if (dryRunEnabled) {
             log.info("Dry run - processNewOrUpdatedHearing for hearing: {}", cpHearingEvent.getHearing().getId());
-            trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), "succeeded for dry run");
+            trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), Replay404HearingProcessStatus.SUCCEEDED, Collections.EMPTY_MAP);
         } else {
             try {
                 hearingProcessor.process(hearing, "pic4207-data-fix");
                 log.info("Successfully processed hearing for hearing: {}", cpHearingEvent.getHearing().getId());
-                trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), "succeeded");
+                trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), Replay404HearingProcessStatus.SUCCEEDED, Collections.EMPTY_MAP);
             } catch (RuntimeException e) {
                 log.error("Error processing hearing {}", cpHearingEvent.getHearing().getId());
                 log.error(e.getMessage());
-                trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), "failed");
+                trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), Replay404HearingProcessStatus.FAILED, Collections.EMPTY_MAP);
             }
         }
     }
 
-    private void trackHearingProcessedEvent(String hearingId, String status) {
+    private void trackHearingProcessedEvent(String hearingId, Replay404HearingProcessStatus status, Map<String, String> additionalProperties) {
 
-        final var properties = getHearingProperties(hearingId, status);
+        final var properties = getHearingProperties(hearingId, status.status, additionalProperties);
 
-        telemetryClient.trackEvent(TelemetryEventType.MISSING_HEARING_EVENT_PROCESSED.eventName, properties, Collections.emptyMap());
+        telemetryService.track404HearingProcessedEvent(properties);
     }
 
-    private Map<String, String> getHearingProperties(String hearingId, String status) {
+    private Map<String, String> getHearingProperties(String hearingId, String status, Map<String, String> additionalProperties) {
         Map<String, String> properties = new HashMap<>(10);
         properties.put("hearingId", hearingId);
         properties.put("status", status);
         properties.put("dryRun", dryRunEnabled ? "true" : "false");
+        properties.putAll(additionalProperties);
         return properties;
     }
 }

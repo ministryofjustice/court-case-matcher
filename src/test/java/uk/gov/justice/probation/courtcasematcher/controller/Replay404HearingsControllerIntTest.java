@@ -1,20 +1,25 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.service.Replay404HearingProcessStatus;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 
 public class Replay404HearingsControllerIntTest extends Replay404HearingsControllerIntTestBase{
 
     @Test
     void replays404HearingsWhichCanBeProcessed() throws InterruptedException, IOException {
+
+
         String OK = replayHearings(hearingsWhichCanBeProcessed);
         Thread.sleep(2000);
 
@@ -42,7 +47,23 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
             putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
         assertThat(OK).isEqualTo("OK");
+        Map<String, String> firstHearing = Map.of(
+        "hearingId", "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+        "status", Replay404HearingProcessStatus.SUCCEEDED.status,
+        "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
 
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "d11ee8c1-7526-4509-9579-b253868943d9",
+            "status", Replay404HearingProcessStatus.OUTDATED.status,
+            "dryRun","false");
+         verify(telemetryService).track404HearingProcessedEvent(secondHearing);
+
+        Map<String, String> thirdHearing = Map.of(
+            "hearingId", "f0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.SUCCEEDED.status,
+            "dryRun","false");
+         verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
 
     @Test
@@ -60,6 +81,21 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         );
         assertThat(OK).isEqualTo("OK");
 
+        Map<String, String> firstHearing = Map.of(
+            "hearingId", "1bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases: must not be empty"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
+
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "e0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases: must not be empty"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
 
     @Test
@@ -77,6 +113,21 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         );
         assertThat(OK).isEqualTo("OK");
 
+        Map<String, String> firstHearing = Map.of(
+            "hearingId", "9bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
+
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "d0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
 
 }

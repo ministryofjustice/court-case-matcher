@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -16,6 +18,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
+import uk.gov.justice.probation.courtcasematcher.controller.Replay404HearingsControllerIntTestBase.TelemetryTestConfig;
+import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -28,7 +32,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test"})
-@Import({TestMessagingConfig.class})
+@Import({TestMessagingConfig.class, TelemetryTestConfig.class})
 @DirtiesContext
 public class Replay404HearingsControllerIntTestBase {
 
@@ -42,6 +46,9 @@ public class Replay404HearingsControllerIntTestBase {
 
     @Autowired
     private AmazonS3 s3Client;
+
+    @Autowired // this is a mockBean
+    public TelemetryService telemetryService;
 
     @Value("${crime-portal-gateway-s3-bucket}")
     private String bucketName;
@@ -92,15 +99,13 @@ public class Replay404HearingsControllerIntTestBase {
     protected String replayHearings(String pathToHearings) throws IOException {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("file", Files.readAllBytes(Paths.get(pathToHearings))).header("Content-Disposition", "form-data; name=file; filename=file");
-        WebClient webClient = WebClient.builder()
-            .build();
+        WebClient webClient = WebClient.builder().build();
         String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
-        String OK = webClient.post()
+        return webClient.post()
             .uri(URI.create(replay404HearingsUrl))
             .contentType(MediaType.parseMediaType("multipart/form-data; boundary=------------------------WVYuKPhkvydQGkHSFHmKE2"))
             .body(BodyInserters.fromMultipartData(builder.build()))
             .retrieve().bodyToMono(String.class).block();
-        return OK;
     }
 
 
@@ -109,6 +114,14 @@ public class Replay404HearingsControllerIntTestBase {
         System.out.printf("WireMock request body: \n%s", inRequest.getBodyAsString());
         System.out.printf("WireMock response body: \n%s", inResponse.getBodyAsString());
         System.out.printf("WireMock response headers: \n%s", inResponse.getHeaders());
+    }
+
+
+    @TestConfiguration
+    public static class TelemetryTestConfig {
+
+        @MockBean
+        private TelemetryService telemetryService;
     }
 
 }
