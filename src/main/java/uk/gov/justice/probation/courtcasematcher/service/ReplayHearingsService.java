@@ -85,8 +85,14 @@ public class ReplayHearingsService {
                     trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.INVALID, Map.of("reason", e.getMessage()));
                 } catch (Exception e) {
                     log.error("Error processing hearing with id {}", hearing.getId());
-                    log.error(e.getMessage());
-                    trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.FAILED,  Map.of("reason", e.getMessage()));
+                    try {
+                        log.error(e.getMessage());
+                        trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.FAILED,  Map.of("reason", e.getMessage()));
+                    } catch(Exception ex) {
+                        trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.FAILED,  Map.of("reason", "Unknown"));
+                    }
+
+
                 } finally {
                     log.info("Processed hearing number {} of {}", ++count, numberToProcess);
                 }
