@@ -31,14 +31,14 @@ public class ReplayHearingsService {
     private final MessageParser<CPHearingEvent> commonPlatformParser;
     private final HearingProcessor hearingProcessor;
     private final boolean dryRunEnabled;
-    private final TelemetryClient telemetryClient;
+    private final TelemetryService telemetryService;
 
     public ReplayHearingsService(
                                  CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client,
                                  @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
                                  final MessageParser<CPHearingEvent> commonPlatformParser,
                                  final HearingProcessor hearingProcessor,
-                                 @Value("${replay404.dry-run}") boolean dryRunEnabled, TelemetryClient telemetryClient)
+                                 @Value("${replay404.dry-run}") boolean dryRunEnabled, TelemetryService telemetryService)
     {
 
         this.courtCaseServiceClient = courtCaseServiceClient;
@@ -47,7 +47,7 @@ public class ReplayHearingsService {
         this.commonPlatformParser = commonPlatformParser;
         this.hearingProcessor = hearingProcessor;
         this.dryRunEnabled = dryRunEnabled;
-        this.telemetryClient = telemetryClient;
+        this.telemetryService = telemetryService;
     }
 
 
@@ -138,7 +138,7 @@ public class ReplayHearingsService {
 
         final var properties = getHearingProperties(hearingId, status);
 
-        telemetryClient.trackEvent(TelemetryEventType.MISSING_HEARING_EVENT_PROCESSED.eventName, properties, Collections.emptyMap());
+        telemetryService.track404HearingProcessedEvent(properties);
     }
 
     private Map<String, String> getHearingProperties(String hearingId, String status) {

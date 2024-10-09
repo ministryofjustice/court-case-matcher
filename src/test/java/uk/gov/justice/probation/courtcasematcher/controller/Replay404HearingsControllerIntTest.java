@@ -3,18 +3,25 @@ package uk.gov.justice.probation.courtcasematcher.controller;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 
 public class Replay404HearingsControllerIntTest extends Replay404HearingsControllerIntTestBase{
 
     @Test
     void replays404HearingsWhichCanBeProcessed() throws InterruptedException, IOException {
+
+
         String OK = replayHearings(hearingsWhichCanBeProcessed);
         Thread.sleep(2000);
 
@@ -42,7 +49,13 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
             putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
         assertThat(OK).isEqualTo("OK");
-
+        Map<String, String> firstHearing = Map.of(
+        "hearingId", "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+        "status", "succeeded",
+        "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
+        // verify(telemetryService).track404HearingProcessedEvent(secondHearing);
+        // verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
 
     @Test
