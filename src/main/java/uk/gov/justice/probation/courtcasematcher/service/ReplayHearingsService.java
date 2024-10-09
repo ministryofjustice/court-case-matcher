@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +13,6 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +71,7 @@ public class ReplayHearingsService {
                                     processNewOrUpdatedHearing(s3Path, id);
                                 } else {
                                     log.info("Discarding hearing {} as we have a later version of it on {}", id, existingHearing.getLastUpdated());
-                                    trackHearingProcessedEvent(existingHearing.getHearingId(), "ignored");
+                                    trackHearingProcessedEvent(id, "ignored");
                                 }
                             },
                             () -> {

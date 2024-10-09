@@ -3,7 +3,6 @@ package uk.gov.justice.probation.courtcasematcher.controller;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -11,8 +10,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 
@@ -54,8 +51,18 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         "status", "succeeded",
         "dryRun","false");
         verify(telemetryService).track404HearingProcessedEvent(firstHearing);
-        // verify(telemetryService).track404HearingProcessedEvent(secondHearing);
-        // verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
+
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "d11ee8c1-7526-4509-9579-b253868943d9",
+            "status", "ignored",
+            "dryRun","false");
+         verify(telemetryService).track404HearingProcessedEvent(secondHearing);
+
+        Map<String, String> thirdHearing = Map.of(
+            "hearingId", "f0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", "succeeded",
+            "dryRun","false");
+         verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
 
     @Test
@@ -73,6 +80,17 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         );
         assertThat(OK).isEqualTo("OK");
 
+        Map<String, String> firstHearing = Map.of(
+            "hearingId", "1bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+            "status", "ignored",
+            "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
+
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "e0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", "ignored",
+            "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
 
     @Test
@@ -90,6 +108,17 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         );
         assertThat(OK).isEqualTo("OK");
 
+        Map<String, String> firstHearing = Map.of(
+            "hearingId", "9bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+            "status", "ignored",
+            "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
+
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "d0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", "ignored",
+            "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
 
 }
