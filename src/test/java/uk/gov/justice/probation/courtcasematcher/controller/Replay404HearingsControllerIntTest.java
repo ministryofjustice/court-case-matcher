@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.service.Replay404HearingProcessStatus;
 
 import java.io.IOException;
 import java.util.Map;
@@ -48,19 +49,19 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         assertThat(OK).isEqualTo("OK");
         Map<String, String> firstHearing = Map.of(
         "hearingId", "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
-        "status", "succeeded",
+        "status", Replay404HearingProcessStatus.SUCCEEDED.status,
         "dryRun","false");
         verify(telemetryService).track404HearingProcessedEvent(firstHearing);
 
         Map<String, String> secondHearing = Map.of(
             "hearingId", "d11ee8c1-7526-4509-9579-b253868943d9",
-            "status", "ignored",
+            "status", Replay404HearingProcessStatus.OUTDATED.status,
             "dryRun","false");
          verify(telemetryService).track404HearingProcessedEvent(secondHearing);
 
         Map<String, String> thirdHearing = Map.of(
             "hearingId", "f0b1b82c-9728-4ab0-baca-b744c50ba9c8",
-            "status", "succeeded",
+            "status", Replay404HearingProcessStatus.SUCCEEDED.status,
             "dryRun","false");
          verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
@@ -82,13 +83,13 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
 
         Map<String, String> firstHearing = Map.of(
             "hearingId", "1bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
-            "status", "ignored",
+            "status", Replay404HearingProcessStatus.INVALID.status,
             "dryRun","false");
         verify(telemetryService).track404HearingProcessedEvent(firstHearing);
 
         Map<String, String> secondHearing = Map.of(
             "hearingId", "e0b1b82c-9728-4ab0-baca-b744c50ba9c8",
-            "status", "ignored",
+            "status", Replay404HearingProcessStatus.INVALID.status,
             "dryRun","false");
         verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
@@ -110,13 +111,13 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
 
         Map<String, String> firstHearing = Map.of(
             "hearingId", "9bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
-            "status", "ignored",
+            "status", Replay404HearingProcessStatus.INVALID.status,
             "dryRun","false");
         verify(telemetryService).track404HearingProcessedEvent(firstHearing);
 
         Map<String, String> secondHearing = Map.of(
             "hearingId", "d0b1b82c-9728-4ab0-baca-b744c50ba9c8",
-            "status", "ignored",
+            "status", Replay404HearingProcessStatus.INVALID.status,
             "dryRun","false");
         verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
