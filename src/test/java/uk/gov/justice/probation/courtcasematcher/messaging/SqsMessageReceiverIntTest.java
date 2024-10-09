@@ -310,14 +310,21 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
-//    @Test
-//    public void givenNewCase_whenReceivePayload_thenSendNewCaseIsYouth() throws IOException {
-//        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/youthDefendantHearing.json"));
-//
-//        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
-//
-//        verifyNoMoreInteractions(telemetryService);
-//    }
+    @Test
+    public void givenNewCase_whenReceivePayload_thenYouthCasesNotProcessed() throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", true);
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/youthDefendantHearing.json"));
+
+        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
+
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 0);
+
+        verify(telemetryService).withOperation(nullable(String.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verifyNoMoreInteractions(telemetryService);
+    }
 
     @Nested
     public class GivenMatchOnEveryNoRecordUpdateFlagIsEnabled {
