@@ -1,0 +1,138 @@
+{
+  "hearing": {
+    "id": "|REPLACEMEID|",
+    "jurisdictionType": "MAGISTRATES",
+    "courtCentre": {
+      "address": {
+        "address1": "Court Buildings",
+        "address2": "Merton Road",
+        "address3": "Bootle",
+        "address4": "Merseyside",
+        "address5": "",
+        "postcode": "L20 3XX"
+      },
+      "code": "B05BW00",
+      "courtHearingLocation": "B05BW01",
+      "id": "d21da19d-4583-383a-8acc-13b3091e1756",
+      "lja": {
+        "ljaCode": "1810",
+        "ljaName": "Merseyside Magistrates' Court"
+      },
+      "name": "Sefton Magistrates' Court",
+      "roomId": "8c9190f1-8513-30eb-a6ca-241941b66617",
+      "roomName": "Courtroom 01"
+    },
+    "type": {
+      "description": "Trial",
+      "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+    },
+    "hearingDays": [
+      {
+        "courtCentreId": "d21da19d-4583-383a-8acc-13b3091e1756",
+        "courtRoomId": "8c9190f1-8513-30eb-a6ca-241941b66617",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2024-10-16T09:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "prosecutionCases": [
+      {
+        "id": "a7b8e7a7-599b-4719-8505-3bef4dd2c709",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "6th Floor Windsor House",
+            "address2": "42-50 Victoria Street",
+            "address3": "London",
+            "postcode": "SW1H 0TL"
+          },
+          "contact": {
+            "primaryEmail": "tfl.enforcement@tfl.cjsm.net"
+          },
+          "majorCreditorCode": "TFL2",
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+          "prosecutionAuthorityName": "Transport for London",
+          "prosecutionAuthorityOUCode": "GAFTL00",
+          "prosecutionAuthorityReference": "31DI1707512"
+        },
+        "initiationCode": "J",
+        "defendants": [
+          {
+            "id": "b9ad481d-2d25-4665-808f-40e767e51435",
+            "prosecutionCaseId": "a7b8e7a7-599b-4719-8505-3bef4dd2c709",
+            "offences": [
+              {
+                "id": "ccb0b103-5e19-4c28-9c74-ed48d4d0d0e8",
+                "offenceDefinitionId": "e1b0977b-6554-3fc8-ae3c-6f2821ab0c1b",
+                "offenceCode": "RL05046",
+                "offenceTitle": "Fail / refuse to hand over valid ticket not in a designated compulsory ticket area - railway bye-law",
+                "wording": "offenceWording",
+                "startDate": "2024-03-27",
+                "offenceTitleWelsh": "",
+                "offenceLegislation": "Contrary to byelaw 18(2) and 24 of the Railway Byelaws made under Section 219 of the Transport Act 2000 by the Strategic Railway Authority and confirmed under schedule 20 of the Transport Act 2000, as amended by Section 46 of the Railways Act 2005.",
+                "offenceLegislationWelsh": "",
+                "modeOfTrial": "Summary",
+                "wordingWelsh": "offenceWordingWelsh",
+                "chargeDate": "2024-03-27",
+                "orderIndex": 1,
+                "count": 1,
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2024-04-15",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "offenceId": "ccb0b103-5e19-4c28-9c74-ed48d4d0d0e8"
+                },
+                "proceedingsConcluded": false,
+                "listingNumber": 4
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "0800PP0100000000001H",
+              "bailConditions": "",
+              "personDetails": {
+                "address": {
+                  "address1": "FLAT - 25A",
+                  "address2": "Constable Street",
+                  "address3": "Bristol",
+                  "address4": "England",
+                  "address5": "UK",
+                  "postcode": "IG1 1YY"
+                },
+                "contact": {
+                  "home": "01231231230",
+                  "mobile": "78231231230"
+                },
+                "dateOfBirth": "2000-01-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "FlmrykZq",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "interpreterLanguageNeeds": "French",
+                "lastName": "SmithNJgql",
+                "nationalInsuranceNumber": "AB123456C",
+                "nationalityDescription": "Unknown",
+                "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
+                "occupation": "TA",
+                "occupationCode": "666",
+                "specificRequirements": "no special needs",
+                "title": "MR"
+              }
+            },
+            "masterDefendantId": "b9ad481d-2d25-4665-808f-40e767e51435",
+            "isYouth": false
+          }
+        ],
+        "caseStatus": "SJP_REFERRAL",
+        "originatingOrganisation": "GAFTL00",
+        "statementOfFacts": "Prosecution Facts"
+      }
+    ],
+    "hasSharedResults": false
+  }
+}
