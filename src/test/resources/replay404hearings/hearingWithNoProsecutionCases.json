@@ -19,7 +19,7 @@
         "ljaName": "West London Magistrates' Court"
       },
       "name": "Isleworth Crown Court",
-      "roomid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+      "roomId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
       "roomName": "Courtroom 01"
     },
     "type": {
@@ -28,8 +28,8 @@
     },
     "hearingDays": [
       {
-        "courtCentreid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
-        "courtRoomid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+        "courtCentreId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+        "courtRoomId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
         "isCancelled": false,
         "listedDurationMinutes": 10,
         "listingSequence": 0,
@@ -91,10 +91,10 @@
               {
                 "caseid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
                 "caseReference": "01XB1041111",
-                "defendantid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
+                "defendantId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
               }
             ],
-            "masterDefendantid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+            "masterDefendantId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
             "personDefendant": {
               "arrestSummonsNumber": "2400000000000399630D",
               "bailConditions": "",
@@ -119,10 +119,10 @@
                 "ethnicity": {
                   "observedEthnicityCode": "1",
                   "observedEthnicityDescription": "1",
-                  "observedEthnicityid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+                  "observedEthnicityId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
                   "selfDefinedEthnicityCode": "W1",
                   "selfDefinedEthnicityDescription": "British",
-                  "selfDefinedEthnicityid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
+                  "selfDefinedEthnicityId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
                 },
                 "firstName": "Brian",
                 "gender": "MALE",
@@ -148,12 +148,12 @@
             "masterDefendant": {
               "defendantCase": [
                 {
-                  "caseid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+                  "caseId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
                   "caseReference": "01XB1041111",
-                  "defendantid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
+                  "defendantId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
                 }
               ],
-              "masterDefendantid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+              "masterDefendantId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
               "personDefendant": {
                 "arrestSummonsNumber": "2400000000000399630D",
                 "bailConditions": "",
@@ -183,10 +183,10 @@
                   "ethnicity": {
                     "observedEthnicityCode": "1",
                     "observedEthnicityDescription": "1",
-                    "observedEthnicityid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+                    "observedEthnicityId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
                     "selfDefinedEthnicityCode": "W1",
                     "selfDefinedEthnicityDescription": "British",
-                    "selfDefinedEthnicityid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
+                    "selfDefinedEthnicityId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
                   },
                   "firstName": "Brian",
                   "gender": "MALE",
@@ -218,10 +218,10 @@
               "ethnicity": {
                 "observedEthnicityCode": "1",
                 "observedEthnicityDescription": "1",
-                "observedEthnicityid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+                "observedEthnicityId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
                 "selfDefinedEthnicityCode": "W1",
                 "selfDefinedEthnicityDescription": "British",
-                "selfDefinedEthnicityid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
+                "selfDefinedEthnicityId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2"
               },
               "firstName": "Brian",
               "gender": "MALE",
@@ -236,7 +236,7 @@
         "applicationParticulars": "Suspended sentence order - imprisonment, Suspended Period: 24 Months, Total Custodial Period: 15 Months",
         "courtApplicationCases": [
           {
-            "prosecutionCaseid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+            "prosecutionCaseId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
             "isSJP": false,
             "caseStatus": "INACTIVE",
             "prosecutionCaseIdentifier": {
@@ -251,7 +251,7 @@
               },
               "majorCreditorCode": "PO01",
               "prosecutionAuthorityCode": "METPF",
-              "prosecutionAuthorityid": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
+              "prosecutionAuthorityId": "59cb14a6-e8de-4615-9b9e-94bf5ef81ad2",
               "prosecutionAuthorityName": "London (Metropolitan) Police",
               "prosecutionAuthorityOUCode": "0010000",
               "caseURN": "01XB1041111"

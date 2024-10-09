@@ -47,7 +47,8 @@ public class Replay404HearingsControllerIntTestBase {
     private String bucketName;
 
     protected String hearingsWhichCanBeProcessed = "src/test/resources/replay404hearings/test-hearings.csv";
-    protected String hearingsWhichCannotBeProcessed = "src/test/resources/replay404hearings/test-hearings-with-no-prosecution-cases.csv";
+    protected String hearingsWithNoProsecutionCases = "src/test/resources/replay404hearings/test-hearings-with-no-prosecution-cases.csv";
+    protected String hearingsWithNoCaseUrns = "src/test/resources/replay404hearings/test-hearings-with-no-case-urns.csv";
     @BeforeEach
     void setUp() throws IOException {
         boolean logWiremock = false;
@@ -55,9 +56,10 @@ public class Replay404HearingsControllerIntTestBase {
             MOCK_SERVER.addMockServiceRequestListener(Replay404HearingsControllerIntTestBase::requestReceived);
         }
         publishToS3(hearingsWhichCanBeProcessed, "src/test/resources/replay404hearings/hearingFromS3.json");
-        publishToS3(hearingsWhichCannotBeProcessed, "src/test/resources/replay404hearings/hearingWithNoProsecutionCases.json");
-
+        publishToS3(hearingsWithNoProsecutionCases, "src/test/resources/replay404hearings/hearingWithNoProsecutionCases.json");
+        publishToS3(hearingsWithNoCaseUrns, "src/test/resources/replay404hearings/hearingWithNoCaseUrn.json");
     }
+
     private void publishToS3(String pathToHearings, String hearingTemplate) throws IOException {
         Files.readAllLines(Paths.get(pathToHearings), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(hearing -> {
             String[] hearingDetails = hearing.split(",");
@@ -75,7 +77,8 @@ public class Replay404HearingsControllerIntTestBase {
     @AfterEach
     void tearDown() throws IOException {
         deleteFromS3(hearingsWhichCanBeProcessed);
-        deleteFromS3(hearingsWhichCannotBeProcessed);
+        deleteFromS3(hearingsWithNoProsecutionCases);
+        deleteFromS3(hearingsWithNoCaseUrns);
     }
 
     private void deleteFromS3(String pathToHearings) throws IOException {

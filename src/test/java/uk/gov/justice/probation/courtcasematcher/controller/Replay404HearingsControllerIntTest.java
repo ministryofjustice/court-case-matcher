@@ -46,8 +46,8 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
     }
 
     @Test
-    void replays404HearingsWhichCannotBeProcessed() throws InterruptedException, IOException {
-        String OK = replayHearings(hearingsWhichCannotBeProcessed);
+    void replays404HearingsWithNoProsecutionCasesWhichCannotBeProcessed() throws InterruptedException, IOException {
+        String OK = replayHearings(hearingsWithNoProsecutionCases);
         Thread.sleep(2000);
 
         MOCK_SERVER.verify(
@@ -57,6 +57,23 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
         MOCK_SERVER.verify(
             0,
             putRequestedFor(urlEqualTo("/hearing/e0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
+        );
+        assertThat(OK).isEqualTo("OK");
+
+    }
+
+    @Test
+    void replays404HearingsWithNoCaseUrnWhichCannotBeProcessed() throws InterruptedException, IOException {
+        String OK = replayHearings(hearingsWithNoCaseUrns);
+        Thread.sleep(2000);
+
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/9bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
+        );
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/d0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
         assertThat(OK).isEqualTo("OK");
 
