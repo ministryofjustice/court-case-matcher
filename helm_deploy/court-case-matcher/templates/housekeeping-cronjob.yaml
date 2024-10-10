@@ -3,6 +3,7 @@ kind: CronJob
 metadata:
   name: {{ template "app.fullname" . }}-queue-housekeeping-cronjob
 spec:
+  suspend: true
   schedule: "*/10 * * * *"
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 5
