@@ -55,13 +55,13 @@ env:
   - name: AWS_SQS_COURT_CASE_MATCHER_QUEUE_NAME
     valueFrom:
       secretKeyRef:
-        name: court-case-matcher-queue-credentials
+        name: court-cases-queue-credentials
         key: sqs_name
 
   - name: AWS_SQS_COURT_CASE_MATCHER_ENDPOINT_URL
     valueFrom:
       secretKeyRef:
-        name: court-case-matcher-queue-credentials
+        name: court-cases-queue-credentials
         key: sqs_id
 
   - name: AWS_SQS_COURT_CASE_MATCHER_DLQ_QUEUE_NAME
