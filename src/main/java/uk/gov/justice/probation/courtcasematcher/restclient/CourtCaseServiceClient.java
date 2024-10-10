@@ -108,12 +108,12 @@ public class CourtCaseServiceClient {
                 .then();
     }
 
-    private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String caseId) {
+    private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String hearingId) {
         final HttpStatusCode httpStatusCode = clientResponse.statusCode();
         // This is expected for new cases
         if (HttpStatus.NOT_FOUND.equals(httpStatusCode)) {
-            log.info("Failed to get case for caseId {}", caseId);
-            return Mono.error(new HearingNotFoundException(caseId));
+            log.info("Failed to get hearing for hearingId {}", hearingId);
+            return Mono.error(new HearingNotFoundException(hearingId));
         }
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatusCode) || HttpStatus.FORBIDDEN.equals(httpStatusCode)) {
             log.error("HTTP status {} to to GET the case from court case service", httpStatusCode);
