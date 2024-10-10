@@ -13,6 +13,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 
+import java.lang.System.Logger.Level;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -89,6 +90,7 @@ public class ReplayHearingsService {
                         log.error(e.getMessage());
                         trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.FAILED,  Map.of("reason", e.getMessage()));
                     } catch(Exception ex) {
+                        log.error(Level.ERROR.name(), "Unknown", ex);
                         trackHearingProcessedEvent(hearing.getId(), Replay404HearingProcessStatus.FAILED,  Map.of("reason", "Unknown"));
                     }
 
