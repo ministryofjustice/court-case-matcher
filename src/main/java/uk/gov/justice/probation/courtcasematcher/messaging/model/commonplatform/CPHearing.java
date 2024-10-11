@@ -16,6 +16,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,7 @@ public class CPHearing {
                 .defendants(prosecutionCases.get(0).getDefendants()
                         .stream()
                         .map(CPDefendant::asDomain)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                 .caseMarkers(buildCaseMarkers(prosecutionCases))
                 .urn(prosecutionCases.get(0).getProsecutionCaseIdentifier().getCaseUrn())

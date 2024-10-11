@@ -85,4 +85,13 @@ public class Hearing implements Serializable {
                 .orElse(null);
     }
 
+    public boolean isValidHearingForProcessing() {
+        return (this.getSource() == DataSource.COMMON_PLATFORM && commonPlatformHearingHasDefendants())
+            || this.getSource() == DataSource.LIBRA;
+    }
+
+    public boolean commonPlatformHearingHasDefendants() {
+        return this.getDefendants() != null && !this.getDefendants().isEmpty();
+    }
+
 }

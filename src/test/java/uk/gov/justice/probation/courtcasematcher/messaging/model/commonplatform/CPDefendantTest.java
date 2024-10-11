@@ -18,6 +18,7 @@ class CPDefendantTest {
     @Test
     public void person_asDomain() {
         final var actual = CPDefendant.builder()
+                .isYouth(false)
                 .personDefendant(CPPersonDefendant.builder()
                         .personDetails(CPPersonDetails.builder()
                                 .gender("MALE")
@@ -130,5 +131,46 @@ class CPDefendantTest {
         assertThat(correctPnc("19871234567L")).isEqualTo("1987/1234567L");
         assertThat(correctPnc(null)).isEqualTo(null);
         assertThat(correctPnc("something unexpected")).isEqualTo("something unexpected");
+    }
+
+    @Test
+    public void filterOutYouthDefendants() {
+        final var actual = CPDefendant.builder()
+            .isYouth(true)
+            .personDefendant(CPPersonDefendant.builder()
+                .personDetails(CPPersonDetails.builder()
+                    .gender("MALE")
+                    .title("title")
+                    .firstName("firstname")
+                    .middleName("middlename")
+                    .lastName("lastname")
+                    .dateOfBirth(LocalDate.of(2021, 1, 1))
+                    .address(CPAddress.builder()
+                        .address1("address1")
+                        .build())
+                    .contact(TEST_CP_CONTACT)
+                    .build())
+                .build())
+            .offences(List.of(CPOffence.builder().id("1")
+                    .offenceCode("ABC001")
+                    .plea(Plea.builder().build())
+                    .verdict(Verdict.builder().build())
+                    .judicialResults(List.of(CPJudicialResult.builder()
+                        .build()))
+                    .build(),
+                CPOffence.builder().id("2")
+                    .offenceCode("ABC002")
+                    .plea(Plea.builder().build())
+                    .verdict(Verdict.builder().build())
+                    .judicialResults(List.of(CPJudicialResult.builder()
+                        .build()))
+                    .build()))
+            .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
+            .pncId("20071234557L")
+            .croNumber("croNumber")
+            .build()
+            .asDomain();
+
+        assertThat(actual).isNull();
     }
 }
