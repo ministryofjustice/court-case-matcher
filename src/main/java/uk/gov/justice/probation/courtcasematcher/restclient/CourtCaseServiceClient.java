@@ -116,7 +116,7 @@ public class CourtCaseServiceClient {
             return Mono.error(new HearingNotFoundException(hearingId));
         }
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatusCode) || HttpStatus.FORBIDDEN.equals(httpStatusCode)) {
-            log.error("HTTP status {} to to GET the case from court case service", httpStatusCode);
+            log.error("HTTP status {} to to GET the hearing from court case service", httpStatusCode);
         }
         throw WebClientResponseException.create(httpStatusCode.value(),
                 httpStatusCode.toString(),
