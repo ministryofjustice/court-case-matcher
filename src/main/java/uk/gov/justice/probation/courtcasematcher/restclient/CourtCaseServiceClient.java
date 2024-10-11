@@ -110,7 +110,7 @@ public class CourtCaseServiceClient {
 
     private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String hearingId) {
         final HttpStatusCode httpStatusCode = clientResponse.statusCode();
-        // This is expected for new cases
+        // This is expected for new hearings
         if (HttpStatus.NOT_FOUND.equals(httpStatusCode)) {
             log.info("Failed to get hearing for hearingId {}", hearingId);
             return Mono.error(new HearingNotFoundException(hearingId));
