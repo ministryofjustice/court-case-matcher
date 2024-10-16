@@ -11,7 +11,7 @@ Fortunately a filter wrote the message payloads to S3 before returning the 404
 
 This will involve pausing the consumption of new messages from Common Platform, which will delay hearings from appearing on PACFS.
 
-We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2FMicrosoft.Insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA22QTU%252FDMAyG7%252FwKq5d%252BqKMg7YTUExLaDgMEuyFUhcZsGU1SHHcfiB9P2m5dQeQW%252B30f2y%252FhZ4OO3cU37NZICGVlG1k82QrvhUbIcwhK2xBP1ihImdUEt2h4Qlii2iIFg5HQNRXfWtmZplfToWNrJMHKmmJAPj48LyFLktaOe0Yj4cifS8iBSenCF6MwC1Ng67htRa6uFEcNVSmER3kWxi%252FXr3HsOZYkErwdgJX2Jwld%252B2JNdoMln%252BkpdP5Bk47Wm0vvcI3WXvuFIGhVaLGPRtokbgcMMC%252FfWGXgQxmZK2P8fCZRogNr%252FnL7LDzJiRWC5xG7neI1BHeq8rnX2SiMd18yXVjnLAJwYovSxwGXSZD2jY4T9QhfO%252BK7PE4oS1owo1yqjtf%252FCykY28NG1wUH%252F7LFIpMSZrMbrW%252BcC%252BL%252FQzwtmP7m%252FwBka4WlTwIAAA%253D%253D/timespan/2024-09-19T14%3A00%3A55.000Z%2F2024-09-30T16%3A31%3A55.000Z)
+We are able to retrieve the path to the latest message payload for each hearing affected with [this AppInsights query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2Fmicrosoft.insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA3WSwU7DMAyG7zyF1cvaqVuH4ITUExKCwwYCbghVWWO2QJMUx90G4uFxu60bCHJK7N%252Bf7b8lfG8wcDj5gvUSCaGsfKOLe1%252FhTFmEPIeo9A3xaImKjFuMcIWOR4QlmhVS1BcShqbiS6%252B7ovPJeZ%252FxNZJi413RI%252B9uHx4hGw7bctwwOg07%252Fo2GHJiMLSQYD7JBCuwDt6k41JXhuKEqhcFOng2Sp9PnJBGOJ40E8w9gY2UlZWsJ1uRfseQDPYWuvtekR%252BPdaKkIjbWi%252FURQtCis2sRH2mHSNuhhIn%252F1xsGbcTo3zkl%252FJlViAO9%252Bc7deCCmoBYLwiMPa8BKiK1OJ73UW%252FbfEzqEX0bnOwYNBEQS1Qi0ewXgYpdtEB4%252B3XIntenYm7VGerGJG%252FWg63vZdaMXYNj5aOdI6m06zDzlwfX1h7UUI0RGJ%252FHrW2LkMnbf3wnWPODn8F71gjrxGdBCfwngMZxM5yd%252BfaL9p%252BnPQbzC2%252BbmtAgAA/timespan/2024-09-19T05%3A57%3A05.000Z%2F2024-09-30T22%3A57%3A05.000Z)
 
 Text of query (note especially datetime formatting to remove MS):
 ```
@@ -26,27 +26,34 @@ requests
 | summarize arg_max(timestamp, *) by hearingId
 | join kind=inner traces on operation_Id
 | where message startswith "File cp/"
+| order by timestamp
 | extend filename = trim_end(" saved to .*", trim_start("File ", message))
 | extend formattedTime = format_datetime(timestamp,"dd/MM/yyyy HH:mm:ss")
+| extend rowNumber = row_number()
+| where rowNumber between (1 .. 30000)
 | project hearingId, filename, formattedTime
 
 ```
 
 
-To note, AppInsights Azure logs have a limit of 30,000 results so the above query is a sample size of the issue.
-
+To note, AppInsights Azure logs have a limit of 30,000 results. You can work around this using row_number() as in the above query 
+Running [the first part of the query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2Fmicrosoft.insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA1WQPU%252FDMBBAd37FqUvsKFGK1DUTUxda0W4IRSY%252BtUb%252BCOdzaRE%252FHqeqTFnv3nv%252BIPxMGDk%252B%252FMDXEQlhtCHp4SVYfFYOoe9hMYZE3B5RkfGHFk%252FouSUc0ZyQFkUkjMnyU9BXabVclU2YkBSb4IeS3G52e%252BjqetbxzOg13PprDT0wGTfkoai6qgEOkeeViJM1LBLZBqob3lXy9fFNytwJpJHg%252FQJsXH6SclMeThQ%252BcOS%252FegNXvzDN3fXWOhsxOZfZbwRFh8Gps7hjazkfUGL%252F8PxNnoX8BQ27NHRSAQAA/timespan/2024-09-19T05%3A57%3A05.000Z%2F2024-09-30T22%3A57%3A05.000Z), to count the 404s, gives 88582 results (Joining on traces loses 19 for some reason so we end up with 88563)
+So the query must be split into three batches, which you can do by adding 30000 to the rowNumbers in the final where clause.
 
 Export the results of this query to CSV, making sure to:
-- take into account the 30,000 results limit
 - remove the column names from the first row of the CSV
 - remove any quotes
 - check that the date format is `dd/MM/yyyy HH:mm:ss` so that it looks like `28/09/2024 16:32:04`
 
+## How to replay hearings
+
+### Overview
+
 - Subscribe `court-case-matcher` to an empty queue to avoid race conditions when processing updates
 - Each hearing will be saved to the database unless a more recent version exists
-- Once processing has completed, subscribe `court-case-matcher` to the court-case-events queue once more. 
+- Once processing has completed, subscribe `court-case-matcher` to the court-case-events queue once more.
 
-## How to replay hearings
+### Process
 
 The endpoint `/replay404Hearings` is only available from within the k8s cluster.  
 Set up a port-forward from your machine to the `court-case-matcher` application like this: 
