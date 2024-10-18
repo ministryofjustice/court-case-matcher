@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.model.mapper;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
@@ -62,9 +63,13 @@ public class HearingMapper {
                 .source(DataSource.LIBRA)
                 .caseNo(aLibraHearing.getCaseNo())
                 .urn(aLibraHearing.getUrn())
-                .caseId(aLibraHearing.getCid())
+                .caseId(constructLibraCaseId(aLibraHearing))
 
                 .build();
+    }
+
+    private static String constructLibraCaseId(LibraHearing aLibraHearing) {
+        return aLibraHearing.getCid() + "_" + aLibraHearing.getCaseNo();
     }
 
     private static List<Offence> fromOffences(List<LibraOffence> offences) {
