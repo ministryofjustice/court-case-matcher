@@ -294,7 +294,7 @@ class HearingMapperTest {
             final var actual = HearingMapper.newFromLibraHearing(nullCase);
             assertThat(actual).isNotNull();
             assertThat(actual.getSource()).isEqualTo(LIBRA);
-            assertThat(actual.getCaseId()).isEqualTo("1391998");
+            assertThat(actual.getCaseId()).isEqualTo("1391998_123");
         }
 
 
