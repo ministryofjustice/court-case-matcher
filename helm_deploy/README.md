@@ -13,13 +13,13 @@ helm --namespace court-probation-dev  --tiller-namespace court-probation-dev upg
 ### Rolling back a release
 Find the revision number for the deployment you want to roll back:
 ```
-helm --tiller-namespace court-probation-dev history court-case-matcher -o yaml
+helm -n court-probation-dev history court-case-matcher 
 ```
 (note, each revision has a description which has the app version and circleci build URL)
 
 Rollback
 ```
-helm --tiller-namespace court-probation-dev rollback court-case-matcher [INSERT REVISION NUMBER HERE] --wait
+helm -n court-probation-dev rollback court-case-matcher [INSERT REVISION NUMBER HERE] --wait
 ```
 ### Setup Lets Encrypt cert
 

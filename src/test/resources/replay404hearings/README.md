@@ -94,7 +94,9 @@ Run the following AppInsights query - amend the line `| where tostring(customDim
 customEvents
 | where cloud_RoleName == 'court-case-matcher'
 | where name == 'PiC404HearingEventProcessed'
-| summarize count() by tostring(customDimensions.status)
+| extend status = tostring(customDimensions.status)
+| summarize by tostring(customDimensions.hearingId), status
+| summarize count() by status
 ```
 
 This will summarise all events which have been processed by whether they have succeeded, failed or been ignored as we have a more recent version or cannot process them (e.g. they have no prosectionCases). We will need to do something about the failures
