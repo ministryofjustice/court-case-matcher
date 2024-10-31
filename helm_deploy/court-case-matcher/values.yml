@@ -60,6 +60,12 @@ generic-service:
     SERVER_PORT: "8080"
     OFFENDER_SEARCH_USE_DOB_WITH_PNC: "true"
 
+  retryDlqCronjob:
+    enabled: false
+    # every 10 minutes
+    retryDlqSchedule: "*/10 * * * *"
+    image: ghcr.io/ministryofjustice/hmpps-devops-tools
+
   livenessProbe:
     httpGet:
       path: /actuator/health/ping
