@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ template "app.fullname" . }}-queue-housekeeping-cronjob
+  name: court-case-matcher-queue-housekeeping-cronjob
 spec:
   schedule: "*/10 * * * *"
   concurrencyPolicy: Forbid
@@ -18,5 +18,5 @@ spec:
               args:
                 - /bin/sh
                 - -c
-                - curl -XPUT http://{{ template "app.fullname" . }}/queue-admin/retry-all-dlqs
+                - curl -XPUT http://court-case-matcher/queue-admin/retry-all-dlqs
           restartPolicy: Never
