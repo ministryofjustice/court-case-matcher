@@ -1,35 +1,20 @@
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+generic-service:
+  ingress:
+    hosts:
+      - court-case-matcher.apps.live-1.cloud-platform.service.justice.gov.uk
+    tlsSecretName: court-case-matcher-cert
 
-minReplicaCount: 2
-maxReplicaCount: 6
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 6
 
-image:
-  repository: quay.io/hmpps/court-case-matcher
-  tag: latest
-  pullPolicy: Always
-  port: 8080
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 1Gi
 
-ingress:
-  controller: nginx
-  enabled: true
-  enable_whitelist: true
-  hosts:
-    - host: court-case-matcher.apps.live-1.cloud-platform.service.justice.gov.uk
-      cert_secret: court-case-matcher-cert
-  path: /
-
-env:
-  JAVA_OPTS: "-Xmx1024m"
-
-spring:
-  profile: prod,instrumented
-
-
-resources:
-  cpu:
-    limit: 1000m
-    request: 100m
-  memory:
-    limit: 2Gi
-    request: 1Gi
+  env:
+    JAVA_OPTS: "-Xmx1024m"
