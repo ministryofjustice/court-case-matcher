@@ -61,7 +61,7 @@ generic-service:
     OFFENDER_SEARCH_USE_DOB_WITH_PNC: "true"
 
   retryDlqCronjob:
-    enabled: false
+    enabled: true
     # every 10 minutes
     retryDlqSchedule: "*/10 * * * *"
     image: ghcr.io/ministryofjustice/hmpps-devops-tools
