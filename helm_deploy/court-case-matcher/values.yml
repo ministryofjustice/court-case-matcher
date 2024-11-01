@@ -68,7 +68,7 @@ generic-service:
 
   livenessProbe:
     httpGet:
-      path: /actuator/health/ping
+      path: /actuator/health/liveness
       port: 8080
     periodSeconds: 30
     initialDelaySeconds: 90
@@ -76,7 +76,7 @@ generic-service:
     failureThreshold: 10
   readinessProbe:
     httpGet:
-      path: /actuator/health/ping
+      path: /actuator/health/readiness
       port: 8080
     periodSeconds: 20
     initialDelaySeconds: 60
