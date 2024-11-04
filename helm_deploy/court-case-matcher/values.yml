@@ -13,17 +13,16 @@ generic-service:
     hosts:
       - app-hostname.local    # override per environment
     path: /
-    annotations:
-      nginx.ingress.kubernetes.io/configuration-snippet: |
-        server_tokens off;
-        location /queue-admin/retry-all-dlqs {
-          deny all;
-          return 401;
-        }
-        location /replay404Hearings {
-          deny all;
-          return 401;
-        }
+    nginx.ingress.kubernetes.io/server-snippet: |
+      server_tokens off;
+      location /queue-admin/retry-all-dlqs {
+        deny all;
+        return 401;
+      }
+      location /replay404Hearings {
+        deny all;
+        return 401;
+      }
 
   allowlist:
     groups:
@@ -55,30 +54,29 @@ generic-service:
     targetCPUUtilizationPercentage: 100
 
   env:
-    JAVA_OPTS: "-Xmx512m"
+    JAVA_OPTS: "-Xmx1024m"
     SPRING_PROFILES_ACTIVE: "instrumented"
     SERVER_PORT: "8080"
     OFFENDER_SEARCH_USE_DOB_WITH_PNC: "true"
 
   retryDlqCronjob:
     enabled: true
-    # every 10 minutes
-    retryDlqSchedule: "*/10 * * * *"
-    image: ghcr.io/ministryofjustice/hmpps-devops-tools
 
   livenessProbe:
-    httpGet:
-      path: /actuator/health/liveness
-      port: 8080
     periodSeconds: 30
     initialDelaySeconds: 90
     timeoutSeconds: 20
     failureThreshold: 10
   readinessProbe:
-    httpGet:
-      path: /actuator/health/readiness
-      port: 8080
     periodSeconds: 20
     initialDelaySeconds: 60
     timeoutSeconds: 30
     failureThreshold: 15
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 1Gi

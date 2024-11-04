@@ -2,19 +2,7 @@ generic-service:
   ingress:
     hosts:
       - court-case-matcher-preprod.apps.live-1.cloud-platform.service.justice.gov.uk
-    tlsSecretName: court-case-matcher-preprod-cert
 
   autoscaling:
     minReplicas: 2
     maxReplicas: 6
-
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2Gi
-    requests:
-      cpu: 100m
-      memory: 1Gi
-
-  env:
-    JAVA_OPTS: "-Xmx1024m"
