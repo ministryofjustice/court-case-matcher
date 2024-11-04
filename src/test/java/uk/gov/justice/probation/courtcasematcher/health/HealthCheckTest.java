@@ -41,7 +41,6 @@ public class HealthCheckTest {
     @BeforeEach
     public void before() {
         TestConfig.configureRestAssuredForIntTest(port);
-        RestAssured.basePath = "/actuator";
     }
 
     @Test
