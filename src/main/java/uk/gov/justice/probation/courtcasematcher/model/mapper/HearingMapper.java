@@ -69,7 +69,7 @@ public class HearingMapper {
     }
 
     private static String constructLibraCaseId(LibraHearing aLibraHearing) {
-        return aLibraHearing.getCid() + "_" + aLibraHearing.getCaseNo();
+        return aLibraHearing.getCId();
     }
 
     private static List<Offence> fromOffences(List<LibraOffence> offences) {
