@@ -289,12 +289,12 @@ class HearingMapperTest {
                     .courtRoom("00")
                     .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
                     .caseNo("123")
-                    .cid("1391998")
+                    .cId("1391998")
                     .build();
             final var actual = HearingMapper.newFromLibraHearing(nullCase);
             assertThat(actual).isNotNull();
             assertThat(actual.getSource()).isEqualTo(LIBRA);
-            assertThat(actual.getCaseId()).isEqualTo("1391998_123");
+            assertThat(actual.getCaseId()).isEqualTo("1391998");
         }
 
 
