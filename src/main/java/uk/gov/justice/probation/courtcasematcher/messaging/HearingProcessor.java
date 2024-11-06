@@ -128,7 +128,6 @@ public class HearingProcessor {
         // We want to retain the LIBRA case no if present
         if (hearing.getCaseNo() == null) {
             updatedHearing = updatedHearing.withCaseNo(hearing.getCaseId());
-            hearing = hearing.withCaseNo(hearing.getCaseId());
         }
 
         // Assign defendant IDs
