@@ -2,6 +2,7 @@ generic-service:
   ingress:
     hosts:
       - court-case-matcher-preprod.apps.live-1.cloud-platform.service.justice.gov.uk
+    tlsSecretName: court-probation-preprod-cert
 
   autoscaling:
     minReplicas: 2

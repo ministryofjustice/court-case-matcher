@@ -3,6 +3,7 @@ generic-service:
     # TODO: Should we have a custom tls cert for court-case-matcher?
     hosts:
       - court-case-matcher.apps.live-1.cloud-platform.service.justice.gov.uk
+    tlsSecretName: court-case-matcher-cert
 
   autoscaling:
     minReplicas: 2
