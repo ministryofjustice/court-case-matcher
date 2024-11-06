@@ -38,14 +38,14 @@ offender-search-client-id=court-case-matcher
 
 ### Application health
 ```
-curl -X GET http://localhost:8080/actuator/health
+curl -X GET http://localhost:8080/health
 ```
 
 Spring Boot exposes liveness and readiness probes at the following endpoints
 
 ```
-curl http://localhost:8080/actuator/health/liveness
-curl http://localhost:8080/actuator/health/readiness
+curl http://localhost:8080/health/liveness
+curl http://localhost:8080/health/readiness
 ```
 
 ### Application Logs
@@ -57,13 +57,13 @@ the messaging queue.
 To view all logging levels 
 
 ```
-https://court-case-matcher-dev.apps.live-1.cloud-platform.service.justice.gov.uk/actuator/loggers
+https://court-case-matcher-dev.apps.live-1.cloud-platform.service.justice.gov.uk/loggers
 ```
 
 To alter the level of the MessageReceiver to TRACE.
 
 ```
-curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRACE"}' https://court-case-matcher-dev.apps.live-1.cloud-platform.service.justice.gov.uk/actuator/loggers/uk.gov.justice.probation.courtcasematcher.messaging.SqsMessageReceiver
+curl -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel": "TRACE"}' https://court-case-matcher-dev.apps.live-1.cloud-platform.service.justice.gov.uk/loggers/uk.gov.justice.probation.courtcasematcher.messaging.SqsMessageReceiver
 ```
 
 ### Application Ping

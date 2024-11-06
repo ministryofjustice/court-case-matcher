@@ -67,9 +67,8 @@ dependencies {
 
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.3'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.3'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.3'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2' //matches the jackson version brought in by uk.gov.justice.hmpps.gradle-spring-boot
+
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:2.1.1'
     implementation 'io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.4'
     implementation 'com.amazonaws:aws-java-sdk-sts:1.12.543'
