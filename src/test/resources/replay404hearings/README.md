@@ -15,6 +15,7 @@ We are able to retrieve the path to the latest message payload for each hearing 
 
 Text of query (note especially datetime formatting to remove MS):
 ```
+set truncation_max_records=50000;
 
 requests
 | where cloud_RoleName == "court-hearing-event-receiver"
@@ -29,16 +30,13 @@ requests
 | order by timestamp
 | extend filename = trim_end(" saved to .*", trim_start("File ", message))
 | extend formattedTime = format_datetime(timestamp,"dd/MM/yyyy HH:mm:ss")
-| extend rowNumber = row_number()
-| where rowNumber between (1 .. 30000)
 | project hearingId, filename, formattedTime
 
 ```
 
+To note, AppInsights Azure logs have a limit of 30,000 results. You can work around this by setting trucation max records like so:
 
-To note, AppInsights Azure logs have a limit of 30,000 results. You can work around this using row_number() as in the above query 
-Running [the first part of the query](https://portal.azure.com#@747381f4-e81f-4a43-bf68-ced6a1e14edf/blade/Microsoft_OperationsManagementSuite_Workspace/Logs.ReactView/resourceId/%2Fsubscriptions%2Fa5ddf257-3b21-4ba9-a28c-ab30f751b383%2FresourceGroups%2Fnomisapi-prod-rg%2Fproviders%2Fmicrosoft.insights%2Fcomponents%2Fnomisapi-prod/source/LogsBlade.AnalyticsShareLinkToQuery/q/H4sIAAAAAAAAA1WQPU%252FDMBBAd37FqUvsKFGK1DUTUxda0W4IRSY%252BtUb%252BCOdzaRE%252FHqeqTFnv3nv%252BIPxMGDk%252B%252FMDXEQlhtCHp4SVYfFYOoe9hMYZE3B5RkfGHFk%252FouSUc0ZyQFkUkjMnyU9BXabVclU2YkBSb4IeS3G52e%252BjqetbxzOg13PprDT0wGTfkoai6qgEOkeeViJM1LBLZBqob3lXy9fFNytwJpJHg%252FQJsXH6SclMeThQ%252BcOS%252FegNXvzDN3fXWOhsxOZfZbwRFh8Gps7hjazkfUGL%252F8PxNnoX8BQ27NHRSAQAA/timespan/2024-09-19T05%3A57%3A05.000Z%2F2024-09-30T22%3A57%3A05.000Z), to count the 404s, gives 88582 results (Joining on traces loses 19 for some reason so we end up with 88563)
-So the query must be split into three batches, which you can do by adding 30000 to the rowNumbers in the final where clause.
+`set truncation_max_records=50000;`
 
 Export the results of this query to CSV, making sure to:
 - remove the column names from the first row of the CSV
@@ -46,6 +44,11 @@ Export the results of this query to CSV, making sure to:
 - check that the date format is `dd/MM/yyyy HH:mm:ss` so that it looks like `28/09/2024 16:32:04`
 
 ## How to replay hearings
+
+### Warning
+
+There is a significant risk of overwriting data, if you decide to use this process. The more time passes before recovering data, the more likely data could be overwritten when running this replay404Hearings.
+This is because the court-case-service does not accurately report the last_updated date of the hearing.
 
 ### Overview
 
