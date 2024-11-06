@@ -41,7 +41,6 @@ public class HealthCheckTest {
     @BeforeEach
     public void before() {
         TestConfig.configureRestAssuredForIntTest(port);
-        RestAssured.basePath = "/actuator";
     }
 
     @Test
@@ -79,4 +78,39 @@ public class HealthCheckTest {
         assertThatJson(response).node("components.nomisAuth.status").isEqualTo("UP");
     }
 
+    @Test
+    public void healthPingIsUp() {
+        String response = given()
+            .when()
+            .get("/health/ping")
+            .then()
+            .statusCode(200)
+            .extract().response().asString();
+
+        assertThatJson(response).node("status").isEqualTo("UP");
+    }
+
+    @Test
+    public void healthReadinessIsUp() {
+        String response = given()
+            .when()
+            .get("/health/readiness")
+            .then()
+            .statusCode(200)
+            .extract().response().asString();
+
+        assertThatJson(response).node("status").isEqualTo("UP");
+    }
+
+    @Test
+    public void healthLivenessIsUp() {
+        String response = given()
+            .when()
+            .get("/health/liveness")
+            .then()
+            .statusCode(200)
+            .extract().response().asString();
+
+        assertThatJson(response).node("status").isEqualTo("UP");
+    }
 }

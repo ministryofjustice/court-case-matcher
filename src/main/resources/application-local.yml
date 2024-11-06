@@ -56,3 +56,5 @@ feature:
   flags:
     pass-hearing-id-to-court-case-service: true
     use-list-no-to-fetch-libra-case: true
+
+crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"
