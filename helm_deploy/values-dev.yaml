@@ -7,3 +7,6 @@ generic-service:
   autoscaling:
     minReplicas: 1
     maxReplicas: 2
+
+  env:
+    SPRING_PROFILES_ACTIVE: "dev,instrumented"
