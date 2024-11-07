@@ -30,7 +30,7 @@ generic-service:
 
   allowlist:
     groups:
-      - doesnotexist
+      - internal
 
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
