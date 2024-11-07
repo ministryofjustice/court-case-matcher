@@ -1,64 +1,14 @@
 version: 2.1
-machine: true
 
 parameters:
   alerts-slack-channel:
     type: string
     default: probation_in_court_alerts_dev
-
-commands:
-  setup:
-    description: "Install tools and configure kubectl"
-    steps:
-      - aws-cli/install
-      - kubernetes/install
-      - helm/install-helm-client:
-          version: v3.2.4
-      - run:
-          name: Setup kubectl
-          command: |
-            echo -n "${KUBE_ENV_CACERT}" | base64 -d > /tmp/cluster_ca.crt
-            kubectl config set-cluster "${KUBE_ENV_NAME}" \
-              --certificate-authority="/tmp/cluster_ca.crt" \
-              --server="${KUBE_ENV_API}"
-            kubectl config set-credentials circleci \
-              --token="${KUBE_ENV_TOKEN}"
-            kubectl config set-context circleci \
-              --cluster="${KUBE_ENV_NAME}" \
-              --user="circleci" \
-              --namespace="${KUBE_ENV_NAMESPACE}"
-            # confirm setup is ok
-            kubectl config use-context circleci
-            kubectl -n "${KUBE_ENV_NAMESPACE}" get pods
-  deploy_to_env:
-    parameters:
-      env:
-        type: string
-      cluster:
-        type: string
-    steps:
-      - setup
-      - checkout:
-          path: ~/git
-      - attach_workspace:
-          at: ~/app
-      - deploy:
-          name: Deploy to << parameters.env >>
-          command: |
-            APP_VERSION=$(cat ~/app/app_version.txt)
-            helm upgrade court-case-matcher ~/git/helm_deploy/court-case-matcher/. \
-              --install --wait --reset-values --timeout 360s \
-              --namespace=${KUBE_ENV_NAMESPACE} \
-              --description="${APP_VERSION} - ${CIRCLE_BUILD_URL}" \
-              --values ~/git/helm_deploy/values-<< parameters.env >>.yaml \
-              --values - \
-              --values ~/git/helm_deploy/court-case-matcher/values-<< parameters.cluster >>.yaml \
-              --set image.tag="${APP_VERSION}"
+  releases-slack-channel:
+    type: string
+    default: probation_in_court_alerts_prod
 
 orbs:
-  aws-cli: circleci/aws-cli@4.1.0
-  kubernetes: circleci/kubernetes@1.3.1
-  helm: circleci/helm@2.0.1
   hmpps: ministryofjustice/hmpps@10
 
 jobs:
@@ -179,31 +129,6 @@ jobs:
              docker push quay.io/hmpps/court-case-matcher:latest
             fi
 
-  deploy_dev:
-    executor:
-      name: hmpps/default_small
-      tag: 3.12.4
-    steps:
-      - deploy_to_env:
-          env: "dev"
-          cluster: "live"
-  deploy_preprod:
-    executor:
-      name: hmpps/default_small
-      tag: 3.12.4
-    steps:
-      - deploy_to_env:
-          env: "preprod"
-          cluster: "live"
-  deploy_prod:
-    executor:
-      name: hmpps/default_small
-      tag: 3.12.4
-    steps:
-      - deploy_to_env:
-          env: "prod"
-          cluster: "live"
-
 workflows:
   version: 2
   scheduled:
@@ -251,25 +176,52 @@ workflows:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
-      - deploy_dev:
-          requires:
-            - build_docker
+      - hmpps/deploy_env:
+          name: deploy_dev
+          env: "dev"
+          jira_update: true
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          helm_additional_args: --values ./court-case-matcher/values-live.yaml
+          context:
+            - hmpps-common-vars
           filters:
             branches:
-              only: main
+              only:
+                - main
+          requires:
+            - build_docker
       - request-preprod-approval:
           type: approval
           requires:
             - deploy_dev
-      - deploy_preprod:
-          context: court-probation-live-preprod
+      - hmpps/deploy_env:
+          name: deploy_preprod
+          env: "preprod"
+          jira_update: true
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          helm_additional_args: --values ./court-case-matcher/values-live.yaml
+          context:
+            - hmpps-common-vars
+            - court-probation-live-preprod
           requires:
             - request-preprod-approval
       - request-prod-approval:
           type: approval
           requires:
             - deploy_preprod
-      - deploy_prod:
-          context: court-probation-live-prod
+      - hmpps/deploy_env:
+          name: deploy_prod
+          env: "prod"
+          jira_update: true
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          helm_additional_args: --values ./court-case-matcher/values-live.yaml
+          slack_channel_name: << pipeline.parameters.releases-slack-channel >>
+          slack_notification: true
+          context:
+            - hmpps-common-vars
+            - court-probation-live-prod
           requires:
             - request-prod-approval
