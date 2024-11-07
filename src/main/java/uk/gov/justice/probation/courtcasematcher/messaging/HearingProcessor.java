@@ -123,7 +123,7 @@ public class HearingProcessor {
     }
 
     Hearing assignUuids(Hearing hearing) {
-        var updatedHearing = hearing.withHearingId(UUID.randomUUID().toString());
+        var updatedHearing = hearing.getHearingId() != null ? hearing : hearing.withHearingId(UUID.randomUUID().toString());
 
         // We want to retain the LIBRA case no if present
         if (hearing.getCaseNo() == null) {
