@@ -23,19 +23,6 @@ jobs:
             - gradle-{{ checksum "build.gradle" }}
             - gradle-
       - run: ./gradlew build
-      - run:
-          name: Record the Application Version
-          command: |
-            $JAVA_HOME/bin/jar xvf build/libs/court-case-matcher-*.jar META-INF/build-info.properties
-            APP_VERSION=$(grep 'build.version=' META-INF/build-info.properties | awk -F= '{print $2}')
-            rm META-INF/build-info.properties
-            # make up a good version name
-            SHORT_HASH=$(git rev-parse --short HEAD)
-            TAG=${APP_VERSION}.${SHORT_HASH}
-            if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
-              TAG=${APP_VERSION}
-            fi
-            echo $TAG > ./app_version.txt
       - save_cache:
           paths:
             - ~/.gradle
@@ -49,7 +36,6 @@ jobs:
           paths:
             - build/libs
             - build.gradle
-            - app_version.txt
 
   test-integration:
     executor:
@@ -98,37 +84,6 @@ jobs:
       - store_artifacts:
           path: build/reports/tests
 
-  build_docker:
-    executor:
-      name: hmpps/default
-      tag: 3.12.4
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/app
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Build container and publish to docker hub
-          command: |
-            APP_VERSION=$(cat ./app_version.txt)
-            docker build --rm=false . \
-               --tag "hmpps/court-case-matcher:$APP_VERSION" \
-               --label "maintainer=info@digital.justice.gov.uk" \
-               --label "app.version=$APP_VERSION" \
-               --label "build.version=$APP_VERSION" \
-               --label "build.number=$CIRCLE_BUILD_NUM" \
-               --label "build.url=$CIRCLE_BUILD_URL" \
-               --label "build.gitref=$CIRCLE_SHA1"
-            if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
-              # publish to docker hub as the tag
-             docker login -u="${QUAYIO_USERNAME}" -p="${QUAYIO_PASSWORD}" quay.io
-             docker tag hmpps/court-case-matcher:$APP_VERSION quay.io/hmpps/court-case-matcher:$APP_VERSION
-             docker tag hmpps/court-case-matcher:$APP_VERSION quay.io/hmpps/court-case-matcher:latest
-             docker push quay.io/hmpps/court-case-matcher:$APP_VERSION
-             docker push quay.io/hmpps/court-case-matcher:latest
-            fi
-
 workflows:
   version: 2
   scheduled:
@@ -165,17 +120,23 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-      - build_docker:
-          requires:
-            - build
-      - pact-publish:
-          context: [hmpps-common-vars]
-          requires:
-            - build
       - hmpps/helm_lint:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
+      - hmpps/build_docker:
+          name: build_docker
+          requires:
+            - build
+            - helm_lint_dev
+          filters:
+            branches:
+              only:
+                - main
+      - pact-publish:
+          context: [hmpps-common-vars]
+          requires:
+            - build
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
