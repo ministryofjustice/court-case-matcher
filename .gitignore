@@ -34,3 +34,5 @@ dps-gradle-spring-boot-suppressions.xml
 gradle.properties
 sonar-project.properties
 volume
+helm_deploy/court-case-matcher/charts
+helm_deploy/court-case-matcher/Chart.lock
