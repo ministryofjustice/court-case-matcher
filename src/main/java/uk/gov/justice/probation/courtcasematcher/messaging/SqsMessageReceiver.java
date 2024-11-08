@@ -31,18 +31,15 @@ public class SqsMessageReceiver {
     @SqsListener(value = "courtcasematcherqueue",  factory = "hmppsQueueContainerFactoryProxy")
     public void receive(
             @NotEmpty String message,
-            @Header(value = "MessageId", required = false) String messageId,
-            @Header(value = "operation_Id", required = false) String operationId)
-            throws Exception {
+            @Header(value = "id") String messageId){
         log.info("Received JSON message from SQS queue with messageId: {}. ", messageId);
 
-        try (final var ignored = telemetryService.withOperation(operationId)) {
-            telemetryService.trackHearingMessageReceivedEvent(messageId);
-            final var hearing = hearingExtractor.extractHearing(message, messageId);
+        telemetryService.trackHearingMessageReceivedEvent(messageId);
+        final var hearing = hearingExtractor.extractHearing(message, messageId);
 
-            if (hearing.isValidHearingForProcessing()) {
-                hearingProcessor.process(hearing, messageId);
-            }
+        if (hearing.isValidHearingForProcessing()) {
+            hearingProcessor.process(hearing, messageId);
         }
+
     }
 }

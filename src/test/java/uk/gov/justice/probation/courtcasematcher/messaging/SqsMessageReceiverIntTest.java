@@ -50,7 +50,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -147,7 +146,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[1].phoneNumber.mobile", equalTo("07000000006")))
         );
 
-        verify(telemetryService).withOperation(nullable(String.class));
+        
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
         verify(telemetryService, never()).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
@@ -186,7 +185,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("ABC001")))
         );
 
-        verify(telemetryService).withOperation(nullable(String.class));
+        
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
@@ -217,7 +216,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
         );
 
-        verify(telemetryService).withOperation(nullable(String.class));
+        
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
@@ -252,7 +251,7 @@ public class SqsMessageReceiverIntTest {
 
         );
 
-        verify(telemetryService).withOperation(nullable(String.class));
+        
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
@@ -279,7 +278,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
         );
 
-        verify(telemetryService).withOperation(nullable(String.class));
+        
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
         verify(telemetryService).trackDefendantProbationStatusUpdatedEvent(any(Defendant.class));
@@ -309,7 +308,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("51EB661C-6CDF-46B2-ACF3-95098CF41154")))
         );
 
-        verify(telemetryService).withOperation(nullable(String.class));
+        
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
         verifyNoMoreInteractions(telemetryService);
@@ -326,7 +325,7 @@ public class SqsMessageReceiverIntTest {
             .atMost(10, TimeUnit.SECONDS)
             .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 0);
 
-        verify(telemetryService).withOperation(nullable(String.class));
+        
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
@@ -368,7 +367,7 @@ public class SqsMessageReceiverIntTest {
               .withRequestBody(matchingJsonPath("unique_id.1", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
             );
 
-            verify(telemetryService).withOperation(nullable(String.class));
+            
             verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
             verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
             verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
