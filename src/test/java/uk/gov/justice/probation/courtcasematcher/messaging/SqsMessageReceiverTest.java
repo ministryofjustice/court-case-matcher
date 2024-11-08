@@ -60,7 +60,7 @@ class SqsMessageReceiverTest {
 
     @BeforeEach
     public void setUp() {
-        sqsMessageReceiver = new SqsMessageReceiver(caseProcessor, telemetryService, "queueName", caseExtractor);
+        sqsMessageReceiver = new SqsMessageReceiver(caseProcessor, telemetryService,  caseExtractor);
     }
 
     @DisplayName("Given a valid Libra JSON message then track and process")

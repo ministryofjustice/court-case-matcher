@@ -1,13 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.AmazonSNSClientBuilder;
-import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import io.awspring.cloud.messaging.core.NotificationMessagingTemplate;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +16,15 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
+import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.test.context.ActiveProfiles;
+import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
+import uk.gov.justice.hmpps.sqs.HmppsQueueService;
+import uk.gov.justice.hmpps.sqs.HmppsTopic;
+import uk.gov.justice.hmpps.sqs.HmppsTopicKt;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
@@ -49,7 +48,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -59,7 +59,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 @ActiveProfiles({"test"})
 @Import(TestMessagingConfig.class)
 public class SqsMessageReceiverIntTest {
-
+    RetryPolicy DEFAULT_RETRY_POLICY = new SimpleRetryPolicy();
+    BackOffPolicy DEFAULT_BACKOFF_POLICY = new ExponentialBackOffPolicy();
     private static final String BASE_PATH = "src/test/resources/messages";
 
     @Autowired
@@ -73,6 +74,9 @@ public class SqsMessageReceiverIntTest {
     @RegisterExtension
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
 
+    @Autowired
+    private HmppsQueueService hmppsQueueService;
+
     @BeforeAll
     static void beforeAll() {
         MOCK_SERVER.start();
@@ -82,20 +86,19 @@ public class SqsMessageReceiverIntTest {
     static void afterAll() {
         MOCK_SERVER.stop();
     }
-
     private static final String TOPIC_NAME = "court-case-events-topic";
-
-    @Autowired
-    private NotificationMessagingTemplate notificationMessagingTemplate;
+    HmppsTopic topic;
+    @BeforeEach
+    void setUp(){
+        topic = hmppsQueueService.findByTopicId(TOPIC_NAME);
+    }
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     public void givenExistingCase_whenReceivePayload_thenSendUpdatedExistingCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
-
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "Resulted"));
-
+        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
@@ -147,14 +150,14 @@ public class SqsMessageReceiverIntTest {
         verifyNoMoreInteractions(telemetryService);
     }
 
+
+
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     public void givenNewCase_whenReceivePayload_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
-
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
-
+        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
@@ -190,8 +193,7 @@ public class SqsMessageReceiverIntTest {
     public void givenNewCase_whenReceivePayloadForOrganisation_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
-
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
+        publishMessage(orgJson, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -222,8 +224,7 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("save_person_id_to_court_case_service", true);
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
-
+        publishMessage(orgJson, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
@@ -259,8 +260,7 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/libra/case.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "LIBRA_COURT_CASE", "String", "Resulted"));
-
+        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("LIBRA_COURT_CASE").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/.*") == 1);
@@ -288,7 +288,7 @@ public class SqsMessageReceiverIntTest {
 
         var orgJson = Files.readString(Paths.get(BASE_PATH + "/libra/case-org.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, orgJson, Map.of("messageType", "LIBRA_COURT_CASE", "hearingEventType", "ConfirmedOrUpdated"));
+        publishMessage(orgJson, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("LIBRA_COURT_CASE").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
 
         final var expectedEndpoint = String.format("/hearing/%s", "A0884637-5A70-4622-88E9-7324949B8E7A");
         await()
@@ -315,7 +315,7 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("match-on-every-no-record-update", true);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/youthDefendantHearing.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "ConfirmedOrUpdated"));
+        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
 
         await()
             .atMost(10, TimeUnit.SECONDS)
@@ -337,9 +337,7 @@ public class SqsMessageReceiverIntTest {
         public void andExistingCaseWithNoCrn_whenReceivePayload_thenAttemptMatchAndSendExistingCase () throws
         IOException {
             var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing-no-crns.json"));
-
-            notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "Resulted"));
-
+            publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
             await()
                     .atMost(15, TimeUnit.SECONDS)
                     .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
@@ -384,8 +382,6 @@ public class SqsMessageReceiverIntTest {
         private String secretAccessKey;
         @Value("${aws.region_name}")
         private String regionName;
-        @Value("${aws.sqs.court_case_matcher_queue_name}")
-        private String queueName;
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
@@ -394,34 +390,14 @@ public class SqsMessageReceiverIntTest {
         @Autowired
         private HearingExtractor caseExtractor;
 
-        @Primary
-        @Bean
-        public AmazonSQSAsync amazonSQSAsync() {
-            return AmazonSQSAsyncClientBuilder
-                    .standard()
-                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
-                    .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
-                    .build();
-        }
-
-        @Bean
-        public AmazonSNS amazonSNSClient() {
-            return AmazonSNSClientBuilder
-                    .standard()
-                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyId, secretAccessKey)))
-                    .withEndpointConfiguration(new EndpointConfiguration(sqsEndpointUrl, regionName))
-                    .build();
-        }
-
-        @Bean
-        public NotificationMessagingTemplate notificationMessagingTemplate(AmazonSNS amazonSNS) {
-            return new NotificationMessagingTemplate(amazonSNS);
-        }
-
         @Bean
         public SqsMessageReceiver sqsMessageReceiver() {
-            return new SqsMessageReceiver(caseMessageProcessor, telemetryService, queueName, caseExtractor);
+            return new SqsMessageReceiver(caseMessageProcessor, telemetryService, caseExtractor);
         }
+    }
+
+    private void publishMessage(String hearing, Map<String, MessageAttributeValue> attributes) {
+        HmppsTopicKt.publish(topic,"some-event-type", hearing,false, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY);
     }
 
     public int countPutRequestsTo(final String url) {
