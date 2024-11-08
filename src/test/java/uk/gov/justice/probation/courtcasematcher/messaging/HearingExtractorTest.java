@@ -106,7 +106,7 @@ class HearingExtractorTest {
         var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(hearing).isNotNull();
-        assertThat(hearing.getCaseNo()).isEqualTo(CASE_NO);
+        assertThat(hearing.getFirst().getCaseNo()).isEqualTo(CASE_NO);
     }
 
     @Test
@@ -121,7 +121,7 @@ class HearingExtractorTest {
         var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(hearing).isNotNull();
-        assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(hearing.getFirst().getCaseId()).isEqualTo(CASE_ID);
     }
 
     @Test
@@ -136,7 +136,7 @@ class HearingExtractorTest {
         var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(hearing).isNotNull();
-        assertThat(hearing.getCaseMarkers().size()).isEqualTo(1);
+        assertThat(hearing.getFirst().getCaseMarkers().size()).isEqualTo(1);
     }
 
     @Test
@@ -148,7 +148,8 @@ class HearingExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearings = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearing = hearings.getFirst();
 
         assertThat(hearing).isNotNull();
         assertThat(hearing.getUrn()).isEqualTo("urn");
@@ -165,12 +166,13 @@ class HearingExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var hearing = new HearingExtractor(
+        var hearings = new HearingExtractor(
                 snsContainerParser,
                 libraParser,
                 commonPlatformParser,
                 true
         ).extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearing = hearings.getFirst();
 
         assertThat(hearing).isNotNull();
         assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);

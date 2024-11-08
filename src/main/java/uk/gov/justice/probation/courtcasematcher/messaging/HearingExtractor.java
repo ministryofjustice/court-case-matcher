@@ -16,6 +16,8 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
 import jakarta.validation.ConstraintViolationException;
 
+import java.util.List;
+
 @Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @AllArgsConstructor
@@ -36,14 +38,14 @@ public class HearingExtractor {
     @Value("${feature.flags.pass-hearing-id-to-court-case-service:false}")
     final boolean passHearingIdToCourtCaseService;
 
-    Hearing extractHearing(String payload, String messageId) {
+    List<Hearing> extractHearing(String payload, String messageId) {
         try {
             SnsMessageContainer snsMessageContainer = snsMessageWrapperJsonParser.parseMessage(payload, SnsMessageContainer.class);
             log.debug("Extracted message ID {} from SNS message of type {}. Incoming message ID was {} ", snsMessageContainer.getMessageId(), snsMessageContainer.getMessageType(), messageId);
 
             return switch (snsMessageContainer.getMessageType()) {
                 case LIBRA_COURT_CASE ->
-                        libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain();
+                        List.of(libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain());
                 case COMMON_PLATFORM_HEARING -> parseCPMessage(snsMessageContainer);
                 default ->
                         throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
@@ -60,13 +62,17 @@ public class HearingExtractor {
         }
     }
 
-    private Hearing parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
+    private List<Hearing> parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
         final var cpHearingEvent = commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class);
         final var hearing = cpHearingEvent.asDomain();
-        return passHearingIdToCourtCaseService ? hearing
-                .withHearingId(cpHearingEvent.getHearing().getId())
-                .withHearingEventType(snsMessageContainer.getHearingEventType().getValue())
-                : hearing;
+        return passHearingIdToCourtCaseService ? setHearingAttributes(hearing, cpHearingEvent, snsMessageContainer) : hearing;
+    }
+
+    private List<Hearing> setHearingAttributes(List<Hearing> hearings, CPHearingEvent cpHearingEvent, SnsMessageContainer snsMessageContainer) {
+       return hearings
+            .stream()
+            .map(hearing -> hearing.withHearingId(cpHearingEvent.getHearing().getId()).withHearingId(snsMessageContainer.getHearingEventType().getValue()))
+            .toList();
     }
 
 }

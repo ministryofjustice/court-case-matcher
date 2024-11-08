@@ -41,31 +41,32 @@ public class CPHearing {
 
     private final CPHearingType type;
 
-    public Hearing asDomain() {
-        return Hearing.builder()
-                .caseId(prosecutionCases.get(0).getId())
-                .source(DataSource.COMMON_PLATFORM)
-                .hearingDays(hearingDays.stream()
-                        .map(hearingDay -> HearingDay.builder()
-                                .courtCode(courtCentre.getNormalisedCode())
-                                .courtRoom(courtCentre.getRoomName())
-                                .sessionStartTime(hearingDay.getSittingDay())
-                                .build())
-                        .collect(Collectors.toList()))
-                .defendants(prosecutionCases.get(0).getDefendants()
-                        .stream()
-                        .map(CPDefendant::asDomain)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()))
-                .caseMarkers(buildCaseMarkers(prosecutionCases))
-                .urn(prosecutionCases.get(0).getProsecutionCaseIdentifier().getCaseUrn())
-                .hearingType(Optional.ofNullable(type).map(CPHearingType::getDescription).orElse(null))
-                .build();
+    public List<Hearing> asDomain() {
+        return prosecutionCases.stream().map(cpProsecutionCase -> Hearing.builder()
+            .caseId(cpProsecutionCase.getId())
+            .source(DataSource.COMMON_PLATFORM)
+            .hearingDays(hearingDays.stream()
+                .map(hearingDay -> HearingDay.builder()
+                    .courtCode(courtCentre.getNormalisedCode())
+                    .courtRoom(courtCentre.getRoomName())
+                    .sessionStartTime(hearingDay.getSittingDay())
+                    .build())
+                .collect(Collectors.toList()))
+            .defendants(cpProsecutionCase.getDefendants()
+                .stream()
+                .map(CPDefendant::asDomain)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()))
+            .caseMarkers(buildCaseMarkers(cpProsecutionCase))
+            .urn(cpProsecutionCase.getProsecutionCaseIdentifier().getCaseUrn())
+            .hearingType(Optional.ofNullable(type).map(CPHearingType::getDescription).orElse(null))
+            .build()
+        ).toList();
     }
 
-    private List<CaseMarker> buildCaseMarkers(List<CPProsecutionCase> prosecutionCases) {
-        if(prosecutionCases.get(0).getCaseMarkers() != null) {
-            return prosecutionCases.get(0).getCaseMarkers()
+    private List<CaseMarker> buildCaseMarkers(CPProsecutionCase prosecutionCases) {
+        if(prosecutionCases.getCaseMarkers() != null) {
+            return prosecutionCases.getCaseMarkers()
                     .stream()
                     .map(cpCaseMarker -> CaseMarker.builder()
                             .markerTypeDescription(cpCaseMarker.getMarkerTypeDescription())

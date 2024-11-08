@@ -16,9 +16,9 @@ class CPHearingTest {
     @Test
     void mapToDomain() {
         final var commonPlatformHearing = buildHearing();
-        final var courtCase = commonPlatformHearing.asDomain();
+        final var hearings = commonPlatformHearing.asDomain();
 
-        applyAssertions(courtCase);
+        applyAssertions(hearings.getFirst());
     }
 
     static void applyAssertions(Hearing hearing) {

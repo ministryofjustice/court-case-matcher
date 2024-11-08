@@ -37,9 +37,11 @@ public class SqsMessageReceiver {
         telemetryService.trackHearingMessageReceivedEvent(messageId);
         final var hearing = hearingExtractor.extractHearing(message, messageId);
 
-        if (hearing.isValidHearingForProcessing()) {
-            hearingProcessor.process(hearing, messageId);
-        }
+        hearings.forEach(hearing -> {
+            if (hearing.isValidHearingForProcessing()) {
+                hearingProcessor.process(hearing, messageId);
+            }
+        });
 
     }
 }

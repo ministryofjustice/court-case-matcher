@@ -29,7 +29,7 @@ public class CourtCaseService {
 
     public Mono<Hearing> findHearing(Hearing hearing) {
         if (hearing.getSource() == DataSource.COMMON_PLATFORM) {
-            return courtCaseServiceClient.getHearing(hearing.getHearingId());
+            return courtCaseServiceClient.getHearing(hearing.getHearingId(), hearing.getCaseId());
         }
         return courtCaseServiceClient.getHearing(hearing.getCourtCode(), hearing.getCaseNo(), hearing.getListNo());
     }
@@ -66,7 +66,7 @@ public class CourtCaseService {
     public Mono<Defendant> updateDefendant(Defendant defendant) {
         return offenderSearchRestClient.search(defendant.getCrn())
                 .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
-                .map(searchResponses -> searchResponses.getSearchResponses().get(0).getProbationStatusDetail())
+                .map(searchResponses -> searchResponses.getSearchResponses().getFirst().getProbationStatusDetail())
                 .map(probationStatusDetail -> HearingMapper.merge(probationStatusDetail, defendant))
                 .doOnSuccess((updatedDefendant) -> telemetryService.trackDefendantProbationStatusUpdatedEvent(updatedDefendant))
                 .switchIfEmpty(

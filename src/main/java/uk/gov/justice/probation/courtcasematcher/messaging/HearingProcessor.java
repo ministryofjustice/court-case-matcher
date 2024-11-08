@@ -108,10 +108,11 @@ public class HearingProcessor {
     }
 
     private void applyMatchesAndSave(final Hearing hearing) {
-        matcherService.matchDefendants(hearing)
-                .onErrorReturn(hearing)
-                .doOnSuccess(courtCaseService::saveHearing)
-                .block();
+        courtCaseService.saveHearing(hearing);
+//        matcherService.matchDefendants(hearing)
+//                .onErrorReturn(hearing)
+//                .doOnSuccess(courtCaseService::saveHearing)
+//                .block();
     }
 
     private void updateAndSave(final Hearing hearing) {
