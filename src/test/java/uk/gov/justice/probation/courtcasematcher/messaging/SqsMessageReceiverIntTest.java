@@ -10,7 +10,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,6 +21,8 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.test.context.ActiveProfiles;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
+import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest;
+import uk.gov.justice.hmpps.sqs.HmppsQueue;
 import uk.gov.justice.hmpps.sqs.HmppsQueueService;
 import uk.gov.justice.hmpps.sqs.HmppsTopic;
 import uk.gov.justice.hmpps.sqs.HmppsTopicKt;
@@ -86,11 +87,15 @@ public class SqsMessageReceiverIntTest {
     static void afterAll() {
         MOCK_SERVER.stop();
     }
-    private static final String TOPIC_NAME = "court-case-events-topic";
+    private static final String TOPIC_NAME = "courtcaseeventstopic";
     HmppsTopic topic;
     @BeforeEach
     void setUp(){
         topic = hmppsQueueService.findByTopicId(TOPIC_NAME);
+        HmppsQueue queue = hmppsQueueService.findByQueueId("courtcasematcherqueue");
+
+        queue.getSqsClient().purgeQueue(PurgeQueueRequest.builder().queueUrl(queue.getQueueUrl()).build());
+        queue.getSqsDlqClient().purgeQueue(PurgeQueueRequest.builder().queueUrl(queue.getDlqUrl()).build());
     }
 
     @ParameterizedTest
@@ -374,14 +379,7 @@ public class SqsMessageReceiverIntTest {
 
     @TestConfiguration
     public static class AwsTestConfig {
-        @Value("${aws.sqs.court_case_matcher_endpoint_url}")
-        private String sqsEndpointUrl;
-        @Value("${aws.access_key_id}")
-        private String accessKeyId;
-        @Value("${aws.secret_access_key}")
-        private String secretAccessKey;
-        @Value("${aws.region_name}")
-        private String regionName;
+
         @MockBean
         private TelemetryService telemetryService;
         @Autowired
@@ -397,7 +395,7 @@ public class SqsMessageReceiverIntTest {
     }
 
     private void publishMessage(String hearing, Map<String, MessageAttributeValue> attributes) {
-        HmppsTopicKt.publish(topic,"some-event-type", hearing,false, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY);
+        HmppsTopicKt.publish(topic,"some-event-type", hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY);
     }
 
     public int countPutRequestsTo(final String url) {

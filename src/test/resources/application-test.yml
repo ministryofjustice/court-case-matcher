@@ -54,6 +54,8 @@ hmpps.sqs:
     courtcasematcherqueue:
       queueName: court-case-matcher-queue
       subscribeTopicId: courtcaseeventstopic
+      dlqName: court-case-matcher-queue_dlq
+      dlqMaxReceiveCount: 1
   topics:
     courtcaseeventstopic:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
