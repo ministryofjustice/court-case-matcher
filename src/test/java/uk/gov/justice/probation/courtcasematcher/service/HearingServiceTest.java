@@ -191,12 +191,12 @@ class HearingServiceTest {
                 .source(DataSource.COMMON_PLATFORM)
                 .build();
 
-        when(courtCaseServiceClient.getHearing(HEARING_ID)).thenReturn(Mono.just(courtCase));
+        when(courtCaseServiceClient.getHearing(HEARING_ID, CASE_ID)).thenReturn(Mono.just(courtCase));
 
         final var updatedCourtCase = courtCaseService.findHearing(aCase).block();
 
         assertThat(updatedCourtCase.getCourtRoom()).isEqualTo("2");
-        verify(courtCaseServiceClient).getHearing(HEARING_ID);
+        verify(courtCaseServiceClient).getHearing(HEARING_ID, CASE_ID);
     }
 
     @DisplayName("Get court case which is new, return a null")

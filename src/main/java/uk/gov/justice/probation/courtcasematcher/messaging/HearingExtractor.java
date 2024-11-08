@@ -71,7 +71,7 @@ public class HearingExtractor {
     private List<Hearing> setHearingAttributes(List<Hearing> hearings, CPHearingEvent cpHearingEvent, SnsMessageContainer snsMessageContainer) {
        return hearings
             .stream()
-            .map(hearing -> hearing.withHearingId(cpHearingEvent.getHearing().getId()).withHearingId(snsMessageContainer.getHearingEventType().getValue()))
+            .map(hearing -> hearing.withHearingId(cpHearingEvent.getHearing().getId()).withHearingEventType(snsMessageContainer.getHearingEventType().getValue()))
             .toList();
     }
 
