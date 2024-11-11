@@ -11,7 +11,7 @@ spring:
     port: 5445
 
 court-case-service:
-  base-url: http://localhost:8080
+  base-url: http://localhost:8090
   disable-authentication: true
   min-backoff-seconds: 1
   max-retries: 1

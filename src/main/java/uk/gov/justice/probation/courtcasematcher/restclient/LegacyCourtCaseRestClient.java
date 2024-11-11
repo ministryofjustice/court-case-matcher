@@ -23,9 +23,6 @@ import java.util.List;
 public class LegacyCourtCaseRestClient {
     private final CourtCaseServiceRestHelper courtCaseServiceRestHelper;
 
-    @Value("${court-case-service.case-put-url-template}")
-    private String caseByCaseNoTemplate;
-
     @Value("${feature.flags.use-list-no-to-fetch-libra-case}")
     private boolean useListNoToFetchLibraCase;
 
@@ -36,17 +33,15 @@ public class LegacyCourtCaseRestClient {
     }
 
     public LegacyCourtCaseRestClient(CourtCaseServiceRestHelper courtCaseServiceRestHelper,
-                                     String caseByCaseNoTemplate,
                                      boolean useListNoToFetchLibraCase
     ) {
         super();
         this.courtCaseServiceRestHelper = courtCaseServiceRestHelper;
-        this.caseByCaseNoTemplate = caseByCaseNoTemplate;
         this.useListNoToFetchLibraCase = useListNoToFetchLibraCase;
     }
 
     public Mono<Hearing> getHearing(final String courtCode, final String caseNo, final String listNo) throws WebClientResponseException {
-        final String path = String.format(caseByCaseNoTemplate, courtCode, caseNo);
+        final String path = String.format("/court/%s/case/%s", courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         WebClient.RequestHeadersSpec<?> getLibraCase = useListNoToFetchLibraCase ?
