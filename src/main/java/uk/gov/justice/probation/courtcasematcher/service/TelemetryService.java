@@ -125,11 +125,6 @@ public class TelemetryService {
         telemetryClient.trackEvent(TelemetryEventType.HEARING_MESSAGE_RECEIVED.eventName, properties, Collections.emptyMap());
     }
 
-    public AutoCloseable withOperation(String operationId) {
-        telemetryClient.getContext().getOperation().setId(operationId);
-        return () -> telemetryClient.getContext().getOperation().setId(null);
-    }
-
     public void trackProcessingFailureEvent(Hearing hearing) {
         final var properties = getHearingProperties(hearing);
         telemetryClient.trackEvent(TelemetryEventType.PROCESSING_FAILURE.eventName, properties, Collections.emptyMap());
