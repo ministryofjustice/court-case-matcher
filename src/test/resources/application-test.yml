@@ -46,14 +46,19 @@ aws:
   region_name: eu-west-2
   access_key_id: foobar
   secret_access_key: foobar
-  sqs:
-    court_case_matcher_endpoint_url: "http://localhost:4566"
-    court_case_matcher_queue_name: "court-case-matcher-queue"
-    court_case_matcher_dlq_name: "court-case-matcher-dlq"
-    court_case_matcher_access_key_id: foobar
-    court_case_matcher_secret_access_key: foobar
-  sns:
-    court_case_matcher_endpoint_url: "http://localhost:4566"
+
+hmpps.sqs:
+  enabled: true
+  provider: localstack
+  queues:
+    courtcasematcherqueue:
+      queueName: court-case-matcher-queue
+      subscribeTopicId: courtcaseeventstopic
+      dlqName: court-case-matcher-queue_dlq
+      dlqMaxReceiveCount: 1
+  topics:
+    courtcaseeventstopic:
+      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
 feature:
   flags:

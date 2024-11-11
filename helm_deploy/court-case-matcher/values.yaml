@@ -48,11 +48,9 @@ generic-service:
       PERSON_RECORD_SEARCH_CLIENT_SECRET: nomis-oauth-client-secret
       APPINSIGHTS_INSTRUMENTATIONKEY: APPINSIGHTS_INSTRUMENTATIONKEY
     court-case-matcher-queue-credentials:
-      AWS_SQS_COURT_CASE_MATCHER_QUEUE_NAME: sqs_name
-      AWS_SQS_COURT_CASE_MATCHER_ENDPOINT_URL: sqs_id
+      HMPPS_SQS_QUEUES_COURTCASEMATCHERQUEUE_QUEUE_NAME: sqs_name
     court-case-matcher-queue-dead-letter-queue-credentials:
-      AWS_SQS_COURT_CASE_MATCHER_DLQ_QUEUE_NAME: sqs_name
-      AWS_SQS_COURT_CASE_MATCHER_DLQ_ENDPOINT_URL: sqs_id
+      HMPPS_SQS_QUEUES_COURTCASEMATCHERQUEUE_DLQ_NAME: sqs_name
 
   autoscaling:
     enabled: true
