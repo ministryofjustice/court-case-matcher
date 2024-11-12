@@ -101,9 +101,6 @@ dependencies {
     testImplementation "org.mockito:mockito-core:5.13.0"
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'commons-io:commons-io:2.11.0'
-
-
     testImplementation 'au.com.dius.pact.consumer:junit5:4.6.15'
     testImplementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
 }

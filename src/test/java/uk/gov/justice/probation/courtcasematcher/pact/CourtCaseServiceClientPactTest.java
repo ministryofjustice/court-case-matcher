@@ -6,7 +6,7 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
-import org.apache.commons.io.FileUtils;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,13 @@ import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 
-import java.io.File;
+
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static au.com.dius.pact.consumer.dsl.LambdaDsl.newJsonBody;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.probation.courtcasematcher.pact.DomainDataHelper.HEARING_ID;
 
@@ -43,7 +44,7 @@ class CourtCaseServiceClientPactTest {
     @Pact(provider = "court-case-service", consumer = "court-case-matcher")
     public V4Pact getHearingByIdPact(PactDslWithProvider builder) throws IOException {
 
-        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"), UTF_8.name());
+        String body = Files.readString(Paths.get(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_D517D32D-3C80-41E8-846E-D274DC2B94A5.json"));
 
         return builder
                 .given("a hearing exists for hearingId 8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")
@@ -61,7 +62,7 @@ class CourtCaseServiceClientPactTest {
     @Pact(provider = "court-case-service", consumer = "court-case-matcher")
     public V4Pact getHearingByCaseNoPact(PactDslWithProvider builder) throws IOException {
 
-        String body = FileUtils.readFileToString(new File(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"), UTF_8.name());
+        String body = Files.readString(Paths.get(BASE_MOCK_PATH + "get-court-case/GET_court_case_response_1600028913.json"));
 
         return builder
                 .given("a hearing exists for court B10JQ, case number 1600028913 and list number 2nd")
