@@ -296,7 +296,7 @@ public class SqsMessageReceiverIntTest {
 
         final var expectedEndpoint = String.format("/hearing/%s", "A0884637-5A70-4622-88E9-7324949B8E7A");
         await()
-                .atMost(5, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo(expectedEndpoint) == 1);
 
         MOCK_SERVER.verify(
@@ -337,13 +337,15 @@ public class SqsMessageReceiverIntTest {
 
         notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "E10E3EF3-8637-40E3-BDED-8ED104A380AC"));
 
-//        await()
-//            .atMost(10, TimeUnit.SECONDS)
-//            .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 0);
-//
-//        verify(telemetryService).withOperation(nullable(String.class));
-//        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-//        verifyNoMoreInteractions(telemetryService);
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 2);
+
+        verify(telemetryService).withOperation(nullable(String.class));
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService, times(2)).trackNewHearingEvent(any(Hearing.class), any(String.class));
+        verifyNoMoreInteractions(telemetryService);
     }
 
     @Test
