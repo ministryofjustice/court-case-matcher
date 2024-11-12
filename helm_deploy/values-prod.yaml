@@ -16,9 +16,7 @@ generic-prometheus-alerts:
     sqsNumberAlertQueueNames:
       - probation-in-court-prod-court-case-matcher-dead-letter-queue
       - probation-in-court-prod-court-cases-dlq.fifo
-      - probation-in-court-prod-pic_new_offender_events_dlq
     sqsOldestAlertQueueNames:
       - probation-in-court-prod-court-case-matcher-queue
       - probation-in-court-prod-court-cases.fifo
-      - probation-in-court-prod-pic_new_offender_events_queue
     sqsAlertsTotalMessagesThreshold: 1
