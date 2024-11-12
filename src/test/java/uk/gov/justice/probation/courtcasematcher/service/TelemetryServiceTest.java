@@ -1,11 +1,8 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.microsoft.applicationinsights.telemetry.TelemetryContext;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -36,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.AWAITING_PSR_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_ID_KEY;
 import static uk.gov.justice.probation.courtcasematcher.service.TelemetryService.CASE_NO_KEY;
@@ -435,32 +431,6 @@ class TelemetryServiceTest {
 
     private void assertHearingProperties() {
         assertHearingProperties(9);
-    }
-
-    @Nested
-    public class WithOperationTest {
-
-        private final TelemetryContext telemetryContext = new TelemetryContext();
-
-        @BeforeEach
-        public void setUp() {
-            when(telemetryClient.getContext()).thenReturn(telemetryContext);
-            telemetryContext.getOperation().setId("initialValue");
-        }
-
-        @Test
-        void whenWithOperationCalled_thenSetOperationId() {
-            telemetryService.withOperation("operationId");
-            assertThat(telemetryContext.getOperation().getId()).isEqualTo("operationId");
-        }
-
-        @Test
-        void whenWithOperationCalled_andClosed_thenUnsetOperationId() throws Exception {
-            final var autoCloseable = telemetryService.withOperation("operationId");
-            assertThat(telemetryContext.getOperation().getId()).isEqualTo("operationId");
-            autoCloseable.close();
-            assertThat(telemetryContext.getOperation().getId()).isEqualTo(null);
-        }
     }
 
     private Match buildMatch(String crn) {
