@@ -85,9 +85,9 @@ class CourtCaseServiceClientIntTest {
     }
 
     @Test
-    void whenGetHearingByHearingId_thenItsSuccessful() {
+    void whenGetHearingByHearingIdAndCaseId_thenItsSuccessful() {
         final var HEARING_ID = "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f";
-        final var hearing = client.getHearing(HEARING_ID).block();
+        final var hearing = client.getHearing(HEARING_ID, CASE_ID).block();
 
         assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
         assertThat(hearing.getHearingId()).isEqualTo(HEARING_ID);
@@ -96,7 +96,7 @@ class CourtCaseServiceClientIntTest {
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
-                getRequestedFor(urlEqualTo(String.format("/hearing/%s", HEARING_ID)))
+                getRequestedFor(urlEqualTo(String.format("/hearing/%s/case/D517D32D-3C80-41E8-846E-D274DC2B94A5", HEARING_ID)))
         );
     }
 
