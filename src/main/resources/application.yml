@@ -99,6 +99,11 @@ web:
     connect-timeout-ms: 20000
     read-timeout-ms: 20000
     write-timeout-ms: 20000
+    max-connections: 100
+    max-idle-time-ms: 20000
+    max-life-time-ms: 60000
+    pending-acquire-timeout-ms: 60000
+    evict-in-background-ms: 120000
 
 # Libra feed has today's case list and another case list for this many days hence. e.g. 25th and 28th July
 case-feed-future-date-offset: 3
