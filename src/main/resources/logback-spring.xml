@@ -6,21 +6,13 @@
 
     <springProperty scope="context" name="app" source="spring.application.name"/>
 
-    <springProfile name="!log-json">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${LOG_PATTERN}</Pattern>
-            </layout>
-        </appender>
-    </springProfile>
 
-    <springProfile name="log-json">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <includeCallerInfo>true</includeCallerInfo>
-            </encoder>
-        </appender>
-    </springProfile>
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </layout>
+    </appender>
+
 
     <logger name="uk.gov.justice.probation.courtcasematcher" additivity="false" level="INFO">
         <appender-ref ref="consoleAppender"/>
