@@ -10,3 +10,6 @@ generic-service:
 
   env:
     SPRING_PROFILES_ACTIVE: "preprod,instrumented"
+
+generic-prometheus-alerts:
+  alertSeverity: probation_in_court_alerts_preprod

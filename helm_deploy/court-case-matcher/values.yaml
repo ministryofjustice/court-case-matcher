@@ -82,3 +82,6 @@ generic-service:
     requests:
       cpu: 100m
       memory: 1Gi
+
+generic-prometheus-alerts:
+  targetApplication: court-case-matcher
