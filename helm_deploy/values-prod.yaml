@@ -10,3 +10,13 @@ generic-service:
 
   env:
     SPRING_PROFILES_ACTIVE: "prod,instrumented"
+
+generic-prometheus-alerts:
+    alertSeverity: probation_in_court_alerts_prod
+    sqsNumberAlertQueueNames:
+      - probation-in-court-prod-court-case-matcher-dead-letter-queue
+      - probation-in-court-prod-court-cases-dlq.fifo
+    sqsOldestAlertQueueNames:
+      - probation-in-court-prod-court-case-matcher-queue
+      - probation-in-court-prod-court-cases.fifo
+    sqsAlertsTotalMessagesThreshold: 1
