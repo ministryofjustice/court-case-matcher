@@ -45,10 +45,14 @@ Export the results of this query to CSV, making sure to:
 
 ## How to replay hearings
 
-### Warning
+### Warning 1
 
 There is a significant risk of overwriting data, if you decide to use this process. The more time passes before recovering data, the more likely data could be overwritten when running this replay404Hearings.
 This is because the court-case-service does not accurately report the last_updated date of the hearing.
+
+### Warning 2
+
+This assumes the hearings you want to replay are confirm or update hearing updates not resulted hearing updates.
 
 ### Overview
 
