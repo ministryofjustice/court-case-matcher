@@ -26,11 +26,11 @@ public class Replay404HearingsControllerIntTest extends Replay404HearingsControl
 
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
-                .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                .withRequestBody(matchingJsonPath("caseId", equalTo("1d1861ed-e18c-429d-bad0-671802f9cdba")))
                 // ??? CAUSE FOR CONCERN HERE, LOOKS TO BE PRESENT .withRequestBody(matchingJsonPath("hearingType", equalTo("sentence")))
                 .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
                 .withRequestBody(matchingJsonPath("hearingEventType", equalTo("ConfirmedOrUpdated")))
-                .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("1d1861ed-e18c-429d-bad0-671802f9cdba")))
                 .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
                 .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("ac24a1be-939b-49a4-a524-21a3d228f8bc")))
                 .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0000500U")))
