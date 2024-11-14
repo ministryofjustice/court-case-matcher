@@ -13,9 +13,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.resources.ConnectionProvider;
 
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -44,21 +42,6 @@ public class WebConfig {
 
     @Value("${web.client.write-timeout-ms}")
     private int writeTimeoutMs;
-
-    @Value("${web.client.max-connections}")
-    private int maxConnections;
-
-    @Value("${web.client.max-idle-time-ms}")
-    private int maxIdleTimeMs;
-
-    @Value("${web.client.max-life-time-ms}")
-    private int maxLifeTimeMs;
-
-    @Value("${web.client.pending-acquire-timeout-ms}")
-    private int pendingAcquireTimeoutMs;
-
-    @Value("${web.client.evict-in-background-ms}")
-    private int evictInBackgroundMs;
 
     @Bean
     public WebClient courtCaseServiceWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
@@ -113,16 +96,12 @@ public class WebConfig {
     }
 
     private WebClient.Builder defaultWebClientBuilder() {
-        ConnectionProvider connectionProvider = ConnectionProvider.builder("custom")
-            .maxConnections(maxConnections)
-            .maxIdleTime(Duration.ofMillis(maxIdleTimeMs))
-            .maxLifeTime(Duration.ofMillis(maxLifeTimeMs))
-            .pendingAcquireTimeout(Duration.ofMillis(pendingAcquireTimeoutMs))
-            .evictInBackground(Duration.ofMillis(evictInBackgroundMs)).build();
-
-        HttpClient httpClient = HttpClient.create(connectionProvider)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)
-            .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(readTimeoutMs, TimeUnit.MILLISECONDS)).addHandlerLast(new WriteTimeoutHandler(writeTimeoutMs, TimeUnit.MILLISECONDS)));
+        HttpClient httpClient = HttpClient.create()
+            .tcpConfiguration(client ->
+                client.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)
+                    .doOnConnected(conn -> conn
+                        .addHandlerLast(new ReadTimeoutHandler(readTimeoutMs, TimeUnit.MILLISECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(writeTimeoutMs, TimeUnit.MILLISECONDS))));
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
