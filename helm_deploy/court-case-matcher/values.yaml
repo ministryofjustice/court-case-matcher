@@ -1,0 +1,87 @@
+generic-service:
+  nameOverride: court-case-matcher
+
+  serviceAccountName: "court-case-service"
+
+
+  image:
+    repository: quay.io/hmpps/court-case-matcher
+    pullPolicy: Always
+    tag: app_version # override at deployment time
+    port: 8080
+
+  ingress:
+    enabled: true
+    modsecurity_enabled: false
+    hosts:
+      - app-hostname.local    # override per environment
+    path: /
+    annotations:
+      nginx.ingress.kubernetes.io/server-snippet: |
+        server_tokens off;
+        location /queue-admin/retry-all-dlqs {
+          deny all;
+          return 401;
+        }
+        location /replay404Hearings {
+          deny all;
+          return 401;
+        }
+
+  allowlist:
+    groups:
+      - internal
+
+
+  # Pre-existing kubernetes secrets to load as environment variables in the deployment.
+  # namespace_secrets:
+  #   [name of kubernetes secret]:
+  #     [name of environment variable as seen by app]: [key of kubernetes secret to load]
+
+  namespace_secrets:
+    crime-portal-gateway-s3-credentials:
+      CRIME_PORTAL_GATEWAY_S3_BUCKET: bucket_name
+    court-case-matcher-secrets:
+      OFFENDER_SEARCH_CLIENT_ID: nomis-oauth-client-id
+      OFFENDER_SEARCH_CLIENT_SECRET: nomis-oauth-client-secret
+      PERSON_RECORD_SEARCH_CLIENT_ID: nomis-oauth-client-id
+      PERSON_RECORD_SEARCH_CLIENT_SECRET: nomis-oauth-client-secret
+      APPINSIGHTS_INSTRUMENTATIONKEY: APPINSIGHTS_INSTRUMENTATIONKEY
+    court-case-matcher-queue-credentials:
+      HMPPS_SQS_QUEUES_COURTCASEMATCHERQUEUE_QUEUE_NAME: sqs_name
+    court-case-matcher-queue-dead-letter-queue-credentials:
+      HMPPS_SQS_QUEUES_COURTCASEMATCHERQUEUE_DLQ_NAME: sqs_name
+
+  autoscaling:
+    enabled: true
+    targetCPUUtilizationPercentage: 100
+
+  env:
+    JAVA_OPTS: "-Xmx1024m"
+    SERVER_PORT: "8080"
+    OFFENDER_SEARCH_USE_DOB_WITH_PNC: "true"
+
+  retryDlqCronjob:
+    enabled: true
+
+  livenessProbe:
+    periodSeconds: 30
+    initialDelaySeconds: 90
+    timeoutSeconds: 20
+    failureThreshold: 10
+  readinessProbe:
+    periodSeconds: 20
+    initialDelaySeconds: 60
+    timeoutSeconds: 30
+    failureThreshold: 15
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 1Gi
+
+generic-prometheus-alerts:
+  targetApplication: court-case-matcher

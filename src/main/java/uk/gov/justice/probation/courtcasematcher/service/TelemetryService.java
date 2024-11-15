@@ -45,6 +45,10 @@ public class TelemetryService {
 
     private final TelemetryClient telemetryClient;
 
+    public void track404HearingProcessedEvent(Map<String, String> properties) {
+        telemetryClient.trackEvent(TelemetryEventType.MISSING_HEARING_EVENT_PROCESSED.eventName, properties, Collections.emptyMap());
+    }
+
     public void trackEvent(TelemetryEventType eventType) {
         telemetryClient.trackEvent(eventType.eventName);
     }
@@ -119,11 +123,6 @@ public class TelemetryService {
         ofNullable(messageID)
             .ifPresent((code) -> properties.put(SQS_MESSAGE_ID_KEY, messageID));
         telemetryClient.trackEvent(TelemetryEventType.HEARING_MESSAGE_RECEIVED.eventName, properties, Collections.emptyMap());
-    }
-
-    public AutoCloseable withOperation(String operationId) {
-        telemetryClient.getContext().getOperation().setId(operationId);
-        return () -> telemetryClient.getContext().getOperation().setId(null);
     }
 
     public void trackProcessingFailureEvent(Hearing hearing) {
@@ -215,4 +214,6 @@ public class TelemetryService {
 
         telemetryClient.trackEvent(TelemetryEventType.PERSON_RECORD_CREATED.eventName, properties, Collections.emptyMap());
     }
+
+
 }

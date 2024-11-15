@@ -34,25 +34,22 @@ nomis-oauth:
 person-record-service:
   base-url: http://localhost:8083/
 
-# Localstack settings
-aws:
-  sqs:
-    court_case_matcher_endpoint_url: "http://localhost:4566"
-    court_case_matcher_queue_name: "court-case-matcher-queue"
-    court_case_matcher_dlq_endpoint_url: "court-case-matcher-dlq"
-    court_case_matcher_dlq_access_key_id: foobar
-    court_case_matcher_dlq_secret_access_key: foobar
-    court_case_matcher_access_key_id: foobar
-    court_case_matcher_secret_access_key: foobar
-  sns:
-    court_case_matcher_endpoint_url: "http://localhost:4566"
-
-
-messaging:
+hmpps:
   sqs:
     enabled: true
+    provider: localstack
+    queues:
+      courtcasematcherqueue:
+        queueName: court-case-matcher-queue
+        subscribeTopicId: courtcaseeventstopic
+  sns:
+    topics:
+      courtcaseeventstopic:
+        arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
 feature:
   flags:
     pass-hearing-id-to-court-case-service: true
     use-list-no-to-fetch-libra-case: true
+
+crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"

@@ -8,6 +8,7 @@ management:
       enabled: true
   endpoints:
     web:
+      base-path: /
       exposure:
         include: health,info
   endpoint:
@@ -52,6 +53,10 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${nomis-oauth.issuer-base-url:${nomis-oauth.base-url}}/auth/issuer
+  servlet:
+    multipart:
+      max-file-size: 2GB
+      max-request-size: 2GB
 
 court-case-service:
   case-put-url-template: /court/%s/case/%s
@@ -110,5 +115,4 @@ hmpps:
     queueAdminRole: COURT_CASE_MATCHER_QUEUE_ADMIN
 
 replay404:
-  path-to-csv: "src/main/resources/replay404hearings/hearings.csv"
   dry-run: true

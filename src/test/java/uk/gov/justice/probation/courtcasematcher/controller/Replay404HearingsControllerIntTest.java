@@ -1,95 +1,45 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
-import com.amazonaws.services.s3.AmazonS3;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.reactive.function.client.WebClient;
-import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
-import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
-import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
+import uk.gov.justice.probation.courtcasematcher.service.Replay404HearingProcessStatus;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Map;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({"test"})
-@Import({TestMessagingConfig.class})
-@DirtiesContext
-public class Replay404HearingsControllerIntTest {
 
-    @LocalServerPort
-    protected int port;
+public class Replay404HearingsControllerIntTest extends Replay404HearingsControllerIntTestBase{
 
-    private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
-
-    @RegisterExtension
-    static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
-
-    @Autowired
-    private AmazonS3 s3Client;
-
-    @Value("${crime-portal-gateway-s3-bucket}")
-    private String bucketName;
-
-    @Value("${replay404.path-to-csv}")
-    private String pathToCsv;
-
-    @BeforeEach
-    void setUp() throws IOException {
-        boolean logWiremock = false;
-        if(logWiremock) {
-            MOCK_SERVER.addMockServiceRequestListener(
-                Replay404HearingsControllerIntTest::requestReceived);
-        }
-        for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
-            String[] hearingDetails = hearing.split(",");
-            String id = hearingDetails[0];
-            String s3Path = hearingDetails[1];
-
-            String fileWithCorrectId = Files.readString(Paths.get("src/test/resources/replay404hearings/hearingFromS3.json")).replace("|REPLACEMEID|", id);
-            s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
-        }
-    }
-
-    @AfterEach
-    void tearDown() throws IOException {
-        for (String hearing : Files.readAllLines(Paths.get(pathToCsv), UTF_8)) {
-            String[] hearingDetails = hearing.split(",");
-            String s3Path = hearingDetails[1];
-            s3Client.deleteObject(bucketName, s3Path);
-        }
-    }
     @Test
-    void replays404Hearings() throws InterruptedException {
-        WebClient webClient = WebClient.builder()
-            .build();
-        String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
-        String OK = webClient.post().uri(URI.create(replay404HearingsUrl))
-            .retrieve().bodyToMono(String.class).block();
+    void replays404HearingsWhichCanBeProcessed() throws InterruptedException, IOException {
+        String OK = replayHearings(hearingsWhichCanBeProcessed);
         Thread.sleep(2000);
 
-        // TODO maybe some stronger checks about the format of the put body here?
-        // Or just try it against a locally running Court Case Service?
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
+                .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                // ??? CAUSE FOR CONCERN HERE, LOOKS TO BE PRESENT .withRequestBody(matchingJsonPath("hearingType", equalTo("sentence")))
+                .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
+                .withRequestBody(matchingJsonPath("hearingEventType", equalTo("ConfirmedOrUpdated")))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
+                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("ac24a1be-939b-49a4-a524-21a3d228f8bc")))
+                .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0000500U")))
+
+                // TODO mock and test Values from offender search - see other tests for details
+
+                // TODO mock and test Values from probation search (if relevant)
         );
+
         MOCK_SERVER.verify(
             0,
             putRequestedFor(urlEqualTo("/hearing/d11ee8c1-7526-4509-9579-b253868943d9"))
@@ -97,48 +47,105 @@ public class Replay404HearingsControllerIntTest {
         MOCK_SERVER.verify(
             putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
-        assertThat(OK.equals("OK")).isTrue();
+        assertThat(OK).isEqualTo("OK");
+        Map<String, String> firstHearing = Map.of(
+        "hearingId", "8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+        "status", Replay404HearingProcessStatus.SUCCEEDED.status,
+        "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
 
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "d11ee8c1-7526-4509-9579-b253868943d9",
+            "status", Replay404HearingProcessStatus.OUTDATED.status,
+            "dryRun","false");
+         verify(telemetryService).track404HearingProcessedEvent(secondHearing);
+
+        Map<String, String> thirdHearing = Map.of(
+            "hearingId", "f0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.SUCCEEDED.status,
+            "dryRun","false");
+         verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
 
     @Test
-    @Disabled
-    void givenDryRunEnabled_then_replay_404Hearings() throws InterruptedException {
-        WebClient webClient = WebClient.builder()
-            .build();
-        String replay404HearingsUrl = String.format("http://localhost:%d/replay404Hearings", port);
-        String OK = webClient.post().uri(URI.create(replay404HearingsUrl))
-            .retrieve().bodyToMono(String.class).block();
+    void replays404HearingsWithNoProsecutionCasesWhichCannotBeProcessed() throws InterruptedException, IOException {
+        String OK = replayHearings(hearingsWithNoProsecutionCases);
         Thread.sleep(2000);
 
-        // TODO maybe some stronger checks about the format of the put body here?
-        // Or just try it against a locally running Court Case Service?
         MOCK_SERVER.verify(
             0,
-            putRequestedFor(urlEqualTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
+            putRequestedFor(urlEqualTo("/hearing/1bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
         );
         MOCK_SERVER.verify(
             0,
-            putRequestedFor(urlEqualTo("/hearing/d11ee8c1-7526-4509-9579-b253868943d9"))
+            putRequestedFor(urlEqualTo("/hearing/e0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
         );
-        MOCK_SERVER.verify(
-            0,
-            putRequestedFor(urlEqualTo("/hearing/f0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
-        );
-        assertThat(OK.equals("OK")).isTrue();
+        assertThat(OK).isEqualTo("OK");
 
+        Map<String, String> firstHearing = Map.of(
+            "hearingId", "1bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases: must not be empty"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
+
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "e0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases: must not be empty"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(secondHearing);
     }
 
-    protected static void requestReceived(com.github.tomakehurst.wiremock.http.Request inRequest,
-                                          com.github.tomakehurst.wiremock.http.Response inResponse) {
-        System.out.printf("WireMock request at URL: %s", inRequest.getAbsoluteUrl());
-        System.out.printf("WireMock request body: \n%s", inRequest.getBodyAsString());
-        System.out.printf("WireMock response body: \n%s", inResponse.getBodyAsString());
-        System.out.printf("WireMock response headers: \n%s", inResponse.getHeaders());
+    @Test
+    void replays404HearingsWithNoCaseUrnWhichCannotBeProcessed() throws InterruptedException, IOException {
+        String OK = replayHearings(hearingsWithNoCaseUrns);
+        Thread.sleep(2000);
+
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/9bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
+        );
+        MOCK_SERVER.verify(
+            0,
+            putRequestedFor(urlEqualTo("/hearing/d0b1b82c-9728-4ab0-baca-b744c50ba9c8"))
+        );
+        assertThat(OK).isEqualTo("OK");
+
+        Map<String, String> firstHearing = Map.of(
+            "hearingId", "9bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(firstHearing);
+
+        Map<String, String> secondHearing = Map.of(
+            "hearingId", "d0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.INVALID.status,
+            "dryRun","false",
+            "reason", "hearing.prosecutionCases[0].prosecutionCaseIdentifier.caseUrn: must not be blank"
+        );
+        verify(telemetryService).track404HearingProcessedEvent(secondHearing);
+    }
+
+    @Test
+    void replays404HearingsWhichThrowErrorsWhenProcessing() throws InterruptedException, IOException {
+        doThrow(new RuntimeException("fake exception")).when(telemetryService).trackNewHearingEvent(any(), anyString());
+        String OK = replayHearings(hearingsWhichCanBeProcessed);
+        Thread.sleep(2000);
+        verify(telemetryService).trackNewHearingEvent(any(), anyString());
+
+        assertThat(OK).isEqualTo("OK");
+
+        Map<String, String> thirdHearing = Map.of(
+            "hearingId", "f0b1b82c-9728-4ab0-baca-b744c50ba9c8",
+            "status", Replay404HearingProcessStatus.FAILED.status,
+            "reason", "fake exception",
+            "dryRun","false");
+        verify(telemetryService).track404HearingProcessedEvent(thirdHearing);
     }
 
 }
-
-
-
-

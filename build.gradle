@@ -1,7 +1,7 @@
 import java.time.LocalDate
 
 plugins {
-    id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.4"
+    id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.8"
     id 'java'
     id "au.com.dius.pact" version "4.6.14"
 }
@@ -55,6 +55,7 @@ ext {
 }
 
 dependencies {
+    implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.1.1")
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor 'org.projectlombok:lombok'
 
@@ -63,24 +64,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-    implementation 'org.springframework:spring-messaging:5.3.24'
 
 
 
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.3'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.3'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.3'
-    implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:2.1.1'
-    implementation 'io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.4'
-    implementation 'com.amazonaws:aws-java-sdk-sts:1.12.543'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2' //matches the jackson version brought in by uk.gov.justice.hmpps.gradle-spring-boot
 
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.543'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.777'
     implementation 'org.projectlombok:lombok:1.18.24'
 
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.projectreactor:reactor-spring:1.0.1.RELEASE'
-
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.2'
 
     implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
 
@@ -102,15 +95,10 @@ dependencies {
     testImplementation "io.rest-assured:json-path:$restAssuredVersion"
     testImplementation "io.rest-assured:xml-path:$restAssuredVersion"
     testImplementation "com.github.tomakehurst:wiremock-jre8-standalone:3.0.1"
-    testImplementation ('org.mockito:mockito-core:5.13.0') {
-        testImplementation("net.bytebuddy:byte-buddy:1.15.1")
-    }
+
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'commons-io:commons-io:2.11.0'
-
-
-    testImplementation 'au.com.dius.pact.consumer:junit5:4.3.15'
+    testImplementation 'au.com.dius.pact.consumer:junit5:4.6.15'
     testImplementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
 }
 

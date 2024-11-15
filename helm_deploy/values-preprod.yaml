@@ -1,34 +1,15 @@
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+generic-service:
+  ingress:
+    hosts:
+      - court-case-matcher-preprod.apps.live-1.cloud-platform.service.justice.gov.uk
+    tlsSecretName: court-probation-preprod-cert-secret
 
-minReplicaCount: 2
-maxReplicaCount: 6
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 6
 
-image:
-  repository: quay.io/hmpps/court-case-matcher
-  tag: latest
-  pullPolicy: Always
-  port: 8080
+  env:
+    SPRING_PROFILES_ACTIVE: "preprod,instrumented"
 
-ingress:
-  controller: court-probation-preprod
-  enabled: true
-  enable_whitelist: true
-  hosts:
-    - host: court-case-matcher-preprod.apps.live-1.cloud-platform.service.justice.gov.uk
-  path: /
-
-env:
-  JAVA_OPTS: "-Xmx1024m"
-
-spring:
-  profile: preprod,instrumented
-
-
-resources:
-  cpu:
-    limit: 1000m
-    request: 100m
-  memory:
-    limit: 2Gi
-    request: 1Gi
+generic-prometheus-alerts:
+  alertSeverity: probation_in_court_alerts_preprod

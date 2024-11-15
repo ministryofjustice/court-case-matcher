@@ -1,71 +1,23 @@
 version: 2.1
-machine: true
 
 parameters:
   alerts-slack-channel:
     type: string
     default: probation_in_court_alerts_dev
-
-commands:
-  setup:
-    description: "Install tools and configure kubectl"
-    steps:
-      - aws-cli/install
-      - kubernetes/install
-      - helm/install-helm-client:
-          version: v3.2.4
-      - run:
-          name: Setup kubectl
-          command: |
-            echo -n "${KUBE_ENV_CACERT}" | base64 -d > /tmp/cluster_ca.crt
-            kubectl config set-cluster "${KUBE_ENV_NAME}" \
-              --certificate-authority="/tmp/cluster_ca.crt" \
-              --server="${KUBE_ENV_API}"
-            kubectl config set-credentials circleci \
-              --token="${KUBE_ENV_TOKEN}"
-            kubectl config set-context circleci \
-              --cluster="${KUBE_ENV_NAME}" \
-              --user="circleci" \
-              --namespace="${KUBE_ENV_NAMESPACE}"
-            # confirm setup is ok
-            kubectl config use-context circleci
-            kubectl -n "${KUBE_ENV_NAMESPACE}" get pods
-  deploy_to_env:
-    parameters:
-      env:
-        type: string
-      cluster:
-        type: string
-    steps:
-      - setup
-      - checkout:
-          path: ~/git
-      - attach_workspace:
-          at: ~/app
-      - deploy:
-          name: Deploy to << parameters.env >>
-          command: |
-            APP_VERSION=$(cat ~/app/app_version.txt)
-            helm upgrade court-case-matcher ~/git/helm_deploy/court-case-matcher/. \
-              --install --wait --reset-values --timeout 360s \
-              --namespace=${KUBE_ENV_NAMESPACE} \
-              --description="${APP_VERSION} - ${CIRCLE_BUILD_URL}" \
-              --values ~/git/helm_deploy/values-<< parameters.env >>.yaml \
-              --values - \
-              --values ~/git/helm_deploy/court-case-matcher/values-<< parameters.cluster >>.yaml \
-              --set image.tag="${APP_VERSION}"
+  releases-slack-channel:
+    type: string
+    default: probation_in_court_alerts_prod
 
 orbs:
-  aws-cli: circleci/aws-cli@4.1.0
-  kubernetes: circleci/kubernetes@1.3.1
-  helm: circleci/helm@2.0.1
   hmpps: ministryofjustice/hmpps@10
 
 jobs:
   build:
     executor:
-      name: hmpps/java
-      tag: "21.0"
+        name: hmpps/localstack
+        jdk_tag: "21.0"
+        localstack_tag: "3.0"
+        services: "s3,sqs,sns"
     steps:
       - checkout
       - restore_cache:
@@ -73,19 +25,6 @@ jobs:
             - gradle-{{ checksum "build.gradle" }}
             - gradle-
       - run: ./gradlew build
-      - run:
-          name: Record the Application Version
-          command: |
-            $JAVA_HOME/bin/jar xvf build/libs/court-case-matcher-*.jar META-INF/build-info.properties
-            APP_VERSION=$(grep 'build.version=' META-INF/build-info.properties | awk -F= '{print $2}')
-            rm META-INF/build-info.properties
-            # make up a good version name
-            SHORT_HASH=$(git rev-parse --short HEAD)
-            TAG=${APP_VERSION}.${SHORT_HASH}
-            if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
-              TAG=${APP_VERSION}
-            fi
-            echo $TAG > ./app_version.txt
       - save_cache:
           paths:
             - ~/.gradle
@@ -99,7 +38,6 @@ jobs:
           paths:
             - build/libs
             - build.gradle
-            - app_version.txt
 
   test-integration:
     executor:
@@ -134,8 +72,10 @@ jobs:
 
   pact-publish:
     executor:
-      name: hmpps/java
-      tag: "21.0"
+      name: hmpps/localstack
+      jdk_tag: "21.0"
+      localstack_tag: "3.0"
+      services: "s3,sqs,sns"
     steps:
       - checkout
       - restore_cache:
@@ -147,62 +87,6 @@ jobs:
           path: build/test-results
       - store_artifacts:
           path: build/reports/tests
-
-  build_docker:
-    executor:
-      name: hmpps/default
-      tag: 3.12.4
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/app
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Build container and publish to docker hub
-          command: |
-            APP_VERSION=$(cat ./app_version.txt)
-            docker build --rm=false . \
-               --tag "hmpps/court-case-matcher:$APP_VERSION" \
-               --label "maintainer=info@digital.justice.gov.uk" \
-               --label "app.version=$APP_VERSION" \
-               --label "build.version=$APP_VERSION" \
-               --label "build.number=$CIRCLE_BUILD_NUM" \
-               --label "build.url=$CIRCLE_BUILD_URL" \
-               --label "build.gitref=$CIRCLE_SHA1"
-            if [[ "${CIRCLE_BRANCH}" == "main" ]]; then
-              # publish to docker hub as the tag
-             docker login -u="${QUAYIO_USERNAME}" -p="${QUAYIO_PASSWORD}" quay.io
-             docker tag hmpps/court-case-matcher:$APP_VERSION quay.io/hmpps/court-case-matcher:$APP_VERSION
-             docker tag hmpps/court-case-matcher:$APP_VERSION quay.io/hmpps/court-case-matcher:latest
-             docker push quay.io/hmpps/court-case-matcher:$APP_VERSION
-             docker push quay.io/hmpps/court-case-matcher:latest
-            fi
-
-  deploy_dev:
-    executor:
-      name: hmpps/default_small
-      tag: 3.12.4
-    steps:
-      - deploy_to_env:
-          env: "dev"
-          cluster: "live"
-  deploy_preprod:
-    executor:
-      name: hmpps/default_small
-      tag: 3.12.4
-    steps:
-      - deploy_to_env:
-          env: "preprod"
-          cluster: "live"
-  deploy_prod:
-    executor:
-      name: hmpps/default_small
-      tag: 3.12.4
-    steps:
-      - deploy_to_env:
-          env: "prod"
-          cluster: "live"
 
 workflows:
   version: 2
@@ -219,6 +103,7 @@ workflows:
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
           context:
             - hmpps-common-vars
+          jdk_tag: "21.0"
       - hmpps/trivy_latest_scan:
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
           context:
@@ -239,36 +124,69 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-      - build_docker:
-          requires:
-            - build
-      - pact-publish:
-          context: [hmpps-common-vars]
-          requires:
-            - build
       - hmpps/helm_lint:
           name: helm_lint_dev
           env: dev
           chart_name: court-case-matcher
-      - deploy_dev:
+      - hmpps/build_docker:
+          name: build_docker
           requires:
-            - build_docker
+            - build
+            - helm_lint_dev
           filters:
             branches:
-              only: main
+              only:
+                - main
+      - pact-publish:
+          context: [hmpps-common-vars]
+          requires:
+            - build
+      - hmpps/deploy_env:
+          name: deploy_dev
+          env: "dev"
+          jira_update: true
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          helm_additional_args: --values ./court-case-matcher/values-live.yaml
+          context:
+            - hmpps-common-vars
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - build_docker
       - request-preprod-approval:
           type: approval
           requires:
             - deploy_dev
-      - deploy_preprod:
-          context: court-probation-live-preprod
+      - hmpps/deploy_env:
+          name: deploy_preprod
+          env: "preprod"
+          jira_update: true
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          helm_additional_args: --values ./court-case-matcher/values-live.yaml
+          context:
+            - hmpps-common-vars
+            - court-probation-live-preprod
           requires:
             - request-preprod-approval
       - request-prod-approval:
           type: approval
           requires:
             - deploy_preprod
-      - deploy_prod:
-          context: court-probation-live-prod
+      - hmpps/deploy_env:
+          name: deploy_prod
+          env: "prod"
+          jira_update: true
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          helm_additional_args: --values ./court-case-matcher/values-live.yaml
+          slack_channel_name: << pipeline.parameters.releases-slack-channel >>
+          slack_notification: true
+          context:
+            - hmpps-common-vars
+            - court-probation-live-prod
           requires:
             - request-prod-approval
