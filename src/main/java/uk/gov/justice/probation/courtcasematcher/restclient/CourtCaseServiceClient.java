@@ -46,7 +46,6 @@ public class CourtCaseServiceClient {
     public Mono<Hearing> getHearing(String hearingId) {
         final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
 
-        // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         return restHelper.get(path)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))
@@ -61,7 +60,6 @@ public class CourtCaseServiceClient {
     public Mono<Hearing> getHearing(String hearingId, String courtCaseId) {
         final String path = String.format("/hearing/%s/case/%s", hearingId, courtCaseId);
 
-        // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         return restHelper.get(path)
             .retrieve()
             .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))

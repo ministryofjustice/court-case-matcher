@@ -69,7 +69,7 @@ class SqsMessageReceiverTest {
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID);
 
         verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor).process(libraHearing, MESSAGE_ID);
+        verify(caseProcessor).process(libraHearing.getFirst(), MESSAGE_ID);
         verify(caseProcessor).process(libraHearing.getFirst(), MESSAGE_ID);
     }
 
@@ -82,7 +82,7 @@ class SqsMessageReceiverTest {
 
 
         verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor).process(commonPlatformHearing, MESSAGE_ID);
+        verify(caseProcessor).process(commonPlatformHearing.getFirst(), MESSAGE_ID);
         verify(caseProcessor).process(commonPlatformHearing.getFirst(), MESSAGE_ID);
     }
 

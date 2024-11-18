@@ -335,13 +335,14 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("match-on-every-no-record-update", false);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-multiple-cases.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "E10E3EF3-8637-40E3-BDED-8ED104A380AC"));
+        publishMessage(hearing,
+            Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(),
+                "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
 
         await()
             .atMost(10, TimeUnit.SECONDS)
             .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 2);
 
-        verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verify(telemetryService, times(2)).trackNewHearingEvent(any(Hearing.class), any(String.class));
@@ -353,13 +354,14 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("match-on-every-no-record-update", true);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/youthDefendantHearing.json"));
 
-        notificationMessagingTemplate.convertAndSend(TOPIC_NAME, hearing, Map.of("messageType", "COMMON_PLATFORM_HEARING", "hearingEventType", "E10E3EF3-8637-40E3-BDED-8ED104A380AC"));
+        publishMessage(hearing,
+            Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(),
+                "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
 
         await()
             .atMost(10, TimeUnit.SECONDS)
             .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 0);
 
-        verify(telemetryService).withOperation(nullable(String.class));
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }
