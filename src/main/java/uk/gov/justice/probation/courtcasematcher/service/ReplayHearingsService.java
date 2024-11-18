@@ -1,12 +1,13 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
-import com.amazonaws.services.s3.AmazonS3;
+import software.amazon.awssdk.services.s3.S3Client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import uk.gov.justice.probation.courtcasematcher.controller.Hearing404;
 import uk.gov.justice.probation.courtcasematcher.messaging.HearingProcessor;
 import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
@@ -14,6 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.restclient.CourtCaseServiceClient;
 
 import java.lang.System.Logger.Level;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,7 +29,7 @@ public class ReplayHearingsService {
 
 
     private final CourtCaseServiceClient courtCaseServiceClient;
-    private final AmazonS3 s3Client;
+    private final S3Client s3Client;
     private final String bucketName;
     private final MessageParser<CPHearingEvent> commonPlatformParser;
     private final HearingProcessor hearingProcessor;
@@ -35,7 +37,8 @@ public class ReplayHearingsService {
     private final TelemetryService telemetryService;
 
     public ReplayHearingsService(
-        CourtCaseServiceClient courtCaseServiceClient, AmazonS3 s3Client,
+        CourtCaseServiceClient courtCaseServiceClient,
+        final S3Client s3Client,
         @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
         final MessageParser<CPHearingEvent> commonPlatformParser,
         final HearingProcessor hearingProcessor,
@@ -70,7 +73,7 @@ public class ReplayHearingsService {
                             // existingHearing.getLastUpdated() is using UK timezone (BST)
                             if (existingHearing.getLastUpdated().isBefore(received)) {
                                 log.info("Processing hearing {} as it has not been updated since {}", id, existingHearing.getLastUpdated());
-                                processNewOrUpdatedHearing(s3Path, id);
+                                processNewOrUpdatedHearing(s3Path);
                             } else {
                                 log.info("Discarding hearing {} as we have a later version of it on {}", id, existingHearing.getLastUpdated());
                                 trackHearingProcessedEvent(id, Replay404HearingProcessStatus.OUTDATED, Collections.emptyMap());
@@ -78,7 +81,7 @@ public class ReplayHearingsService {
                         },
                         () -> {
                             log.info("Processing new hearing {}", id);
-                            processNewOrUpdatedHearing(s3Path, id);
+                            processNewOrUpdatedHearing(s3Path);
                         }
                     );
                 } catch (ConstraintViolationException e) {
@@ -105,8 +108,8 @@ public class ReplayHearingsService {
         };
     }
 
-    private void processNewOrUpdatedHearing(String s3Path, String hearingId) {
-        String message = s3Client.getObjectAsString(bucketName, s3Path);
+    private void processNewOrUpdatedHearing(String s3Path) {
+        String message = s3Client.getObjectAsBytes(GetObjectRequest.builder().bucket(bucketName).key(s3Path).build()).asString(StandardCharsets.UTF_8);
         CPHearingEvent cpHearingEvent;
         try {
             cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);
