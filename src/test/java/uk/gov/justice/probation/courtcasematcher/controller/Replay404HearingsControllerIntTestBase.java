@@ -1,6 +1,5 @@
 package uk.gov.justice.probation.courtcasematcher.controller;
 
-import com.amazonaws.services.s3.AmazonS3;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -17,6 +16,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.controller.Replay404HearingsControllerIntTestBase.TelemetryTestConfig;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
@@ -45,7 +48,7 @@ public class Replay404HearingsControllerIntTestBase {
     static WiremockExtension wiremockExtension = new WiremockExtension(MOCK_SERVER);
 
     @Autowired
-    private AmazonS3 s3Client;
+    private S3Client s3Client;
 
     @Autowired // this is a mockBean
     public TelemetryService telemetryService;
@@ -74,7 +77,7 @@ public class Replay404HearingsControllerIntTestBase {
             String s3Path = hearingDetails[1];
             try {
                 String fileWithCorrectId = Files.readString(Paths.get(hearingTemplate)).replace("|REPLACEMEID|", id);
-                s3Client.putObject(bucketName, s3Path, fileWithCorrectId);
+                s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(s3Path).build(), RequestBody.fromString(fileWithCorrectId));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -92,7 +95,7 @@ public class Replay404HearingsControllerIntTestBase {
         Files.readAllLines(Paths.get(pathToHearings), UTF_8).stream().filter(it -> !it.isEmpty()).forEach(hearing -> {
             String[] hearingDetails = hearing.split(",");
             String s3Path = hearingDetails[1];
-            s3Client.deleteObject(bucketName, s3Path);
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(s3Path).build());
         });
     }
 

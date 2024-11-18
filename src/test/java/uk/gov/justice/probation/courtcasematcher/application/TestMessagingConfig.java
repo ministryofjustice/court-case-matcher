@@ -1,15 +1,16 @@
 package uk.gov.justice.probation.courtcasematcher.application;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+
+import java.net.URI;
 
 @TestConfiguration
 public class TestMessagingConfig {
@@ -19,14 +20,12 @@ public class TestMessagingConfig {
     String endpointUrl;
 
     @Bean
-    public AmazonS3 amazonS3()  {
-        EndpointConfiguration endpointConfiguration = new EndpointConfiguration(endpointUrl, regionName);
-
-        return AmazonS3ClientBuilder
-            .standard()
-            .withPathStyleAccessEnabled(true)
-            .withEndpointConfiguration(endpointConfiguration)
-            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("any", "any")))
+    public S3Client amazonS3LocalStackClient() {
+        return S3Client.builder()
+            .endpointOverride(URI.create(endpointUrl))
+            .forcePathStyle(true)
+            .region(Region.of(regionName))
+            .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("any", "any")))
             .build();
     }
 
