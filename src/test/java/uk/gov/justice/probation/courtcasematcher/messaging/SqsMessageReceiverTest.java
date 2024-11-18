@@ -64,7 +64,7 @@ class SqsMessageReceiverTest {
     @DisplayName("Given a valid Libra JSON message then track and process")
     @Test
     void givenLibraMessage_whenReceived_ThenTrackAndProcess() throws Exception {
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID);
 
@@ -76,7 +76,7 @@ class SqsMessageReceiverTest {
     @DisplayName("Given a valid Common Platform JSON message then track and process")
     @Test
     void givenCommonPlatformMessage_whenReceived_ThenProcess() throws Exception {
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(commonPlatformHearing);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(commonPlatformHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID);
 
@@ -89,7 +89,7 @@ class SqsMessageReceiverTest {
     @DisplayName("Given an invalid Common Platform JSON message then do not process message")
     @Test
     void givenInvalidCommonPlatformMessage_whenReceived_ThenDoNotProcess() throws Exception {
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(invalidCommonPlatformHearing);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(invalidCommonPlatformHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID);
 
@@ -101,7 +101,7 @@ class SqsMessageReceiverTest {
     @Test
     void givenExceptionThrown_whenExtractCase_thenThrow() {
         final var runtimeException = new RuntimeException("Bang");
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenThrow(runtimeException);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenThrow(runtimeException);
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID))
@@ -111,7 +111,7 @@ class SqsMessageReceiverTest {
     @Test
     void givenExceptionThrown_whenProcessCase_thenThrow() {
         final var runtimeException = new RuntimeException("Bang");
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
         doThrow(runtimeException).when(caseProcessor).process(libraHearing.getFirst(), MESSAGE_ID);
 
         assertThatExceptionOfType(RuntimeException.class)

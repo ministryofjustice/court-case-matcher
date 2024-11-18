@@ -38,7 +38,7 @@ public class HearingExtractor {
     @Value("${feature.flags.pass-hearing-id-to-court-case-service:false}")
     final boolean passHearingIdToCourtCaseService;
 
-    List<Hearing> extractHearing(String payload, String messageId) {
+    List<Hearing> extractHearings(String payload, String messageId) {
         try {
             SnsMessageContainer snsMessageContainer = snsMessageWrapperJsonParser.parseMessage(payload, SnsMessageContainer.class);
             log.debug("Extracted message ID {} from SNS message of type {}. Incoming message ID was {} ", snsMessageContainer.getMessageId(), snsMessageContainer.getMessageType(), messageId);
