@@ -26,7 +26,7 @@ public class OAuth2SecurityConfig {
             .and().oauth2Client()
             .and()
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers( "/health/**","/queue-admin/retry-all-dlqs", "/replay404Hearings").permitAll()
+                .requestMatchers( "/health/**","/queue-admin/retry-all-dlqs", "/replay404Hearings", "/info").permitAll()
                 .anyRequest().hasRole(role))
             .oauth2ResourceServer().jwt().jwtAuthenticationConverter(new AuthAwareTokenConverter());
         http.anonymous();
