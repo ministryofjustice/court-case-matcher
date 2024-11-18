@@ -12,6 +12,8 @@ management:
       exposure:
         include: health,info
   endpoint:
+    info:
+      enabled: true
     health:
       show-details: always
       path-mapping: "health"

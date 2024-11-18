@@ -34,18 +34,16 @@ nomis-oauth:
 person-record-service:
   base-url: http://localhost:8083/
 
-hmpps:
-  sqs:
-    enabled: true
-    provider: localstack
-    queues:
-      courtcasematcherqueue:
-        queueName: court-case-matcher-queue
-        subscribeTopicId: courtcaseeventstopic
-  sns:
-    topics:
-      courtcaseeventstopic:
-        arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
+hmpps.sqs:
+  enabled: true
+  provider: localstack
+  queues:
+    courtcasematcherqueue:
+      queueName: court-case-matcher-queue
+      subscribeTopicId: courtcaseeventstopic
+  topics:
+    courtcaseeventstopic:
+      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
 feature:
   flags:

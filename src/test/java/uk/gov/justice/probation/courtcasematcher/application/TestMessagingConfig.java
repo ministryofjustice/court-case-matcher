@@ -28,9 +28,4 @@ public class TestMessagingConfig {
             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("any", "any")))
             .build();
     }
-
-    @MockBean
-    private BuildProperties buildProperties;
-
-
 }
