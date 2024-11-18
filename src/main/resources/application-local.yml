@@ -21,7 +21,6 @@ server:
 
 court-case-service:
   base-url: http://localhost:8082/
-  case-by-hearing-id-court-case-id-url-template: /hearing/%s/case/%s
 
 offender-search:
   base-url: https://probation-offender-search-dev.hmpps.service.justice.gov.uk
