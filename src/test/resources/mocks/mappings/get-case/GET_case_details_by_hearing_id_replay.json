@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f/case/1d1861ed-e18c-429d-bad0-671802f9cdba"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "get-court-case/GET_court_case_response_1d1861ed-e18c-429d-bad0-671802f9cdba.json"
+  }
+}

@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
@@ -18,7 +20,7 @@ public class CPHearingEvent {
     @Valid
     private final CPHearing hearing;
 
-    public Hearing asDomain() {
+    public List<Hearing> asDomain() {
         return hearing.asDomain();
     }
 }
