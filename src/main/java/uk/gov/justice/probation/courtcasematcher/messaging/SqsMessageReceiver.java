@@ -35,11 +35,13 @@ public class SqsMessageReceiver {
         log.info("Received JSON message from SQS queue with messageId: {}. ", messageId);
 
         telemetryService.trackHearingMessageReceivedEvent(messageId);
-        final var hearing = hearingExtractor.extractHearing(message, messageId);
+        final var hearings = hearingExtractor.extractHearings(message, messageId);
 
-        if (hearing.isValidHearingForProcessing()) {
-            hearingProcessor.process(hearing, messageId);
-        }
+        hearings.forEach(hearing -> {
+            if (hearing.isValidHearingForProcessing()) {
+                hearingProcessor.process(hearing, messageId);
+            }
+        });
 
     }
 }

@@ -24,7 +24,6 @@ import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
-import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 
 import java.util.Collections;
 import java.util.Set;
@@ -103,10 +102,10 @@ class HearingExtractorTest {
                         .build());
         when(libraParser.parseMessage(MESSAGE_STRING, LibraHearing.class)).thenReturn(libraHearing);
 
-        var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearing = hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(hearing).isNotNull();
-        assertThat(hearing.getCaseNo()).isEqualTo(CASE_NO);
+        assertThat(hearing.getFirst().getCaseNo()).isEqualTo(CASE_NO);
     }
 
     @Test
@@ -118,10 +117,10 @@ class HearingExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearing = hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(hearing).isNotNull();
-        assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
+        assertThat(hearing.getFirst().getCaseId()).isEqualTo(CASE_ID);
     }
 
     @Test
@@ -133,10 +132,10 @@ class HearingExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearing = hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
 
         assertThat(hearing).isNotNull();
-        assertThat(hearing.getCaseMarkers().size()).isEqualTo(1);
+        assertThat(hearing.getFirst().getCaseMarkers().size()).isEqualTo(1);
     }
 
     @Test
@@ -148,7 +147,8 @@ class HearingExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var hearing = hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearings = hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearing = hearings.getFirst();
 
         assertThat(hearing).isNotNull();
         assertThat(hearing.getUrn()).isEqualTo("urn");
@@ -165,12 +165,13 @@ class HearingExtractorTest {
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
-        var hearing = new HearingExtractor(
+        var hearings = new HearingExtractor(
                 snsContainerParser,
                 libraParser,
                 commonPlatformParser,
                 true
-        ).extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        ).extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+        var hearing = hearings.getFirst();
 
         assertThat(hearing).isNotNull();
         assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
@@ -186,7 +187,7 @@ class HearingExtractorTest {
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withMessage("Unprocessable message type: UNKNOWN");
     }
 
@@ -199,7 +200,7 @@ class HearingExtractorTest {
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withMessage("Unprocessable message type: NONE");
     }
 
@@ -211,7 +212,7 @@ class HearingExtractorTest {
         when(aViolation.getPropertyPath()).thenReturn(path);
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withCause(violationException)
                 .withMessage("Validation failed");
     }
@@ -229,7 +230,7 @@ class HearingExtractorTest {
         when(aViolation.getPropertyPath()).thenReturn(path);
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withCause(violationException)
                 .withMessage("Validation failed");
     }
@@ -240,7 +241,7 @@ class HearingExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenThrow(jsonProcessingException);
 
         assertThatExceptionOfType(RuntimeException.class)
-                .isThrownBy(() -> hearingExtractor.extractHearing(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
+                .isThrownBy(() -> hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID))
                 .withCause(jsonProcessingException)
                 .withMessage("💥");
     }

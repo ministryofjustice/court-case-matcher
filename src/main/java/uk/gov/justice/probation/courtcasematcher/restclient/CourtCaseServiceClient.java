@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -42,28 +41,34 @@ public class CourtCaseServiceClient {
     @Autowired
     private CourtCaseServiceRestHelper restHelper;
 
-    @Value("${court-case-service.case-by-hearing-id-url-template}")
-    private String courtCaseByHearingIdTemplate;
-
-    @Value("${court-case-service.matches-by-case-defendant-post-url-template}")
-    private String matchesPostTemplate;
+    private static final String courtCaseByHearingIdTemplate = "/hearing/%s";
 
     public Mono<Hearing> getHearing(String hearingId) {
         final String path = String.format(courtCaseByHearingIdTemplate, hearingId);
 
-        // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
         return restHelper.get(path)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))
                 .bodyToMono(CCSExtendedHearing.class)
-                .map(response -> {
-                    log.debug("GET succeeded for the hearing at {}", path);
-                    return response.asDomain();
-                })
+                .map(CCSExtendedHearing::asDomain)
                 .onErrorResume(HearingNotFoundException.class, (e) -> {
                     // This is normal in the context of CCM, don't log
                     return Mono.empty();
                 });
+    }
+
+    public Mono<Hearing> getHearing(String hearingId, String courtCaseId) {
+        final String path = String.format("/hearing/%s/case/%s", hearingId, courtCaseId);
+
+        return restHelper.get(path)
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, hearingId))
+            .bodyToMono(CCSExtendedHearing.class)
+            .map(CCSExtendedHearing::asDomain)
+            .onErrorResume(HearingNotFoundException.class, (e) -> {
+                // This is normal in the context of CCM, don't log
+                return Mono.empty();
+            });
     }
 
     public Mono<Hearing> getHearing(String courtCode, String caseNo, String listNo) throws WebClientResponseException {
@@ -88,7 +93,7 @@ public class CourtCaseServiceClient {
 
     private Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
         return Mono.justOrEmpty(offenderMatches)
-            .map(matches -> Tuple2.of(String.format(matchesPostTemplate, defendantId), CCSGroupedOffenderMatchesRequest.of(matches)))
+            .map(matches -> Tuple2.of(String.format("/defendant/%s/grouped-offender-matches", defendantId), CCSGroupedOffenderMatchesRequest.of(matches)))
             .flatMap(tuple2 -> restHelper.postObject(tuple2.getT1(), tuple2.getT2(), CCSGroupedOffenderMatchesRequest.class)
                 .retrieve()
                 .toBodilessEntity()
