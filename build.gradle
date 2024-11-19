@@ -97,7 +97,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'au.com.dius.pact.consumer:junit5:4.6.15'
-    testImplementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
+    testImplementation 'org.apache.httpcomponents:fluent-hc:4.5.14'
 }
 
 test {
