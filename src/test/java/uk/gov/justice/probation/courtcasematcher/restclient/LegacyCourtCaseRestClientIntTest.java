@@ -61,7 +61,7 @@ public class LegacyCourtCaseRestClientIntTest {
                 .build();
 
         Hearing expected = Hearing.builder()
-                .caseId("1246257")
+                .caseId("1391998")
                 .caseNo(CASE_NO)
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .listNo("2nd")
