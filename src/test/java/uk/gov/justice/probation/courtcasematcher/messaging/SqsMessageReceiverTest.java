@@ -35,18 +35,18 @@ class SqsMessageReceiverTest {
     @Mock
     private HearingExtractor caseExtractor;
 
-    private Hearing libraHearing = Hearing.builder()
+    private final List<Hearing> libraHearing = List.of(Hearing.builder()
             .source(DataSource.LIBRA)
-            .build();
+            .build());
 
-    private Hearing commonPlatformHearing = Hearing.builder()
+    private final List<Hearing> commonPlatformHearing = List.of(Hearing.builder()
             .source(DataSource.COMMON_PLATFORM)
             .defendants(List.of(Defendant.builder().crn("12345").build()))
-            .build();
+            .build());
 
-    private Hearing invalidCommonPlatformHearing = Hearing.builder()
+    private final List<Hearing> invalidCommonPlatformHearing = List.of(Hearing.builder()
         .source(DataSource.COMMON_PLATFORM)
-        .build();
+        .build());
 
     private SqsMessageReceiver sqsMessageReceiver;
 
@@ -64,30 +64,32 @@ class SqsMessageReceiverTest {
     @DisplayName("Given a valid Libra JSON message then track and process")
     @Test
     void givenLibraMessage_whenReceived_ThenTrackAndProcess() throws Exception {
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID);
 
         verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor).process(libraHearing, MESSAGE_ID);
+        verify(caseProcessor).process(libraHearing.getFirst(), MESSAGE_ID);
+        verify(caseProcessor).process(libraHearing.getFirst(), MESSAGE_ID);
     }
 
     @DisplayName("Given a valid Common Platform JSON message then track and process")
     @Test
     void givenCommonPlatformMessage_whenReceived_ThenProcess() throws Exception {
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(commonPlatformHearing);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(commonPlatformHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID);
 
 
         verify(telemetryService).trackHearingMessageReceivedEvent(MESSAGE_ID);
-        verify(caseProcessor).process(commonPlatformHearing, MESSAGE_ID);
+        verify(caseProcessor).process(commonPlatformHearing.getFirst(), MESSAGE_ID);
+        verify(caseProcessor).process(commonPlatformHearing.getFirst(), MESSAGE_ID);
     }
 
     @DisplayName("Given an invalid Common Platform JSON message then do not process message")
     @Test
     void givenInvalidCommonPlatformMessage_whenReceived_ThenDoNotProcess() throws Exception {
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(invalidCommonPlatformHearing);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(invalidCommonPlatformHearing);
 
         sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID);
 
@@ -99,7 +101,7 @@ class SqsMessageReceiverTest {
     @Test
     void givenExceptionThrown_whenExtractCase_thenThrow() {
         final var runtimeException = new RuntimeException("Bang");
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenThrow(runtimeException);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenThrow(runtimeException);
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID))
@@ -109,8 +111,8 @@ class SqsMessageReceiverTest {
     @Test
     void givenExceptionThrown_whenProcessCase_thenThrow() {
         final var runtimeException = new RuntimeException("Bang");
-        when(caseExtractor.extractHearing(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
-        doThrow(runtimeException).when(caseProcessor).process(libraHearing, MESSAGE_ID);
+        when(caseExtractor.extractHearings(singleCaseJson, MESSAGE_ID)).thenReturn(libraHearing);
+        doThrow(runtimeException).when(caseProcessor).process(libraHearing.getFirst(), MESSAGE_ID);
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> sqsMessageReceiver.receive(singleCaseJson, MESSAGE_ID))

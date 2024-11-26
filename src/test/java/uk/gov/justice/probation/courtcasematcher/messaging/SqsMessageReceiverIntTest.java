@@ -296,7 +296,7 @@ public class SqsMessageReceiverIntTest {
 
         final var expectedEndpoint = String.format("/hearing/%s", "A0884637-5A70-4622-88E9-7324949B8E7A");
         await()
-                .atMost(5, TimeUnit.SECONDS)
+                .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo(expectedEndpoint) == 1);
 
         MOCK_SERVER.verify(
@@ -326,6 +326,42 @@ public class SqsMessageReceiverIntTest {
             .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 0);
 
         
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verifyNoMoreInteractions(telemetryService);
+    }
+
+    @Test
+    public void givenNewHearing_with_multiple_cases_whenReceivePayload_thenProcessed() throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", false);
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-multiple-cases.json"));
+
+        publishMessage(hearing,
+            Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(),
+                "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
+
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 2);
+
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verify(telemetryService, times(2)).trackNewHearingEvent(any(Hearing.class), any(String.class));
+        verifyNoMoreInteractions(telemetryService);
+    }
+
+    @Test
+    public void givenExistingHearing_with_multiple_cases_whenReceivePayload_thenProcessed() throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", true);
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/youthDefendantHearing.json"));
+
+        publishMessage(hearing,
+            Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(),
+                "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
+
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 0);
+
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }

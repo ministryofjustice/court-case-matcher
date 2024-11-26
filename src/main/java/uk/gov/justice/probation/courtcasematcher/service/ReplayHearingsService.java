@@ -116,17 +116,21 @@ public class ReplayHearingsService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        final var hearing = cpHearingEvent.asDomain()
-            .withHearingId(cpHearingEvent.getHearing().getId())
-            .withHearingEventType("ConfirmedOrUpdated");
+        final var hearings = cpHearingEvent.asDomain()
+            .stream()
+            .map(h -> h.withHearingId(cpHearingEvent.getHearing().getId())
+                .withHearingEventType("ConfirmedOrUpdated"))
+            .toList();
 
         if (dryRunEnabled) {
             log.info("Dry run - processNewOrUpdatedHearing for hearing: {}", cpHearingEvent.getHearing().getId());
             trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), Replay404HearingProcessStatus.SUCCEEDED, Collections.emptyMap());
         } else {
-            hearingProcessor.process(hearing, "pic4207-data-fix");
-            log.info("Successfully processed hearing for hearing: {}", cpHearingEvent.getHearing().getId());
-            trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), Replay404HearingProcessStatus.SUCCEEDED, Collections.emptyMap());
+            hearings.forEach(hearing -> {
+                hearingProcessor.process(hearing, "pic4207-data-fix");
+                log.info("Successfully processed hearing for hearing: {}", cpHearingEvent.getHearing().getId());
+                trackHearingProcessedEvent(cpHearingEvent.getHearing().getId(), Replay404HearingProcessStatus.SUCCEEDED, Collections.emptyMap());
+            });
         }
     }
 
