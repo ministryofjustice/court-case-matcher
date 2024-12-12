@@ -96,7 +96,7 @@ dependencies {
 
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'au.com.dius.pact.consumer:junit5:4.6.15'
+    testImplementation 'au.com.dius.pact.consumer:junit5:4.6.16'
 
 }
 
