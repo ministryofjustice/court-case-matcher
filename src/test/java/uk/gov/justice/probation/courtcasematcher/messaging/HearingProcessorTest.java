@@ -18,8 +18,10 @@ import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -247,5 +249,24 @@ class HearingProcessorTest {
         var hearing = Hearing.builder().build();
         assertThrows(RuntimeException.class, () -> hearingProcessor.process(hearing, MESSAGE_ID));
         verify(telemetryService, times(1)).trackProcessingFailureEvent(hearing);
+    }
+
+    @Test
+    void givenLibraHearing_generateHearingAndDefendantIds() {
+        var hearing = Hearing.builder().caseId("1234567").defendants(List.of(Defendant.builder().build())).build();
+        Hearing assignedHearing = hearingProcessor.assignUuids(hearing);
+        assertThat(assignedHearing.getHearingId()).isNotNull();
+        assertThat(assignedHearing.getDefendants().getFirst().getDefendantId()).isNotNull();
+        assertThat(assignedHearing.getCaseNo()).isEqualTo("1234567");
+    }
+
+    @Test
+    void givenLibraHearing_existingIdsNotOverridden() {
+        var hearing = Hearing.builder().hearingId("456789").caseId("1234567")
+            .defendants(List.of(Defendant.builder().defendantId("XYZ").build())).build();
+        Hearing assignedHearing = hearingProcessor.assignUuids(hearing);
+        assertThat(assignedHearing.getHearingId()).isEqualTo("456789");
+        assertThat(assignedHearing.getDefendants().getFirst().getDefendantId()).isEqualTo("XYZ");
+        assertThat(assignedHearing.getCaseNo()).isEqualTo("1234567");
     }
 }
