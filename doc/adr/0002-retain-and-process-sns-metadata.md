@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-The service receives case messages from the SQS queue `court-case-matcher-queue`. These messages, being produced from an SNS subscription, are embedded in JSON containing metadata about the message. It is possible to remove this metadata through configuration of AWS, thereby allowing for easier processing of the case itself in court-case-matcher or to retain it. 
+The service receives case messages from the SQS queue `court-cases-queue`. These messages, being produced from an SNS subscription, are embedded in JSON containing metadata about the message. It is possible to remove this metadata through configuration of AWS, thereby allowing for easier processing of the case itself in court-case-matcher or to retain it. 
 
 The metadata includes the following fields
 * `messageId`

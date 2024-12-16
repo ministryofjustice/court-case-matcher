@@ -86,12 +86,12 @@ public class SqsMessageReceiverIntTest {
     static void afterAll() {
         MOCK_SERVER.stop();
     }
-    private static final String TOPIC_NAME = "courtcaseeventstopic";
+    private static final String TOPIC_NAME = "courtcasestopic";
     HmppsTopic topic;
     @BeforeEach
     void setUp(){
         topic = hmppsQueueService.findByTopicId(TOPIC_NAME);
-        HmppsQueue queue = hmppsQueueService.findByQueueId("courtcasematcherqueue");
+        HmppsQueue queue = hmppsQueueService.findByQueueId("courtcasesqueue");
 
         queue.getSqsClient().purgeQueue(PurgeQueueRequest.builder().queueUrl(queue.getQueueUrl()).build());
         queue.getSqsDlqClient().purgeQueue(PurgeQueueRequest.builder().queueUrl(queue.getDlqUrl()).build());
@@ -430,7 +430,7 @@ public class SqsMessageReceiverIntTest {
     }
 
     private void publishMessage(String hearing, Map<String, MessageAttributeValue> attributes) {
-        HmppsTopicKt.publish(topic,"some-event-type", hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY);
+        HmppsTopicKt.publish(topic,"some-event-type", hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY, "COURT_HEARING_EVENT_RECEIVER");
     }
 
     public int countPutRequestsTo(final String url) {
