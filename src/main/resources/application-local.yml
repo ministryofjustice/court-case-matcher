@@ -38,12 +38,12 @@ hmpps.sqs:
   enabled: true
   provider: localstack
   queues:
-    courtcasematcherqueue:
-      queueName: court-case-matcher-queue
-      subscribeTopicId: courtcaseeventstopic
+    courtcasesqueue:
+      queueName: court-cases-queue.fifo
+      subscribeTopicId: courtcasestopic
   topics:
-    courtcaseeventstopic:
-      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
+    courtcasestopic:
+      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}.fifo
 
 feature:
   flags:

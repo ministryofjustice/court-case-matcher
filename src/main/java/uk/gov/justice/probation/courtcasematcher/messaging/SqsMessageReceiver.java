@@ -28,7 +28,7 @@ public class SqsMessageReceiver {
     @NonNull
     private final HearingExtractor hearingExtractor;
 
-    @SqsListener(value = "courtcasematcherqueue",  factory = "hmppsQueueContainerFactoryProxy")
+    @SqsListener(value = "courtcasesqueue",  factory = "hmppsQueueContainerFactoryProxy")
     public void receive(
             @NotEmpty String message,
             @Header(value = "id") String messageId){
