@@ -19,12 +19,14 @@ court-case-matcher is capable of reading messages from a configured SQS queue. T
 There are integration tests which send messages to the SQS queue. If required, it is also possible to send them using the AWS CLI
 
 ```
-aws sqs send-message --region eu-west-2 --endpoint-url http://localhost:4566  --queue-url http://localhost:4566/000000000000/court-case-matcher-queue  --message-body $msg
+aws sqs send-message --region eu-west-2 --endpoint-url http://localhost:4566  --queue-url http://localhost:4566/000000000000/court-cases-queue  --message-body $msg
 ```
+
+Testing
 
 ```
 docker compose up localstack
-./src/test/resources/localstack/setup-sqs.sh
+./gradlew check
 ```
 
 ### Environment 

@@ -55,7 +55,7 @@ ext {
 }
 
 dependencies {
-    implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.1.1")
+    implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.2.1")
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor 'org.projectlombok:lombok'
 
@@ -97,7 +97,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'au.com.dius.pact.consumer:junit5:4.6.15'
-    testImplementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
+
 }
 
 test {

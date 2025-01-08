@@ -5,7 +5,7 @@
 helm init --tiller-namespace court-probation-dev --service-account tiller --history-max 200
 ```
 
-### Example deploy command
+### Example deploy command
 ```
 helm --namespace court-probation-dev  --tiller-namespace court-probation-dev upgrade court-case-matcher ./court-case-matcher/ --install --values=values-dev.yaml
 ```
