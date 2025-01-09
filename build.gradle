@@ -67,7 +67,7 @@ dependencies {
 
 
 
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2' //matches the jackson version brought in by uk.gov.justice.hmpps.gradle-spring-boot
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.2' //matches the jackson version brought in by uk.gov.justice.hmpps.gradle-spring-boot
 
     api("software.amazon.awssdk:s3")
     implementation 'org.projectlombok:lombok:1.18.36'
