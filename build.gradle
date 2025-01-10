@@ -3,7 +3,7 @@ import java.time.LocalDate
 plugins {
     id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.8"
     id 'java'
-    id "au.com.dius.pact" version "4.6.14"
+    id "au.com.dius.pact" version "4.6.16"
 }
 
 repositories {
