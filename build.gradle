@@ -1,7 +1,7 @@
 import java.time.LocalDate
 
 plugins {
-    id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.8"
+    id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.1.2"
     id 'java'
     id "au.com.dius.pact" version "4.6.14"
 }
