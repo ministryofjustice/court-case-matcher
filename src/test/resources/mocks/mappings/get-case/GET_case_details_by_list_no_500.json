@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/court/X500/case/12345?listNo=1st"
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
