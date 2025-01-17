@@ -40,7 +40,7 @@ public class LegacyCourtCaseRestClient {
         this.useListNoToFetchLibraCase = useListNoToFetchLibraCase;
     }
 
-    public Mono<Hearing> getHearing(final String courtCode, final String caseNo, final String listNo) throws WebClientResponseException {
+    public Mono<Hearing> getHearing(final String courtCode, final String caseNo, final String listNo) {
         final String path = String.format("/court/%s/case/%s", courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
@@ -55,8 +55,8 @@ public class LegacyCourtCaseRestClient {
                 log.debug("GET succeeded for retrieving the hearing for path {}", path);
                 return ccsHearing.asDomain();
             })
-            .onErrorResume((e) -> {
-                // This is normal in the context of CCM, don't log
+            .onErrorResume(HearingNotFoundException.class, (e) -> {
+                // Only return empty when hearing is not found in court case service
                 return Mono.empty();
             });
     }
