@@ -43,9 +43,11 @@ ou-code-length: 5
 
 # Localstack settings
 aws:
-  region_name: eu-west-2
+  region-name: eu-west-2
   access_key_id: foobar
   secret_access_key: foobar
+  s3:
+    bucket_name: cpg-s3-bucket
 
 hmpps.sqs:
   enabled: true
@@ -72,5 +74,5 @@ logging:
 replay404:
   dry-run: false
 
-crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"
+crime-portal-gateway-s3-bucket: "cpg-s3-bucket"
 

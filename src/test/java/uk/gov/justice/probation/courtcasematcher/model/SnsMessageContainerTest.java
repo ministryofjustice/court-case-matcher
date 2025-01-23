@@ -13,7 +13,7 @@ class SnsMessageContainerTest {
         final var commonPlatformType = SnsMessageContainer.builder()
                 .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("Resulted")
-                        .build()))
+                        .build(), null))
                 .build();
         assertThat(commonPlatformType.getMessageType()).isEqualTo(MessageType.COMMON_PLATFORM_HEARING);
     }
@@ -31,7 +31,7 @@ class SnsMessageContainerTest {
         final var commonPlatformType = SnsMessageContainer.builder()
                 .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("Resulted")
-                        .build()))
+                        .build(), null))
                 .build();
         assertThat(commonPlatformType.getHearingEventType()).isEqualTo(HearingEventType.builder()
                 .value("Resulted")

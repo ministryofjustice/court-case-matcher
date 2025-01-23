@@ -18,12 +18,14 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.ProsecutionCaseIdentifier;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
+import uk.gov.justice.probation.courtcasematcher.model.ExtendedPayloadSize;
 import uk.gov.justice.probation.courtcasematcher.model.MessageAttributes;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+import uk.gov.justice.probation.courtcasematcher.service.S3Service;
 
 import java.util.Collections;
 import java.util.Set;
@@ -51,6 +53,8 @@ class HearingExtractorTest {
     private ConstraintViolation<String> aViolation;
     @Mock
     private Path path;
+    @Mock
+    S3Service s3Service;
     @Mock
     private CprExtractor cprExtractor;
 
@@ -90,6 +94,7 @@ class HearingExtractorTest {
                 snsContainerParser,
                 libraParser,
                 commonPlatformParser,
+                s3Service,
                 cprExtractor
         );
     }
@@ -100,7 +105,7 @@ class HearingExtractorTest {
                 .thenReturn(messageContainerBuilder
                         .messageAttributes(new MessageAttributes(MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
                                 .value("ConfirmedOrUpdated")
-                                .build()))
+                                .build(), null))
                         .build());
         when(libraParser.parseMessage(MESSAGE_STRING, LibraHearing.class)).thenReturn(libraHearing);
 
@@ -115,8 +120,33 @@ class HearingExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("ConfirmedOrUpdated")
-                        .build()))
+                        .build(), null))
                 .build());
+        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
+
+        var hearing = hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
+
+        assertThat(hearing).isNotNull();
+        assertThat(hearing.getFirst().getCaseId()).isEqualTo(CASE_ID);
+        assertThat(hearing.getFirst().getHearingId()).isEqualTo(HEARING_ID);
+    }
+
+    @Test
+    void whenS3StoredEventReceived_thenGetHearingFromS3_thenParseAndReturnHearing() throws JsonProcessingException {
+        String s3Key = "ba8d919b-a9d8-433b-b4b4-c196f67c773e";
+        when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(
+            messageContainerBuilder
+                .message(
+                    "[ \"software.amazon.payloadoffloading.PayloadS3Pointer\", {\n" +
+                        "  \"s3BucketName\" : \"local-644707540a8083b7b15a77f51641f632\",\n" +
+                        String.format("  \"s3Key\" : \"%s\"\n", s3Key) +
+                        "} ]"
+                )
+            .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
+                .value("ConfirmedOrUpdated")
+                .build(), ExtendedPayloadSize.builder().type("Type").value(100).build()))
+            .build());
+        when(s3Service.getObject(s3Key)).thenReturn(MESSAGE_STRING);
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
         var hearing = hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
@@ -131,7 +161,7 @@ class HearingExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("ConfirmedOrUpdated")
-                        .build()))
+                        .build(), null))
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
@@ -146,7 +176,7 @@ class HearingExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.UNKNOWN, HearingEventType.builder()
                         .value("Resulted")
-                        .build()))
+                        .build(), null))
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
@@ -159,7 +189,7 @@ class HearingExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.NONE, HearingEventType.builder()
                         .value("Resulted")
-                        .build()))
+                        .build(), null))
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
@@ -187,7 +217,7 @@ class HearingExtractorTest {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
                         .value("Resulted")
-                        .build()))
+                        .build(), null))
                 .build());
         when(libraParser.parseMessage(MESSAGE_STRING, LibraHearing.class)).thenThrow(violationException);
         when(aViolation.getPropertyPath()).thenReturn(path);
