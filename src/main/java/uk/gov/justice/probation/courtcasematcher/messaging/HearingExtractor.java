@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -8,13 +9,16 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.S3Message;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
 import jakarta.validation.ConstraintViolationException;
+import uk.gov.justice.probation.courtcasematcher.service.S3Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -33,6 +37,10 @@ public class HearingExtractor {
     @NonNull
     @Autowired
     final MessageParser<CPHearingEvent> commonPlatformParser;
+
+    @NonNull
+    @Autowired
+    final S3Service s3Service;
 
     @Autowired
     final CprExtractor cprExtractor;
@@ -62,9 +70,24 @@ public class HearingExtractor {
     }
 
     private List<Hearing> parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
-        final var cpHearingEvent = commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class);
+        String message = snsMessageContainer.getMessage();
+
+        if (snsMessageContainer.getMessageAttributes().getExtendedPayloadSize() != null) {
+            message = getPayloadFromS3(snsMessageContainer);
+            log.info("Successfully downloaded large message from s3 bucket with extended payload size: {}", snsMessageContainer.getMessageAttributes().getExtendedPayloadSize());
+        }
+        final var cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);
         final var hearing = cpHearingEvent.asDomain(cprExtractor);
         return setHearingAttributes(hearing, cpHearingEvent, snsMessageContainer);
+    }
+
+    private String getPayloadFromS3(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        var snsMessage =  mapper.readValue(snsMessageContainer.getMessage(), ArrayList.class);
+        String s3MessageBody = mapper.writeValueAsString(snsMessage.get(1));
+        S3Message s3Message =  mapper.readValue(s3MessageBody, S3Message.class);
+
+        return s3Service.getObject(s3Message.getS3Key());
     }
 
     private List<Hearing> setHearingAttributes(List<Hearing> hearings, CPHearingEvent cpHearingEvent, SnsMessageContainer snsMessageContainer) {
