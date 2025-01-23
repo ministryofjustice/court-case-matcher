@@ -23,7 +23,7 @@ public class LocalAwsConfig {
     private String endpointUrl;
 
     @Bean
-    public S3Client amazonS3Client(@Value("${aws.region-name}") String regionName) {
+    public S3Client amazonS3Client() {
         return S3Client.builder()
             .region(Region.of(regionName))
             .build();

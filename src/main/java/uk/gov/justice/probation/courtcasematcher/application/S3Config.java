@@ -12,15 +12,18 @@ import software.amazon.awssdk.services.s3.S3Client;
 @Profile("!test & !local")
 public class S3Config {
 
+    @Value("${aws.region-name}")
+    private String regionName;
+
     @Bean
-    public S3Client amazonS3Client(@Value("${aws.region-name}") String regionName) {
+    public S3Client amazonS3Client() {
         return S3Client.builder()
             .region(Region.of(regionName))
             .build();
     }
 
     @Bean
-    public S3AsyncClient s3AsyncClient(@Value("${aws.region-name}") String regionName) {
+    public S3AsyncClient s3AsyncClient() {
         return S3AsyncClient.builder().region(software.amazon.awssdk.regions.Region.of(regionName)).build();
     }
 }
