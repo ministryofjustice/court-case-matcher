@@ -40,6 +40,10 @@ public class HearingExtractor {
 
     @NonNull
     @Autowired
+    ObjectMapper objectMapper;
+
+    @NonNull
+    @Autowired
     final S3Service s3Service;
 
     @Autowired
@@ -74,7 +78,6 @@ public class HearingExtractor {
 
         if (snsMessageContainer.getMessageAttributes().getExtendedPayloadSize() != null) {
             message = getPayloadFromS3(snsMessageContainer);
-            log.info("Successfully downloaded large message from s3 bucket with extended payload size: {}", snsMessageContainer.getMessageAttributes().getExtendedPayloadSize());
         }
         final var cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);
         final var hearing = cpHearingEvent.asDomain(cprExtractor);
@@ -82,10 +85,9 @@ public class HearingExtractor {
     }
 
     private String getPayloadFromS3(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        var snsMessage =  mapper.readValue(snsMessageContainer.getMessage(), ArrayList.class);
-        String s3MessageBody = mapper.writeValueAsString(snsMessage.get(1));
-        S3Message s3Message =  mapper.readValue(s3MessageBody, S3Message.class);
+        var snsMessage =  objectMapper.readValue(snsMessageContainer.getMessage(), ArrayList.class);
+        String s3MessageBody = objectMapper.writeValueAsString(snsMessage.get(1));
+        S3Message s3Message =  objectMapper.readValue(s3MessageBody, S3Message.class);
 
         return s3Service.getObject(s3Message.getS3Key());
     }
