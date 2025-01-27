@@ -153,7 +153,7 @@ class HearingExtractorTest {
                 )
             .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                 .value("ConfirmedOrUpdated")
-                .build(), ExtendedPayloadSize.builder().type("Type").value(100).build()))
+                .build(), new ExtendedPayloadSize("Type", 100)))
             .build());
 
         ArrayList<Object> parseMessageBody = new ArrayList<>();
