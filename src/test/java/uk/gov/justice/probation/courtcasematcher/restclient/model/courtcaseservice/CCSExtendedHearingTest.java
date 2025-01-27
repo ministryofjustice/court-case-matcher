@@ -11,7 +11,6 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class CCSExtendedHearingTest {
-    private static final String A_UUID = "9E27A145-E847-4AAB-9FF9-B88912520D14";
 
     @Test
     public void shouldMapFromCourtCaseAndKeepIdsIfPresent() {

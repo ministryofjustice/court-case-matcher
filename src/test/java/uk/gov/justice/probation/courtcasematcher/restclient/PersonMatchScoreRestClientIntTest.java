@@ -15,8 +15,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.personmatchsco
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
-import javax.management.BadAttributeValueExpException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest

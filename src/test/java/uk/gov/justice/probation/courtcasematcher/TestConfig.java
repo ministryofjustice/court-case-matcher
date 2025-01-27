@@ -4,7 +4,6 @@ import io.restassured.RestAssured;
 
 public class TestConfig {
     public static final String CONFIGURED_TWICE = "Attempt to configure RestAssured for both Integration and Smoke tests is not allowed";
-    public static final int WIREMOCK_PORT = 8090;
     private static boolean configuredForInt = false;
     private static boolean configuredForSmoke = false;
 

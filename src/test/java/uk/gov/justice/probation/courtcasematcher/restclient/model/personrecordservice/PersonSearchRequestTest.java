@@ -8,7 +8,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class PersonSearchRequestTest {
 

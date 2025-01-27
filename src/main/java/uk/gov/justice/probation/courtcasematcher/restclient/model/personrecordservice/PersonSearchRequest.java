@@ -11,7 +11,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @Getter
