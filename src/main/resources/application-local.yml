@@ -49,7 +49,6 @@ hmpps.sqs:
 
 feature:
   flags:
-    pass-hearing-id-to-court-case-service: true
     use-list-no-to-fetch-libra-case: true
     cpr_matcher: true
 
