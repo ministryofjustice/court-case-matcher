@@ -45,9 +45,4 @@ hmpps.sqs:
     courtcasestopic:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}.fifo
 
-feature:
-  flags:
-    pass-hearing-id-to-court-case-service: true
-    use-list-no-to-fetch-libra-case: true
-
 crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"

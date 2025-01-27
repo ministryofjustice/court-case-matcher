@@ -87,8 +87,7 @@ class HearingExtractorTest {
         hearingExtractor = new HearingExtractor(
                 snsContainerParser,
                 libraParser,
-                commonPlatformParser,
-                false
+                commonPlatformParser
         );
     }
 
@@ -121,6 +120,7 @@ class HearingExtractorTest {
 
         assertThat(hearing).isNotNull();
         assertThat(hearing.getFirst().getCaseId()).isEqualTo(CASE_ID);
+        assertThat(hearing.getFirst().getHearingId()).isEqualTo(HEARING_ID);
     }
 
     @Test
@@ -136,46 +136,6 @@ class HearingExtractorTest {
 
         assertThat(hearing).isNotNull();
         assertThat(hearing.getFirst().getCaseMarkers().size()).isEqualTo(1);
-    }
-
-    @Test
-    void whenCommonPlatformHearingEventReceived_PassHearingIdIsFalse_thenDoNotPopulateHearingIdInHearing() throws JsonProcessingException {
-        when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
-                        .value("ConfirmedOrUpdated")
-                        .build()))
-                .build());
-        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
-
-        var hearings = hearingExtractor.extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
-        var hearing = hearings.getFirst();
-
-        assertThat(hearing).isNotNull();
-        assertThat(hearing.getUrn()).isEqualTo("urn");
-        assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
-        assertThat(hearing.getHearingId()).isNull();
-    }
-
-    @Test
-    void whenCommonPlatformHearingEventReceived_PassHearingIdIsTrue_thenDoNotPopulateHearingIdInHearing() throws JsonProcessingException {
-        when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
-                        .value("Resulted")
-                        .build()))
-                .build());
-        when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
-
-        var hearings = new HearingExtractor(
-                snsContainerParser,
-                libraParser,
-                commonPlatformParser,
-                true
-        ).extractHearings(MESSAGE_CONTAINER_STRING, MESSAGE_ID);
-        var hearing = hearings.getFirst();
-
-        assertThat(hearing).isNotNull();
-        assertThat(hearing.getCaseId()).isEqualTo(CASE_ID);
-        assertThat(hearing.getHearingId()).isEqualTo(HEARING_ID);
     }
 
     @Test

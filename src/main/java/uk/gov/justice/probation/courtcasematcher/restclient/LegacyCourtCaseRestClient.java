@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.restclient;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
@@ -23,30 +22,18 @@ import java.util.List;
 public class LegacyCourtCaseRestClient {
     private final CourtCaseServiceRestHelper courtCaseServiceRestHelper;
 
-    @Value("${feature.flags.use-list-no-to-fetch-libra-case}")
-    private boolean useListNoToFetchLibraCase;
-
     @Autowired
     public LegacyCourtCaseRestClient(CourtCaseServiceRestHelper courtCaseServiceRestHelper) {
         super();
         this.courtCaseServiceRestHelper = courtCaseServiceRestHelper;
     }
 
-    public LegacyCourtCaseRestClient(CourtCaseServiceRestHelper courtCaseServiceRestHelper,
-                                     boolean useListNoToFetchLibraCase
-    ) {
-        super();
-        this.courtCaseServiceRestHelper = courtCaseServiceRestHelper;
-        this.useListNoToFetchLibraCase = useListNoToFetchLibraCase;
-    }
-
     public Mono<Hearing> getHearing(final String courtCode, final String caseNo, final String listNo) {
         final String path = String.format("/court/%s/case/%s", courtCode, caseNo);
 
         // Get the existing case. Not a problem if it's not there. So return a Mono.empty() if it's not
-        WebClient.RequestHeadersSpec<?> getLibraCase = useListNoToFetchLibraCase ?
-          courtCaseServiceRestHelper.get(path, Collections.singletonMap("listNo", List.of(listNo)))
-          : courtCaseServiceRestHelper.get(path);
+        WebClient.RequestHeadersSpec<?> getLibraCase = courtCaseServiceRestHelper.get(path, Collections.singletonMap("listNo", List.of(listNo)));
+
         return getLibraCase
             .retrieve()
             .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, courtCode, caseNo))
