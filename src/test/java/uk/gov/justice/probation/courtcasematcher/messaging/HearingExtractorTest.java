@@ -1,12 +1,14 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
+import uk.gov.justice.probation.courtcasematcher.messaging.model.S3Message;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCaseMarker;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPCourtCentre;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPDefendant;
@@ -27,7 +29,9 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import uk.gov.justice.probation.courtcasematcher.service.S3Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -55,6 +59,8 @@ class HearingExtractorTest {
     private Path path;
     @Mock
     S3Service s3Service;
+    @Mock
+    ObjectMapper objectMapper;
     @Mock
     private CprExtractor cprExtractor;
 
@@ -94,6 +100,7 @@ class HearingExtractorTest {
                 snsContainerParser,
                 libraParser,
                 commonPlatformParser,
+                objectMapper,
                 s3Service,
                 cprExtractor
         );
@@ -134,18 +141,31 @@ class HearingExtractorTest {
     @Test
     void whenS3StoredEventReceived_thenGetHearingFromS3_thenParseAndReturnHearing() throws JsonProcessingException {
         String s3Key = "ba8d919b-a9d8-433b-b4b4-c196f67c773e";
+        String s3Bucket = "local-644707540a8083b7b15a77f51641f632";
+        String messageBody = "[ \"software.amazon.payloadoffloading.PayloadS3Pointer\", {\n" +
+            String.format("  \"s3BucketName\" : \"%s\",\n", s3Bucket) +
+            String.format("  \"s3Key\" : \"%s\"\n", s3Key) +
+            "} ]";
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(
             messageContainerBuilder
                 .message(
-                    "[ \"software.amazon.payloadoffloading.PayloadS3Pointer\", {\n" +
-                        "  \"s3BucketName\" : \"local-644707540a8083b7b15a77f51641f632\",\n" +
-                        String.format("  \"s3Key\" : \"%s\"\n", s3Key) +
-                        "} ]"
+                    messageBody
                 )
             .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                 .value("ConfirmedOrUpdated")
                 .build(), ExtendedPayloadSize.builder().type("Type").value(100).build()))
             .build());
+
+        ArrayList<Object> parseMessageBody = new ArrayList<>();
+        parseMessageBody.add("software.amazon.payloadoffloading.PayloadS3Pointer");
+        LinkedHashMap<String, String> s3Pointer = new LinkedHashMap<>();
+        s3Pointer.put("s3BucketName", s3Bucket);
+        s3Pointer.put("s3Key", s3Key);
+        parseMessageBody.add(s3Pointer);
+        when(objectMapper.readValue(messageBody, ArrayList.class)).thenReturn(parseMessageBody);
+        when(objectMapper.writeValueAsString(s3Pointer)).thenReturn(s3Pointer.toString());
+        when(objectMapper.readValue(s3Pointer.toString(), S3Message.class)).thenReturn(new S3Message(s3Bucket, s3Key));
+
         when(s3Service.getObject(s3Key)).thenReturn(MESSAGE_STRING);
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
