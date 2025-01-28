@@ -28,3 +28,6 @@ person-match-score:
 feature:
   flags:
     save_person_id_to_court_case_service: false
+    new-cpr-matcher: true
+
+cpr-matcher-courts: TBC

@@ -45,4 +45,10 @@ hmpps.sqs:
     courtcasestopic:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}.fifo
 
+feature:
+  flags:
+    new-cpr-matcher: true
+
 crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"
+
+cpr-matcher-courts: TBC
