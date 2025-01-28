@@ -89,7 +89,7 @@ feature:
   flags:
     match-on-every-no-record-update: true
     save_person_id_to_court_case_service: false
-    new-cpr-matcher: false
+    cpr_matcher: false
 
 nomis-oauth:
   ping-path: /auth/ping
@@ -104,7 +104,6 @@ web:
 case-feed-future-date-offset: 3
 ou-code-length: 5
 
-cpr-matcher-courts: TBC
 
 aws:
   region-name: eu-west-2

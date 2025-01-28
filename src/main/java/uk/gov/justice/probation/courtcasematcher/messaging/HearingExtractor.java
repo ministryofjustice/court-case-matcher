@@ -34,6 +34,9 @@ public class HearingExtractor {
     @Autowired
     final MessageParser<CPHearingEvent> commonPlatformParser;
 
+    @Autowired
+    final CprExtractor cprExtractor;
+
     List<Hearing> extractHearings(String payload, String messageId) {
         try {
             SnsMessageContainer snsMessageContainer = snsMessageWrapperJsonParser.parseMessage(payload, SnsMessageContainer.class);
@@ -60,7 +63,7 @@ public class HearingExtractor {
 
     private List<Hearing> parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
         final var cpHearingEvent = commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class);
-        final var hearing = cpHearingEvent.asDomain();
+        final var hearing = cpHearingEvent.asDomain(cprExtractor);
         return setHearingAttributes(hearing, cpHearingEvent, snsMessageContainer);
     }
 

@@ -51,7 +51,7 @@ class CPDefendantTest {
                 .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
-                .asDomain();
+                .asDomain(cprExtractor);
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.PERSON);
@@ -97,7 +97,7 @@ class CPDefendantTest {
                 .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
-                .asDomain();
+                .asDomain(cprExtractor);
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.ORGANISATION);
@@ -121,7 +121,7 @@ class CPDefendantTest {
                 .build();
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(defendant::asDomain)
+                .isThrownBy(() -> defendant.asDomain(cprExtractor))
                 .withMessage("Defendant with id '2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9' is neither a person nor a legal entity");
 
     }
@@ -169,7 +169,7 @@ class CPDefendantTest {
             .pncId("20071234557L")
             .croNumber("croNumber")
             .build()
-            .asDomain();
+            .asDomain(cprExtractor);
 
         assertThat(actual).isNull();
     }

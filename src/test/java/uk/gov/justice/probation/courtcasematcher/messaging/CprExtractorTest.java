@@ -7,7 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class CprExtractorTest {
@@ -23,16 +24,23 @@ class CprExtractorTest {
     }
 
     @Test
-    void whenFeatureIsOn_thenProcessExtraFields() {
+    void whenFeatureIsOn_andCourtCodeMatches_thenProcessExtraFields() {
+        when(featureFlags.getFlag("cpr_matcher")).thenReturn(true);
+        boolean canExtractCprFields = cprExtractor.canExtractCprFields("TBD");
+        assertThat(canExtractCprFields).isTrue();
+    }
 
+    @Test
+    void whenFeatureIsOn_andCourtCodeDoesNotMatche_thenProcessExtraFields() {
+        when(featureFlags.getFlag("cpr_matcher")).thenReturn(true);
+        boolean canExtractCprFields = cprExtractor.canExtractCprFields("B13");
+        assertThat(canExtractCprFields).isFalse();
     }
 
     @Test
     void whenFeatureIsOff_thenDoNotProcessExtraFields() {
-
+        when(featureFlags.getFlag("cpr_matcher")).thenReturn(false);
+        boolean canExtractCprFields = cprExtractor.canExtractCprFields("TBD");
+        assertThat(canExtractCprFields).isFalse();
     }
-
-
-
-
 }

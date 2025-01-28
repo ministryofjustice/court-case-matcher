@@ -116,7 +116,7 @@ public class ReplayHearingsService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        final var hearings = cpHearingEvent.asDomain()
+        final var hearings = cpHearingEvent.asDomain(cprExtractor)
             .stream()
             .map(h -> h.withHearingId(cpHearingEvent.getHearing().getId())
                 .withHearingEventType("ConfirmedOrUpdated"))

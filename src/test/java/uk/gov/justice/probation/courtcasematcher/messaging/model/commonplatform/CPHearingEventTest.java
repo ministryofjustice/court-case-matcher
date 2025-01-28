@@ -10,7 +10,7 @@ class CPHearingEventTest {
     @Test
     void mapToDomain() {
         final var commonPlatformHearingEvent = CPHearingEvent.builder().hearing(buildHearing()).build();
-        final var hearings = commonPlatformHearingEvent.asDomain();
+        final var hearings = commonPlatformHearingEvent.asDomain(cprExtractor);
 
         applyAssertions(hearings.getFirst());
     }
