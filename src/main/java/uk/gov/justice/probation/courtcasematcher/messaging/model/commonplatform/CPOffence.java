@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.courtcaseservice.CCSJudicialResult;
 
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;

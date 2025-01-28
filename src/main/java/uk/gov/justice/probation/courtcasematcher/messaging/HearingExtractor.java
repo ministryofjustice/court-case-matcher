@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
@@ -34,9 +33,6 @@ public class HearingExtractor {
     @NonNull
     @Autowired
     final MessageParser<CPHearingEvent> commonPlatformParser;
-
-    @Value("${feature.flags.pass-hearing-id-to-court-case-service:false}")
-    final boolean passHearingIdToCourtCaseService;
 
     List<Hearing> extractHearings(String payload, String messageId) {
         try {
@@ -65,7 +61,7 @@ public class HearingExtractor {
     private List<Hearing> parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
         final var cpHearingEvent = commonPlatformParser.parseMessage(snsMessageContainer.getMessage(), CPHearingEvent.class);
         final var hearing = cpHearingEvent.asDomain();
-        return passHearingIdToCourtCaseService ? setHearingAttributes(hearing, cpHearingEvent, snsMessageContainer) : hearing;
+        return setHearingAttributes(hearing, cpHearingEvent, snsMessageContainer);
     }
 
     private List<Hearing> setHearingAttributes(List<Hearing> hearings, CPHearingEvent cpHearingEvent, SnsMessageContainer snsMessageContainer) {

@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Offence;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 
 import java.util.Collections;
 import java.util.List;
