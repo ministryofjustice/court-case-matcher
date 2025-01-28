@@ -46,6 +46,7 @@ aws:
   region-name: eu-west-2
   access_key_id: foobar
   secret_access_key: foobar
+  endpoint-url: "http://localhost:4566"
   s3:
     bucket_name: cpg-s3-bucket
 

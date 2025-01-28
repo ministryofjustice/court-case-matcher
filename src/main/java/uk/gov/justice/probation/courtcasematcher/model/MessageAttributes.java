@@ -8,12 +8,10 @@ import lombok.NoArgsConstructor;
 import uk.gov.justice.probation.courtcasematcher.messaging.HearingEventType;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
 
-import java.io.Serializable;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-public class MessageAttributes  implements Serializable {
+public class MessageAttributes {
     @JsonProperty("messageType")
     private final MessageType messageType;
 

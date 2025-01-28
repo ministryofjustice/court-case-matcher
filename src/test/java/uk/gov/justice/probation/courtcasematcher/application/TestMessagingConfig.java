@@ -15,7 +15,7 @@ import java.net.URI;
 public class TestMessagingConfig {
     @Value("${aws.region-name}")
     String regionName;
-    @Value("http://localhost:4566")
+    @Value("${aws.endpoint-url}")
     String endpointUrl;
 
     @Bean
@@ -30,6 +30,11 @@ public class TestMessagingConfig {
 
     @Bean
     public S3AsyncClient s3AsyncClient(@Value("${aws.region-name}") String regionName) {
-        return S3AsyncClient.builder().region(software.amazon.awssdk.regions.Region.of(regionName)).build();
+        return S3AsyncClient.builder()
+            .endpointOverride(URI.create(endpointUrl))
+            .forcePathStyle(true)
+            .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("any", "any")))
+            .region(software.amazon.awssdk.regions.Region.of(regionName))
+            .build();
     }
 }
