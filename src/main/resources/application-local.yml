@@ -47,6 +47,6 @@ hmpps.sqs:
 
 feature:
   flags:
-    new_cpr_matcher: true
+    cpr_matcher: true
 
 crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"
