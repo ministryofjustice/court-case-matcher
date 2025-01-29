@@ -51,6 +51,8 @@ class HearingExtractorTest {
     private ConstraintViolation<String> aViolation;
     @Mock
     private Path path;
+    @Mock
+    private CprExtractor cprExtractor;
 
     private HearingExtractor hearingExtractor;
     private final SnsMessageContainer.SnsMessageContainerBuilder messageContainerBuilder = SnsMessageContainer.builder()
@@ -87,7 +89,8 @@ class HearingExtractorTest {
         hearingExtractor = new HearingExtractor(
                 snsContainerParser,
                 libraParser,
-                commonPlatformParser
+                commonPlatformParser,
+                cprExtractor
         );
     }
 

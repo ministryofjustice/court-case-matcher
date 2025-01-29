@@ -1,6 +1,8 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
@@ -51,7 +53,7 @@ class CPDefendantTest {
                 .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
-                .asDomain(cprExtractor);
+                .asDomain(false);
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.PERSON);
@@ -97,7 +99,7 @@ class CPDefendantTest {
                 .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
-                .asDomain(cprExtractor);
+                .asDomain(false);
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.ORGANISATION);
@@ -121,7 +123,7 @@ class CPDefendantTest {
                 .build();
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> defendant.asDomain(cprExtractor))
+                .isThrownBy(() -> defendant.asDomain(false))
                 .withMessage("Defendant with id '2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9' is neither a person nor a legal entity");
 
     }
@@ -169,7 +171,7 @@ class CPDefendantTest {
             .pncId("20071234557L")
             .croNumber("croNumber")
             .build()
-            .asDomain(cprExtractor);
+            .asDomain(false);
 
         assertThat(actual).isNull();
     }
