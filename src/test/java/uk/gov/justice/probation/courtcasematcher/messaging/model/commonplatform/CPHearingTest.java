@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.COMMON_PLATFORM;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +29,17 @@ class CPHearingTest {
         final var hearings = commonPlatformHearing.asDomain(cprExtractor);
 
         applyAssertions(hearings.getFirst());
+        assertThat(hearings.getFirst().getCprUUID()).isNull();
+    }
+
+    @Test
+    void mapToDomainIncludingCprFields() {
+        final var commonPlatformHearing = buildHearing();
+        when(cprExtractor.canExtractCprFields(anyString())).thenReturn(true);
+
+        final var hearings = commonPlatformHearing.asDomain(cprExtractor);
+        applyAssertions(hearings.getFirst());
+        assertThat(hearings.getFirst().getCprUUID()).isEqualTo("CPRUUID");
     }
 
     static void applyAssertions(Hearing hearing) {
@@ -99,6 +112,7 @@ class CPHearingTest {
                         .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                         .build())
                 )
+                .cprUUID("CPRUUID")
                 .build();
     }
 

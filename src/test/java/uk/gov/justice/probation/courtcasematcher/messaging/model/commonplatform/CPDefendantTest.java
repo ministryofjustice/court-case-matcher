@@ -19,40 +19,7 @@ import static uk.gov.justice.probation.courtcasematcher.messaging.model.commonpl
 class CPDefendantTest {
     @Test
     public void person_asDomain() {
-        final var actual = CPDefendant.builder()
-                .isYouth(false)
-                .personDefendant(CPPersonDefendant.builder()
-                        .personDetails(CPPersonDetails.builder()
-                                .gender("MALE")
-                                .title("title")
-                                .firstName("firstname")
-                                .middleName("middlename")
-                                .lastName("lastname")
-                                .dateOfBirth(LocalDate.of(2021, 1, 1))
-                                .address(CPAddress.builder()
-                                        .address1("address1")
-                                        .build())
-                                .contact(TEST_CP_CONTACT)
-                                .build())
-                        .build())
-                .offences(List.of(CPOffence.builder().id("1")
-                                .offenceCode("ABC001")
-                                .plea(Plea.builder().build())
-                                .verdict(Verdict.builder().build())
-                                .judicialResults(List.of(CPJudicialResult.builder()
-                                        .build()))
-                                .build(),
-                        CPOffence.builder().id("2")
-                                .offenceCode("ABC002")
-                                .plea(Plea.builder().build())
-                                .verdict(Verdict.builder().build())
-                                .judicialResults(List.of(CPJudicialResult.builder()
-                                        .build()))
-                                .build()))
-                .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
-                .pncId("20071234557L")
-                .croNumber("croNumber")
-                .build()
+        final var actual = getCpDefendant()
                 .asDomain(false);
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
@@ -76,6 +43,7 @@ class CPDefendantTest {
                 .mobile(TEST_CP_CONTACT.getMobile())
                 .home(TEST_CP_CONTACT.getHome())
                 .build());
+        assertThat(actual.getCprDefendantId()).isNull();
     }
 
     @Test
@@ -174,5 +142,52 @@ class CPDefendantTest {
             .asDomain(false);
 
         assertThat(actual).isNull();
+    }
+
+    @Test
+    public void processCprFields_ifEnabled() {
+        final var actual = getCpDefendant()
+            .asDomain(true);
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getCprDefendantId()).isEqualTo("CPRDEFENDANTID");
+    }
+
+    private static CPDefendant getCpDefendant() {
+        return CPDefendant.builder()
+            .isYouth(false)
+            .personDefendant(CPPersonDefendant.builder()
+                .personDetails(CPPersonDetails.builder()
+                    .gender("MALE")
+                    .title("title")
+                    .firstName("firstname")
+                    .middleName("middlename")
+                    .lastName("lastname")
+                    .dateOfBirth(LocalDate.of(2021, 1, 1))
+                    .address(CPAddress.builder()
+                        .address1("address1")
+                        .build())
+                    .contact(TEST_CP_CONTACT)
+                    .build())
+                .build())
+            .offences(List.of(CPOffence.builder().id("1")
+                    .offenceCode("ABC001")
+                    .plea(Plea.builder().build())
+                    .verdict(Verdict.builder().build())
+                    .judicialResults(List.of(CPJudicialResult.builder()
+                        .build()))
+                    .build(),
+                CPOffence.builder().id("2")
+                    .offenceCode("ABC002")
+                    .plea(Plea.builder().build())
+                    .verdict(Verdict.builder().build())
+                    .judicialResults(List.of(CPJudicialResult.builder()
+                        .build()))
+                    .build()))
+            .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
+            .pncId("20071234557L")
+            .croNumber("croNumber")
+            .cprDefendantId("CPRDEFENDANTID")
+            .build();
     }
 }
