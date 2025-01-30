@@ -1,6 +1,10 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
@@ -9,16 +13,33 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.COMMON_PLATFORM;
 
+@ExtendWith(MockitoExtension.class)
 class CPHearingTest {
+
+    @Mock
+    private CprExtractor cprExtractor;
 
     @Test
     void mapToDomain() {
         final var commonPlatformHearing = buildHearing();
-        final var hearings = commonPlatformHearing.asDomain();
+        final var hearings = commonPlatformHearing.asDomain(cprExtractor);
 
         applyAssertions(hearings.getFirst());
+        assertThat(hearings.getFirst().getCprUUID()).isNull();
+    }
+
+    @Test
+    void mapToDomainIncludingCprFields() {
+        final var commonPlatformHearing = buildHearing();
+        when(cprExtractor.canExtractCprFields(anyString())).thenReturn(true);
+
+        final var hearings = commonPlatformHearing.asDomain(cprExtractor);
+        applyAssertions(hearings.getFirst());
+        assertThat(hearings.getFirst().getCprUUID()).isEqualTo("CPRUUID");
     }
 
     static void applyAssertions(Hearing hearing) {
@@ -91,6 +112,7 @@ class CPHearingTest {
                         .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                         .build())
                 )
+                .cprUUID("CPRUUID")
                 .build();
     }
 

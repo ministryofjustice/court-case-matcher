@@ -1,6 +1,8 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
@@ -17,41 +19,8 @@ import static uk.gov.justice.probation.courtcasematcher.messaging.model.commonpl
 class CPDefendantTest {
     @Test
     public void person_asDomain() {
-        final var actual = CPDefendant.builder()
-                .isYouth(false)
-                .personDefendant(CPPersonDefendant.builder()
-                        .personDetails(CPPersonDetails.builder()
-                                .gender("MALE")
-                                .title("title")
-                                .firstName("firstname")
-                                .middleName("middlename")
-                                .lastName("lastname")
-                                .dateOfBirth(LocalDate.of(2021, 1, 1))
-                                .address(CPAddress.builder()
-                                        .address1("address1")
-                                        .build())
-                                .contact(TEST_CP_CONTACT)
-                                .build())
-                        .build())
-                .offences(List.of(CPOffence.builder().id("1")
-                                .offenceCode("ABC001")
-                                .plea(Plea.builder().build())
-                                .verdict(Verdict.builder().build())
-                                .judicialResults(List.of(CPJudicialResult.builder()
-                                        .build()))
-                                .build(),
-                        CPOffence.builder().id("2")
-                                .offenceCode("ABC002")
-                                .plea(Plea.builder().build())
-                                .verdict(Verdict.builder().build())
-                                .judicialResults(List.of(CPJudicialResult.builder()
-                                        .build()))
-                                .build()))
-                .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
-                .pncId("20071234557L")
-                .croNumber("croNumber")
-                .build()
-                .asDomain();
+        final var actual = getCpDefendant()
+                .asDomain(false);
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.PERSON);
@@ -74,6 +43,7 @@ class CPDefendantTest {
                 .mobile(TEST_CP_CONTACT.getMobile())
                 .home(TEST_CP_CONTACT.getHome())
                 .build());
+        assertThat(actual.getCprDefendantId()).isNull();
     }
 
     @Test
@@ -97,7 +67,7 @@ class CPDefendantTest {
                 .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
-                .asDomain();
+                .asDomain(false);
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.ORGANISATION);
@@ -121,7 +91,7 @@ class CPDefendantTest {
                 .build();
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(defendant::asDomain)
+                .isThrownBy(() -> defendant.asDomain(false))
                 .withMessage("Defendant with id '2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9' is neither a person nor a legal entity");
 
     }
@@ -169,8 +139,55 @@ class CPDefendantTest {
             .pncId("20071234557L")
             .croNumber("croNumber")
             .build()
-            .asDomain();
+            .asDomain(false);
 
         assertThat(actual).isNull();
+    }
+
+    @Test
+    public void processCprFields_ifEnabled() {
+        final var actual = getCpDefendant()
+            .asDomain(true);
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getCprDefendantId()).isEqualTo("CPRDEFENDANTID");
+    }
+
+    private static CPDefendant getCpDefendant() {
+        return CPDefendant.builder()
+            .isYouth(false)
+            .personDefendant(CPPersonDefendant.builder()
+                .personDetails(CPPersonDetails.builder()
+                    .gender("MALE")
+                    .title("title")
+                    .firstName("firstname")
+                    .middleName("middlename")
+                    .lastName("lastname")
+                    .dateOfBirth(LocalDate.of(2021, 1, 1))
+                    .address(CPAddress.builder()
+                        .address1("address1")
+                        .build())
+                    .contact(TEST_CP_CONTACT)
+                    .build())
+                .build())
+            .offences(List.of(CPOffence.builder().id("1")
+                    .offenceCode("ABC001")
+                    .plea(Plea.builder().build())
+                    .verdict(Verdict.builder().build())
+                    .judicialResults(List.of(CPJudicialResult.builder()
+                        .build()))
+                    .build(),
+                CPOffence.builder().id("2")
+                    .offenceCode("ABC002")
+                    .plea(Plea.builder().build())
+                    .verdict(Verdict.builder().build())
+                    .judicialResults(List.of(CPJudicialResult.builder()
+                        .build()))
+                    .build()))
+            .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
+            .pncId("20071234557L")
+            .croNumber("croNumber")
+            .cprDefendantId("CPRDEFENDANTID")
+            .build();
     }
 }

@@ -44,6 +44,7 @@ public class Defendant {
     private Offender offender;
     private Boolean confirmedOffender;
     private String personId;
+    private String cprDefendantId;
 
     @JsonIgnore
     private final GroupedOffenderMatches groupedOffenderMatches;

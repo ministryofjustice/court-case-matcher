@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import uk.gov.justice.probation.courtcasematcher.controller.Hearing404;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.messaging.HearingProcessor;
 import uk.gov.justice.probation.courtcasematcher.messaging.MessageParser;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
@@ -35,6 +36,7 @@ public class ReplayHearingsService {
     private final HearingProcessor hearingProcessor;
     private final boolean dryRunEnabled;
     private final TelemetryService telemetryService;
+    private final CprExtractor cprExtractor;
 
     public ReplayHearingsService(
         CourtCaseServiceClient courtCaseServiceClient,
@@ -42,7 +44,7 @@ public class ReplayHearingsService {
         @Value("${crime-portal-gateway-s3-bucket}") String bucketName,
         final MessageParser<CPHearingEvent> commonPlatformParser,
         final HearingProcessor hearingProcessor,
-        @Value("${replay404.dry-run}") boolean dryRunEnabled, TelemetryService telemetryService) {
+        @Value("${replay404.dry-run}") boolean dryRunEnabled, TelemetryService telemetryService, CprExtractor cprExtractor) {
 
         this.courtCaseServiceClient = courtCaseServiceClient;
         this.s3Client = s3Client;
@@ -51,6 +53,7 @@ public class ReplayHearingsService {
         this.hearingProcessor = hearingProcessor;
         this.dryRunEnabled = dryRunEnabled;
         this.telemetryService = telemetryService;
+        this.cprExtractor = cprExtractor;
     }
 
 
@@ -116,7 +119,7 @@ public class ReplayHearingsService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        final var hearings = cpHearingEvent.asDomain()
+        final var hearings = cpHearingEvent.asDomain(cprExtractor)
             .stream()
             .map(h -> h.withHearingId(cpHearingEvent.getHearing().getId())
                 .withHearingEventType("ConfirmedOrUpdated"))

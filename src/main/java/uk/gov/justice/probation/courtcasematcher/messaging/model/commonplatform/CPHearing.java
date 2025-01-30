@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
@@ -38,10 +39,13 @@ public class CPHearing {
     @NotEmpty
     @Valid
     private final List<CPProsecutionCase> prosecutionCases;
+    private final String cprUUID;
 
     private final CPHearingType type;
 
-    public List<Hearing> asDomain() {
+
+    //Pass in the cprExtractor into this method
+    public List<Hearing> asDomain(CprExtractor cprExtractor) {
         return prosecutionCases.stream().map(cpProsecutionCase -> Hearing.builder()
             .caseId(cpProsecutionCase.getId())
             .source(DataSource.COMMON_PLATFORM)
@@ -54,12 +58,14 @@ public class CPHearing {
                 .collect(Collectors.toList()))
             .defendants(cpProsecutionCase.getDefendants()
                 .stream()
-                .map(CPDefendant::asDomain)
+                .map(cpDefendant -> cpDefendant.asDomain(cprExtractor.canExtractCprFields(courtCentre.getNormalisedCode())))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()))
             .caseMarkers(buildCaseMarkers(cpProsecutionCase))
             .urn(cpProsecutionCase.getProsecutionCaseIdentifier().getCaseUrn())
             .hearingType(Optional.ofNullable(type).map(CPHearingType::getDescription).orElse(null))
+            //need to set a cprUUID on the hearing obj if flag is on and court matches courtCentre.getNormalisedCode()
+            .cprUUID(cprExtractor.canExtractCprFields(courtCentre.getNormalisedCode()) ? cprUUID : null)
             .build()
         ).toList();
     }
