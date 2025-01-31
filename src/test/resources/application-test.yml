@@ -77,3 +77,8 @@ replay404:
 
 crime-portal-gateway-s3-bucket: "cpg-s3-bucket"
 
+commonplatform:
+  event:
+    type:
+      default: "commonplatform.case.received"
+      large: "commonplatform.large.case.received"

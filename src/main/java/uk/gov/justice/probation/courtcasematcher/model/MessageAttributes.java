@@ -12,12 +12,12 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 public class MessageAttributes {
+    @JsonProperty("eventType")
+    private final MessageAttribute eventType;
+
     @JsonProperty("messageType")
     private final MessageType messageType;
 
     @JsonProperty("hearingEventType")
     private final HearingEventType hearingEventType;
-
-    @JsonProperty("ExtendedPayloadSize")
-    private final ExtendedPayloadSize extendedPayloadSize;
 }

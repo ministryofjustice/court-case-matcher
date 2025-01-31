@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.S3Message;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPHearingEvent;
@@ -46,6 +47,9 @@ public class HearingExtractor {
     @Autowired
     final S3Service s3Service;
 
+    @Value("${commonplatform.event.type.large}")
+    final String largeEventType;
+
     @Autowired
     final CprExtractor cprExtractor;
 
@@ -75,8 +79,8 @@ public class HearingExtractor {
 
     private List<Hearing> parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
         String message = snsMessageContainer.getMessage();
-
-        if (snsMessageContainer.getMessageAttributes().getExtendedPayloadSize() != null) {
+        String eventType = snsMessageContainer.getMessageAttributes().getEventType().getValue();
+        if (eventType.equals(largeEventType)) {
             message = getPayloadFromS3(snsMessageContainer);
         }
         final var cpHearingEvent = commonPlatformParser.parseMessage(message, CPHearingEvent.class);

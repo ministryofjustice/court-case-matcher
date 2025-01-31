@@ -20,7 +20,7 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.CPProsecutionCase;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform.ProsecutionCaseIdentifier;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
-import uk.gov.justice.probation.courtcasematcher.model.ExtendedPayloadSize;
+import uk.gov.justice.probation.courtcasematcher.model.MessageAttribute;
 import uk.gov.justice.probation.courtcasematcher.model.MessageAttributes;
 import uk.gov.justice.probation.courtcasematcher.model.SnsMessageContainer;
 
@@ -46,6 +46,8 @@ class HearingExtractorTest {
     private static final String CASE_NO = "123456";
     private static final String CASE_ID = "26B938F7-AAE7-44EC-86FF-30DAF218B059";
     private static final String HEARING_ID = "hearing-id-one";
+    private static final String EVENT_TYPE = "commonplatform.case.received";
+    private static final String LARGE_EVENT_TYPE  = "commonplatform.large.case.received";
 
     @Mock
     private MessageParser<SnsMessageContainer> snsContainerParser;
@@ -102,6 +104,7 @@ class HearingExtractorTest {
                 commonPlatformParser,
                 objectMapper,
                 s3Service,
+                LARGE_EVENT_TYPE,
                 cprExtractor
         );
     }
@@ -110,9 +113,10 @@ class HearingExtractorTest {
     void whenLibraHearingReceived_thenParseAndReturnHearing() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class))
                 .thenReturn(messageContainerBuilder
-                        .messageAttributes(new MessageAttributes(MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
+                        .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                            MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
                                 .value("ConfirmedOrUpdated")
-                                .build(), null))
+                                .build()))
                         .build());
         when(libraParser.parseMessage(MESSAGE_STRING, LibraHearing.class)).thenReturn(libraHearing);
 
@@ -125,9 +129,10 @@ class HearingExtractorTest {
     @Test
     void whenCommonPlatformHearingEventReceived_thenParseAndReturnHearing() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                    MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("ConfirmedOrUpdated")
-                        .build(), null))
+                        .build()))
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
@@ -151,9 +156,10 @@ class HearingExtractorTest {
                 .message(
                     messageBody
                 )
-            .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
+            .messageAttributes(new MessageAttributes(new MessageAttribute("String", "commonplatform.large.case.received"),
+                MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                 .value("ConfirmedOrUpdated")
-                .build(), new ExtendedPayloadSize("Type", 100)))
+                .build()))
             .build());
 
         ArrayList<Object> parseMessageBody = new ArrayList<>();
@@ -179,9 +185,11 @@ class HearingExtractorTest {
     @Test
     void whenCommonPlatformHearingEventReceived_thenParseAndReturnHearingWithCaseMarkers() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
+                .messageAttributes(new MessageAttributes(
+                    new MessageAttribute("String", EVENT_TYPE),
+                    MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("ConfirmedOrUpdated")
-                        .build(), null))
+                        .build()))
                 .build());
         when(commonPlatformParser.parseMessage(MESSAGE_STRING, CPHearingEvent.class)).thenReturn(commonPlatformHearingEvent);
 
@@ -194,9 +202,8 @@ class HearingExtractorTest {
     @Test
     void whenUnknownTypeReceived_thenThrow() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(MessageType.UNKNOWN, HearingEventType.builder()
-                        .value("Resulted")
-                        .build(), null))
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                    MessageType.UNKNOWN, HearingEventType.builder().value("Resulted").build()))
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
@@ -207,9 +214,10 @@ class HearingExtractorTest {
     @Test
     void whenNoneTypeReceived_thenThrow() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(MessageType.NONE, HearingEventType.builder()
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                    MessageType.NONE, HearingEventType.builder()
                         .value("Resulted")
-                        .build(), null))
+                        .build()))
                 .build());
 
         assertThatExceptionOfType(IllegalStateException.class)
@@ -235,9 +243,10 @@ class HearingExtractorTest {
         final var constraintViolations = Set.of(aViolation);
         final var violationException = new ConstraintViolationException("Validation failed", constraintViolations);
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                    MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
                         .value("Resulted")
-                        .build(), null))
+                        .build()))
                 .build());
         when(libraParser.parseMessage(MESSAGE_STRING, LibraHearing.class)).thenThrow(violationException);
         when(aViolation.getPropertyPath()).thenReturn(path);
