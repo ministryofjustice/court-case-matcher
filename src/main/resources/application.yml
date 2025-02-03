@@ -117,3 +117,9 @@ hmpps:
 
 replay404:
   dry-run: true
+
+commonplatform:
+    event:
+      type:
+        default: commonplatform.case.received
+        large: commonplatform.large.case.received
