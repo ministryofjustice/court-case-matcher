@@ -110,7 +110,9 @@ public class SqsMessageReceiverIntTest {
     public void givenExistingCase_whenReceivePayload_thenSendUpdatedExistingCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
-        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
+        publishMessage(hearing, Map.of("eventType",
+            MessageAttributeValue.builder().dataType("String").stringValue("some-event-type").build(),
+            "messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
@@ -170,7 +172,9 @@ public class SqsMessageReceiverIntTest {
     public void givenNewCase_whenReceivePayload_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
-        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
+        publishMessage(hearing, Map.of("eventType",
+            MessageAttributeValue.builder().dataType("String").stringValue("some-event-type").build(),
+            "messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
