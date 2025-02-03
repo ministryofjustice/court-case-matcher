@@ -85,6 +85,12 @@ public class SqsMessageReceiverIntTest {
     @Value("${crime-portal-gateway-s3-bucket}")
     private String s3Bucket;
 
+    @Value("${commonplatform.event.type.large}")
+    private String largeEventType;
+    
+    @Value("${commonplatform.event.type.default}")
+    private String eventType;
+
     @BeforeAll
     static void beforeAll() {
         MOCK_SERVER.start();
@@ -111,7 +117,7 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
         publishMessage(hearing, Map.of("eventType",
-            MessageAttributeValue.builder().dataType("String").stringValue("some-event-type").build(),
+            MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
             "messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -122,7 +128,7 @@ public class SqsMessageReceiverIntTest {
                         // Values from incoming case
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
-                        .withRequestBody(matchingJsonPath("eventType", equalTo("some-event-type")))
+                        .withRequestBody(matchingJsonPath("eventType", equalTo(eventType)))
                         .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
                         .withRequestBody(matchingJsonPath("caseMarkers[0].markerTypeDescription", equalTo("description 1")))
                         .withRequestBody(matchingJsonPath("caseMarkers[1].markerTypeDescription", equalTo("description 2")))
@@ -173,7 +179,7 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
         publishMessage(hearing, Map.of("eventType",
-            MessageAttributeValue.builder().dataType("String").stringValue("some-event-type").build(),
+            MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
             "messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
@@ -183,7 +189,7 @@ public class SqsMessageReceiverIntTest {
                 putRequestedFor(urlMatching("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC"))
                         // Values from incoming case
                         .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
-                        .withRequestBody(matchingJsonPath("eventType", equalTo("some-event-type")))
+                        .withRequestBody(matchingJsonPath("eventType", equalTo(eventType)))
                         .withRequestBody(matchingJsonPath("hearingType", equalTo("sentence")))
                         .withRequestBody(matchingJsonPath("hearingId", equalTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC")))
                         .withRequestBody(matchingJsonPath("hearingEventType", equalTo("ConfirmedOrUpdated")))
@@ -284,7 +290,9 @@ public class SqsMessageReceiverIntTest {
             String.format("  \"s3Key\" : \"%s\"\n", s3Key) +
             "} ]";
 
-        publishMessage(messageBody, Map.of("messageType",
+        publishMessage(messageBody, Map.of(
+            "eventType", MessageAttributeValue.builder().dataType("String").stringValue(largeEventType).build(),
+            "messageType",
             MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(),
             "hearingEventType",
             MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build(),
@@ -490,7 +498,7 @@ public class SqsMessageReceiverIntTest {
     }
 
     private void publishMessage(String hearing, Map<String, MessageAttributeValue> attributes) {
-        HmppsTopicKt.publish(topic,"some-event-type", hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY, "COURT_HEARING_EVENT_RECEIVER");
+        HmppsTopicKt.publish(topic,eventType, hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY, "COURT_HEARING_EVENT_RECEIVER");
     }
 
     public int countPutRequestsTo(final String url) {
