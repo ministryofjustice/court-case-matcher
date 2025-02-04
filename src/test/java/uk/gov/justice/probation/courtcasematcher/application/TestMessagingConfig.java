@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.net.URI;
@@ -25,16 +24,6 @@ public class TestMessagingConfig {
             .forcePathStyle(true)
             .region(Region.of(regionName))
             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("any", "any")))
-            .build();
-    }
-
-    @Bean
-    public S3AsyncClient s3AsyncClient(@Value("${aws.region-name}") String regionName) {
-        return S3AsyncClient.builder()
-            .endpointOverride(URI.create(endpointUrl))
-            .forcePathStyle(true)
-            .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("any", "any")))
-            .region(software.amazon.awssdk.regions.Region.of(regionName))
             .build();
     }
 }

@@ -21,7 +21,7 @@ import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.test.context.ActiveProfiles;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest;
 import uk.gov.justice.hmpps.sqs.HmppsQueue;
@@ -81,10 +81,7 @@ public class SqsMessageReceiverIntTest {
     private HmppsQueueService hmppsQueueService;
 
     @Autowired
-    private S3AsyncClient s3AsyncClient;
-
-    @Value("${crime-portal-gateway-s3-bucket}")
-    private String s3Bucket;
+    private S3Client s3Client;
 
     @Value("${aws.s3.large-hearings.bucket-name}")
     private String s3LargeHearingBucket;
@@ -285,7 +282,7 @@ public class SqsMessageReceiverIntTest {
         featureFlags.setFlagValue("save_person_id_to_court_case_service", true);
         var s3Key = UUID.randomUUID().toString();
 
-        s3AsyncClient.putObject(builder -> builder.bucket(s3LargeHearingBucket).key(s3Key).build(), Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
+        s3Client.putObject(builder -> builder.bucket(s3LargeHearingBucket).key(s3Key).build(), Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
 
         String messageBody = "[ \"software.amazon.payloadoffloading.PayloadS3Pointer\", {\n" +
             String.format("  \"s3BucketName\" : \"%s\",\n", s3LargeHearingBucket) +
