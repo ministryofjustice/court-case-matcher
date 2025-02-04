@@ -47,7 +47,6 @@ class HearingExtractorTest {
     private static final String CASE_ID = "26B938F7-AAE7-44EC-86FF-30DAF218B059";
     private static final String HEARING_ID = "hearing-id-one";
     private static final String EVENT_TYPE = "commonplatform.case.received";
-    private static final String LARGE_EVENT_TYPE  = "commonplatform.large.case.received";
 
     @Mock
     private MessageParser<SnsMessageContainer> snsContainerParser;
@@ -104,7 +103,6 @@ class HearingExtractorTest {
                 commonPlatformParser,
                 objectMapper,
                 s3Service,
-                LARGE_EVENT_TYPE,
                 cprExtractor
         );
     }

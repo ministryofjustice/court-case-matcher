@@ -1,16 +1,13 @@
 package uk.gov.justice.probation.courtcasematcher.model;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import uk.gov.justice.probation.courtcasematcher.messaging.HearingEventType;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class SnsMessageContainerTest {
-
-    @Value("${commonplatform.event.type.default}")
-    String eventType;
+    String eventType = "commonplatform.large.case.received";
 
     @Test
     public void testGetMessageType() {
