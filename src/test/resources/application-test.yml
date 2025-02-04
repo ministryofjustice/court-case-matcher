@@ -48,9 +48,10 @@ aws:
   secret_access_key: foobar
   endpoint-url: "http://localhost:4566"
   s3:
-    bucket-name: cpg-s3-bucket
     large-hearings:
       bucket-name: cp-large-s3-bucket
+
+crime-portal-gateway-s3-bucket: "cpg-s3-bucket"
 
 hmpps.sqs:
   enabled: true
@@ -76,8 +77,6 @@ logging:
 
 replay404:
   dry-run: false
-
-crime-portal-gateway-s3-bucket: "cpg-s3-bucket"
 
 commonplatform:
   event:
