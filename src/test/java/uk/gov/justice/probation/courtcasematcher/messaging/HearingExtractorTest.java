@@ -46,7 +46,8 @@ class HearingExtractorTest {
     private static final String CASE_NO = "123456";
     private static final String CASE_ID = "26B938F7-AAE7-44EC-86FF-30DAF218B059";
     private static final String HEARING_ID = "hearing-id-one";
-    private static final String EVENT_TYPE = "commonplatform.case.received";
+    private static final String CP_EVENT_TYPE = "commonplatform.case.received";
+    private static final String LIBRA_EVENT_TYPE = "libra.case.received";
 
     @Mock
     private MessageParser<SnsMessageContainer> snsContainerParser;
@@ -111,7 +112,7 @@ class HearingExtractorTest {
     void whenLibraHearingReceived_thenParseAndReturnHearing() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class))
                 .thenReturn(messageContainerBuilder
-                        .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                        .messageAttributes(new MessageAttributes(new MessageAttribute("String", LIBRA_EVENT_TYPE),
                             MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
                                 .value("ConfirmedOrUpdated")
                                 .build()))
@@ -127,7 +128,7 @@ class HearingExtractorTest {
     @Test
     void whenCommonPlatformHearingEventReceived_thenParseAndReturnHearing() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", CP_EVENT_TYPE),
                     MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("ConfirmedOrUpdated")
                         .build()))
@@ -184,7 +185,7 @@ class HearingExtractorTest {
     void whenCommonPlatformHearingEventReceived_thenParseAndReturnHearingWithCaseMarkers() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
                 .messageAttributes(new MessageAttributes(
-                    new MessageAttribute("String", EVENT_TYPE),
+                    new MessageAttribute("String", CP_EVENT_TYPE),
                     MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("ConfirmedOrUpdated")
                         .build()))
@@ -200,7 +201,7 @@ class HearingExtractorTest {
     @Test
     void whenUnknownTypeReceived_thenThrow() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", CP_EVENT_TYPE),
                     MessageType.UNKNOWN, HearingEventType.builder().value("Resulted").build()))
                 .build());
 
@@ -212,7 +213,7 @@ class HearingExtractorTest {
     @Test
     void whenNoneTypeReceived_thenThrow() throws JsonProcessingException {
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", CP_EVENT_TYPE),
                     MessageType.NONE, HearingEventType.builder()
                         .value("Resulted")
                         .build()))
@@ -241,7 +242,7 @@ class HearingExtractorTest {
         final var constraintViolations = Set.of(aViolation);
         final var violationException = new ConstraintViolationException("Validation failed", constraintViolations);
         when(snsContainerParser.parseMessage(MESSAGE_CONTAINER_STRING, SnsMessageContainer.class)).thenReturn(messageContainerBuilder
-                .messageAttributes(new MessageAttributes(new MessageAttribute("String", EVENT_TYPE),
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", LIBRA_EVENT_TYPE),
                     MessageType.LIBRA_COURT_CASE, HearingEventType.builder()
                         .value("Resulted")
                         .build()))
