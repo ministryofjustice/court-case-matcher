@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.absent;
@@ -84,6 +85,9 @@ public class SqsMessageReceiverIntTest {
 
     @Value("${crime-portal-gateway-s3-bucket}")
     private String s3Bucket;
+
+    @Value("${aws.s3.large-hearings.bucket-name}")
+    private String s3LargeHearingBucket;
 
     @Value("${commonplatform.event.type.large}")
     private String largeEventType;
@@ -279,12 +283,12 @@ public class SqsMessageReceiverIntTest {
     @Test
     public void givenLargeHearing_whenExactPersonRecordFound_thenSetPersonIdOnDefendant() throws IOException {
         featureFlags.setFlagValue("save_person_id_to_court_case_service", true);
-        var s3Key = "test-key";
+        var s3Key = UUID.randomUUID().toString();
 
-        s3AsyncClient.putObject(builder -> builder.bucket(s3Bucket).key(s3Key).build(), Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
+        s3AsyncClient.putObject(builder -> builder.bucket(s3LargeHearingBucket).key(s3Key).build(), Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
 
         String messageBody = "[ \"software.amazon.payloadoffloading.PayloadS3Pointer\", {\n" +
-            String.format("  \"s3BucketName\" : \"%s\",\n", s3Bucket) +
+            String.format("  \"s3BucketName\" : \"%s\",\n", s3LargeHearingBucket) +
             String.format("  \"s3Key\" : \"%s\"\n", s3Key) +
             "} ]";
 
