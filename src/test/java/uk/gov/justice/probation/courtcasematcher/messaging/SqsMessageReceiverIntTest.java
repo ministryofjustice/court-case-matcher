@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,6 +21,7 @@ import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.test.context.ActiveProfiles;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest;
 import uk.gov.justice.hmpps.sqs.HmppsQueue;
@@ -39,6 +41,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.absent;
@@ -77,6 +80,18 @@ public class SqsMessageReceiverIntTest {
     @Autowired
     private HmppsQueueService hmppsQueueService;
 
+    @Autowired
+    private S3Client s3Client;
+
+    @Value("${aws.s3.large-hearings.bucket-name}")
+    private String s3LargeHearingBucket;
+
+    @Value("${commonplatform.event.type.large}")
+    private String largeEventType;
+    
+    @Value("${commonplatform.event.type.default}")
+    private String eventType;
+
     @BeforeAll
     static void beforeAll() {
         MOCK_SERVER.start();
@@ -102,7 +117,9 @@ public class SqsMessageReceiverIntTest {
     public void givenExistingCase_whenReceivePayload_thenSendUpdatedExistingCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing.json"));
-        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
+        publishMessage(hearing, Map.of("eventType",
+            MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
+            "messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
@@ -161,7 +178,9 @@ public class SqsMessageReceiverIntTest {
     public void givenNewCase_whenReceivePayload_thenSendNewCase(boolean matchOnEveryRecordUpdate) throws IOException {
         featureFlags.setFlagValue("match-on-every-no-record-update", matchOnEveryRecordUpdate);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing.json"));
-        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
+        publishMessage(hearing, Map.of("eventType",
+            MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
+            "messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build()));
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
@@ -252,6 +271,54 @@ public class SqsMessageReceiverIntTest {
         );
 
         
+        verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
+        verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
+        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
+        verifyNoMoreInteractions(telemetryService);
+    }
+
+    @Test
+    public void givenLargeHearing_whenExactPersonRecordFound_thenSetPersonIdOnDefendant() throws IOException {
+        featureFlags.setFlagValue("save_person_id_to_court_case_service", true);
+        var s3Key = UUID.randomUUID().toString();
+
+        s3Client.putObject(builder -> builder.bucket(s3LargeHearingBucket).key(s3Key).build(), Paths.get(BASE_PATH + "/common-platform/hearing-with-legal-entity-defendant.json"));
+
+        String messageBody = "[ \"software.amazon.payloadoffloading.PayloadS3Pointer\", {\n" +
+            String.format("  \"s3BucketName\" : \"%s\",\n", s3LargeHearingBucket) +
+            String.format("  \"s3Key\" : \"%s\"\n", s3Key) +
+            "} ]";
+
+        publishMessage(messageBody, Map.of(
+            "eventType", MessageAttributeValue.builder().dataType("String").stringValue(largeEventType).build(),
+            "messageType",
+            MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(),
+            "hearingEventType",
+            MessageAttributeValue.builder().dataType("String").stringValue("ConfirmedOrUpdated").build(),
+            "ExtendedPayloadSize",
+            MessageAttributeValue.builder().dataType("String").stringValue("268444").build()
+        ));
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 1);
+
+        MOCK_SERVER.verify(
+            putRequestedFor(urlMatching("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC"))
+                .withRequestBody(matchingJsonPath("caseId", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
+                .withRequestBody(matchingJsonPath("hearingId", equalTo("E10E3EF3-8637-40E3-BDED-8ED104A380AC")))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
+                .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
+                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                .withRequestBody(matchingJsonPath("defendants[0].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
+
+                .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
+                .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
+                .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
+                .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
+        );
+
+
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
@@ -430,7 +497,7 @@ public class SqsMessageReceiverIntTest {
     }
 
     private void publishMessage(String hearing, Map<String, MessageAttributeValue> attributes) {
-        HmppsTopicKt.publish(topic,"some-event-type", hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY, "COURT_HEARING_EVENT_RECEIVER");
+        HmppsTopicKt.publish(topic, eventType, hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY, "COURT_HEARING_EVENT_RECEIVER");
     }
 
     public int countPutRequestsTo(final String url) {

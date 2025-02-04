@@ -7,11 +7,13 @@ import uk.gov.justice.probation.courtcasematcher.messaging.model.MessageType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class SnsMessageContainerTest {
+    String eventType = "commonplatform.large.case.received";
 
     @Test
     public void testGetMessageType() {
         final var commonPlatformType = SnsMessageContainer.builder()
-                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", eventType),
+                    MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("Resulted")
                         .build()))
                 .build();
@@ -29,7 +31,8 @@ class SnsMessageContainerTest {
     @Test
     public void testGetHearingEventType() {
         final var commonPlatformType = SnsMessageContainer.builder()
-                .messageAttributes(new MessageAttributes(MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
+                .messageAttributes(new MessageAttributes(new MessageAttribute("String", eventType),
+                    MessageType.COMMON_PLATFORM_HEARING, HearingEventType.builder()
                         .value("Resulted")
                         .build()))
                 .build();

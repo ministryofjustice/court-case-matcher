@@ -37,16 +37,26 @@ person-record-service:
 hmpps.sqs:
   enabled: true
   provider: localstack
+  region: eu-west-2
   queues:
     courtcasesqueue:
-      queueName: court-cases-queue.fifo
+      queueUrl: http://localhost:4566/000000000000/court_cases_queue.fifo
+      queueName: court_cases_queue.fifo
       subscribeTopicId: courtcasestopic
   topics:
     courtcasestopic:
-      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}.fifo
+      arn: "arn:aws:sns:eu-west-2:000000000000:court-cases-topic.fifo"
 
 feature:
   flags:
+    use-list-no-to-fetch-libra-case: true
     cpr_matcher: true
 
 crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"
+
+aws:
+  endpoint-url: "http://localhost:4566"
+  s3:
+    bucket-name: cpg-s3-bucket
+    large-hearings:
+      bucket-name: cp-large-s3-bucket

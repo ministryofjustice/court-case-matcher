@@ -8,11 +8,14 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
-@Profile("!test")
+@Profile("!test & !local")
 public class S3Config {
 
+    @Value("${aws.region-name}")
+    private String regionName;
+
     @Bean
-    public S3Client amazonS3Client(@Value("${aws.region-name}")String regionName) {
+    public S3Client amazonS3Client() {
         return S3Client.builder()
             .region(Region.of(regionName))
             .build();
