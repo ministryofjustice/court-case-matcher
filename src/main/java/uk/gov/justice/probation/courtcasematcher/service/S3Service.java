@@ -5,29 +5,28 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
-import java.util.concurrent.ExecutionException;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @Slf4j
 @NoArgsConstructor
 public class S3Service {
 
-    @Value("${aws.s3.bucket_name}")
+    @Value("${aws.s3.large-hearings.bucket-name}")
     private String bucketName;
 
     @Autowired
-    private S3AsyncClient s3AsyncClient;
+    private S3Client s3Client;
 
     public String getObject(String key){
         try {
-          String message = s3AsyncClient.getObject(GetObjectRequest.builder().bucket(bucketName).key(key).build(), AsyncResponseTransformer.toBytes()).get().asUtf8String();
+          String message = s3Client.getObjectAsBytes(GetObjectRequest.builder().bucket(bucketName).key(key).build()).asString(StandardCharsets.UTF_8);
           log.info("Successfully downloaded large s3 object {}", key);
           return message;
-        } catch (RuntimeException | InterruptedException | ExecutionException e) {
+        } catch (RuntimeException e) {
           log.error("Failed to get file {} from S3", key, e);
           throw new RuntimeException("Failed to get file from S3", e);
         }

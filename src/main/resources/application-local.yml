@@ -57,4 +57,6 @@ crime-portal-gateway-s3-bucket: "cpg-s3-bucket-name"
 aws:
   endpoint-url: "http://localhost:4566"
   s3:
-    bucket_name: cpg-s3-bucket
+    bucket-name: cpg-s3-bucket
+    large-hearings:
+      bucket-name: cp-large-s3-bucket
