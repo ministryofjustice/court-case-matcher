@@ -53,6 +53,12 @@ public class MatchRequest {
             MatchRequestBuilder builder = builder()
                                                 .pncNumber(pnc)
                                                 .surname(fullName.getSurname());
+
+            if (!Objects.isNull(dateOfBirth) && !dateOfBirth.isBefore(LocalDate.now())){
+                log.warn("Defendant date of birth is not in the past, setting to null");
+                dateOfBirth = null;
+            }
+
             if (!Objects.isNull(dateOfBirth)) {
                 if (useDobWithPnc || isBlank(pnc)) {
                     builder.dateOfBirth(dateOfBirth.format(DateTimeFormatter.ISO_DATE));

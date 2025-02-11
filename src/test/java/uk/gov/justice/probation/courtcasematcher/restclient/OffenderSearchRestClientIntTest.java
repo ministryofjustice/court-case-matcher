@@ -61,6 +61,27 @@ public class OffenderSearchRestClientIntTest {
         }
 
         @Test
+        public void givenInvalidDob_AndSingleMatchReturned_whenMatch_thenReturnIt() {
+            var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Arthur").surname("MORGAN").build();
+            var match = restClient.match(matchRequestFactory.buildFrom("2004/0012345U", name, LocalDate.now())).blockOptional();
+
+            assertThat(match).isPresent();
+            assertThat(match.get().getMatchedBy()).isEqualTo(OffenderSearchMatchType.ALL_SUPPLIED);
+            assertThat(match.get().getMatches().size()).isEqualTo(1);
+            assertThat(match.get().isExactOffenderMatch()).isTrue();
+
+            var offender = match.get().getMatches().get(0).getOffender();
+            assertThat(offender.getOtherIds().getCrn()).isEqualTo("X346204");
+            assertThat(offender.getOtherIds().getCroNumber()).isEqualTo("1234ABC");
+            assertThat(offender.getOtherIds().getPncNumber()).isEqualTo("2004/0012345U");
+            assertThat(offender.getProbationStatus().getStatus()).isEqualTo("CURRENT");
+            assertThat(offender.getProbationStatus().getInBreach()).isTrue();
+            assertThat(offender.getProbationStatus().isPreSentenceActivity()).isFalse();
+            assertThat(offender.getProbationStatus().isAwaitingPsr()).isFalse();
+            assertThat(offender.getProbationStatus().getPreviouslyKnownTerminationDate()).isEqualTo(LocalDate.of(2020, Month.FEBRUARY, 2));
+        }
+
+        @Test
         public void givenSingleMatchReturned_whenMatchWithPncNoDob_thenReturnIt() {
             var name = uk.gov.justice.probation.courtcasematcher.model.domain.Name.builder().forename1("Arthur").surname("MORGAN").build();
             var match = restClient.match(matchRequestFactory.buildFrom("2004/0012345U", name, LocalDate.of(1975, 1, 1))).blockOptional();
