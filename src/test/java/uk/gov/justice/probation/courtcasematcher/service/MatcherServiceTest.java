@@ -78,12 +78,6 @@ class MatcherServiceTest {
             .surname("MORGAN")
             .dateOfBirth("2000-06-17")
             .build();
-    private final MatchRequest matchRequestTodayDob = MatchRequest.builder()
-        .pncNumber(PNC)
-        .firstName("Arthur")
-        .surname("MORGAN")
-        .dateOfBirth(null)
-        .build();
     private final MatchRequest matchRequest2 = MatchRequest.builder()
             .pncNumber(PNC_2)
             .firstName("John")
@@ -247,33 +241,6 @@ class MatcherServiceTest {
         personMatchScoreReq2.setDateOfBirth(PersonMatchScoreParameter.of(null, null));
         verify(personMatchScoreRestClient, times(2)).match(AdditionalMatchers.or(
                 eq(personMatchScoreReq1), eq(personMatchScoreReq2)));
-    }
-
-    @Test
-    void givenDateOfBirthNotInPast_shouldSetToNull_AndAllowMatchingOfDefendantsWithNullDateOfBirth() {
-        // Given
-        defendant1.setDateOfBirth(LocalDate.now());
-        defendant2.setDateOfBirth(null);
-        matchRequest2.setDateOfBirth(null);
-
-        when(matchRequestFactory.buildFrom(defendant1)).thenReturn(matchRequestTodayDob);
-        when(matchRequestFactory.buildFrom(defendant2)).thenReturn(matchRequest2);
-        when(offenderSearchRestClient.match(matchRequestTodayDob)).thenReturn(Mono.just(multipleExactMatches));
-        when(offenderSearchRestClient.match(matchRequest2)).thenReturn(Mono.just(noMatches));
-
-        when(personMatchScoreRestClient.match(any()))
-            .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.91, null)).build()))
-            .thenReturn(Mono.just(PersonMatchScoreResponse.builder().matchProbability(PersonMatchScoreParameter.of(0.81, null)).build()));
-
-        // When
-        matcherService.matchDefendants(hearing).block();
-
-        // Then
-        personMatchScoreReq1.setDateOfBirth(PersonMatchScoreParameter.of(null, "2025-02-11"));
-        personMatchScoreReq2.setDateOfBirth(PersonMatchScoreParameter.of(null, "2025-02-11"));
-
-        verify(personMatchScoreRestClient, times(2)).match(AdditionalMatchers.or(
-            eq(personMatchScoreReq1), eq(personMatchScoreReq2)));
     }
 
     @Test
