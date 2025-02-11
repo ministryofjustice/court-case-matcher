@@ -54,7 +54,7 @@ public class MatchRequest {
                                                 .pncNumber(pnc)
                                                 .surname(fullName.getSurname());
 
-            if (!dateOfBirth.isBefore(LocalDate.now())){
+            if (!Objects.isNull(dateOfBirth) & !dateOfBirth.isBefore(LocalDate.now())){
                 log.warn("Defendant date of birth is not in the past, setting to null");
                 dateOfBirth = null;
             }
