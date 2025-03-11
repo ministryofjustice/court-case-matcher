@@ -14,6 +14,9 @@ person-match-score:
 person-record-service:
   base-url: https://hmpps-person-record.hmpps.service.justice.gov.uk
 
+cpr-service:
+  base-url: https://cpr-service-dev.hmpps.service.justice.gov.uk
+
 feature:
   flags:
     use-offender-search-for-probation-status: true

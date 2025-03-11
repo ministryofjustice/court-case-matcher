@@ -1,8 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
-import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Plea;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Verdict;
 import uk.gov.justice.probation.courtcasematcher.model.type.DefendantType;
@@ -43,7 +41,7 @@ class CPDefendantTest {
                 .mobile(TEST_CP_CONTACT.getMobile())
                 .home(TEST_CP_CONTACT.getHome())
                 .build());
-        assertThat(actual.getCprDefendantId()).isNull();
+        assertThat(actual.getCprUUID()).isNull();
     }
 
     @Test
@@ -150,7 +148,7 @@ class CPDefendantTest {
             .asDomain(true);
 
         assertThat(actual).isNotNull();
-        assertThat(actual.getCprDefendantId()).isEqualTo("CPRDEFENDANTID");
+        assertThat(actual.getCprUUID()).isEqualTo("CPRDEFENDANTID");
     }
 
     private static CPDefendant getCpDefendant() {
@@ -187,7 +185,7 @@ class CPDefendantTest {
             .id("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9")
             .pncId("20071234557L")
             .croNumber("croNumber")
-            .cprDefendantId("CPRDEFENDANTID")
+            .cprUUID("CPRDEFENDANTID")
             .build();
     }
 }
