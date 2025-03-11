@@ -14,6 +14,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
+import uk.gov.justice.probation.courtcasematcher.service.CprService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
@@ -47,6 +48,9 @@ class HearingProcessorTest {
     @Mock
     private FeatureFlags featureFlags;
 
+    @Mock
+    private CprService cprService;
+
     private HearingProcessor hearingProcessor;
 
     @BeforeEach
@@ -54,6 +58,7 @@ class HearingProcessorTest {
         hearingProcessor = new HearingProcessor(telemetryService,
                 courtCaseService,
                 matcherService,
+                cprService,
                 featureFlags
         );
 

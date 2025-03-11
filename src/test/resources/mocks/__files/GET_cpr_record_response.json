@@ -1,0 +1,47 @@
+{
+  "cprUUID": "f91ef118-a51f-4874-9409-c0538b4ca6fd",
+  "firstName": "John",
+  "middleNames": "Morgan",
+  "lastName": "Doe",
+  "dateOfBirth": "01/01/1990",
+  "title": "Mr",
+  "sex": "Male",
+  "religion": "Christian",
+  "ethnicity": "British",
+  "aliases": [
+    {
+      "firstName": "Jon",
+      "lastName": "do",
+      "middleNames": "Morgain",
+      "title": "Mr"
+    }
+  ],
+  "nationalities": [
+    {
+      "nationalityCode": "UK"
+    }
+  ],
+  "addresses": [
+    {
+      "noFixedAbode": "True",
+      "startDate": "02/02/2020",
+      "endDate": "04/04/2023",
+      "postcode": "SW1H 9AJ",
+      "subBuildingName": "Sub building 2",
+      "buildingName": "Main Building",
+      "buildingNumber": "102",
+      "thoroughfareName": "Petty France",
+      "dependentLocality": "Westminster",
+      "postTown": "London",
+      "county": "Greater London",
+      "country": "United Kingdom",
+      "uprn": "100120991537"
+    }
+  ],
+  "identifiers": [
+    {
+      "identifierType": "CRN",
+      "identifierValue": "B123456"
+    }
+  ]
+}

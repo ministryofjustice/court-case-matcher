@@ -40,7 +40,7 @@ public class CPDefendant {
     private final CPLegalEntityDefendant legalEntityDefendant;
     @JsonProperty(value="isYouth")
     private final boolean isYouth;
-    private final String cprDefendantId;
+    private final String cprUUID;
 
     public Defendant asDomain(boolean canExtractCprFields) {
         if (personDefendant == null && legalEntityDefendant == null) {
@@ -60,7 +60,7 @@ public class CPDefendant {
                                 .map(CPAddress::asDomain).orElse(Address.builder().build()))
                         .phoneNumber(Optional.ofNullable(personDetails.getContact())
                                 .map(CPContact::asPhoneNumber).orElse(null))
-                        .cprDefendantId(canExtractCprFields ? cprDefendantId : null)
+                        .cprUUID(canExtractCprFields ? cprUUID : null)
                         .build())
                 .orElseGet(this::getLegalDefendant);
     }

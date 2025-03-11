@@ -34,6 +34,9 @@ nomis-oauth:
 person-record-service:
   base-url: http://localhost:8083/
 
+cpr-service:
+  base-url: https://cpr-service-dev.hmpps.service.justice.gov.uk
+
 hmpps.sqs:
   enabled: true
   provider: localstack

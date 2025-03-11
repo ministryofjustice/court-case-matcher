@@ -1,0 +1,13 @@
+{
+  "id" : "475aaf40-4ed1-4656-bbb3-cc813e3434ba",
+  "request": {
+    "method": "GET",
+    "urlPath": "/search/person/12345"
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

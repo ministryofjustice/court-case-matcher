@@ -39,7 +39,6 @@ public class CPHearing {
     @NotEmpty
     @Valid
     private final List<CPProsecutionCase> prosecutionCases;
-    private final String cprUUID;
 
     private final CPHearingType type;
 
@@ -64,8 +63,6 @@ public class CPHearing {
             .caseMarkers(buildCaseMarkers(cpProsecutionCase))
             .urn(cpProsecutionCase.getProsecutionCaseIdentifier().getCaseUrn())
             .hearingType(Optional.ofNullable(type).map(CPHearingType::getDescription).orElse(null))
-            //need to set a cprUUID on the hearing obj if flag is on and court matches courtCentre.getNormalisedCode()
-            .cprUUID(cprExtractor.canExtractCprFields(courtCentre.getNormalisedCode()) ? cprUUID : null)
             .build()
         ).toList();
     }

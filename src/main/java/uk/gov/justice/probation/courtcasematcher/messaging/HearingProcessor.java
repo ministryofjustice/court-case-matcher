@@ -14,6 +14,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
+import uk.gov.justice.probation.courtcasematcher.service.CprService;
 import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
@@ -37,6 +38,9 @@ public class HearingProcessor {
 
     @NonNull
     private final MatcherService matcherService;
+
+    @NonNull
+    private final CprService cprService;
 
     private final FeatureFlags featureFlags;
 
@@ -79,6 +83,10 @@ public class HearingProcessor {
         Mono.just(hearing.getDefendants()
                         .stream()
                         .map(defendant -> {
+                            if(hearing.getCprUUID() != null) {
+                                cprService.updateDefendant(defendant);
+                            }
+
                             if (defendant.shouldMatchToOffender()) {
                                 return matcherService.matchDefendant(defendant, hearing);
                             } else if (defendant.getCrn() != null) {
@@ -86,6 +94,7 @@ public class HearingProcessor {
                             } else {
                                 return Mono.just(defendant);
                             }
+
                         })
                         .map(Mono::block)
                         .collect(Collectors.toList())
@@ -131,6 +140,9 @@ public class HearingProcessor {
         if (hearing.getCaseNo() == null) {
             updatedHearing = updatedHearing.withCaseNo(caseId);
         }
+
+        //CPR: user c_id for the defendant id
+
 
         // Assign defendant IDs
         final var updatedDefendants = hearing.getDefendants()

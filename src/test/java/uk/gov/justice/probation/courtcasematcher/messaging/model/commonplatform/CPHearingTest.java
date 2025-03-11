@@ -112,7 +112,6 @@ class CPHearingTest {
                         .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                         .build())
                 )
-                .cprUUID("CPRUUID")
                 .build();
     }
 
