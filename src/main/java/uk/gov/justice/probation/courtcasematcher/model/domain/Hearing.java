@@ -39,8 +39,6 @@ public class Hearing implements Serializable {
     private List<CaseMarker> caseMarkers;
     private LocalDateTime lastUpdated;
 
-    private String cprUUID;
-
     public boolean shouldMatchToOffender() {
         return defendants.stream()
                 .anyMatch(Defendant::shouldMatchToOffender);
