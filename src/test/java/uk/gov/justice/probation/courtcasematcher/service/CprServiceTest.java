@@ -40,6 +40,7 @@ public class CprServiceTest {
             .dateOfBirth("02/02/1995")
             .sex("Male")
             .addresses(List.of(CprAddress.builder()
+                .buildingName("A building")
                 .buildingNumber("31")
                 .thoroughfareName("Something Road")
                 .dependentLocality("Rusholme")
@@ -54,7 +55,7 @@ public class CprServiceTest {
         assertThat(defendantFromInitialPayload.getCprUUID()).isEqualTo("1234");
         assertThat(defendantFromInitialPayload.getSex()).isEqualTo("MALE");
         assertThat(defendantFromInitialPayload.getAddress()).isEqualTo(Address.builder()
-                .line1("31")
+                .line1("31, A building")
                 .line2("Something Road")
                 .line3("Rusholme")
                 .line4("Manchester")
@@ -83,6 +84,7 @@ public class CprServiceTest {
             .sex("Male")
             .addresses(List.of(
                 CprAddress.builder()
+                    .buildingName("A building")
                     .buildingNumber("31")
                     .thoroughfareName("Something Road")
                     .dependentLocality("Rusholme")
@@ -104,7 +106,7 @@ public class CprServiceTest {
         assertThat(defendantFromInitialPayload.getCprUUID()).isEqualTo("1234");
         assertThat(defendantFromInitialPayload.getSex()).isEqualTo("MALE");
         assertThat(defendantFromInitialPayload.getAddress()).isEqualTo(Address.builder()
-            .line1("31")
+            .line1("31, A building")
             .line2("Something Road")
             .line3("Rusholme")
             .line4("Manchester")
