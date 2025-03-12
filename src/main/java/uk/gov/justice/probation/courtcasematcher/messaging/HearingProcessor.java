@@ -83,7 +83,7 @@ public class HearingProcessor {
         Mono.just(hearing.getDefendants()
                         .stream()
                         .map(defendant -> {
-                            if(hearing.getCprUUID() != null) {
+                            if(defendant.getCprUUID() != null) {
                                 cprService.updateDefendant(defendant);
                             }
 
