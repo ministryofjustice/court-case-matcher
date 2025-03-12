@@ -34,6 +34,9 @@ public class WebConfig {
     @Value("${person-record-service.base-url}")
     private String personRecordServiceBaseUrl;
 
+    @Value("${cpr-service.base-url}")
+    private String cprServiceBaseUrl;
+
     @Value("${web.client.connect-timeout-ms}")
     private int connectTimeoutMs;
 
@@ -93,6 +96,16 @@ public class WebConfig {
                 .baseUrl(this.personRecordServiceBaseUrl)
                 .filter(oauth2Client)
                 .build();
+    }
+
+    @Bean
+    public WebClient cprWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
+            new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        return defaultWebClientBuilder()
+            .baseUrl(this.cprServiceBaseUrl)
+            .filter(oauth2Client)
+            .build();
     }
 
     private WebClient.Builder defaultWebClientBuilder() {

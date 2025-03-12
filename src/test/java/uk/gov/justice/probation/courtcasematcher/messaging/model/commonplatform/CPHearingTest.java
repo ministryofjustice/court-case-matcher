@@ -29,7 +29,6 @@ class CPHearingTest {
         final var hearings = commonPlatformHearing.asDomain(cprExtractor);
 
         applyAssertions(hearings.getFirst());
-        assertThat(hearings.getFirst().getCprUUID()).isNull();
     }
 
     @Test
@@ -39,7 +38,6 @@ class CPHearingTest {
 
         final var hearings = commonPlatformHearing.asDomain(cprExtractor);
         applyAssertions(hearings.getFirst());
-        assertThat(hearings.getFirst().getCprUUID()).isEqualTo("CPRUUID");
     }
 
     static void applyAssertions(Hearing hearing) {
@@ -112,7 +110,6 @@ class CPHearingTest {
                         .prosecutionCaseIdentifier(ProsecutionCaseIdentifier.builder().caseUrn("urn").build())
                         .build())
                 )
-                .cprUUID("CPRUUID")
                 .build();
     }
 
