@@ -66,7 +66,7 @@ public class CprServiceClient {
             return Mono.error(new CprCanonicalRecordNotFoundException(cprUUID));
         }
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatusCode) || HttpStatus.FORBIDDEN.equals(httpStatusCode)) {
-            log.error("HTTP status {} to to GET the cpr canonical record from cpr service", httpStatusCode);
+            log.error("HTTP status {} to GET the cpr canonical record from cpr service", httpStatusCode);
         }
         throw WebClientResponseException.create(httpStatusCode.value(),
             httpStatusCode.toString(),
