@@ -48,7 +48,7 @@ public class CprService {
             .findFirst();
         latestAddress.ifPresent(cprAddress -> defendant.setAddress(Address.builder()
                 .line1(cprAddress.getBuildingName() != null ?
-                    cprAddress.getBuildingNumber() + ", " + cprAddress.getBuildingName() :
+                    cprAddress.getBuildingName() + " " + cprAddress.getBuildingNumber() :
                      cprAddress.getBuildingNumber())
                 .line2(cprAddress.getThoroughfareName())
                 .line3(cprAddress.getDependentLocality())

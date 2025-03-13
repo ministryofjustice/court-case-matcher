@@ -55,7 +55,7 @@ public class CprServiceTest {
         assertThat(defendantFromInitialPayload.getCprUUID()).isEqualTo("1234");
         assertThat(defendantFromInitialPayload.getSex()).isEqualTo("MALE");
         assertThat(defendantFromInitialPayload.getAddress()).isEqualTo(Address.builder()
-                .line1("31, A building")
+                .line1("A building 31")
                 .line2("Something Road")
                 .line3("Rusholme")
                 .line4("Manchester")
@@ -106,7 +106,7 @@ public class CprServiceTest {
         assertThat(defendantFromInitialPayload.getCprUUID()).isEqualTo("1234");
         assertThat(defendantFromInitialPayload.getSex()).isEqualTo("MALE");
         assertThat(defendantFromInitialPayload.getAddress()).isEqualTo(Address.builder()
-            .line1("31, A building")
+            .line1("A building 31")
             .line2("Something Road")
             .line3("Rusholme")
             .line4("Manchester")
