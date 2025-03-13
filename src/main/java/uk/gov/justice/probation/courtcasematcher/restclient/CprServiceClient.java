@@ -25,7 +25,7 @@ public class CprServiceClient {
 
     private final WebClient webClient;
 
-    public CprServiceClient(@Qualifier("cprWebClient") WebClient webClient) {
+    public CprServiceClient(@Qualifier("personRecordServiceWebClient") WebClient webClient) {
         this.webClient = webClient;
     }
 

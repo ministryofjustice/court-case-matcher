@@ -98,16 +98,6 @@ public class WebConfig {
                 .build();
     }
 
-    @Bean
-    public WebClient cprWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
-        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
-            new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
-        return defaultWebClientBuilder()
-            .baseUrl(this.cprServiceBaseUrl)
-            .filter(oauth2Client)
-            .build();
-    }
-
     private WebClient.Builder defaultWebClientBuilder() {
         HttpClient httpClient = HttpClient.create()
             .tcpConfiguration(client ->

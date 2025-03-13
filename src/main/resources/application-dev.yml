@@ -25,9 +25,6 @@ nomis-oauth:
 person-match-score:
   base-url: https://hmpps-person-match-score-dev.hmpps.service.justice.gov.uk
 
-cpr-service:
-  base-url: https://cpr-service-dev.hmpps.service.justice.gov.uk
-
 feature:
   flags:
     save_person_id_to_court_case_service: false
