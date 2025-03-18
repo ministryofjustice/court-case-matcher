@@ -34,6 +34,9 @@ public class WebConfig {
     @Value("${person-record-service.base-url}")
     private String personRecordServiceBaseUrl;
 
+    @Value("${cpr-service.base-url}")
+    private String cprServiceBaseUrl;
+
     @Value("${web.client.connect-timeout-ms}")
     private int connectTimeoutMs;
 

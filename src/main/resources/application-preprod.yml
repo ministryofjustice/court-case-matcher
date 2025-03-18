@@ -15,7 +15,6 @@ person-match-score:
 person-record-service:
   base-url: https://hmpps-person-record-preprod.hmpps.service.justice.gov.uk
 
-
 feature:
   flags:
     save_person_id_to_court_case_service: false
