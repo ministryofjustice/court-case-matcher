@@ -51,6 +51,7 @@ public class MatcherService {
     public Mono<Hearing> matchDefendants(Hearing hearing) {
         return Mono.just(hearing.getDefendants()
                         .stream()
+                        .filter(defendant -> defendant.getCprUUID() == null)
                         .map(defendant -> this.matchPersonAndSetPersonRecordId(defendant, hearing))
                         .map(defendant -> defendant.shouldMatchToOffender() ? matchDefendant(defendant, hearing) : Mono.just(defendant))
                         .map(Mono::block)

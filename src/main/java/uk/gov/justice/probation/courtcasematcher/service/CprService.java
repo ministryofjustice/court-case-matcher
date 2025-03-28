@@ -5,13 +5,17 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
+import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
+import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
+import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
 import uk.gov.justice.probation.courtcasematcher.restclient.CprServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAddress;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprDefendant;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,6 +26,12 @@ public class CprService {
 
     public CprService(CprServiceClient cprServiceClient) {
         this.cprServiceClient = cprServiceClient;
+    }
+
+    public void updateDefendants(List<Defendant> defendants) {
+        defendants.stream()
+            .filter(defendant -> defendant.getCprUUID() != null)
+            .forEach(this::updateDefendant);
     }
 
     public void updateDefendant(Defendant defendant) {
@@ -40,21 +50,38 @@ public class CprService {
         defendant.setDateOfBirth(LocalDate.parse(cprDefendant.getDateOfBirth(), DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         defendant.setSex(cprDefendant.getSex());
         setLatestAddress(defendant, cprDefendant);
+        defendant.setGroupedOffenderMatches(buildGroupedOffenderMatch(cprDefendant.getIdentifiers().getCrns()));
     }
 
-    private static void setLatestAddress(Defendant defendant, CprDefendant cprDefendant) {
+    private void setLatestAddress(Defendant defendant, CprDefendant cprDefendant) {
         Optional<CprAddress> latestAddress = cprDefendant.getAddresses().stream()
             .filter(cprAddress -> cprAddress.getEndDate() == null || cprAddress.getEndDate().isEmpty())
             .findFirst();
         latestAddress.ifPresent(cprAddress -> defendant.setAddress(Address.builder()
-                .line1(cprAddress.getBuildingName() != null ?
-                    cprAddress.getBuildingName() + " " + cprAddress.getBuildingNumber() :
-                     cprAddress.getBuildingNumber())
-                .line2(cprAddress.getThoroughfareName())
-                .line3(cprAddress.getDependentLocality())
-                .line4(cprAddress.getPostTown())
-                .line5(cprAddress.getCounty())
+                .line1(cprAddress.getBuildingName())
+                .line2(cprAddress.getBuildingNumber())
+                .line3(cprAddress.getThoroughfareName())
+                .line4(cprAddress.getDependentLocality())
+                .line5(cprAddress.getPostTown())
                 .postcode(cprAddress.getPostcode())
             .build()));
+    }
+
+    public GroupedOffenderMatches buildGroupedOffenderMatch(List<String> crns) {
+        if (!crns.isEmpty() && crns.size() > 1) {
+            return GroupedOffenderMatches.builder()
+                .matches(crns.stream()
+                    .map(CprService::buildOffenderMatch).toList())
+                .build();
+        }
+        return null;
+    }
+
+    private static OffenderMatch buildOffenderMatch(String crn) {
+        return OffenderMatch.builder()
+            .matchIdentifiers(MatchIdentifiers.builder()
+                .crn(crn)
+                .build())
+            .build();
     }
 }

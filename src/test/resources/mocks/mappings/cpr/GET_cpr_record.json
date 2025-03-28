@@ -2,7 +2,7 @@
   "id" : "375aaf40-4ed1-4656-bbb3-cc813e3434ba",
   "request": {
     "method": "GET",
-    "urlPath": "/search/person/f91ef118-a51f-4874-9409-c0538b4ca6fd"
+    "urlPath": "/person/f91ef118-a51f-4874-9409-c0538b4ca6fd"
   },
   "response": {
     "status": 200,

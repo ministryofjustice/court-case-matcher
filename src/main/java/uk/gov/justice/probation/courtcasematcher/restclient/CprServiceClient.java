@@ -30,7 +30,7 @@ public class CprServiceClient {
     }
 
     public Mono<CprDefendant> getCprCanonicalRecord(String cprUUID) {
-        final String path = String.format("/search/person/%s", cprUUID);
+        final String path = String.format("/person/%s", cprUUID);
 
         return get(path)
             .retrieve()

@@ -51,7 +51,7 @@ public class CprServiceClientIntTest {
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
-            getRequestedFor(urlEqualTo(String.format("/search/person/%s", "12345")))
+            getRequestedFor(urlEqualTo(String.format("/person/%s", "12345")))
         );
     }
 
@@ -88,11 +88,17 @@ public class CprServiceClientIntTest {
                     .country("United Kingdom")
                     .uprn("100120991537")
                 .build()))
-            .identifiers(List.of(CprIdentifier.builder()
-                    .identifierType("CRN")
-                    .identifierValue("B123456")
-                .build()))
+            .identifiers(CprIdentifier.builder()
+                .crns(List.of("B123435"))
+                .prisonNumbers(List.of("A1234BC"))
+                .defendantIds(List.of("46caa4e5-ae06-4226-9cb6-682cb26cf025"))
+                .cids(List.of("1234567"))
+                .pncs(List.of("2000/1234567A"))
+                .cros(List.of("123456/00A"))
+                .nationalInsuranceNumbers(List.of("QQ123456B"))
+                .driverLicenseNumbers(List.of("SMITH840325J912"))
+                .arrestSummonsNumbers(List.of("0700000000000002536Y"))
+                .build())
             .build();
     }
-
 }

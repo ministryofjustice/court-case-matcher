@@ -2,6 +2,7 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder.Default;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
+import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
@@ -83,10 +85,6 @@ public class HearingProcessor {
         Mono.just(hearing.getDefendants()
                         .stream()
                         .map(defendant -> {
-                            if(defendant.getCprUUID() != null) {
-                                cprService.updateDefendant(defendant);
-                            }
-
                             if (defendant.shouldMatchToOffender()) {
                                 return matcherService.matchDefendant(defendant, hearing);
                             } else if (defendant.getCrn() != null) {
@@ -109,7 +107,7 @@ public class HearingProcessor {
     private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
 
-        if(featureFlags.getFlag("match-on-every-no-record-update")) {
+        if(featureFlags.getFlag("match-on-every-no-record-update")) { //TODO this is always set to false in prod and therefore should be removed
             applyMatches_Or_Update_thenSave(courtCaseMerged);
         } else {
             updateAndSave(courtCaseMerged);
@@ -117,6 +115,8 @@ public class HearingProcessor {
     }
 
     private void applyMatchesAndSave(final Hearing hearing) {
+        cprService.updateDefendants(hearing.getDefendants());
+
         matcherService.matchDefendants(hearing)
                 .onErrorReturn(hearing)
                 .doOnSuccess(courtCaseService::saveHearing)
@@ -125,6 +125,7 @@ public class HearingProcessor {
 
     private void updateAndSave(final Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
+        cprService.updateDefendants(hearing.getDefendants());
 
         courtCaseService.updateProbationStatusDetail(hearing)
                 .onErrorResume(t -> Mono.just(hearing))
@@ -141,17 +142,19 @@ public class HearingProcessor {
             updatedHearing = updatedHearing.withCaseNo(caseId);
         }
 
-        //CPR: user c_id for the defendant id
-
-
         // Assign defendant IDs
         final var updatedDefendants = hearing.getDefendants()
                 .stream()
                 .map(defendant -> defendant.withDefendantId(
-                        defendant.getDefendantId() == null ? UUID.randomUUID().toString() : defendant.getDefendantId()
+                        defendant.getDefendantId() == null ? returnCprUUIDOrRandomUUID(defendant) : defendant.getDefendantId()
                 ))
                 .collect(Collectors.toList());
+
         return updatedHearing.withDefendants(updatedDefendants);
 
+    }
+
+    private String returnCprUUIDOrRandomUUID(Defendant defendant) {
+        return defendant.getCprUUID() == null ? UUID.randomUUID().toString() : defendant.getCprUUID();
     }
 }

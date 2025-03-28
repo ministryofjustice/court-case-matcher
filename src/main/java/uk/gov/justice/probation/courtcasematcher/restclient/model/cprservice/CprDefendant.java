@@ -31,7 +31,7 @@ public class CprDefendant {
     private List<CprAlias> aliases;
     private List<CprNationality> nationalities;
     private List<CprAddress> addresses;
-    private List<CprIdentifier> identifiers;
+    private CprIdentifier identifiers;
 
     public Defendant asDomain() {
 
