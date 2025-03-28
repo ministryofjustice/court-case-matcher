@@ -10,7 +10,9 @@ import java.util.List;
 @Slf4j
 public class CprExtractor {
 
-    private final List<String> courtCodes = List.of("TBD");
+    public static final String OXFORD_MAGISTRATES = "B43KB";
+
+    private final List<String> courtCodes = List.of(OXFORD_MAGISTRATES);
     private final FeatureFlags featureFlags;
 
     public CprExtractor(FeatureFlags featureFlags) {

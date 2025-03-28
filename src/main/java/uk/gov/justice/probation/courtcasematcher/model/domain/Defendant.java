@@ -44,10 +44,10 @@ public class Defendant {
     private Offender offender;
     private Boolean confirmedOffender;
     private String personId;
-    private String cprDefendantId;
+    private String cprUUID;
 
     @JsonIgnore
-    private final GroupedOffenderMatches groupedOffenderMatches;
+    private GroupedOffenderMatches groupedOffenderMatches;
 
     public boolean shouldMatchToOffender() {
         return Optional.of(this)
