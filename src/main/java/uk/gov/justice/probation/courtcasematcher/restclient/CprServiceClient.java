@@ -55,18 +55,17 @@ public class CprServiceClient {
         if (disableAuthentication) {
             return spec;
         }
-        return spec.attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId("offender-search-client"));
+        return spec.attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId("person-record-search-client"));
     }
 
     private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String cprUUID) {
         final HttpStatusCode httpStatusCode = clientResponse.statusCode();
-        // This is expected for new hearings
         if (HttpStatus.NOT_FOUND.equals(httpStatusCode)) {
             log.info("Failed to get cpr canonical record for cprUUID {}", cprUUID);
             return Mono.error(new CprCanonicalRecordNotFoundException(cprUUID));
         }
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatusCode) || HttpStatus.FORBIDDEN.equals(httpStatusCode)) {
-            log.error("HTTP status {} to GET the cpr canonical record from cpr service", httpStatusCode);
+            log.error("HTTP status {} failed to GET the cpr canonical record from cpr service", httpStatusCode);
         }
         throw WebClientResponseException.create(httpStatusCode.value(),
             httpStatusCode.toString(),
