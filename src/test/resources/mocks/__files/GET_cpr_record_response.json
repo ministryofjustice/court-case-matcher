@@ -3,7 +3,7 @@
   "firstName": "John",
   "middleNames": "Morgan",
   "lastName": "Doe",
-  "dateOfBirth": "01/01/1990",
+  "dateOfBirth": "1990-01-01",
   "title": "Mr",
   "sex": "Male",
   "religion": "Christian",
@@ -24,8 +24,8 @@
   "addresses": [
     {
       "noFixedAbode": "True",
-      "startDate": "02/02/2020",
-      "endDate": "04/04/2023",
+      "startDate": "2020-02-02",
+      "endDate": "2023-04-04",
       "postcode": "SW1H 9AJ",
       "subBuildingName": "Sub building 2",
       "buildingName": "Main Building",

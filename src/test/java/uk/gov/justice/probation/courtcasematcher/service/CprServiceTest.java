@@ -72,7 +72,7 @@ public class CprServiceTest {
         Defendant defendantFromInitialPayload = Defendant.builder()
             .cprUUID("1234").build();
         CprDefendant cprDefendant = CprDefendant.builder()
-            .dateOfBirth("02/02/1995")
+            .dateOfBirth("1995-02-02")
             .sex("Male")
             .addresses(List.of(
                 CprAddress.builder()
@@ -83,7 +83,7 @@ public class CprServiceTest {
                     .postTown("Manchester")
                     .postcode("S1 3RU").build(),
                 CprAddress.builder()
-                    .endDate("02/02/1995")
+                    .endDate("1995-02-05")
                     .buildingNumber("11")
                     .thoroughfareName("That Road")
                     .dependentLocality("Rusholme")
@@ -138,7 +138,7 @@ public class CprServiceTest {
 
     private static CprDefendant getCprDefendant() {
         return CprDefendant.builder()
-            .dateOfBirth("02/02/1995")
+            .dateOfBirth("1995-02-02")
             .sex("Male")
             .addresses(List.of(CprAddress.builder()
                 .buildingName("A building")

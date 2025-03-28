@@ -47,7 +47,7 @@ public class CprService {
                 .forename2(cprDefendant.getMiddleNames())
                 .surname(cprDefendant.getLastName())
             .build());
-        defendant.setDateOfBirth(LocalDate.parse(cprDefendant.getDateOfBirth(), DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        defendant.setDateOfBirth(LocalDate.parse(cprDefendant.getDateOfBirth(), DateTimeFormatter.ISO_DATE));
         defendant.setSex(cprDefendant.getSex());
         setLatestAddress(defendant, cprDefendant);
         defendant.setGroupedOffenderMatches(buildGroupedOffenderMatch(cprDefendant.getIdentifiers().getCrns()));
