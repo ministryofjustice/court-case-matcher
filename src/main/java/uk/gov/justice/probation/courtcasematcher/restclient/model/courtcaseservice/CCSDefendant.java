@@ -47,6 +47,7 @@ public class CCSDefendant {
     @With
     private Boolean confirmedOffender;
     private String personId;
+    private String cprUUID;
 
     public static CCSDefendant of(Defendant defendant) {
         return builder()
@@ -66,6 +67,7 @@ public class CCSDefendant {
                 .crn(defendant.getCrn())
                 .pnc(defendant.getPnc())
                 .cro(defendant.getCro())
+                .cprUUID(defendant.getCprUUID())
                 .preSentenceActivity(defendant.getPreSentenceActivity())
                 .suspendedSentenceOrder(defendant.getSuspendedSentenceOrder())
                 .sex(Sex.getNormalisedSex(defendant.getSex()).toString())
