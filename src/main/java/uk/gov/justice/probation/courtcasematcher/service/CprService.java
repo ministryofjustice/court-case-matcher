@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
@@ -50,7 +51,12 @@ public class CprService {
         defendant.setDateOfBirth(LocalDate.parse(cprDefendant.getDateOfBirth(), DateTimeFormatter.ISO_DATE));
         defendant.setSex(cprDefendant.getSex());
         setLatestAddress(defendant, cprDefendant);
+        defendant.setCrn(getCrnForExactMatch(cprDefendant));
         defendant.setGroupedOffenderMatches(buildGroupedOffenderMatch(cprDefendant.getIdentifiers().getCrns()));
+    }
+
+    private static String getCrnForExactMatch(CprDefendant cprDefendant) {
+        return cprDefendant.getIdentifiers().getCrns().size() == 1 ? cprDefendant.getIdentifiers().getCrns().getFirst() : null;
     }
 
     private void setLatestAddress(Defendant defendant, CprDefendant cprDefendant) {
@@ -68,7 +74,7 @@ public class CprService {
     }
 
     public GroupedOffenderMatches buildGroupedOffenderMatch(List<String> crns) {
-        if (!crns.isEmpty() && crns.size() > 1) {
+        if (!crns.isEmpty()) {
             return GroupedOffenderMatches.builder()
                 .matches(crns.stream()
                     .map(CprService::buildOffenderMatch).toList())
