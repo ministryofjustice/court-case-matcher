@@ -1,0 +1,14 @@
+{
+  "id" : "375aaf40-4ed1-4656-bbb3-cc813e3434ba",
+  "request": {
+    "method": "GET",
+    "urlPath": "/person/1e123672-3427-4d9e-968b-f7e854672074"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "cpr/GET_cpr_record_response_multiple_crn.json"
+  }
+}

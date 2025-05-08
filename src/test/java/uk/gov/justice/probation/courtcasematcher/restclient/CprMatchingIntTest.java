@@ -1,5 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.restclient;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest
@@ -181,6 +183,75 @@ public class CprMatchingIntTest {
                 .withRequestBody(matchingJsonPath("defendants[0].name.surname",  equalTo("Dole")))
         );
 
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPostRequestsTo("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches") == 1);
+
+        MOCK_SERVER.verify(
+            postRequestedFor(urlMatching("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches"))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
+        );
+
+        MOCK_SERVER.checkForUnmatchedRequests();
+    }
+
+    @Test
+    public void givenCprMatchesDefendant_and_has_multiple_CRN_updates_defendant_in_hearing() throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", false);
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/hearing-one-defendant-multiple-crn.json"));
+
+        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
+
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/0c4539d9-7acc-4637-9a2d-b6cc567c9cf2") == 1);
+
+        MOCK_SERVER.verify(
+            putRequestedFor(urlMatching("/hearing/0c4539d9-7acc-4637-9a2d-b6cc567c9cf2"))
+                .withRequestBody(matchingJsonPath("caseId", equalTo("bf999b5f-e5ce-47b5-b5d2-7d991b9e14d1")))
+                .withRequestBody(matchingJsonPath("hearingId", equalTo("0c4539d9-7acc-4637-9a2d-b6cc567c9cf2")))
+                .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
+                .withRequestBody(matchingJsonPath("urn", equalTo("82CD34397719")))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("bf999b5f-e5ce-47b5-b5d2-7d991b9e14d1")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B43KB")))
+                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("48eae4d0-cdd7-43d8-9ac8-e328b033516f")))
+                .withRequestBody(matchingJsonPath("defendants[0].crn", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].cprUUID", equalTo("1e123672-3427-4d9e-968b-f7e854672074")))
+                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
+                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
+                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))
+                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].breach", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("5")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("OF61102")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict",  absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].listNo", equalTo("7")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].offenceCode", equalTo("OF61102")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].plea", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].verdict",  absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line1",  equalTo("1 West Street")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line2",  equalTo("Sheffield")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line3",  equalTo("England")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line4",  equalTo("UK")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line5",  equalTo("Sheffield")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.postcode",  equalTo("SA4 1FU")))
+                .withRequestBody(matchingJsonPath("defendants[0].dateOfBirth",  equalTo("1983-06-01")))
+                .withRequestBody(matchingJsonPath("defendants[0].name.forename1",  equalTo("Bob")))
+                .withRequestBody(matchingJsonPath("defendants[0].name.surname",  equalTo("Dole")))
+        );
+
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPostRequestsTo("/defendant/48eae4d0-cdd7-43d8-9ac8-e328b033516f/grouped-offender-matches") == 1);
+
+        MOCK_SERVER.verify(
+            postRequestedFor(urlMatching("/defendant/48eae4d0-cdd7-43d8-9ac8-e328b033516f/grouped-offender-matches"))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
+                .withRequestBody(matchingJsonPath("matches[1].matchIdentifiers.crn",  equalTo("E158374")))
+        );
+
         MOCK_SERVER.checkForUnmatchedRequests();
     }
 
@@ -190,5 +261,9 @@ public class CprMatchingIntTest {
 
     public int countPutRequestsTo(final String url) {
         return MOCK_SERVER.findAll(putRequestedFor(urlMatching(url))).size();
+    }
+
+    public int countPostRequestsTo(final String url) {
+        return MOCK_SERVER.findAll(postRequestedFor(urlMatching(url))).size();
     }
 }
