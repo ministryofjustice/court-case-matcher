@@ -56,7 +56,7 @@ public class HearingExtractor {
 
             return switch (snsMessageContainer.getMessageType()) {
                 case LIBRA_COURT_CASE ->
-                        List.of(libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain());
+                        List.of(libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain(cprExtractor));
                 case COMMON_PLATFORM_HEARING -> parseCPMessage(snsMessageContainer);
                 default ->
                         throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
