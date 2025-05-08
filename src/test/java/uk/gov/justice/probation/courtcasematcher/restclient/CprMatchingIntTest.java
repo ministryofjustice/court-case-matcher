@@ -78,6 +78,7 @@ public class CprMatchingIntTest {
 
     @BeforeEach
     void setUp(){
+        featureFlags.setFlagValue("match-on-every-no-record-update", false);
         topic = hmppsQueueService.findByTopicId(TOPIC_NAME);
         HmppsQueue queue = hmppsQueueService.findByQueueId("courtcasesqueue");
 
@@ -87,7 +88,6 @@ public class CprMatchingIntTest {
 
     @Test
     public void givenCprMatchesDefendant_and_has_no_CRN_updates_defendant_in_hearing() throws IOException {
-        featureFlags.setFlagValue("match-on-every-no-record-update", false);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/hearing-one-defendant-no-crn.json"));
 
         publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
@@ -137,7 +137,6 @@ public class CprMatchingIntTest {
 
     @Test
     public void givenCprMatchesDefendant_and_has_one_CRN_updates_defendant_in_hearing() throws IOException {
-        featureFlags.setFlagValue("match-on-every-no-record-update", false);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/hearing-one-defendant-one-crn.json"));
 
         publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
@@ -196,7 +195,6 @@ public class CprMatchingIntTest {
 
     @Test
     public void givenCprMatchesDefendant_and_has_multiple_CRN_updates_defendant_in_hearing() throws IOException {
-        featureFlags.setFlagValue("match-on-every-no-record-update", false);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/hearing-one-defendant-multiple-crn.json"));
 
         publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
@@ -249,6 +247,44 @@ public class CprMatchingIntTest {
             postRequestedFor(urlMatching("/defendant/48eae4d0-cdd7-43d8-9ac8-e328b033516f/grouped-offender-matches"))
                 .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
                 .withRequestBody(matchingJsonPath("matches[1].matchIdentifiers.crn",  equalTo("E158374")))
+        );
+
+        MOCK_SERVER.checkForUnmatchedRequests();
+    }
+
+    @Test
+    public void givenCprMatchesLibraDefendant_updates_defendant_in_hearing() throws IOException {
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/libra-hearing.json"));
+
+        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("LIBRA_COURT_CASE").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
+
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/.*") == 1);
+
+        MOCK_SERVER.verify(
+            putRequestedFor(urlMatching("/hearing/.*"))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("1600032982")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B43KB")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].listNo", equalTo("1st")))
+                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("748851d9-4b99-491e-8076-372460c73015")))
+                .withRequestBody(matchingJsonPath("defendants[0].crn", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].cprUUID", equalTo("748851d9-4b99-491e-8076-372460c73015")))
+                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("NO_RECORD")))
+                .withRequestBody(matchingJsonPath("defendants[0].breach", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("TH68010")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict",  absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line1",  equalTo("13 Wind Street")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line2",  equalTo("Swansea")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line3",  equalTo("Wales")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line4",  equalTo("UK")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line5",  equalTo("Earth")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.postcode",  equalTo("SA1 1FU")))
+                .withRequestBody(matchingJsonPath("defendants[0].dateOfBirth",  equalTo("1982-12-01")))
+                .withRequestBody(matchingJsonPath("defendants[0].name.forename1",  equalTo("Jane")))
+                .withRequestBody(matchingJsonPath("defendants[0].name.surname",  equalTo("Doe")))
         );
 
         MOCK_SERVER.checkForUnmatchedRequests();
