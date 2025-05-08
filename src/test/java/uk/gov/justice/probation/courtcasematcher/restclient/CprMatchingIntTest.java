@@ -44,7 +44,6 @@ import static org.awaitility.Awaitility.await;
 @ActiveProfiles("test")
 @Import(TestMessagingConfig.class)
 public class CprMatchingIntTest {
-    private static final String CPR_UUID = "f264bdf5-56cf-45ff-9371-470b18f5c6cb";
     private static final WiremockMockServer MOCK_SERVER = new WiremockMockServer(8090);
     private static final String BASE_PATH = "src/test/resources/messages";
 
@@ -111,7 +110,7 @@ public class CprMatchingIntTest {
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))
-                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("NO_RECORD")))
                 .withRequestBody(matchingJsonPath("defendants[0].breach", absent()))
                 .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", absent()))
                 .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("5")))
@@ -161,7 +160,7 @@ public class CprMatchingIntTest {
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))
-                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
                 .withRequestBody(matchingJsonPath("defendants[0].breach", absent()))
                 .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", absent()))
                 .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("5")))
@@ -220,7 +219,7 @@ public class CprMatchingIntTest {
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))
-                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("NO_RECORD")))
                 .withRequestBody(matchingJsonPath("defendants[0].breach", absent()))
                 .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", absent()))
                 .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("5")))

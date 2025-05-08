@@ -10,6 +10,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMat
 import uk.gov.justice.probation.courtcasematcher.model.domain.MatchIdentifiers;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 import uk.gov.justice.probation.courtcasematcher.model.domain.OffenderMatch;
+import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.CprServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAddress;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprDefendant;
@@ -52,7 +53,13 @@ public class CprService {
         defendant.setSex(cprDefendant.getSex());
         setLatestAddress(defendant, cprDefendant);
         defendant.setCrn(getCrnForExactMatch(cprDefendant));
+        defendant.setProbationStatus(getProbationStatusForExactMatch(cprDefendant));
         defendant.setGroupedOffenderMatches(buildGroupedOffenderMatch(cprDefendant.getIdentifiers().getCrns()));
+    }
+
+    //TODO this need to be obtained from somewhere
+    private String getProbationStatusForExactMatch(CprDefendant cprDefendant) {
+        return cprDefendant.getIdentifiers().getCrns().size() == 1 ?  "CURRENT" : "NO_RECORD";
     }
 
     private static String getCrnForExactMatch(CprDefendant cprDefendant) {
@@ -88,6 +95,10 @@ public class CprService {
             .matchIdentifiers(MatchIdentifiers.builder()
                 .crn(crn)
                 .build())
+            //TODO these values need to be obtained from somewhere
+            .matchType(MatchType.NAME)
+            .confirmed(true)
+            .rejected(false)
             .build();
     }
 }
