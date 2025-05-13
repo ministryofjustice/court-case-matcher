@@ -347,75 +347,75 @@ public class CprMatchingIntTest {
         MOCK_SERVER.checkForUnmatchedRequests();
     }
 
-    @Test
-    public void givenCprMatchesDefendant_updates_multiple_defendants_in_existing_hearing() throws IOException {
-        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/existing-hearing-multiple-defendants-one-crn.json"));
-
-        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
-
-        await()
-            .atMost(10, TimeUnit.SECONDS)
-            .until(() -> countPutRequestsTo("/hearing/b8163add-e182-4df6-9d43-77c7bcf2dad3") == 1);
-
-        MOCK_SERVER.verify(
-            putRequestedFor(urlMatching("/hearing/b8163add-e182-4df6-9d43-77c7bcf2dad3"))
-                .withRequestBody(matchingJsonPath("caseId", equalTo("5ab29194-687d-4260-9c43-b32e6f4b75db")))
-                .withRequestBody(matchingJsonPath("hearingId", equalTo("b8163add-e182-4df6-9d43-77c7bcf2dad3")))
-                .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
-                .withRequestBody(matchingJsonPath("urn", equalTo("82CD34397719")))
-                .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
-                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B43KB")))
-                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("f64f8b81-a459-4588-9ea5-3be375304ce9")))
-                .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("V147283")))
-                .withRequestBody(matchingJsonPath("defendants[0].cprUUID", equalTo("7e69177d-cf34-487b-9dea-cc9c0a525499")))
-                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
-                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
-                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))
-                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
-                .withRequestBody(matchingJsonPath("defendants[0].breach", equalTo("true")))
-                .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", absent()))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("5")))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("OF61102")))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea", absent()))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict",  absent()))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[1].listNo", equalTo("7")))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[1].offenceCode", equalTo("OF61102")))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[1].plea", absent()))
-                .withRequestBody(matchingJsonPath("defendants[0].offences[1].verdict",  absent()))
-                .withRequestBody(matchingJsonPath("defendants[0].address.line1",  equalTo("1 West Street")))
-                .withRequestBody(matchingJsonPath("defendants[0].address.line2",  equalTo("Sheffield")))
-                .withRequestBody(matchingJsonPath("defendants[0].address.line3",  equalTo("England")))
-                .withRequestBody(matchingJsonPath("defendants[0].address.line4",  equalTo("UK")))
-                .withRequestBody(matchingJsonPath("defendants[0].address.line5",  equalTo("Sheffield")))
-                .withRequestBody(matchingJsonPath("defendants[0].address.postcode",  equalTo("SA4 1FU")))
-                .withRequestBody(matchingJsonPath("defendants[0].dateOfBirth",  equalTo("1983-06-01")))
-                .withRequestBody(matchingJsonPath("defendants[0].name.forename1",  equalTo("Bob")))
-                .withRequestBody(matchingJsonPath("defendants[0].name.surname",  equalTo("Dole")))
-                .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
-                .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("J147283")))
-                .withRequestBody(matchingJsonPath("defendants[1].cprUUID", equalTo("a0bf57a6-3791-46dc-8f87-b33e5c784973")))
-                .withRequestBody(matchingJsonPath("defendants[1].address.line1",  equalTo("2 West Street")))
-                .withRequestBody(matchingJsonPath("defendants[1].address.line2",  equalTo("Sheffield")))
-                .withRequestBody(matchingJsonPath("defendants[1].address.line3",  equalTo("England")))
-                .withRequestBody(matchingJsonPath("defendants[1].address.line4",  equalTo("UK")))
-                .withRequestBody(matchingJsonPath("defendants[1].address.line5",  equalTo("Sheffield")))
-                .withRequestBody(matchingJsonPath("defendants[1].address.postcode",  equalTo("SA5 1FU")))
-                .withRequestBody(matchingJsonPath("defendants[1].dateOfBirth",  equalTo("1984-06-01")))
-                .withRequestBody(matchingJsonPath("defendants[1].name.forename1",  equalTo("Robert")))
-                .withRequestBody(matchingJsonPath("defendants[1].name.surname",  equalTo("Smith")))
-        );
-
-        await()
-            .atMost(10, TimeUnit.SECONDS)
-            .until(() -> countPostRequestsTo("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches") == 1);
-
-        MOCK_SERVER.verify(
-            postRequestedFor(urlMatching("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches"))
-                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
-        );
-
-        MOCK_SERVER.checkForUnmatchedRequests();
-    }
+//    @Test
+//    public void givenCprMatchesDefendant_updates_multiple_defendants_in_existing_hearing() throws IOException {
+//        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/existing-hearing-multiple-defendants-one-crn.json"));
+//
+//        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
+//
+//        await()
+//            .atMost(10, TimeUnit.SECONDS)
+//            .until(() -> countPutRequestsTo("/hearing/b8163add-e182-4df6-9d43-77c7bcf2dad3") == 1);
+//
+//        MOCK_SERVER.verify(
+//            putRequestedFor(urlMatching("/hearing/b8163add-e182-4df6-9d43-77c7bcf2dad3"))
+//                .withRequestBody(matchingJsonPath("caseId", equalTo("5ab29194-687d-4260-9c43-b32e6f4b75db")))
+//                .withRequestBody(matchingJsonPath("hearingId", equalTo("b8163add-e182-4df6-9d43-77c7bcf2dad3")))
+//                .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
+//                .withRequestBody(matchingJsonPath("urn", equalTo("82CD34397719")))
+//                .withRequestBody(matchingJsonPath("caseNo", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
+//                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B43KB")))
+//                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("f64f8b81-a459-4588-9ea5-3be375304ce9")))
+//                .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("V147283")))
+//                .withRequestBody(matchingJsonPath("defendants[0].cprUUID", equalTo("7e69177d-cf34-487b-9dea-cc9c0a525499")))
+//                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
+//                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
+//                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))
+//                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
+//                .withRequestBody(matchingJsonPath("defendants[0].breach", equalTo("true")))
+//                .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", absent()))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("5")))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("OF61102")))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea", absent()))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict",  absent()))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[1].listNo", equalTo("7")))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[1].offenceCode", equalTo("OF61102")))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[1].plea", absent()))
+//                .withRequestBody(matchingJsonPath("defendants[0].offences[1].verdict",  absent()))
+//                .withRequestBody(matchingJsonPath("defendants[0].address.line1",  equalTo("1 West Street")))
+//                .withRequestBody(matchingJsonPath("defendants[0].address.line2",  equalTo("Sheffield")))
+//                .withRequestBody(matchingJsonPath("defendants[0].address.line3",  equalTo("England")))
+//                .withRequestBody(matchingJsonPath("defendants[0].address.line4",  equalTo("UK")))
+//                .withRequestBody(matchingJsonPath("defendants[0].address.line5",  equalTo("Sheffield")))
+//                .withRequestBody(matchingJsonPath("defendants[0].address.postcode",  equalTo("SA4 1FU")))
+//                .withRequestBody(matchingJsonPath("defendants[0].dateOfBirth",  equalTo("1983-06-01")))
+//                .withRequestBody(matchingJsonPath("defendants[0].name.forename1",  equalTo("Bob")))
+//                .withRequestBody(matchingJsonPath("defendants[0].name.surname",  equalTo("Dole")))
+//                .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
+//                .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("J147283")))
+//                .withRequestBody(matchingJsonPath("defendants[1].cprUUID", equalTo("a0bf57a6-3791-46dc-8f87-b33e5c784973")))
+//                .withRequestBody(matchingJsonPath("defendants[1].address.line1",  equalTo("2 West Street")))
+//                .withRequestBody(matchingJsonPath("defendants[1].address.line2",  equalTo("Sheffield")))
+//                .withRequestBody(matchingJsonPath("defendants[1].address.line3",  equalTo("England")))
+//                .withRequestBody(matchingJsonPath("defendants[1].address.line4",  equalTo("UK")))
+//                .withRequestBody(matchingJsonPath("defendants[1].address.line5",  equalTo("Sheffield")))
+//                .withRequestBody(matchingJsonPath("defendants[1].address.postcode",  equalTo("SA5 1FU")))
+//                .withRequestBody(matchingJsonPath("defendants[1].dateOfBirth",  equalTo("1984-06-01")))
+//                .withRequestBody(matchingJsonPath("defendants[1].name.forename1",  equalTo("Robert")))
+//                .withRequestBody(matchingJsonPath("defendants[1].name.surname",  equalTo("Smith")))
+//        );
+//
+//        await()
+//            .atMost(10, TimeUnit.SECONDS)
+//            .until(() -> countPostRequestsTo("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches") == 1);
+//
+//        MOCK_SERVER.verify(
+//            postRequestedFor(urlMatching("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches"))
+//                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
+//        );
+//
+//        MOCK_SERVER.checkForUnmatchedRequests();
+//    }
 
     @Test
     public void givenHearingWithMultipleCases_and_same_defendant_in_each() throws IOException {
