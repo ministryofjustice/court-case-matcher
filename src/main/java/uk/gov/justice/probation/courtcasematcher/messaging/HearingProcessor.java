@@ -108,7 +108,7 @@ public class HearingProcessor {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
 
         if(featureFlags.getFlag("match-on-every-no-record-update")) { //TODO this is always set to false in prod and therefore should be removed
-            log.info("FEATURE FLAG IS ON !!!");
+            log.info("FEATURE FLAG IS ON !!! == " + featureFlags.getFlag("match-on-every-no-record-update"));
             applyMatches_Or_Update_thenSave(courtCaseMerged);
         } else {
             updateAndSave(courtCaseMerged);
