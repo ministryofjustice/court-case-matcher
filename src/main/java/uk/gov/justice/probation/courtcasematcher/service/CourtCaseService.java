@@ -64,7 +64,6 @@ public class CourtCaseService {
     }
 
     public Mono<Defendant> updateDefendant(Defendant defendant) {
-        log.info("OLD UPDATE Update Defendant CprUUID {} ", defendant.getCprUUID());
         return offenderSearchRestClient.search(defendant.getCrn())
                 .filter(searchResponses -> searchResponses.getSearchResponses().size() == 1)
                 .map(searchResponses -> searchResponses.getSearchResponses().getFirst().getProbationStatusDetail())
