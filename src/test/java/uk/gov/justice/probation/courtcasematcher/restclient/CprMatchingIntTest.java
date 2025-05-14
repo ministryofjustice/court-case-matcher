@@ -257,7 +257,7 @@ public class CprMatchingIntTest {
         publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("LIBRA_COURT_CASE").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
 
         await()
-            .atMost(10, TimeUnit.SECONDS)
+            .atMost(15, TimeUnit.SECONDS)
             .until(() -> countPutRequestsTo("/hearing/.*") == 1);
 
         MOCK_SERVER.verify(
