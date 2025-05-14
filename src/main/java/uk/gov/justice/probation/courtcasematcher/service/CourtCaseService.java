@@ -54,6 +54,7 @@ public class CourtCaseService {
 
     }
     public Mono<Hearing> updateProbationStatusDetail(Hearing hearing) {
+        hearing.getDefendants().forEach(defendant -> log.info("OLD UPDATE Update Defendant CprUUID {} ", defendant.getCprUUID()));
         final var updatedDefendants = hearing.getDefendants()
                 .stream()
                 .map(defendant -> defendant.getCrn() != null && defendant.getCprUUID() == null ? updateDefendant(defendant) : Mono.just(defendant))
