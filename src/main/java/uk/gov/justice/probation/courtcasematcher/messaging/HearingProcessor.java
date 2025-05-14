@@ -112,8 +112,6 @@ public class HearingProcessor {
         } else {
             updateAndSave(courtCaseMerged);
         }
-
-        updateAndSave(courtCaseMerged);
     }
 
     private void applyMatchesAndSave(final Hearing hearing) {
