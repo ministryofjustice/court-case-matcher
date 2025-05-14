@@ -107,11 +107,11 @@ public class HearingProcessor {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
 
         //TODO this commented out code is always set to false in prod and therefore should be removed
-//        if(featureFlags.getFlag("match-on-every-no-record-update")) {
-//            applyMatches_Or_Update_thenSave(courtCaseMerged);
-//        } else {
-//            updateAndSave(courtCaseMerged);
-//        }
+        if(featureFlags.getFlag("match-on-every-no-record-update")) {
+            applyMatches_Or_Update_thenSave(courtCaseMerged);
+        } else {
+            updateAndSave(courtCaseMerged);
+        }
 
         updateAndSave(courtCaseMerged);
     }
