@@ -291,6 +291,7 @@ public class CprMatchingIntTest {
 
     @Test
     public void givenCprMatchesDefendant_updates_defendant_in_existing_hearing() throws IOException {
+        featureFlags.setFlagValue("match-on-every-no-record-update", false);
         var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/existing-hearing-one-defendant-one-crn.json"));
 
         publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
