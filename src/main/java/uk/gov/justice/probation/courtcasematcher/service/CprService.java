@@ -31,6 +31,7 @@ public class CprService {
     }
 
     public void updateDefendants(List<Defendant> defendants) {
+        defendants.forEach(defendant -> log.info("Cpr Update Defendant CprUUID {} ", defendant.getCprUUID()));
         defendants.stream()
             .filter(defendant -> defendant.getCprUUID() != null)
             .forEach(this::updateDefendant);
