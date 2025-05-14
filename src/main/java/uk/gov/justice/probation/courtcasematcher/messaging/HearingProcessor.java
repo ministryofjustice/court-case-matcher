@@ -125,6 +125,7 @@ public class HearingProcessor {
 
     private void updateAndSave(final Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
+        hearing.getDefendants().forEach(defendant -> log.info("UpdateAndSave CprUUID {} ", defendant.getCprUUID()));
         cprService.updateDefendants(hearing.getDefendants());
 
         courtCaseService.updateProbationStatusDetail(hearing)
