@@ -1,0 +1,47 @@
+{
+  "cprUUID": "84e022e0-773d-4a36-9829-03c76bcaa789",
+  "firstName": "Bob",
+  "middleNames": null,
+  "lastName": "Dole",
+  "dateOfBirth": "1983-06-01",
+  "title": null,
+  "sex": "M",
+  "religion": null,
+  "ethnicity": null,
+  "aliases": [],
+  "nationalities": [],
+  "addresses": [
+    {
+      "noFixedAbode": null,
+      "startDate": null,
+      "endDate": null,
+      "postcode": "SA4 1FU",
+      "subBuildingName": null,
+      "buildingName": "1 West Street",
+      "buildingNumber": "Sheffield",
+      "thoroughfareName": "England",
+      "dependentLocality": "UK",
+      "postTown": "Sheffield",
+      "county": null,
+      "country": null,
+      "uprn": null
+    }
+  ],
+  "identifiers": {
+    "crns": [
+      "V147283"
+    ],
+    "prisonNumbers": [],
+    "defendantIds": [
+      "183918eb-61d0-4fd0-bc7d-0f834b008a4b",
+      "3eced47e-3d55-4177-99b6-f9d827694f82",
+      "dfaa9be1-8daf-480b-b80a-b4dda1da3bef"
+    ],
+    "cids": [],
+    "pncs": [],
+    "cros": [],
+    "nationalInsuranceNumbers": [],
+    "driverLicenseNumbers": [],
+    "arrestSummonsNumbers": []
+  }
+}
