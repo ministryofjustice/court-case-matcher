@@ -4,10 +4,22 @@
   "middleNames": "Morgan",
   "lastName": "Doe",
   "dateOfBirth": "1990-01-01",
-  "title": "Mr",
-  "sex": "Male",
-  "religion": "Christian",
-  "ethnicity": "British",
+  "title": {
+    "code": "Mr",
+    "description": "Mr"
+  },
+  "sex": {
+    "code": "M",
+    "description": "Male"
+  },
+  "religion": {
+    "code": "Christianity",
+    "description": "Christianity"
+  },
+  "ethnicity": {
+    "code": "British",
+    "description": "British"
+  },
   "aliases": [
     {
       "firstName": "Jon",
@@ -18,7 +30,8 @@
   ],
   "nationalities": [
     {
-      "nationalityCode": "UK"
+      "code": "GB",
+      "description": "GB"
     }
   ],
   "addresses": [

@@ -4,10 +4,22 @@
   "middleNames": null,
   "lastName": "Smith",
   "dateOfBirth": "1984-06-01",
-  "title": null,
-  "sex": "M",
-  "religion": null,
-  "ethnicity": null,
+  "title": {
+    "code": "Mr",
+    "description": "Mr"
+  },
+  "sex": {
+    "code": "M",
+    "description": "Male"
+  },
+  "religion": {
+    "code": "Christianity",
+    "description": "Christianity"
+  },
+  "ethnicity": {
+    "code": "British",
+    "description": "British"
+  },
   "aliases": [],
   "nationalities": [],
   "addresses": [

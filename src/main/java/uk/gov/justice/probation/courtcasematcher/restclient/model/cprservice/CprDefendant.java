@@ -23,11 +23,11 @@ public class CprDefendant {
     private String middleNames;
     private String lastName;
     private String dateOfBirth;
-    private String title;
+    private CprTitle title;
     private String masterDefendantId;
-    private String sex;
-    private String religion;
-    private String ethnicity;
+    private CprSex sex;
+    private CprReligion religion;
+    private CprEthnicity ethnicity;
     private List<CprAlias> aliases;
     private List<CprNationality> nationalities;
     private List<CprAddress> addresses;
