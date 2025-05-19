@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @EqualsAndHashCode
-public class CprNationality {
+public class CprEthnicity {
     private String code;
     private String description;
 }

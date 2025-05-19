@@ -4,10 +4,22 @@
   "middleNames": null,
   "lastName": "Doe",
   "dateOfBirth": "1982-12-01",
-  "title": null,
-  "sex": "F",
-  "religion": null,
-  "ethnicity": null,
+  "title": {
+    "code": "Mrs",
+    "description": "Mrs"
+  },
+  "sex": {
+    "code": "F",
+    "description": "Female"
+  },
+  "religion": {
+    "code": "Christianity",
+    "description": "Christianity"
+  },
+  "ethnicity": {
+    "code": "British",
+    "description": "British"
+  },
   "aliases": [],
   "nationalities": [],
   "addresses": [

@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/search",
+    "bodyPatterns" : [
+      {
+        "equalToJson" : {
+          "crn": "E158374"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "offender-search/POST_search_with_response_E158374.json"
+  }
+}
