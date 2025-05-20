@@ -186,6 +186,8 @@ public class CprMatchingIntTest {
         MOCK_SERVER.verify(
             postRequestedFor(urlMatching("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches"))
                 .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.pnc",  equalTo("PNC123")))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.cro",  equalTo("171482/19R")))
         );
 
         MOCK_SERVER.checkForUnmatchedRequests();
@@ -244,7 +246,11 @@ public class CprMatchingIntTest {
         MOCK_SERVER.verify(
             postRequestedFor(urlMatching("/defendant/48eae4d0-cdd7-43d8-9ac8-e328b033516f/grouped-offender-matches"))
                 .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.pnc",  equalTo("PNC123")))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.cro",  equalTo("171482/19R")))
                 .withRequestBody(matchingJsonPath("matches[1].matchIdentifiers.crn",  equalTo("E158374")))
+                .withRequestBody(matchingJsonPath("matches[1].matchIdentifiers.pnc",  equalTo("PNC123")))
+                .withRequestBody(matchingJsonPath("matches[1].matchIdentifiers.cro",  equalTo("171482/19R")))
         );
 
         MOCK_SERVER.checkForUnmatchedRequests();
@@ -411,6 +417,8 @@ public class CprMatchingIntTest {
         MOCK_SERVER.verify(
             postRequestedFor(urlMatching("/defendant/f64f8b81-a459-4588-9ea5-3be375304ce9/grouped-offender-matches"))
                 .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.crn",  equalTo("V147283")))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.pnc",  equalTo("PNC123")))
+                .withRequestBody(matchingJsonPath("matches[0].matchIdentifiers.cro",  equalTo("171482/19R")))
         );
 
         MOCK_SERVER.checkForUnmatchedRequests();
