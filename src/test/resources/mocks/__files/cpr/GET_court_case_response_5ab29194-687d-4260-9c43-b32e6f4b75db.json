@@ -1,0 +1,56 @@
+{
+  "caseNo": "D517D32D-3C80-41E8-846E-D274DC2B94A5",
+  "caseId": "5ab29194-687d-4260-9c43-b32e6f4b75db",
+  "hearingId": "b8163add-e182-4df6-9d43-77c7bcf2dad3",
+  "source": "COMMON_PLATFORM",
+  "defendants": [
+    {
+      "address": {
+        "line1": "Address 1",
+        "line2": "Address 2",
+        "line3": "Address 3",
+        "line4": "Address 4",
+        "line5": "Address 5",
+        "postcode": "CF4 8BK"
+      },
+      "awaitingPsr": true,
+      "breach": true,
+      "crn": "X346204",
+      "cro": "ACRO",
+      "dateOfBirth": "1975-04-03",
+      "name": {
+        "forename1": "Arthur",
+        "forename2": "Ponsonby",
+        "forename3": "Dude",
+        "surname": "Morgan",
+        "title": "Mr"
+      },
+      "offences": [
+        {
+          "act": "Theft act",
+          "offenceSummary": "Did a theft",
+          "offenceTitle": "Thievery"
+        }
+      ],
+      "pnc": "pncpncpnc",
+      "preSentenceActivity": true,
+      "previouslyKnownTerminationDate": "2019-05-03",
+      "probationStatus": "PREVIOUSLY_KNOWN",
+      "sex": "M",
+      "suspendedSentenceOrder": true,
+      "type": "PERSON",
+      "defendantId": "f64f8b81-a459-4588-9ea5-3be375304ce9",
+      "confirmedOffender": true,
+      "personId": "96624bb7-c64d-46d9-a427-813ec168f95a"
+    }
+  ],
+  "hearingDays": [
+    {
+      "courtCode": "B43KB",
+      "courtRoom": "4",
+      "sessionStartTime": "2021-08-16T10:16:51"
+    }
+  ],
+  "lastUpdated": "2023-10-02T14:32:55.248Z"
+
+}

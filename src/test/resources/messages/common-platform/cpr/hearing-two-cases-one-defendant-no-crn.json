@@ -1,0 +1,143 @@
+{
+  "hearing": {
+    "id": "12cdb8dc-1b99-4f3a-9df7-1559f955127f",
+    "courtCentre": {
+      "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+      "code": "B43KB",
+      "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+      "name": "Coventry Magistrates' Court",
+      "roomName": "Crown Court 3-1",
+      "address": null,
+      "lja": null
+    },
+    "type": {
+      "id": "5ae4c090-0f70-4694-b4fc-707633d2b430",
+      "description": "Sentence",
+      "welshDescription": null
+    },
+    "jurisdictionType": "CROWN",
+    "hearingDays": [
+      {
+        "sittingDay": "2025-04-30T09:00:00",
+        "listedDurationMinutes": 60,
+        "listingSequence": 0
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "id": "9f0ca828-477e-4f53-ba80-ce9f29897ee7",
+        "initiationCode": "C",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "CPS",
+          "prosecutionAuthorityId": "9f0ca828-477e-4f53-ba80-ce9f29897ee7",
+          "caseURN": "82CD34397719"
+        },
+        "defendants": [
+          {
+            "id": "dfaa9be1-8daf-480b-b80a-b4dda1da3bef",
+            "offences": [
+              {
+                "id": "a63d9020-aa6b-4997-92fd-72a692b036de",
+                "offenceDefinitionId": "a86115ce-b611-38e3-8300-1d3d653f5b3a",
+                "offenceCode": "OF61102",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent (sole defendant)",
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
+                "listingNumber": 5,
+                "judicialResults": [],
+                "plea": null,
+                "verdict": null
+              },
+              {
+                "id": "ea1c2cf1-f155-483b-a908-81158a9b2f9b",
+                "offenceDefinitionId": "a86115ce-b611-38e3-8300-1d3d653f5b3a",
+                "offenceCode": "OF61102",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent (sole defendant)",
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, Jane Smith",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
+                "listingNumber": 7,
+                "judicialResults": [],
+                "plea": null,
+                "verdict": null
+              }
+            ],
+            "prosecutionCaseId": "9f0ca828-477e-4f53-ba80-ce9f29897ee7",
+            "personDefendant": {
+              "personDetails": {
+                "gender": "FEMALE",
+                "lastName": "Doe",
+                "middleName": null,
+                "firstName": "Jane",
+                "dateOfBirth": "1982-12-01",
+                "address": {
+                  "address1": "13 Wind Street",
+                  "address2": "Swansea",
+                  "address3": "Wales",
+                  "address4": "UK",
+                  "address5": "Earth",
+                  "postcode": "SA1 1FU"
+                },
+                "contact": {
+                  "home": "+44 114 496 2345",
+                  "mobile": "555 CRIME",
+                  "work": "0114 496 0000"
+                },
+                "ethnicity": null
+              }
+            },
+            "legalEntityDefendant": null,
+            "masterDefendantId": null,
+            "pncId": null,
+            "croNumber": null,
+            "isYouth": false,
+            "cprUUID": "f264bdf5-56cf-45ff-9371-470b18f5c6cb"
+          }
+        ],
+        "caseStatus": null,
+        "caseMarkers": []
+      },
+      {
+        "defendants": [
+          {
+            "id": "1bb7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199",
+            "cprUUID": "f264bdf5-56cf-45ff-9371-470b18f5c6cb",
+            "pncId": "2004/0012345U",
+            "croNumber": "12345ABCDEG",
+            "offences": [
+              {
+                "id": "a63d9020-aa6b-4997-92fd-72a692b036de",
+                "offenceLegislation": "Contrary to section 20 of the Offences Against the    Person Act 1861.",
+                "offenceTitle": "Wound / inflict grievous bodily harm without intent",
+                "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+                "listingNumber": 30,
+                "offenceCode": "ABC001"
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "13 Wind Street",
+                  "address2": "Swansea",
+                  "address3": "Wales",
+                  "address4": "UK",
+                  "address5": "Earth",
+                  "postcode": "SA1 1FU"
+                },
+                "dateOfBirth": "1975-01-01",
+                "firstName": "Arthur",
+                "gender": "MALE",
+                "lastName": "MORGAN",
+                "title": "Mr"
+              }
+            },
+            "prosecutionCaseId": "C2B61C8A-0684-4764-B401-F0A788BC7CCF"
+          }
+        ],
+        "id": "C2C61C8A-0684-4764-B401-F0A788BC7CCF",
+        "prosecutionCaseIdentifier": {
+          "caseURN": "35GD34377719"
+        }
+      }
+    ]
+  }
+}

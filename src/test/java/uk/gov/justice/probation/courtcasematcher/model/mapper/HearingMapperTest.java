@@ -4,7 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
@@ -26,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.COMMON_PLATFORM;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.LIBRA;
 
+@ExtendWith(MockitoExtension.class)
 class HearingMapperTest {
 
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1969, Month.AUGUST, 26);
@@ -64,6 +70,11 @@ class HearingMapperTest {
 
     private LibraHearing aLibraHearing;
 
+    private CprExtractor cprExtractor;
+
+    @Mock
+    private FeatureFlags featureFlags;
+
     @BeforeEach
     void beforeEach() {
 
@@ -83,6 +94,8 @@ class HearingMapperTest {
                 .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
                 .build();
 
+        cprExtractor = new CprExtractor(featureFlags);
+
     }
 
     @DisplayName("New from an existing Defendant, adding match details")
@@ -93,7 +106,7 @@ class HearingMapperTest {
         @Test
         void givenNoMatches_whenMapNewFromDefendantAndSearchResponse_thenCreateNewDefendantWithEmptyListOfMatches() {
 
-            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing)
+            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing, cprExtractor)
                     .getDefendants()
                     .get(0);
             var matchResponse = MatchResponse.builder()
@@ -121,7 +134,7 @@ class HearingMapperTest {
                     .matchProbability(Mono.just(0.91d))
                     .build();
 
-            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing)
+            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing, cprExtractor)
                     .getDefendants()
                     .get(0);
             var matchResponse = MatchResponse.builder()
@@ -167,7 +180,7 @@ class HearingMapperTest {
                             .build())
                     .build();
 
-            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing)
+            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing, cprExtractor)
                     .getDefendants()
                     .get(0);
             var matchResponse = MatchResponse.builder()
@@ -202,7 +215,7 @@ class HearingMapperTest {
                             .build())
                     .build();
 
-            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing)
+            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing, cprExtractor)
                     .getDefendants()
                     .get(0);
             var matchResponse = MatchResponse.builder()
@@ -239,7 +252,7 @@ class HearingMapperTest {
                             .build())
                     .build();
 
-            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing)
+            var defendant = HearingMapper.newFromLibraHearing(aLibraHearing, cprExtractor)
                     .getDefendants()
                     .get(0);
             var matchResponse = MatchResponse.builder()
@@ -290,7 +303,7 @@ class HearingMapperTest {
                     .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
                     .caseNo("123")
                     .build();
-            final var actual = HearingMapper.newFromLibraHearing(nullCase);
+            final var actual = HearingMapper.newFromLibraHearing(nullCase, cprExtractor);
             assertThat(actual).isNotNull();
             assertThat(actual.getSource()).isEqualTo(LIBRA);
         }
@@ -321,7 +334,7 @@ class HearingMapperTest {
                     .offences(Arrays.asList(offence2, offence1))
                     .build();
 
-            var courtCase = HearingMapper.newFromLibraHearing(aCase);
+            var courtCase = HearingMapper.newFromLibraHearing(aCase, cprExtractor);
 
             final var firstDefendant = courtCase.getDefendants().get(0);
             assertThat(firstDefendant.getOffences()).hasSize(2);
