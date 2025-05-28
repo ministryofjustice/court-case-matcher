@@ -70,9 +70,12 @@ public class CprService {
 
     public void setDefendantDetailsWhenExactMatch(Defendant defendant, CprDefendant cprDefendant) {
         if(cprDefendant.getIdentifiers().getCrns().size() == 1) {
-            offenderSearch(cprDefendant.getIdentifiers().getCrns().getFirst()).getSearchResponses().forEach(searchResponse ->
+            List<SearchResponse> searchResponses = offenderSearch(cprDefendant.getIdentifiers().getCrns().getFirst()).getSearchResponses();
+            if(searchResponses.size() == 1) {
+                searchResponses.forEach(searchResponse ->
                     setDefendantProperties(searchResponse.getOtherIds(), searchResponse.getProbationStatusDetail(), defendant)
                 );
+            }
         }
     }
 
