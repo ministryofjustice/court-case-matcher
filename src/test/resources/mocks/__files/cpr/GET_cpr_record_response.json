@@ -25,7 +25,10 @@
       "firstName": "Jon",
       "lastName": "do",
       "middleNames": "Morgain",
-      "title": "Mr"
+      "title": {
+        "code": "Mr",
+        "description": "Mr"
+      }
     }
   ],
   "nationalities": [

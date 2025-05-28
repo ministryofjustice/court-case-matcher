@@ -47,11 +47,11 @@ generic-service:
       PERSON_RECORD_SEARCH_CLIENT_ID: nomis-oauth-client-id
       PERSON_RECORD_SEARCH_CLIENT_SECRET: nomis-oauth-client-secret
       APPINSIGHTS_INSTRUMENTATIONKEY: APPINSIGHTS_INSTRUMENTATIONKEY
-    court-cases-queue-credentials:
+    cpr-court-cases-queue-credentials:
       HMPPS_SQS_QUEUES_COURTCASESQUEUE_QUEUE_NAME: sqs_name
-    court-cases-dlq-credentials:
+    cpr-court-cases-dlq-credentials:
       HMPPS_SQS_QUEUES_COURTCASESQUEUE_DLQ_NAME: sqs_name
-    large-court-cases-s3-credentials:
+    cpr-large-court-cases-s3-bucket:
       AWS_S3_LARGEHEARINGS_BUCKETNAME: bucket_name
 
   autoscaling:

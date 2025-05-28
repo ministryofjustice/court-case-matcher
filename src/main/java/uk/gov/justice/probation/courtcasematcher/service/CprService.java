@@ -1,9 +1,12 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
+import com.nimbusds.oauth2.sdk.util.ListUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
@@ -17,15 +20,19 @@ import uk.gov.justice.probation.courtcasematcher.model.type.MatchType;
 import uk.gov.justice.probation.courtcasematcher.restclient.CprServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAddress;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAlias;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprDefendant;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -58,7 +65,7 @@ public class CprService {
         defendant.setSex(cprDefendant.getSex().getDescription());
         setLatestAddress(defendant, cprDefendant);
         setDefendantDetailsWhenExactMatch(defendant, cprDefendant);
-        defendant.setGroupedOffenderMatches(buildGroupedOffenderMatch(cprDefendant.getIdentifiers().getCrns()));
+        defendant.setGroupedOffenderMatches(buildGroupedOffenderMatch(cprDefendant));
     }
 
     public void setDefendantDetailsWhenExactMatch(Defendant defendant, CprDefendant cprDefendant) {
@@ -98,17 +105,17 @@ public class CprService {
             .build()));
     }
 
-    public GroupedOffenderMatches buildGroupedOffenderMatch(List<String> crns) {
-        if (!crns.isEmpty()) {
+    public GroupedOffenderMatches buildGroupedOffenderMatch(CprDefendant cprDefendant) {
+        if (!cprDefendant.getIdentifiers().getCrns().isEmpty()) {
             return GroupedOffenderMatches.builder()
-                .matches(crns.stream()
-                    .map(this::buildOffenderMatch).toList())
+                .matches(cprDefendant.getIdentifiers().getCrns().stream()
+                    .map(crn -> buildOffenderMatch(crn, cprDefendant.getAliases())).toList())
                 .build();
         }
         return null;
     }
 
-    private OffenderMatch buildOffenderMatch(String crn) {
+    private OffenderMatch buildOffenderMatch(String crn, List<CprAlias> aliases) {
         List<SearchResponse> searchResponses = offenderSearch(crn).getSearchResponses();
         OtherIds otherIds = !searchResponses.isEmpty() ? searchResponses.getFirst().getOtherIds() : null;
         return OffenderMatch.builder()
@@ -116,11 +123,21 @@ public class CprService {
                 .crn(crn)
                 .pnc(otherIds != null ? otherIds.getPncNumber() : null)
                 .cro(otherIds != null ? otherIds.getCroNumber() : null)
+                .aliases(setAliases(aliases))
                 .build())
-            .matchType(MatchType.NAME) //TODO where is match type from?
+            .matchType(MatchType.NAME_DOB_ALIAS)
             .confirmed(false)
             .rejected(false)
             .build();
+    }
+
+    private List<OffenderAlias> setAliases(List<CprAlias> aliases) {
+        return !CollectionUtils.isEmpty(aliases) ?  aliases.stream()
+            .map(cprAlias -> OffenderAlias.builder()
+                .firstName(cprAlias.getFirstName())
+                .surname(cprAlias.getLastName())
+                .middleNames(List.of(cprAlias.getMiddleNames()))
+                .build()).collect(Collectors.toList()) : null;
     }
 
 

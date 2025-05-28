@@ -12,10 +12,13 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.ProbationStatusDet
 import uk.gov.justice.probation.courtcasematcher.restclient.CprServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAddress;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAlias;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAliasTitle;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprDefendant;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprIdentifier;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprSex;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprTitle;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
@@ -142,6 +145,12 @@ public class CprServiceTest {
             .getMatches().getFirst().getMatchIdentifiers().getCro()).isEqualTo("55555");
         assertThat(defendantFromInitialPayload.getGroupedOffenderMatches()
             .getMatches().getFirst().getMatchIdentifiers().getPnc()).isEqualTo("66666");
+        assertThat(defendantFromInitialPayload.getGroupedOffenderMatches()
+            .getMatches().getFirst().getMatchIdentifiers().getAliases().getFirst().getFirstName()).isEqualTo("Toby");
+        assertThat(defendantFromInitialPayload.getGroupedOffenderMatches()
+            .getMatches().getFirst().getMatchIdentifiers().getAliases().getFirst().getSurname()).isEqualTo("Smith");
+        assertThat(defendantFromInitialPayload.getGroupedOffenderMatches()
+            .getMatches().getFirst().getMatchIdentifiers().getAliases().getFirst().getMiddleNames()).isEqualTo(List.of("Tim"));
 
         assertThat(defendantFromInitialPayload.getGroupedOffenderMatches()
             .getMatches().getLast().getMatchIdentifiers().getCrn()).isEqualTo("98765423");
@@ -191,8 +200,6 @@ public class CprServiceTest {
         verify(offenderSearchRestClient, times(2)).search(anyString());
 
         assertThat(defendantFromInitialPayload.getCrn()).isEqualTo("1234567");
-
-
     }
 
     private static CprDefendant getCprDefendant() {
@@ -207,6 +214,12 @@ public class CprServiceTest {
                 .dependentLocality("Rusholme")
                 .postTown("Manchester")
                 .postcode("S1 3RU").build()))
+            .aliases(List.of(CprAlias.builder()
+                .title(CprAliasTitle.builder().code("Mr").description("Mr").build())
+                .firstName("Toby")
+                .lastName("Smith")
+                .middleNames("Tim")
+                .build()))
             .identifiers(CprIdentifier.builder().crns(List.of("1234567", "98765423")).build())
             .build();
     }
