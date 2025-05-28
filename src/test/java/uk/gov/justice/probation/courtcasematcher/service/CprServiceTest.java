@@ -13,12 +13,10 @@ import uk.gov.justice.probation.courtcasematcher.restclient.CprServiceClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.OffenderSearchRestClient;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAddress;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAlias;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAliasTitle;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprDefendant;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprIdentifier;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprSex;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprTitle;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OffenderAlias;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.OtherIds;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponse;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch.SearchResponses;
@@ -215,7 +213,7 @@ public class CprServiceTest {
                 .postTown("Manchester")
                 .postcode("S1 3RU").build()))
             .aliases(List.of(CprAlias.builder()
-                .title(CprAliasTitle.builder().code("Mr").description("Mr").build())
+                .title(CprTitle.builder().code("Mr").description("Mr").build())
                 .firstName("Toby")
                 .lastName("Smith")
                 .middleNames("Tim")

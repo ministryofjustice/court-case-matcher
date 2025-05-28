@@ -10,14 +10,13 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.justice.probation.courtcasematcher.application.TestMessagingConfig;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAddress;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAlias;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprAliasTitle;
+import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprTitle;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprDefendant;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprEthnicity;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprIdentifier;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprNationality;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprReligion;
 import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprSex;
-import uk.gov.justice.probation.courtcasematcher.restclient.model.cprservice.CprTitle;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockExtension;
 import uk.gov.justice.probation.courtcasematcher.wiremock.WiremockMockServer;
 
@@ -75,7 +74,7 @@ public class CprServiceClientIntTest {
                     .firstName("Jon")
                     .lastName("do")
                     .middleNames("Morgain")
-                    .title(CprAliasTitle.builder().code("Mr").description("Mr").build())
+                    .title(CprTitle.builder().code("Mr").description("Mr").build())
                 .build()))
             .nationalities(List.of(CprNationality.builder().code("GB").description("GB").build()))
             .addresses(List.of(CprAddress.builder()

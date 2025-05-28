@@ -16,5 +16,5 @@ public class CprAlias {
     private String firstName;
     private String lastName;
     private String middleNames;
-    private CprAliasTitle title;
+    private CprTitle title;
 }
