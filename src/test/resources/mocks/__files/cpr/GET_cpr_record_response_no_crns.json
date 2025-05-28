@@ -1,0 +1,57 @@
+{
+  "cprUUID": "f264bdf5-56cf-45ff-9371-470b18f5c6cb",
+  "firstName": "Jane",
+  "middleNames": null,
+  "lastName": "Doe",
+  "dateOfBirth": "1982-12-01",
+  "title": {
+    "code": "Mrs",
+    "description": "Mrs"
+  },
+  "sex": {
+    "code": "F",
+    "description": "Female"
+  },
+  "religion": {
+    "code": "Christianity",
+    "description": "Christianity"
+  },
+  "ethnicity": {
+    "code": "British",
+    "description": "British"
+  },
+  "aliases": [],
+  "nationalities": [],
+  "addresses": [
+    {
+      "noFixedAbode": null,
+      "startDate": null,
+      "endDate": null,
+      "postcode": "SA1 1FU",
+      "subBuildingName": null,
+      "buildingName": "13 Wind Street",
+      "buildingNumber": "Swansea",
+      "thoroughfareName": "Wales",
+      "dependentLocality": "UK",
+      "postTown": "Earth",
+      "county": null,
+      "country": null,
+      "uprn": null
+    }
+  ],
+  "identifiers": {
+    "crns": [],
+    "prisonNumbers": [],
+    "defendantIds": [
+      "183918eb-61d0-4fd0-bc7d-0f834b008a4b",
+      "3eced47e-3d55-4177-99b6-f9d827694f82",
+      "dfaa9be1-8daf-480b-b80a-b4dda1da3bef"
+    ],
+    "cids": [],
+    "pncs": [],
+    "cros": [],
+    "nationalInsuranceNumbers": [],
+    "driverLicenseNumbers": [],
+    "arrestSummonsNumbers": []
+  }
+}

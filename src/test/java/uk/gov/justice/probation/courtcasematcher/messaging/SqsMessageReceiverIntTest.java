@@ -3,7 +3,6 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,9 +16,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
-import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.test.context.ActiveProfiles;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
@@ -47,9 +46,7 @@ import java.util.concurrent.TimeUnit;
 import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
@@ -431,52 +428,6 @@ public class SqsMessageReceiverIntTest {
 
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verifyNoMoreInteractions(telemetryService);
-    }
-
-    @Nested
-    public class GivenMatchOnEveryNoRecordUpdateFlagIsEnabled {
-        @BeforeEach
-        public void setUp() {
-            featureFlags.setFlagValue("match-on-every-no-record-update", true);
-        }
-
-        @Test
-        public void andExistingCaseWithNoCrn_whenReceivePayload_thenAttemptMatchAndSendExistingCase () throws
-        IOException {
-            var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/hearing-existing-no-crns.json"));
-            publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
-            await()
-                    .atMost(15, TimeUnit.SECONDS)
-                    .until(() -> countPutRequestsTo("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f") == 1);
-
-            MOCK_SERVER.verify(
-                    putRequestedFor(urlMatching("/hearing/8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f"))
-                            // Values from incoming case
-                            .withRequestBody(matchingJsonPath("caseId", equalTo("D517D32D-3C80-41E8-846E-D274DC2B94A5")))
-                            .withRequestBody(matchingJsonPath("hearingId", equalTo("8bbb4fe3-a899-45c7-bdd4-4ee25ac5a83f")))
-                            .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
-                            .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("63259cd9-cb18-4563-b72e-d8baf7c35684")))
-                            .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
-                            // Values from court-case-service
-                            .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("X198765")))
-                            // Values from probation status update
-                            .withRequestBody(matchingJsonPath("defendants[1].probationStatus", equalTo("CURRENT")))
-                            .withRequestBody(matchingJsonPath("defendants[1].breach", equalTo("true")))
-                            .withRequestBody(matchingJsonPath("defendants[1].awaitingPsr", equalTo("true")))
-            );
-
-            MOCK_SERVER.verify(postRequestedFor(urlEqualTo("/person-match"))
-              .withRequestBody(matchingJsonPath("unique_id.0", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
-              .withRequestBody(matchingJsonPath("unique_id.1", equalTo("8e05e32f-8d2c-4782-bcdc-82983099f3fb")))
-            );
-
-            
-            verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-            verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
-            verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
-            verifyNoMoreInteractions(telemetryService);
-        }
-
     }
 
     @TestConfiguration

@@ -165,7 +165,6 @@ class HearingProcessorTest {
 
         @Test
         void whenThatCaseHasChanged_ThenUpdateAndSave() {
-            when(featureFlags.getFlag("match-on-every-no-record-update")).thenReturn(false);
             var courtCase = Hearing.builder()
                     .caseId(caseId)
                     .hearingDays(Collections.singletonList(HearingDay.builder()
@@ -198,51 +197,6 @@ class HearingProcessorTest {
             verify(telemetryService).trackHearingUnChangedEvent(any(Hearing.class));
             verify(courtCaseService).findHearing(any(Hearing.class));
             verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
-        }
-        @Nested
-        public class AndTheMatchOnEveryNoRecordFlagIsSet {
-            private Hearing hearing;
-
-            @BeforeEach
-            public void setUp() {
-                when(featureFlags.getFlag("match-on-every-no-record-update")).thenReturn(true);
-                hearing = Hearing.builder()
-                        .caseId(caseId)
-                        .urn("12345")
-                        .defendants(Collections.singletonList(existingNoRecordDefendant))
-                        .build();
-            }
-
-
-            @Test
-            void whenThatCaseHasChanged_andItIsANoRecord_ThenMatchAndSave() {
-                var hearingMerged = HearingMapper.merge(hearing, existingNoRecordHearing);
-                when(courtCaseService.findHearing(hearing)).thenReturn(Mono.just(existingNoRecordHearing));
-                when(matcherService.matchDefendant(existingNoRecordDefendant, hearingMerged)).thenReturn(Mono.just(existingNoRecordDefendant));
-
-                hearingProcessor.process(hearing, MESSAGE_ID);
-
-                verify(matcherService).matchDefendant(eq(existingNoRecordDefendant), eq(hearingMerged));
-                verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
-                verify(courtCaseService).findHearing(hearing);
-                verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveHearing(eq(hearingMerged));
-                verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
-            }
-
-            @Test
-            void whenThatCaseHasChanged_AndItIsNotANoRecord_ThenUpdateAndSave() {
-                var courtCaseMerged = HearingMapper.merge(hearing, existingHearing);
-                when(courtCaseService.findHearing(hearing)).thenReturn(Mono.just(existingHearing));
-                when(courtCaseService.updateDefendant(existingDefendant)).thenReturn(Mono.just(existingDefendant));
-
-                hearingProcessor.process(hearing, MESSAGE_ID);
-
-                verify(courtCaseService).updateDefendant(existingDefendant);
-                verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
-                verify(courtCaseService).findHearing(any(Hearing.class));
-                verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveHearing(eq(courtCaseMerged));
-                verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
-            }
         }
     }
 

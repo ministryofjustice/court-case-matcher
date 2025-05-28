@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 
@@ -55,8 +56,9 @@ public class LibraHearing {
     private final String courtCode;
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
+    private final String cprUUID;
 
-    public Hearing asDomain() {
-        return HearingMapper.newFromLibraHearing(this);
+    public Hearing asDomain(CprExtractor cprExtractor) {
+        return HearingMapper.newFromLibraHearing(this, cprExtractor);
     }
 }

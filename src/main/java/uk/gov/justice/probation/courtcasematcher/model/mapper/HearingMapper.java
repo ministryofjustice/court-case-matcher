@@ -3,6 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.model.mapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
@@ -39,7 +40,7 @@ import static java.util.Comparator.comparing;
 @Slf4j
 public class HearingMapper {
 
-    public static Hearing newFromLibraHearing(LibraHearing aLibraHearing) {
+    public static Hearing newFromLibraHearing(LibraHearing aLibraHearing, CprExtractor cprExtractor) {
         return Hearing.builder()
                 .hearingDays(Collections.singletonList(HearingDay.builder()
                         .courtCode(aLibraHearing.getCourtCode())
@@ -56,6 +57,7 @@ public class HearingMapper {
                         .cro(aLibraHearing.getCro())
                         .pnc(aLibraHearing.getPnc())
                         .offences(Optional.ofNullable(aLibraHearing.getOffences()).map(HearingMapper::fromOffences).orElse(Collections.emptyList()))
+                        .cprUUID(cprExtractor.canExtractCprFields(aLibraHearing.getCourtCode()) ? aLibraHearing.getCprUUID() : null)
                         .build()))
                 .source(DataSource.LIBRA)
                 .caseNo(aLibraHearing.getCaseNo())

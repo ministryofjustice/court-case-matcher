@@ -2,7 +2,6 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder.Default;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -79,39 +78,9 @@ public class HearingProcessor {
                 );
     }
 
-    private void applyMatches_Or_Update_thenSave(Hearing hearing) {
-        log.info("Upsert caseId {}", hearing.getCaseId());
-
-        Mono.just(hearing.getDefendants()
-                        .stream()
-                        .map(defendant -> {
-                            if (defendant.shouldMatchToOffender()) {
-                                return matcherService.matchDefendant(defendant, hearing);
-                            } else if (defendant.getCrn() != null) {
-                                return courtCaseService.updateDefendant(defendant);
-                            } else {
-                                return Mono.just(defendant);
-                            }
-
-                        })
-                        .map(Mono::block)
-                        .collect(Collectors.toList())
-                )
-                .map(hearing::withDefendants)
-                .onErrorReturn(hearing)
-                .doOnSuccess(courtCaseService::saveHearing)
-                .block();
-    }
-
-
     private void mergeAndUpdateExistingHearing(Hearing receivedHearing, Hearing existingHearing) {
         var courtCaseMerged = HearingMapper.merge(receivedHearing, existingHearing);
-
-        if(featureFlags.getFlag("match-on-every-no-record-update")) { //TODO this is always set to false in prod and therefore should be removed
-            applyMatches_Or_Update_thenSave(courtCaseMerged);
-        } else {
-            updateAndSave(courtCaseMerged);
-        }
+        updateAndSave(courtCaseMerged);
     }
 
     private void applyMatchesAndSave(final Hearing hearing) {

@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPattern": "/hearing/b8163add-e182-4df6-9d43-77c7bcf2dad3",
+    "bodyPatterns": [
+      {
+        "matches" : ".*caseId.*5ab29194-687d-4260-9c43-b32e6f4b75db.*"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "put-court-case/PUT_case_details_body.json"
+  }
+}
