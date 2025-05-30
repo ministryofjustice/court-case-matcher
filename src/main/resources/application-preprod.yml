@@ -18,4 +18,4 @@ person-record-service:
 feature:
   flags:
     save_person_id_to_court_case_service: false
-    cpr_matcher: false
+    cpr_matcher: true
