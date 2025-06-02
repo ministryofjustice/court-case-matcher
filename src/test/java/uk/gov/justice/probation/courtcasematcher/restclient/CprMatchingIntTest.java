@@ -513,7 +513,7 @@ public class CprMatchingIntTest {
                 .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B43KB")))
                 .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("dfaa9be1-8daf-480b-b80a-b4dda1da3bef")))
                 .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("V147283")))
-                .withRequestBody(matchingJsonPath("defendants[0].cprUUID", equalTo("9b9c77d4-0652-4444-91eb-2786c5a93fce")))
+                .withRequestBody(matchingJsonPath("defendants[0].cprUUID", equalTo("84e022e0-773d-4a36-9829-03c76bcaa789")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
                 .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))

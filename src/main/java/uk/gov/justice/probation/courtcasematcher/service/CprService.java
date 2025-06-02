@@ -55,6 +55,7 @@ public class CprService {
     }
 
     private void mapCprDefendantToDefendant(Defendant defendant, CprDefendant cprDefendant) {
+        defendant.setCprUUID(cprDefendant.getCprUUID());
         defendant.setName(Name.builder()
             .title(cprDefendant.getTitle().getDescription())
                 .forename1(cprDefendant.getFirstName())
