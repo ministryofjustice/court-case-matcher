@@ -84,6 +84,7 @@ public class CprServiceTest {
         Defendant defendantFromInitialPayload = Defendant.builder()
             .cprUUID("1234").build();
         CprDefendant cprDefendant = CprDefendant.builder()
+            .cprUUID("1234")
             .dateOfBirth("1995-02-02")
             .title(CprTitle.builder().code("Mr").description("Mr").build())
             .sex(CprSex.builder().code("Male").description("Male").build())
@@ -202,6 +203,7 @@ public class CprServiceTest {
 
     private static CprDefendant getCprDefendant() {
         return CprDefendant.builder()
+            .cprUUID("1234")
             .dateOfBirth("1995-02-02")
             .title(CprTitle.builder().code("Mr").description("Mr").build())
             .sex(CprSex.builder().code("Male").description("Male").build())

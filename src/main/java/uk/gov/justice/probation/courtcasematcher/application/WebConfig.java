@@ -91,6 +91,7 @@ public class WebConfig {
                 new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
         return defaultWebClientBuilder()
                 .baseUrl(this.personRecordServiceBaseUrl)
+                .clientConnector(new ReactorClientHttpConnector(HttpClient.create().followRedirect(true)))
                 .filter(oauth2Client)
                 .build();
     }

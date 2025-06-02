@@ -493,6 +493,55 @@ public class CprMatchingIntTest {
         );
     }
 
+    @Test
+    public void givenCprIssues301_follow_the_redirect() throws IOException {
+        var hearing = Files.readString(Paths.get(BASE_PATH + "/common-platform/cpr/hearing-one-defendant-redirect.json"));
+
+        publishMessage(hearing, Map.of("messageType", MessageAttributeValue.builder().dataType("String").stringValue("COMMON_PLATFORM_HEARING").build(), "hearingEventType", MessageAttributeValue.builder().dataType("String").stringValue("Resulted").build()));
+
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .until(() -> countPutRequestsTo("/hearing/b98fba88-1783-4bbb-8bf2-268caecf4b94") == 1);
+
+        MOCK_SERVER.verify(
+            putRequestedFor(urlMatching("/hearing/b98fba88-1783-4bbb-8bf2-268caecf4b94"))
+                .withRequestBody(matchingJsonPath("caseId", equalTo("9f0ca828-477e-4f53-ba80-ce9f29897ee7")))
+                .withRequestBody(matchingJsonPath("hearingId", equalTo("b98fba88-1783-4bbb-8bf2-268caecf4b94")))
+                .withRequestBody(matchingJsonPath("hearingEventType", equalTo("Resulted")))
+                .withRequestBody(matchingJsonPath("urn", equalTo("82CD34397719")))
+                .withRequestBody(matchingJsonPath("caseNo", equalTo("9f0ca828-477e-4f53-ba80-ce9f29897ee7")))
+                .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B43KB")))
+                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("dfaa9be1-8daf-480b-b80a-b4dda1da3bef")))
+                .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("V147283")))
+                .withRequestBody(matchingJsonPath("defendants[0].cprUUID", equalTo("84e022e0-773d-4a36-9829-03c76bcaa789")))
+                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.home", equalTo("+44 114 496 2345")))
+                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.work", equalTo("0114 496 0000")))
+                .withRequestBody(matchingJsonPath("defendants[0].phoneNumber.mobile", equalTo("555 CRIME")))
+                .withRequestBody(matchingJsonPath("defendants[0].probationStatus", equalTo("CURRENT")))
+                .withRequestBody(matchingJsonPath("defendants[0].breach", equalTo("false")))
+                .withRequestBody(matchingJsonPath("defendants[0].awaitingPsr", equalTo("true")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("5")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("OF61102")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].plea", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[0].verdict",  absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].listNo", equalTo("7")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].offenceCode", equalTo("OF61102")))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].plea", absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].offences[1].verdict",  absent()))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line1",  equalTo("1 West Street")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line2",  equalTo("Sheffield")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line3",  equalTo("England")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line4",  equalTo("UK")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.line5",  equalTo("Sheffield")))
+                .withRequestBody(matchingJsonPath("defendants[0].address.postcode",  equalTo("SA4 1FU")))
+                .withRequestBody(matchingJsonPath("defendants[0].dateOfBirth",  equalTo("1983-06-01")))
+                .withRequestBody(matchingJsonPath("defendants[0].name.forename1",  equalTo("Bob")))
+                .withRequestBody(matchingJsonPath("defendants[0].name.surname",  equalTo("Dole")))
+        );
+
+        MOCK_SERVER.checkForUnmatchedRequests();
+    }
+
     private void publishMessage(String hearing, Map<String, MessageAttributeValue> attributes) {
         HmppsTopicKt.publish(topic, eventType, hearing,true, attributes, DEFAULT_RETRY_POLICY, DEFAULT_BACKOFF_POLICY, "COURT_HEARING_EVENT_RECEIVER");
     }

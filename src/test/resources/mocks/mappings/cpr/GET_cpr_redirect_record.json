@@ -1,0 +1,14 @@
+{
+  "id" : "375aaf40-4ed1-4656-bbb3-cc813e3434ba",
+  "request": {
+    "method": "GET",
+    "urlPath": "/person/9b9c77d4-0652-4444-91eb-2786c5a93fce"
+  },
+  "response": {
+    "status": 301,
+    "headers": {
+      "Content-Type": "application/json",
+      "Location": "/person/84e022e0-773d-4a36-9829-03c76bcaa789"
+    }
+  }
+}
