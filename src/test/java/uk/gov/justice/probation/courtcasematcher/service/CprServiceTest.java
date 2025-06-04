@@ -50,7 +50,7 @@ public class CprServiceTest {
         Defendant defendantFromInitialPayload = Defendant.builder()
             .cprUUID("1234").build();
 
-        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant()));
+        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant("1995-02-02")));
         when(offenderSearchRestClient.search(anyString())).thenReturn(Mono.just(SearchResponses.builder().build()));
         cprService.updateDefendant(defendantFromInitialPayload);
 
@@ -128,7 +128,7 @@ public class CprServiceTest {
         Defendant defendantFromInitialPayload = Defendant.builder()
             .cprUUID("1234").build();
 
-        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant()));
+        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant("1995-02-02")));
         when(offenderSearchRestClient.search(anyString())).thenReturn(Mono.just(SearchResponses.builder()
             .searchResponses(List.of(SearchResponse.builder().otherIds(OtherIds.builder()
                     .crn("1234567")
@@ -166,7 +166,7 @@ public class CprServiceTest {
         Defendant defendantWithNoCprUUIDFromInitialPayload = Defendant.builder()
             .defendantId("5678").build();
 
-        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant()));
+        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant("1995-02-02")));
         when(offenderSearchRestClient.search(anyString())).thenReturn(Mono.just(SearchResponses.builder().build()));
         cprService.updateDefendants(List.of(defendantFromInitialPayload, defendantWithNoCprUUIDFromInitialPayload));
 
@@ -201,10 +201,33 @@ public class CprServiceTest {
         assertThat(defendantFromInitialPayload.getCrn()).isEqualTo("1234567");
     }
 
-    private static CprDefendant getCprDefendant() {
+    @Test
+    public void shouldProcessPayload_whenOnCprReturnsNullDateOfBirth() {
+        Defendant defendantFromInitialPayload = Defendant.builder()
+            .cprUUID("1234").build();
+
+        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant(null)));
+        when(offenderSearchRestClient.search(anyString())).thenReturn(Mono.just(SearchResponses.builder().build()));
+        cprService.updateDefendant(defendantFromInitialPayload);
+
+        verify(cprServiceClient).getCprCanonicalRecord(anyString());
+        assertThat(defendantFromInitialPayload.getCprUUID()).isEqualTo("1234");
+        assertThat(defendantFromInitialPayload.getSex()).isEqualTo("MALE");
+        assertThat(defendantFromInitialPayload.getAddress()).isEqualTo(Address.builder()
+            .line1("A building")
+            .line2("31")
+            .line3("Something Road")
+            .line4("Rusholme")
+            .line5("Manchester")
+            .postcode("S1 3RU")
+            .build());
+
+    }
+
+    private static CprDefendant getCprDefendant(String dateOfBirth) {
         return CprDefendant.builder()
             .cprUUID("1234")
-            .dateOfBirth("1995-02-02")
+            .dateOfBirth(dateOfBirth)
             .title(CprTitle.builder().code("Mr").description("Mr").build())
             .sex(CprSex.builder().code("Male").description("Male").build())
             .addresses(List.of(CprAddress.builder()

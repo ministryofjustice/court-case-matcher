@@ -62,11 +62,17 @@ public class CprService {
                 .forename2(cprDefendant.getMiddleNames())
                 .surname(cprDefendant.getLastName())
             .build());
-        defendant.setDateOfBirth(LocalDate.parse(cprDefendant.getDateOfBirth(), DateTimeFormatter.ISO_DATE));
+        setDateOfBirth(defendant, cprDefendant);
         defendant.setSex(cprDefendant.getSex().getDescription());
         setLatestAddress(defendant, cprDefendant);
         setDefendantDetailsWhenExactMatch(defendant, cprDefendant);
         defendant.setGroupedOffenderMatches(buildGroupedOffenderMatch(cprDefendant));
+    }
+
+    private void setDateOfBirth(Defendant defendant, CprDefendant cprDefendant) {
+        if(cprDefendant.getDateOfBirth() != null) {
+            defendant.setDateOfBirth(LocalDate.parse(cprDefendant.getDateOfBirth(), DateTimeFormatter.ISO_DATE));
+        }
     }
 
     public void setDefendantDetailsWhenExactMatch(Defendant defendant, CprDefendant cprDefendant) {
