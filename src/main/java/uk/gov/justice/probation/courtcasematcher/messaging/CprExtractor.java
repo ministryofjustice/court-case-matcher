@@ -10,9 +10,17 @@ import java.util.List;
 @Slf4j
 public class CprExtractor {
 
-    public static final String OXFORD_MAGISTRATES = "B43KB";
+    public static final String BASINGSTOKE = "B44BA";
+    public static final String MILTON_KEYNES = "B43JC";
+    public static final String NEWPORT_ISLE_OF_WIGHT = "B44JK";
+    public static final String OXFORD = "B43KB";
+    public static final String PORTSMOUTH = "B44KM";
+    public static final String READING = "B43KQ";
+    public static final String SOUTHAMPTON = "B44MA";
+    public static final String HIGH_WYCOMBE = "B43OX";
 
-    private final List<String> courtCodes = List.of(OXFORD_MAGISTRATES);
+    private final List<String> courtCodes = List.of(BASINGSTOKE, MILTON_KEYNES,NEWPORT_ISLE_OF_WIGHT,
+        OXFORD, PORTSMOUTH, READING, SOUTHAMPTON, HIGH_WYCOMBE);
     private final FeatureFlags featureFlags;
 
     public CprExtractor(FeatureFlags featureFlags) {
