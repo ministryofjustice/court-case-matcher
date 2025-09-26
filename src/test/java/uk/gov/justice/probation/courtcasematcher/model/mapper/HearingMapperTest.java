@@ -59,6 +59,7 @@ class HearingMapperTest {
     private static final String DEFENDANT_ID = "9E27A145-E847-4AAB-9FF9-B88912520D14";
     private static final String DEFENDANT_ID_2 = "F01ADD33-C534-44A6-BD7B-F2AAD0FB750C";
     private static final String CASE_ID = "8CC06F57-F5F7-4858-A9BF-035F7D6AC60F";
+    private static final String CID = "CID123";
 
     private static List<OffenderAlias> offenderAliases = List.of(OffenderAlias.builder()
             .dateOfBirth(LocalDate.of(2000, 01, 01))
@@ -92,6 +93,7 @@ class HearingMapperTest {
                 .seq(1)
                 .offences(singletonList(buildOffence("NEW Theft from a person", 1)))
                 .sessionStartTime(LocalDateTime.of(DATE_OF_HEARING, START_TIME))
+                .cId(CID)
                 .build();
 
         cprExtractor = new CprExtractor(featureFlags);
@@ -148,6 +150,7 @@ class HearingMapperTest {
             assertThat(newDefendant.getCrn()).isEqualTo(CRN);
             assertThat(newDefendant.getPnc()).isNull();
             assertThat(newDefendant.getCro()).isNull();
+            assertThat(newDefendant.getCId()).isEqualTo(CID);
             assertThat(newDefendant.getOffender().getPnc()).isEqualTo(OFFENDER_SEARCH_PNC);
             assertThat(newDefendant.getOffender().getCro()).isEqualTo(OFFENDER_SEARCH_CRO);
             assertThat(newDefendant.getProbationStatus()).isEqualTo("CURRENT");
@@ -372,6 +375,7 @@ class HearingMapperTest {
                             .suspendedSentenceOrder(Boolean.TRUE)
                             .crn("X320741")
                             .pnc("PNC")
+                            .cId("CID123")
                             .probationStatus("CURRENT")
                             .address(null)
                             .name(Name.builder()

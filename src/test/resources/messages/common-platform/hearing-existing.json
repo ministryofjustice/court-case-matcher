@@ -35,6 +35,7 @@
             "id": "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199",
             "pncId": "2004/0012345U",
             "croNumber": "12345ABCDEF",
+            "cId": "CID1234",
             "offences": [
               {
                 "id": "a63d9020-aa6b-4997-92fd-72a692b036de",

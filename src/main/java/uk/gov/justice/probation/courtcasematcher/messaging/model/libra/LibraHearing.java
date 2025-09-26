@@ -57,6 +57,7 @@ public class LibraHearing {
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
     private final String cprUUID;
+    private final String cId;
 
     public Hearing asDomain(CprExtractor cprExtractor) {
         return HearingMapper.newFromLibraHearing(this, cprExtractor);

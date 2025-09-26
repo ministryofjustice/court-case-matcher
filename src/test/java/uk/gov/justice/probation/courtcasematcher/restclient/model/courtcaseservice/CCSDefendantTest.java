@@ -55,6 +55,7 @@ class CCSDefendantTest {
         assertThat(actual.getCrn()).isEqualTo("CRN");
         assertThat(actual.getPnc()).isEqualTo("PNC");
         assertThat(actual.getCro()).isEqualTo("CRO");
+        assertThat(actual.getCId()).isEqualTo("CID");
         assertThat(actual.getPreSentenceActivity()).isEqualTo(true);
         assertThat(actual.getPreviouslyKnownTerminationDate()).isEqualTo(LocalDate.of(2021, 10, 5));
         assertThat(actual.getSex()).isEqualTo("MALE");
@@ -88,6 +89,7 @@ class CCSDefendantTest {
                 .withCrn("CRN")
                 .withPnc("PNC")
                 .withCro("CRO")
+                .withCId("CID")
                 .withPreSentenceActivity(true)
                 .withPreviouslyKnownTerminationDate(LocalDate.of(2021, 10, 5))
                 .withSex("M")
