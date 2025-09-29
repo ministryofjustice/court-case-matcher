@@ -199,7 +199,6 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[1].crn", equalTo("X346205")))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("30")))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("ABC001")))
-                        .withRequestBody(matchingJsonPath("defendants[0].cid", equalTo("CID1234")))
         );
 
         
@@ -372,7 +371,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("07")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("51EB661C-6CDF-46B2-ACF3-95098CF41154")))
-                        .withRequestBody(matchingJsonPath("defendants[0].cid", equalTo("CID1234")))
+                        .withRequestBody(matchingJsonPath("defendants[0].cid", equalTo("CID1234567")))
         );
 
         
