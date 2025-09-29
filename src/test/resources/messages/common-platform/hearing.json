@@ -7,7 +7,7 @@
       "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
       "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
       "roomName": "Crown Court 3-1",
-      "code": "B43KB"
+      "code": "B10JQ00"
     },
     "hearingDays": [
       {
@@ -28,8 +28,7 @@
         "defendants": [
           {
             "id": "0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199",
-            "cId": "CID1234",
-            "cprUUID": "91e518a6-47ca-4aed-bbf3-d7f9c892245f",
+            "cprUUID": "12345",
             "pncId": "2004/0012345U",
             "croNumber": "12345ABCDEF",
             "offences": [
@@ -71,7 +70,7 @@
           },
           {
             "id": "903c4c54-f667-4770-8fdf-1adbb5957c25",
-            "cprUUID": "24942c4b-c149-4dc8-bcba-342ef0183e41",
+            "cprUUID": "6789",
             "offences": [
               {
                 "id": "1391ADC2-7A43-48DC-8523-3D28B9DCD2B7",

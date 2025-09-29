@@ -41,8 +41,6 @@ public class CPDefendant {
     @JsonProperty(value="isYouth")
     private final boolean isYouth;
     private final String cprUUID;
-    @JsonProperty(value="cId")
-    private final String cId;
 
     public Defendant asDomain(boolean canExtractCprFields) {
         if (personDefendant == null && legalEntityDefendant == null) {
@@ -72,7 +70,6 @@ public class CPDefendant {
                 .defendantId(getId())
                 .pnc(correctPnc(getPncId()))
                 .cro(getCroNumber())
-                .cId(getCId())
                 .offences(getOffences().stream()
                         .map(CPOffence::asDomain)
                         .collect(Collectors.toList()));

@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.libra;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -57,6 +58,7 @@ public class LibraHearing {
     private final String courtRoom;
     private final LocalDateTime sessionStartTime;
     private final String cprUUID;
+    @JsonProperty(value="cId")
     private final String cId;
 
     public Hearing asDomain(CprExtractor cprExtractor) {
