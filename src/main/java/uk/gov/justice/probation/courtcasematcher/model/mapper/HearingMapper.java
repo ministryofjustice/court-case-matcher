@@ -58,6 +58,7 @@ public class HearingMapper {
                         .pnc(aLibraHearing.getPnc())
                         .offences(Optional.ofNullable(aLibraHearing.getOffences()).map(HearingMapper::fromOffences).orElse(Collections.emptyList()))
                         .cprUUID(cprExtractor.canExtractCprFields(aLibraHearing.getCourtCode()) ? aLibraHearing.getCprUUID() : null)
+                        .cId(aLibraHearing.getCId())
                         .build()))
                 .source(DataSource.LIBRA)
                 .caseNo(aLibraHearing.getCaseNo())
@@ -131,6 +132,7 @@ public class HearingMapper {
                         .withPreSentenceActivity(existing.getPreSentenceActivity())
                         .withConfirmedOffender(existing.getConfirmedOffender())
                         .withPersonId(existing.getPersonId())
+                        .withCId(existing.getCId() != null ?  existing.getCId() : incoming.getCId())
                 )
                 .orElse(incoming);
     }
