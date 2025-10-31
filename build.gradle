@@ -51,7 +51,7 @@ jar {
 }
 
 ext {
-    restAssuredVersion = '5.5.0'
+    restAssuredVersion = '5.5.1'
 }
 
 dependencies {
