@@ -18,7 +18,7 @@ class CPDefendantTest {
     @Test
     public void person_asDomain() {
         final var actual = getCpDefendant()
-                .asDomain(false);
+                .asDomain();
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.PERSON);
@@ -65,7 +65,7 @@ class CPDefendantTest {
                 .pncId("20071234557L")
                 .croNumber("croNumber")
                 .build()
-                .asDomain(false);
+                .asDomain();
 
         assertThat(actual.getDefendantId()).isEqualTo("2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9");
         assertThat(actual.getType()).isEqualTo(DefendantType.ORGANISATION);
@@ -89,7 +89,7 @@ class CPDefendantTest {
                 .build();
 
         assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> defendant.asDomain(false))
+                .isThrownBy(() -> defendant.asDomain())
                 .withMessage("Defendant with id '2B6AAC03-FEFD-41E9-87C2-7B3E8B8F27D9' is neither a person nor a legal entity");
 
     }
@@ -137,7 +137,7 @@ class CPDefendantTest {
             .pncId("20071234557L")
             .croNumber("croNumber")
             .build()
-            .asDomain(false);
+            .asDomain();
 
         assertThat(actual).isNull();
     }
@@ -145,7 +145,7 @@ class CPDefendantTest {
     @Test
     public void processCprFields_ifEnabled() {
         final var actual = getCpDefendant()
-            .asDomain(true);
+            .asDomain();
 
         assertThat(actual).isNotNull();
         assertThat(actual.getCprUUID()).isEqualTo("CPRDEFENDANTID");

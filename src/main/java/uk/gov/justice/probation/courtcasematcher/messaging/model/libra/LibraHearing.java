@@ -12,7 +12,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 
@@ -61,7 +60,7 @@ public class LibraHearing {
     @JsonProperty(value="cId")
     private final String cId;
 
-    public Hearing asDomain(CprExtractor cprExtractor) {
-        return HearingMapper.newFromLibraHearing(this, cprExtractor);
+    public Hearing asDomain() {
+        return HearingMapper.newFromLibraHearing(this);
     }
 }

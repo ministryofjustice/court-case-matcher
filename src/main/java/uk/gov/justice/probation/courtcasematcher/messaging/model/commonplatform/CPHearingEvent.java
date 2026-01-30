@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public class CPHearingEvent {
     @Valid
     private final CPHearing hearing;
 
-    public List<Hearing> asDomain(CprExtractor cprExtractor) {
-        return hearing.asDomain(cprExtractor);
+    public List<Hearing> asDomain() {
+        return hearing.asDomain();
     }
 }

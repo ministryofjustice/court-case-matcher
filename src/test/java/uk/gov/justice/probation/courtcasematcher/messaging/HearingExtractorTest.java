@@ -63,8 +63,6 @@ class HearingExtractorTest {
     S3Service s3Service;
     @Mock
     ObjectMapper objectMapper;
-    @Mock
-    private CprExtractor cprExtractor;
 
     private HearingExtractor hearingExtractor;
     private final SnsMessageContainer.SnsMessageContainerBuilder messageContainerBuilder = SnsMessageContainer.builder()
@@ -103,8 +101,7 @@ class HearingExtractorTest {
                 libraParser,
                 commonPlatformParser,
                 objectMapper,
-                s3Service,
-                cprExtractor
+                s3Service
         );
     }
 
