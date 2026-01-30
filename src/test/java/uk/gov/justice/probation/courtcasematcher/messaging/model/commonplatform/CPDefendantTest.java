@@ -41,7 +41,7 @@ class CPDefendantTest {
                 .mobile(TEST_CP_CONTACT.getMobile())
                 .home(TEST_CP_CONTACT.getHome())
                 .build());
-        assertThat(actual.getCprUUID()).isNull();
+        assertThat(actual.getCprUUID()).isNotNull();
     }
 
     @Test
