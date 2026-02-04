@@ -257,7 +257,6 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
-                        .withRequestBody(matchingJsonPath("defendants[0].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
 
                         .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X346204")))
                         .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
@@ -270,7 +269,6 @@ public class SqsMessageReceiverIntTest {
         
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackNewHearingEvent(any(Hearing.class), any(String.class));
-        verify(telemetryService).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verifyNoMoreInteractions(telemetryService);
     }
 
