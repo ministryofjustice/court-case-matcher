@@ -1,8 +1,6 @@
 package uk.gov.justice.probation.courtcasematcher.messaging.model.commonplatform;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Name;
 
@@ -13,7 +11,6 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.COMMON_PLATFORM;
 
-@ExtendWith(MockitoExtension.class)
 class CPHearingTest {
 
     @Test

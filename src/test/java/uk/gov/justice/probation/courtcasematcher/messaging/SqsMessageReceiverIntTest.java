@@ -195,7 +195,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
                         // Values from offender search
-                        .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X320741")))
+                        .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
                         .withRequestBody(matchingJsonPath("defendants[1].crn", absent()))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].listNo", equalTo("30")))
                         .withRequestBody(matchingJsonPath("defendants[0].offences[0].offenceCode", equalTo("ABC001")))
@@ -226,7 +226,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
-                         .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X320741")))
+                        .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
                         .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
         );
@@ -257,7 +257,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
                         .withRequestBody(matchingJsonPath("defendants[0].personId", absent()))
 
-                        .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X320741")))
+                        .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
                         .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
                         .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
@@ -272,7 +272,7 @@ public class SqsMessageReceiverIntTest {
     }
 
     @Test
-    public void givenLargeHearing_whenExactPersonRecordFound_thenSetPersonIdOnDefendant() {
+    public void givenLargeHearing_whenExactPersonRecordFound_thenSetPersonIdOnDefendant() throws IOException {
         featureFlags.setFlagValue("save_person_id_to_court_case_service", true);
         var s3Key = UUID.randomUUID().toString();
 
@@ -306,7 +306,7 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
                 .withRequestBody(matchingJsonPath("defendants[0].personId", absent()))
 
-                .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("X320741")))
+                .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
                 .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                 .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
                 .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
@@ -433,7 +433,6 @@ public class SqsMessageReceiverIntTest {
 
         @MockBean
         private TelemetryService telemetryService;
-
         @Autowired
         @Qualifier("hearingProcessor")
         private HearingProcessor caseMessageProcessor;

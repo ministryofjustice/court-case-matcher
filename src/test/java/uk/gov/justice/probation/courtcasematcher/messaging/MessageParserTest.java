@@ -192,7 +192,7 @@ class MessageParserTest {
         private CPDefendant defendant1() {
             return CPDefendant.builder()
                     .id("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")
-                    .cprUUID("12345")
+                    .cprUUID("f91ef118-a51f-4874-9409-c0538b4ca6fd")
                     .prosecutionCaseId("D2B61C8A-0684-4764-B401-F0A788BC7CCF")
                     .pncId("2004/0012345U")
                     .croNumber("12345ABCDEF")

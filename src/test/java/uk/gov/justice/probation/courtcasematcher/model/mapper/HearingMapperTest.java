@@ -4,11 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraAddress;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraHearing;
 import uk.gov.justice.probation.courtcasematcher.messaging.model.libra.LibraName;
@@ -30,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.COMMON_PLATFORM;
 import static uk.gov.justice.probation.courtcasematcher.model.domain.DataSource.LIBRA;
 
-@ExtendWith(MockitoExtension.class)
 class HearingMapperTest {
 
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1969, Month.AUGUST, 26);
