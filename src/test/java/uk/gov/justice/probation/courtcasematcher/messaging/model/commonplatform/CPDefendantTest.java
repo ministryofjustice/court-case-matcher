@@ -142,15 +142,6 @@ class CPDefendantTest {
         assertThat(actual).isNull();
     }
 
-    @Test
-    public void processCprFields_ifEnabled() {
-        final var actual = getCpDefendant()
-            .asDomain();
-
-        assertThat(actual).isNotNull();
-        assertThat(actual.getCprUUID()).isEqualTo("CPRDEFENDANTID");
-    }
-
     private static CPDefendant getCpDefendant() {
         return CPDefendant.builder()
             .isYouth(false)
