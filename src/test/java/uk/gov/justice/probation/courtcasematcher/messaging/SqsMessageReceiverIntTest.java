@@ -272,7 +272,7 @@ public class SqsMessageReceiverIntTest {
     }
 
     @Test
-    public void givenLargeHearing_whenExactPersonRecordFound_thenSetPersonIdOnDefendant() throws IOException {
+    public void givenLargeHearing_whenExactPersonRecordFound_thenSetPersonIdOnDefendant() {
         featureFlags.setFlagValue("save_person_id_to_court_case_service", true);
         var s3Key = UUID.randomUUID().toString();
 
