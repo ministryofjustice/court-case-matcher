@@ -5,9 +5,10 @@
     "urlPath": "/person/12345"
   },
   "response": {
-    "status": 404,
+    "status": 200,
     "headers": {
       "Content-Type": "application/json"
-    }
+    },
+    "bodyFileName": "cpr/GET_cpr_record_response.json"
   }
 }

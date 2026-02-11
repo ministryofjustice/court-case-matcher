@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.probation.courtcasematcher.messaging.CprExtractor;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
@@ -43,8 +42,7 @@ public class CPHearing {
     private final CPHearingType type;
 
 
-    //Pass in the cprExtractor into this method
-    public List<Hearing> asDomain(CprExtractor cprExtractor) {
+    public List<Hearing> asDomain() {
         return prosecutionCases.stream().map(cpProsecutionCase -> Hearing.builder()
             .caseId(cpProsecutionCase.getId())
             .source(DataSource.COMMON_PLATFORM)
@@ -57,7 +55,7 @@ public class CPHearing {
                 .collect(Collectors.toList()))
             .defendants(cpProsecutionCase.getDefendants()
                 .stream()
-                .map(cpDefendant -> cpDefendant.asDomain(cprExtractor.canExtractCprFields(courtCentre.getNormalisedCode())))
+                .map(CPDefendant::asDomain)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()))
             .caseMarkers(buildCaseMarkers(cpProsecutionCase))

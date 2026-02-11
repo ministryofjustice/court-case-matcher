@@ -49,13 +49,13 @@ public class CprServiceClientIntTest {
 
     @Test
     public void cprCanonicalRecordNotRetrieved() {
-        Optional<CprDefendant> cprDefendant = cprServiceClient.getCprCanonicalRecord("12345").blockOptional();
+        Optional<CprDefendant> cprDefendant = cprServiceClient.getCprCanonicalRecord("123456789").blockOptional();
 
         AssertionsForClassTypes.assertThat(cprDefendant).isEmpty();
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
-            getRequestedFor(urlEqualTo(String.format("/person/%s", "12345")))
+            getRequestedFor(urlEqualTo(String.format("/person/%s", "123456789")))
         );
     }
 

@@ -42,7 +42,7 @@ public class CPDefendant {
     private final boolean isYouth;
     private final String cprUUID;
 
-    public Defendant asDomain(boolean canExtractCprFields) {
+    public Defendant asDomain() {
         if (personDefendant == null && legalEntityDefendant == null) {
             throw new IllegalStateException(String.format("Defendant with id '%s' is neither a person nor a legal entity", getId()));
         }
@@ -60,7 +60,7 @@ public class CPDefendant {
                                 .map(CPAddress::asDomain).orElse(Address.builder().build()))
                         .phoneNumber(Optional.ofNullable(personDetails.getContact())
                                 .map(CPContact::asPhoneNumber).orElse(null))
-                        .cprUUID(canExtractCprFields ? cprUUID : null)
+                        .cprUUID(cprUUID)
                         .build())
                 .orElseGet(this::getLegalDefendant);
     }

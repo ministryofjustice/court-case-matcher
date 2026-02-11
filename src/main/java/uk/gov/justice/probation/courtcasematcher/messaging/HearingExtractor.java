@@ -46,9 +46,6 @@ public class HearingExtractor {
     @Autowired
     final S3Service s3Service;
 
-    @Autowired
-    final CprExtractor cprExtractor;
-
     List<Hearing> extractHearings(String payload, String messageId) {
         try {
             SnsMessageContainer snsMessageContainer = snsMessageWrapperJsonParser.parseMessage(payload, SnsMessageContainer.class);
@@ -56,7 +53,7 @@ public class HearingExtractor {
 
             return switch (snsMessageContainer.getMessageType()) {
                 case LIBRA_COURT_CASE ->
-                        List.of(libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain(cprExtractor));
+                        List.of(libraParser.parseMessage(snsMessageContainer.getMessage(), LibraHearing.class).asDomain());
                 case COMMON_PLATFORM_HEARING -> parseCPMessage(snsMessageContainer);
                 default ->
                         throw new IllegalStateException("Unprocessable message type: " + snsMessageContainer.getMessageType());
@@ -75,7 +72,7 @@ public class HearingExtractor {
 
     private List<Hearing> parseCPMessage(SnsMessageContainer snsMessageContainer) throws JsonProcessingException {
         final var cpHearingEvent = commonPlatformParser.parseMessage(getSNSMessage(snsMessageContainer), CPHearingEvent.class);
-        final var hearing = cpHearingEvent.asDomain(cprExtractor);
+        final var hearing = cpHearingEvent.asDomain();
         return setHearingAttributes(hearing, cpHearingEvent, snsMessageContainer);
     }
 
