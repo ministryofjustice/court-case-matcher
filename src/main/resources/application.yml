@@ -114,6 +114,10 @@ health:
 hmpps:
   sqs:
     queueAdminRole: COURT_CASE_MATCHER_QUEUE_ADMIN
+    queues:
+      courtcasesqueue:
+        maxConcurrentMessages: 3
+        maxMessagesPerPoll: 3
 
 replay404:
   dry-run: true

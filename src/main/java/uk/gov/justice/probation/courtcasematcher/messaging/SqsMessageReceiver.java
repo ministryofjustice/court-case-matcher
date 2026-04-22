@@ -28,7 +28,12 @@ public class SqsMessageReceiver {
     @NonNull
     private final HearingExtractor hearingExtractor;
 
-    @SqsListener(value = "courtcasesqueue",  factory = "hmppsQueueContainerFactoryProxy")
+    @SqsListener(
+        value = "courtcasesqueue",
+        factory = "hmppsQueueContainerFactoryProxy",
+        maxConcurrentMessages = "${hmpps.sqs.queues.courtcasesqueue.maxConcurrentMessages:3}",
+        maxMessagesPerPoll = "${hmpps.sqs.queues.courtcasesqueue.maxMessagesPerPoll:3}"
+    )
     public void receive(
             @NotEmpty String message,
             @Header(value = "id") String messageId){
