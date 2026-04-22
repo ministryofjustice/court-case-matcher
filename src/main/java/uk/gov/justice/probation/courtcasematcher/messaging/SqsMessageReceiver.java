@@ -31,8 +31,8 @@ public class SqsMessageReceiver {
     @SqsListener(
         value = "courtcasesqueue",
         factory = "hmppsQueueContainerFactoryProxy",
-        maxConcurrentMessages = "${hmpps.sqs.queues.courtcasesqueue.maxConcurrentMessages:5}",
-        maxMessagesPerPoll = "${hmpps.sqs.queues.courtcasesqueue.maxMessagesPerPoll:5}"
+        maxConcurrentMessages = "${hmpps.sqs.queues.courtcasesqueue.maxConcurrentMessages:3}",
+        maxMessagesPerPoll = "${hmpps.sqs.queues.courtcasesqueue.maxMessagesPerPoll:3}"
     )
     public void receive(
             @NotEmpty String message,
