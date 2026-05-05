@@ -160,6 +160,25 @@ public class CprServiceTest {
     }
 
     @Test
+    public void shouldBuildGroupedOffenderMatchWhenAliasHasNullMiddleNames() {
+        Defendant defendantFromInitialPayload = Defendant.builder()
+            .cprUUID("1234").build();
+
+        when(cprServiceClient.getCprCanonicalRecord(anyString())).thenReturn(Mono.just(getCprDefendant("1995-02-02", null)));
+        when(offenderSearchRestClient.search(anyString())).thenReturn(Mono.just(SearchResponses.builder()
+            .searchResponses(List.of(SearchResponse.builder().otherIds(OtherIds.builder()
+                .crn("1234567")
+                .croNumber("55555")
+                .pncNumber("66666")
+                .build()).build())).build()));
+
+        cprService.updateDefendant(defendantFromInitialPayload);
+
+        assertThat(defendantFromInitialPayload.getGroupedOffenderMatches()
+            .getMatches().getFirst().getMatchIdentifiers().getAliases().getFirst().getMiddleNames()).isNull();
+    }
+
+    @Test
     public void shouldOnlyProcessDefendantsWithCprUUIDs() {
         Defendant defendantFromInitialPayload = Defendant.builder()
             .cprUUID("1234").build();
@@ -225,6 +244,10 @@ public class CprServiceTest {
     }
 
     private static CprDefendant getCprDefendant(String dateOfBirth) {
+        return getCprDefendant(dateOfBirth, "Tim");
+    }
+
+    private static CprDefendant getCprDefendant(String dateOfBirth, String middleNames) {
         return CprDefendant.builder()
             .cprUUID("1234")
             .dateOfBirth(dateOfBirth)
@@ -241,7 +264,7 @@ public class CprServiceTest {
                 .title(CprTitle.builder().code("Mr").description("Mr").build())
                 .firstName("Toby")
                 .lastName("Smith")
-                .middleNames("Tim")
+                .middleNames(middleNames)
                 .build()))
             .identifiers(CprIdentifier.builder().crns(List.of("1234567", "98765423")).build())
             .build();

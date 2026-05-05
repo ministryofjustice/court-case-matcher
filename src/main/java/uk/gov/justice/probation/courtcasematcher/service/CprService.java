@@ -1,9 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
-import com.nimbusds.oauth2.sdk.util.ListUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -29,7 +27,6 @@ import uk.gov.justice.probation.courtcasematcher.restclient.model.offendersearch
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -146,8 +143,12 @@ public class CprService {
             .map(cprAlias -> OffenderAlias.builder()
                 .firstName(cprAlias.getFirstName())
                 .surname(cprAlias.getLastName())
-                .middleNames(List.of(cprAlias.getMiddleNames()))
+                .middleNames(toMiddleNamesList(cprAlias.getMiddleNames()))
                 .build()).collect(Collectors.toList()) : null;
+    }
+
+    private List<String> toMiddleNamesList(String middleNames) {
+        return middleNames == null ? null : List.of(middleNames);
     }
 
 

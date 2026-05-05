@@ -157,6 +157,10 @@ task copyAgentConfig(type: Copy) {
     into "$buildDir/libs"
 }
 
+tasks.named("pactPublish") {
+    enabled = false
+}
+
 pact {
     publish {
         pactBrokerUrl = System.getenv("PACTBROKER_URL")
