@@ -42,20 +42,39 @@ public class CprServiceClientIntTest {
 
     @Test
     public void cprCanonicalRecordRetrievedSuccessfully() {
-        CprDefendant cprDefendant = cprServiceClient.getCprCanonicalRecord(CPR_UUID).block();
+        CprDefendant cprDefendant = cprServiceClient.getCprCanonicalRecordByCommonPlatformId(CPR_UUID).block();
         assertThat(cprDefendant).isNotNull();
         assertThat(cprDefendant).isEqualTo(expectedCprDefendant());
     }
 
     @Test
     public void cprCanonicalRecordNotRetrieved() {
-        Optional<CprDefendant> cprDefendant = cprServiceClient.getCprCanonicalRecord("123456789").blockOptional();
+        Optional<CprDefendant> cprDefendant = cprServiceClient.getCprCanonicalRecordByCommonPlatformId("123456789").blockOptional();
 
         AssertionsForClassTypes.assertThat(cprDefendant).isEmpty();
 
         MOCK_SERVER.findAllUnmatchedRequests();
         MOCK_SERVER.verify(
-            getRequestedFor(urlEqualTo(String.format("/person/%s", "123456789")))
+            getRequestedFor(urlEqualTo(String.format("/person/commonplatform/%s", "123456789")))
+        );
+    }
+
+    @Test
+    public void cprCanonicalRecordRetrievedSuccessfullyByLibraId() {
+        CprDefendant cprDefendant = cprServiceClient.getCprCanonicalRecordByLibraId("1234567").block();
+        assertThat(cprDefendant).isNotNull();
+        assertThat(cprDefendant).isEqualTo(expectedCprDefendant());
+    }
+
+    @Test
+    public void cprCanonicalRecordNotRetrievedByLibraId() {
+        Optional<CprDefendant> cprDefendant = cprServiceClient.getCprCanonicalRecordByLibraId("notfound").blockOptional();
+
+        AssertionsForClassTypes.assertThat(cprDefendant).isEmpty();
+
+        MOCK_SERVER.findAllUnmatchedRequests();
+        MOCK_SERVER.verify(
+            getRequestedFor(urlEqualTo(String.format("/person/libra/%s", "notfound")))
         );
     }
 

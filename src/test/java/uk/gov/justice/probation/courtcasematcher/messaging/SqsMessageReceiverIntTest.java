@@ -191,7 +191,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("hearingEventType", equalTo("ConfirmedOrUpdated")))
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtCode", equalTo("B10JQ")))
-                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("f91ef118-a51f-4874-9409-c0538b4ca6fd")))
                         .withRequestBody(matchingJsonPath("defendants[0].pnc", equalTo("2004/0012345U")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
                         // Values from offender search
@@ -225,7 +225,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
-                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("f91ef118-a51f-4874-9409-c0538b4ca6fd")))
                         .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
                         .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
@@ -254,7 +254,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
-                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                        .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("f91ef118-a51f-4874-9409-c0538b4ca6fd")))
                         .withRequestBody(matchingJsonPath("defendants[0].personId", absent()))
 
                         .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
@@ -303,7 +303,7 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("caseNo", equalTo("D2B61C8A-0684-4764-B401-F0A788BC7CCF")))
                 .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("Crown Court 3-1")))
                 .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("PERSON")))
-                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("0ab7c3e5-eb4c-4e3f-b9e6-b9e78d3ea199")))
+                .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("f91ef118-a51f-4874-9409-c0538b4ca6fd")))
                 .withRequestBody(matchingJsonPath("defendants[0].personId", absent()))
 
                 .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
@@ -342,7 +342,6 @@ public class SqsMessageReceiverIntTest {
         
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
         verify(telemetryService).trackHearingChangedEvent(any(Hearing.class));
-        verify(telemetryService).trackDefendantProbationStatusUpdatedEvent(any(Defendant.class));
         verifyNoMoreInteractions(telemetryService);
     }
 

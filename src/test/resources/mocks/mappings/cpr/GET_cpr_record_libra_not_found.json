@@ -1,0 +1,10 @@
+{
+  "id": "375aaf40-4ed1-4656-bbb3-cc813e3434bc",
+  "request": {
+    "method": "GET",
+    "urlPath": "/person/libra/notfound"
+  },
+  "response": {
+    "status": 404
+  }
+}

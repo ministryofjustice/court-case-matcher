@@ -29,12 +29,20 @@ public class CprServiceClient {
         this.webClient = webClient;
     }
 
-    public Mono<CprDefendant> getCprCanonicalRecord(String cprUUID) {
-        final String path = String.format("/person/%s", cprUUID);
+    public Mono<CprDefendant> getCprCanonicalRecordByCommonPlatformId(String defendantId) {
+        final String path = String.format("/person/commonplatform/%s", defendantId);
+        return getCprRecord(path, defendantId);
+    }
 
+    public Mono<CprDefendant> getCprCanonicalRecordByLibraId(String cId) {
+        final String path = String.format("/person/libra/%s", cId);
+        return getCprRecord(path, cId);
+    }
+
+    private Mono<CprDefendant> getCprRecord(String path, String identifier) {
         return get(path)
             .retrieve()
-            .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, cprUUID))
+            .onStatus(HttpStatusCode::isError, (clientResponse) -> handleGetError(clientResponse, identifier))
             .bodyToMono(CprDefendant.class)
             .onErrorResume(CprCanonicalRecordNotFoundException.class, (e) -> Mono.empty());
     }
@@ -58,11 +66,11 @@ public class CprServiceClient {
         return spec.attributes(ServletOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId("person-record-search-client"));
     }
 
-    private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String cprUUID) {
+    private Mono<? extends Throwable> handleGetError(ClientResponse clientResponse, String identifier) {
         final HttpStatusCode httpStatusCode = clientResponse.statusCode();
         if (HttpStatus.NOT_FOUND.equals(httpStatusCode)) {
-            log.info("Failed to get cpr canonical record for cprUUID {}", cprUUID);
-            return Mono.error(new CprCanonicalRecordNotFoundException(cprUUID));
+            log.info("Failed to get cpr canonical record for identifier {}", identifier);
+            return Mono.error(new CprCanonicalRecordNotFoundException(identifier));
         }
         else if(HttpStatus.UNAUTHORIZED.equals(httpStatusCode) || HttpStatus.FORBIDDEN.equals(httpStatusCode)) {
             log.error("HTTP status {} failed to GET the cpr canonical record from cpr service", httpStatusCode);
