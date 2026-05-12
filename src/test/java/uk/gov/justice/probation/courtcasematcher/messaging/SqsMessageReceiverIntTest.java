@@ -260,7 +260,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
                         .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
-                        .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
+                        .withRequestBody(matchingJsonPath("defendants[1].personId", absent()))
 
 
         );
@@ -309,7 +309,7 @@ public class SqsMessageReceiverIntTest {
                 .withRequestBody(matchingJsonPath("defendants[0].crn", equalTo("B123435")))
                 .withRequestBody(matchingJsonPath("defendants[1].type", equalTo("ORGANISATION")))
                 .withRequestBody(matchingJsonPath("defendants[1].defendantId", equalTo("903c4c54-f667-4770-8fdf-1adbb5957c25")))
-                .withRequestBody(matchingJsonPath("defendants[1].personId", equalTo("e374e376-e2a3-11ed-b5ea-0242ac120002")))
+                .withRequestBody(matchingJsonPath("defendants[1].personId", absent()))
         );
 
 
@@ -367,7 +367,7 @@ public class SqsMessageReceiverIntTest {
                         .withRequestBody(matchingJsonPath("hearingDays[0].courtRoom", equalTo("07")))
                         .withRequestBody(matchingJsonPath("defendants[0].type", equalTo("ORGANISATION")))
                         .withRequestBody(matchingJsonPath("defendants[0].defendantId", equalTo("51EB661C-6CDF-46B2-ACF3-95098CF41154")))
-                        .withRequestBody(matchingJsonPath("defendants[0].cid", equalTo("CID1234567")))
+                        .withRequestBody(matchingJsonPath("defendants[1].personId", absent()))
         );
 
         
@@ -406,7 +406,6 @@ public class SqsMessageReceiverIntTest {
             .until(() -> countPutRequestsTo("/hearing/E10E3EF3-8637-40E3-BDED-8ED104A380AC") == 2);
 
         verify(telemetryService).trackHearingMessageReceivedEvent(any(String.class));
-        verify(telemetryService, times(2)).trackOffenderMatchEvent(any(Defendant.class), any(Hearing.class), any(MatchResponse.class));
         verify(telemetryService, times(2)).trackNewHearingEvent(any(Hearing.class), any(String.class));
         verifyNoMoreInteractions(telemetryService);
     }

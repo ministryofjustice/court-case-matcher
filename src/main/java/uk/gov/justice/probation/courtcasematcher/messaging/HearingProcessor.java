@@ -16,7 +16,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.CprService;
-import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.UUID;
@@ -37,8 +36,6 @@ public class HearingProcessor {
     @NonNull
     private final CourtCaseService courtCaseService;
 
-    @NonNull
-    private final MatcherService matcherService;
 
     @NonNull
     private final CprService cprService;
@@ -85,11 +82,7 @@ public class HearingProcessor {
 
     private void applyMatchesAndSave(final Hearing hearing) {
         cprService.updateDefendants(hearing.getDefendants());
-
-        matcherService.matchDefendants(hearing)
-                .onErrorReturn(hearing)
-                .doOnSuccess(courtCaseService::saveHearing)
-                .block();
+        courtCaseService.saveHearing(hearing);
     }
 
     private void updateAndSave(final Hearing hearing) {
