@@ -15,7 +15,6 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.CprService;
-import uk.gov.justice.probation.courtcasematcher.service.MatcherService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
@@ -42,8 +41,6 @@ class HearingProcessorTest {
     @Mock
     private CourtCaseService courtCaseService;
 
-    @Mock
-    private MatcherService matcherService;
 
     @Mock
     private FeatureFlags featureFlags;
@@ -57,7 +54,6 @@ class HearingProcessorTest {
     void beforeEach() {
         hearingProcessor = new HearingProcessor(telemetryService,
                 courtCaseService,
-                matcherService,
                 cprService,
                 featureFlags
         );
@@ -87,13 +83,9 @@ class HearingProcessorTest {
                             .build()))
                     .build();
 
-            when(matcherService.matchDefendants(any(Hearing.class))).thenReturn(Mono.just(courtCase));
-
             hearingProcessor.process(courtCase, MESSAGE_ID);
 
             verify(telemetryService).trackNewHearingEvent(any(Hearing.class), eq(MESSAGE_ID));
-
-            verify(matcherService).matchDefendants(any(Hearing.class));
             verify(courtCaseService).saveHearing(eq(courtCase));
             verify(courtCaseService).findHearing(any(Hearing.class));
             verifyNoMoreInteractions(courtCaseService, telemetryService);
@@ -112,13 +104,9 @@ class HearingProcessorTest {
                                 .build()))
                         .build();
 
-                when(matcherService.matchDefendants(any(Hearing.class))).thenReturn(Mono.just(courtCase));
-
                 hearingProcessor.process(courtCase, MESSAGE_ID);
 
                 verify(telemetryService).trackNewHearingEvent(any(Hearing.class), eq(MESSAGE_ID));
-
-                verify(matcherService).matchDefendants(any(Hearing.class));
                 verify(courtCaseService).saveHearing(eq(courtCase));
                 verify(courtCaseService).findHearing(any(Hearing.class));
                 verifyNoMoreInteractions(courtCaseService, telemetryService);
@@ -186,7 +174,7 @@ class HearingProcessorTest {
             verify(courtCaseService).findHearing(any(Hearing.class));
             verify(courtCaseService).updateProbationStatusDetail(eq(courtCaseMerged));
             verify(courtCaseService, timeout(MATCHER_THREAD_TIMEOUT)).saveHearing(eq(courtCaseMerged));
-            verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
+            verifyNoMoreInteractions(courtCaseService, telemetryService);
         }
         @Test
         void whenThatCaseHasNotChanged_ThenJustTrackEvent() {
@@ -196,7 +184,7 @@ class HearingProcessorTest {
 
             verify(telemetryService).trackHearingUnChangedEvent(any(Hearing.class));
             verify(courtCaseService).findHearing(any(Hearing.class));
-            verifyNoMoreInteractions(courtCaseService, telemetryService, matcherService);
+            verifyNoMoreInteractions(courtCaseService, telemetryService);
         }
     }
 
