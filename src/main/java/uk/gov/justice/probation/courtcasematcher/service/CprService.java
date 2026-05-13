@@ -41,12 +41,19 @@ public class CprService {
 
     public void updateDefendants(List<Defendant> defendants) {
         defendants.stream()
-            .filter(defendant -> defendant.getCprUUID() != null)
+            .filter(defendant -> defendant.getDefendantId() != null || defendant.getCId() != null)
             .forEach(this::updateDefendant);
     }
 
     public void updateDefendant(Defendant defendant) {
-        Mono<CprDefendant> cprCanonicalRecord = cprServiceClient.getCprCanonicalRecord(defendant.getCprUUID());
+        Mono<CprDefendant> cprCanonicalRecord;
+        if (defendant.getCId() != null) {
+            cprCanonicalRecord = cprServiceClient.getCprCanonicalRecordByLibraId(defendant.getCId());
+        } else if (defendant.getDefendantId() != null) {
+            cprCanonicalRecord = cprServiceClient.getCprCanonicalRecordByCommonPlatformId(defendant.getDefendantId());
+        } else {
+            cprCanonicalRecord = Mono.empty();
+        }
         cprCanonicalRecord.blockOptional()
             .ifPresentOrElse(cprDefendant -> mapCprDefendantToDefendant(defendant, cprDefendant), () -> {});
     }
