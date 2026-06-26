@@ -35,10 +35,6 @@ nomis-oauth:
   disable-authentication: true
   ping-path: /ping
 
-person-match-score:
-  base-url: http://localhost:8090
-  post-match-url: /person-match
-
 cpr-service:
   base-url: http://localhost:8090
   disable-authentication: true

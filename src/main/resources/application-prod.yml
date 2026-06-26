@@ -8,9 +8,6 @@ court-case-service:
 nomis-oauth:
   base-url: https://sign-in.hmpps.service.justice.gov.uk
 
-person-match-score:
-  base-url: https://hmpps-person-match-score.hmpps.service.justice.gov.uk
-
 person-record-service:
   base-url: https://hmpps-person-record.hmpps.service.justice.gov.uk
 
@@ -20,4 +17,3 @@ feature:
     match-on-every-no-record-update: false
     save_person_id_to_court_case_service: false
     cpr_matcher: true
-
