@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.tuple.Tuple2;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.GroupedOffenderMatches;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
@@ -92,12 +91,17 @@ public class CourtCaseServiceClient {
     }
 
     private Mono<Void> postOffenderMatches(String caseId, String defendantId, GroupedOffenderMatches offenderMatches) {
-        return Mono.justOrEmpty(offenderMatches)
-            .map(matches -> Tuple2.of(String.format("/defendant/%s/grouped-offender-matches", defendantId), CCSGroupedOffenderMatchesRequest.of(matches)))
-            .flatMap(tuple2 -> restHelper.postObject(tuple2.getT1(), tuple2.getT2(), CCSGroupedOffenderMatchesRequest.class)
-                .retrieve()
-                .toBodilessEntity()
-                .retryWhen(restHelper.buildRetrySpec(caseId, defendantId, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_POST_MATCHES)))
+        if (offenderMatches == null) {
+            return Mono.empty();
+        }
+
+        final var path = String.format("/defendant/%s/grouped-offender-matches", defendantId);
+        final var request = CCSGroupedOffenderMatchesRequest.of(offenderMatches);
+
+        return restHelper.postObject(path, request, CCSGroupedOffenderMatchesRequest.class)
+            .retrieve()
+            .toBodilessEntity()
+            .retryWhen(restHelper.buildRetrySpec(caseId, defendantId, ERROR_MSG_FORMAT_RETRY_POST_MATCHES, ERROR_MSG_FORMAT_INITIAL_POST_MATCHES))
             .doOnNext(responseEntity -> log.info("Successful POST of offender matches. Response location: {} ",
                 Optional.ofNullable(responseEntity)
                     .map(HttpEntity::getHeaders)
