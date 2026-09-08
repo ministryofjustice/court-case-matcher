@@ -5,7 +5,7 @@ generic-service:
 
 
   image:
-    repository: quay.io/hmpps/court-case-matcher
+    repository: ghcr.io/ministryofjustice/court-case-matcher
     pullPolicy: Always
     tag: app_version # override at deployment time
     port: 8080
