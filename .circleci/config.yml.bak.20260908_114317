@@ -147,7 +147,6 @@ workflows:
           jira_update: true
           pipeline_id: <<pipeline.id>>
           pipeline_number: <<pipeline.number>>
-          helm_additional_args: --values ./court-case-matcher/values-live.yaml
           context:
             - hmpps-common-vars
           filters:
@@ -166,7 +165,6 @@ workflows:
           jira_update: true
           pipeline_id: <<pipeline.id>>
           pipeline_number: <<pipeline.number>>
-          helm_additional_args: --values ./court-case-matcher/values-live.yaml
           context:
             - hmpps-common-vars
             - court-probation-live-preprod
@@ -182,7 +180,6 @@ workflows:
           jira_update: true
           pipeline_id: <<pipeline.id>>
           pipeline_number: <<pipeline.number>>
-          helm_additional_args: --values ./court-case-matcher/values-live.yaml
           slack_channel_name: << pipeline.parameters.releases-slack-channel >>
           slack_notification: true
           context:

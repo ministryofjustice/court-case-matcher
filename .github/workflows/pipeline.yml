@@ -1,0 +1,214 @@
+name: Pipeline [test -> build -> deploy]
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      additional_docker_tag:
+        description: Additional docker tag that can be used to specify stable or testing tags
+        required: false
+        default: ''
+        type: string
+      push:
+        description: Push docker image to registry flag
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+jobs:
+  helm_lint:
+    strategy:
+      matrix:
+        environments: ['dev', 'preprod', 'prod']
+    name: helm lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: ${{ matrix.environments }}
+  app_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.app_version.outputs.version }}
+    steps:
+      - id: app_version
+        name: Application version creators
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@c241b9febb7a4fc11e88d0e781cbdfcf8abd84a5 # v1.0.17
+  gradle_verify:
+    name: Validate the java
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      gradle-command: 'BUILD_NUMBER=${{ needs.app_version.outputs.version}} ./gradlew assemble check'
+      upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
+      java-version: "21" # TODO: upgrade (25)
+      localstack-tag: '3.0'
+      localstack-services: 's3,sqs,sns'
+    needs:
+      - app_version
+  integration_test:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:3.0
+        env:
+          AWS_EXECUTION_ENV: 'True'
+          DOCKER_HOST: unix:///var/run/docker.sock
+          PERSISTENCE: '1'
+          SERVICES: s3,sqs,sns
+        options: >-
+          --name localstack
+          --health-cmd "curl -sS 127.0.0.1:4566 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 4566:4566
+    env:
+      AWS_ACCESS_KEY_ID: foobar
+      AWS_SECRET_ACCESS_KEY: foobar
+      AWS_DEFAULT_REGION: eu-west-2
+      AWS_PROVIDER: localstack
+      SPRING_PROFILES_ACTIVE: test-msg
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Configure LocalStack
+        run: bash src/test/resources/localstack/setup-aws.sh
+
+      - name: Run integration tests
+        run: ./gradlew integrationTest
+
+      - name: Upload integration-test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: integration-test-results
+          path: |
+            build/test-results/integrationTest
+            build/reports/tests/integrationTest
+          if-no-files-found: ignore
+  pact_test:
+    name: Test Pact contracts # Not publishing anymore as Pact secrets not available on GH
+    runs-on: ubuntu-latest
+    needs:
+      - gradle_verify
+    services:
+      localstack:
+        image: localstack/localstack:3.0
+        env:
+          AWS_EXECUTION_ENV: 'True'
+          DOCKER_HOST: unix:///var/run/docker.sock
+          PERSISTENCE: '1'
+          SERVICES: s3,sqs,sns
+        options: >-
+          --name localstack
+          --health-cmd "curl -sS 127.0.0.1:4566 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 4566:4566
+    env:
+      AWS_ACCESS_KEY_ID: foobar
+      AWS_SECRET_ACCESS_KEY: foobar
+      AWS_DEFAULT_REGION: eu-west-2
+      PACTCONSUMER_VERSION: ${{ github.sha }}
+      PACTCONSUMER_TAGS: ${{ github.ref_name }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Java
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - name: Test Pact contracts
+        run: ./gradlew -Dpact.writer.overwrite=true pactTest
+      - name: Upload Pact-test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pact-test-results
+          path: |
+            build/test-results/pactTest
+            build/reports/tests/pactTest
+            build/pacts
+          if-no-files-found: ignore
+  build:
+    name: Build docker image from hmpps-github-actions
+    if: github.ref == 'refs/heads/main'
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
+    needs:
+      - gradle_verify
+      - app_version
+      - integration_test
+      - pact_test
+    with:
+      docker_registry: 'ghcr.io'
+      registry_org: 'ministryofjustice'
+      additional_docker_tag: ${{ inputs.additional_docker_tag }}
+      push: ${{ inputs.push || inputs.push == null }}
+      docker_multiplatform: false
+      download_build_artifacts: true
+      generate_sbom: true
+      attach_sbom_to_registry: true
+      sign_image: true
+      image_version: ${{ needs.app_version.outputs.version }}
+  deploy_dev:
+    name: Deploy to the dev environment
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+      - helm_lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'dev'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  deploy_preprod:
+    name: Deploy to the preprod environment
+    needs:
+      - build
+      - helm_lint
+      - deploy_dev
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'preprod'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  deploy_prod:
+    name: Deploy to the prod environment
+    needs:
+      - build
+      - helm_lint
+      - deploy_preprod
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'prod'
+      app_version: '${{ needs.build.outputs.app_version }}'
