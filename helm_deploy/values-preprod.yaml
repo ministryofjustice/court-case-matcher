@@ -19,4 +19,4 @@ generic-prometheus-alerts:
   sqsOldestAlertQueueNames:
     - probation-in-court-team-preprod-cpr-court-cases
     - probation-in-court-team-preprod-cpr-court-cases-dlq
-  sqsAlertsTotalMessagesThreshold: 1
+  sqsAlertsTotalMessagesThreshold: 2000
