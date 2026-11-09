@@ -17,3 +17,4 @@ feature:
     match-on-every-no-record-update: false
     save_person_id_to_court_case_service: false
     cpr_matcher: true
+    enrichment_worker: false

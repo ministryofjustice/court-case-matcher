@@ -11,14 +11,15 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
-import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
+import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.CprService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearingComparator.hasCourtHearingChanged;
@@ -29,6 +30,9 @@ import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearin
 @Qualifier("caseMessageProcessor")
 @Slf4j
 public class HearingProcessor {
+
+    private static final String ENRICHMENT_WORKER_FLAG = "enrichment_worker";
+    private static final String ENRICHMENT_WORKER_COURT_CODE = "B03DE";
 
     @NonNull
     private final TelemetryService telemetryService;
@@ -81,17 +85,37 @@ public class HearingProcessor {
     }
 
     private void applyMatchesAndSave(final Hearing hearing) {
-        cprService.updateDefendants(hearing.getDefendants());
-        courtCaseService.saveHearing(hearing);
+        enrichAndSave(hearing, false);
     }
 
     private void updateAndSave(final Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
-        cprService.updateDefendants(hearing.getDefendants());
+        enrichAndSave(hearing, true);
+    }
 
-        courtCaseService.updateProbationStatusDetail(hearing)
-                .onErrorResume(t -> Mono.just(hearing))
-                .subscribe(courtCaseService::saveHearing);
+    private void enrichAndSave(final Hearing hearing, boolean updateProbationStatus) {
+        var courtCode = Optional.ofNullable(hearing)
+                .map(Hearing::getHearingDays)
+                .filter(days -> !days.isEmpty())
+                .map(days -> days.getFirst())
+                .map(HearingDay::getCourtCode)
+                .orElse(null);
+        boolean wouldCallEnrichmentWorker = featureFlags.getFlag(ENRICHMENT_WORKER_FLAG)
+                && ENRICHMENT_WORKER_COURT_CODE.equals(courtCode);
+        if (wouldCallEnrichmentWorker) {
+            log.info("Skipping CPR service and probation-status update for caseId {} at court {}; enrichment worker endpoint is not yet implemented",
+                    hearing.getCaseId(), courtCode);
+            courtCaseService.saveHearing(hearing);
+        } else {
+            cprService.updateDefendants(hearing.getDefendants());
+            if (updateProbationStatus) {
+                courtCaseService.updateProbationStatusDetail(hearing)
+                        .onErrorResume(t -> Mono.just(hearing))
+                        .subscribe(courtCaseService::saveHearing);
+            } else {
+                courtCaseService.saveHearing(hearing);
+            }
+        }
     }
 
     Hearing assignUuids(Hearing hearing) {

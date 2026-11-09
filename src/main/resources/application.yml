@@ -85,6 +85,7 @@ feature:
     match-on-every-no-record-update: true
     save_person_id_to_court_case_service: false
     cpr_matcher: false
+    enrichment_worker: false
 
 nomis-oauth:
   ping-path: /auth/ping
