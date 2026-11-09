@@ -12,14 +12,14 @@ import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
-import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.CprService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
-import java.util.UUID;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearingComparator.hasCourtHearingChanged;
@@ -94,17 +94,15 @@ public class HearingProcessor {
     }
 
     private void enrichAndSave(final Hearing hearing, boolean updateProbationStatus) {
-        var courtCode = Optional.ofNullable(hearing)
+        boolean hasEnrichmentWorkerCourtDay = Optional.ofNullable(hearing)
                 .map(Hearing::getHearingDays)
-                .filter(days -> !days.isEmpty())
-                .map(days -> days.getFirst())
-                .map(HearingDay::getCourtCode)
-                .orElse(null);
-        boolean wouldCallEnrichmentWorker = featureFlags.getFlag(ENRICHMENT_WORKER_FLAG)
-                && ENRICHMENT_WORKER_COURT_CODE.equals(courtCode);
-        if (wouldCallEnrichmentWorker) {
+                .map(days -> days.stream()
+                        .filter(Objects::nonNull)
+                        .anyMatch(day -> ENRICHMENT_WORKER_COURT_CODE.equals(day.getCourtCode())))
+                .orElse(false);
+        if (featureFlags.getFlag(ENRICHMENT_WORKER_FLAG) && hasEnrichmentWorkerCourtDay) {
             log.info("Skipping CPR service and probation-status update for caseId {} at court {}; enrichment worker endpoint is not yet implemented",
-                    hearing.getCaseId(), courtCode);
+                    hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
             courtCaseService.saveHearing(hearing);
         } else {
             cprService.updateDefendants(hearing.getDefendants());

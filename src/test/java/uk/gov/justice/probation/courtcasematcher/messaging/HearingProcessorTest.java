@@ -114,6 +114,21 @@ class HearingProcessorTest {
             verify(courtCaseService, never()).updateProbationStatusDetail(any());
         }
 
+        @Test
+        void selectsEnrichmentWorkerWhenTargetCourtAppearsOnLaterDayOfNewHearing() {
+            var hearing = hearingAtCourt("SHF").withHearingDays(List.of(
+                    HearingDay.builder().courtCode("SHF").build(),
+                    HearingDay.builder().courtCode("B03DE").build()));
+            when(featureFlags.getFlag("enrichment_worker")).thenReturn(true);
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.empty());
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertDecisionLogged(true);
+            verifyNoMoreInteractions(cprService);
+            verify(courtCaseService).saveHearing(hearing);
+        }
+
         @ParameterizedTest
         @CsvSource({
                 "true, B03DE, true",
@@ -142,6 +157,24 @@ class HearingProcessorTest {
                 verify(cprService).updateDefendants(mergedHearing.getDefendants());
                 verify(courtCaseService).updateProbationStatusDetail(mergedHearing);
             }
+            verify(courtCaseService).saveHearing(mergedHearing);
+        }
+
+        @Test
+        void selectsEnrichmentWorkerWhenTargetCourtAppearsOnLaterDayOfChangedHearing() {
+            var hearing = hearingAtCourt("SHF").withHearingDays(List.of(
+                    HearingDay.builder().courtCode("SHF").build(),
+                    HearingDay.builder().courtCode("B03DE").build()));
+            var existingHearing = hearing.withHearingDays(List.of(HearingDay.builder().courtCode("SHF").build()));
+            var mergedHearing = HearingMapper.merge(hearing, existingHearing);
+            when(featureFlags.getFlag("enrichment_worker")).thenReturn(true);
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.just(existingHearing));
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertDecisionLogged(true);
+            verifyNoMoreInteractions(cprService);
+            verify(courtCaseService, never()).updateProbationStatusDetail(any());
             verify(courtCaseService).saveHearing(mergedHearing);
         }
 
