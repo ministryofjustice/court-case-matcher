@@ -85,35 +85,38 @@ public class HearingProcessor {
     }
 
     private void applyMatchesAndSave(final Hearing hearing) {
-        enrichAndSave(hearing, false);
+        if (shouldUseEnrichmentWorker(hearing)) {
+            log.info("Skipping CPR service and probation-status update for caseId {} at court {}; enrichment worker endpoint is not yet implemented",
+                    hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
+        } else {
+            cprService.updateDefendants(hearing.getDefendants());
+        }
+        courtCaseService.saveHearing(hearing);
     }
 
     private void updateAndSave(final Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
-        enrichAndSave(hearing, true);
+        if (shouldUseEnrichmentWorker(hearing)) {
+            log.info("Skipping CPR service and probation-status update for caseId {} at court {}; enrichment worker endpoint is not yet implemented",
+                    hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
+            courtCaseService.saveHearing(hearing);
+        } else {
+            cprService.updateDefendants(hearing.getDefendants());
+
+            courtCaseService.updateProbationStatusDetail(hearing)
+                    .onErrorResume(t -> Mono.just(hearing))
+                    .subscribe(courtCaseService::saveHearing);
+        }
     }
 
-    private void enrichAndSave(final Hearing hearing, boolean updateProbationStatus) {
+    private boolean shouldUseEnrichmentWorker(final Hearing hearing) {
         boolean hasEnrichmentWorkerCourtDay = Optional.ofNullable(hearing)
                 .map(Hearing::getHearingDays)
                 .map(days -> days.stream()
                         .filter(Objects::nonNull)
                         .anyMatch(day -> ENRICHMENT_WORKER_COURT_CODE.equals(day.getCourtCode())))
                 .orElse(false);
-        if (featureFlags.getFlag(ENRICHMENT_WORKER_FLAG) && hasEnrichmentWorkerCourtDay) {
-            log.info("Skipping CPR service and probation-status update for caseId {} at court {}; enrichment worker endpoint is not yet implemented",
-                    hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
-            courtCaseService.saveHearing(hearing);
-        } else {
-            cprService.updateDefendants(hearing.getDefendants());
-            if (updateProbationStatus) {
-                courtCaseService.updateProbationStatusDetail(hearing)
-                        .onErrorResume(t -> Mono.just(hearing))
-                        .subscribe(courtCaseService::saveHearing);
-            } else {
-                courtCaseService.saveHearing(hearing);
-            }
-        }
+        return featureFlags.getFlag(ENRICHMENT_WORKER_FLAG) && hasEnrichmentWorkerCourtDay;
     }
 
     Hearing assignUuids(Hearing hearing) {
