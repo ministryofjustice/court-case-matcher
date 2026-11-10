@@ -7,7 +7,7 @@ WORKDIR /app
 ADD . .
 RUN ./gradlew --no-daemon assemble
 
-FROM ghcr.io/ministryofjustice/hmpps-eclipse-temurin:25-jre-jammy
+FROM ghcr.io/ministryofjustice/hmpps-eclipse-temurin:21-jre-jammy
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
 WORKDIR /app
