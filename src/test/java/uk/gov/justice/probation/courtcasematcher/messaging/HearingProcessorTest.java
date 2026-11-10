@@ -1,11 +1,19 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
@@ -18,13 +26,17 @@ import uk.gov.justice.probation.courtcasematcher.service.CprService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -58,6 +70,164 @@ class HearingProcessorTest {
                 featureFlags
         );
 
+    }
+
+    @Nested
+    class EnrichmentWorkerDecisionLogging {
+        private final Logger logger = (Logger) LoggerFactory.getLogger(HearingProcessor.class);
+        private final ListAppender<ILoggingEvent> appender = new ListAppender<>();
+
+        @BeforeEach
+        void captureLogs() {
+            appender.start();
+            logger.addAppender(appender);
+        }
+
+        @AfterEach
+        void stopCapturingLogs() {
+            logger.detachAppender(appender);
+            appender.stop();
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "true, B03DE, true",
+                "true, SHF, false",
+                "false, B03DE, false",
+                "false, SHF, false",
+                "true, , false"
+        })
+        void logsDecisionForNewHearingsAndUsesCprOnlyWhenWorkerIsNotSelected(boolean enabled, String courtCode, boolean expected) {
+            var hearing = hearingAtCourt(courtCode);
+            when(featureFlags.getFlag("enrichment_worker")).thenReturn(enabled);
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.empty());
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertDecisionLogged(expected);
+            if (expected) {
+                verifyNoMoreInteractions(cprService);
+            } else {
+                verify(cprService).updateDefendants(hearing.getDefendants());
+            }
+            verify(courtCaseService).saveHearing(hearing);
+            verify(courtCaseService, never()).updateProbationStatusDetail(any());
+        }
+
+        @Test
+        void selectsEnrichmentWorkerWhenTargetCourtAppearsOnLaterDayOfNewHearing() {
+            var hearing = hearingAtCourt("SHF").withHearingDays(List.of(
+                    HearingDay.builder().courtCode("SHF").build(),
+                    HearingDay.builder().courtCode("B03DE").build()));
+            when(featureFlags.getFlag("enrichment_worker")).thenReturn(true);
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.empty());
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertDecisionLogged(true);
+            verifyNoMoreInteractions(cprService);
+            verify(courtCaseService).saveHearing(hearing);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "true, B03DE, true",
+                "true, SHF, false",
+                "false, B03DE, false",
+                "false, SHF, false",
+                "true, , false"
+        })
+        void logsDecisionForChangedHearingsAndUsesCprOnlyWhenWorkerIsNotSelected(boolean enabled, String courtCode, boolean expected) {
+            var hearing = hearingAtCourt(courtCode);
+            var existingHearing = hearing.withHearingDays(null);
+            var mergedHearing = HearingMapper.merge(hearing, existingHearing);
+            when(featureFlags.getFlag("enrichment_worker")).thenReturn(enabled);
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.just(existingHearing));
+            if (!expected) {
+                when(courtCaseService.updateProbationStatusDetail(mergedHearing)).thenReturn(Mono.just(mergedHearing));
+            }
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertDecisionLogged(expected);
+            if (expected) {
+                verifyNoMoreInteractions(cprService);
+                verify(courtCaseService, never()).updateProbationStatusDetail(any());
+            } else {
+                verify(cprService).updateDefendants(mergedHearing.getDefendants());
+                verify(courtCaseService).updateProbationStatusDetail(mergedHearing);
+            }
+            verify(courtCaseService).saveHearing(mergedHearing);
+        }
+
+        @Test
+        void selectsEnrichmentWorkerWhenTargetCourtAppearsOnLaterDayOfChangedHearing() {
+            var hearing = hearingAtCourt("SHF").withHearingDays(List.of(
+                    HearingDay.builder().courtCode("SHF").build(),
+                    HearingDay.builder().courtCode("B03DE").build()));
+            var existingHearing = hearing.withHearingDays(List.of(HearingDay.builder().courtCode("SHF").build()));
+            var mergedHearing = HearingMapper.merge(hearing, existingHearing);
+            when(featureFlags.getFlag("enrichment_worker")).thenReturn(true);
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.just(existingHearing));
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertDecisionLogged(true);
+            verifyNoMoreInteractions(cprService);
+            verify(courtCaseService, never()).updateProbationStatusDetail(any());
+            verify(courtCaseService).saveHearing(mergedHearing);
+        }
+
+        @Test
+        void doesNotLogDecisionOrEnrichUnchangedHearings() {
+            var hearing = hearingAtCourt("B03DE");
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.just(hearing));
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertThat(appender.list).isEmpty();
+            verifyNoMoreInteractions(cprService, featureFlags);
+        }
+
+        @ParameterizedTest
+        @MethodSource("missingHearingDays")
+        void usesCprWhenFirstHearingDayIsMissing(List<HearingDay> hearingDays) {
+            var hearing = hearingAtCourt("B03DE").withHearingDays(hearingDays);
+            when(featureFlags.getFlag("enrichment_worker")).thenReturn(true);
+            when(courtCaseService.findHearing(hearing)).thenReturn(Mono.empty());
+
+            hearingProcessor.process(hearing, MESSAGE_ID);
+
+            assertDecisionLogged(false);
+            verify(cprService).updateDefendants(hearing.getDefendants());
+            verify(courtCaseService).saveHearing(hearing);
+        }
+
+        static Stream<List<HearingDay>> missingHearingDays() {
+            return Stream.of(null, Collections.emptyList(), Collections.singletonList(null));
+        }
+
+        private Hearing hearingAtCourt(String courtCode) {
+            return Hearing.builder()
+                    .caseId("case-id")
+                    .hearingDays(Collections.singletonList(HearingDay.builder().courtCode(courtCode).build()))
+                    .defendants(Collections.singletonList(Defendant.builder().type(PERSON).build()))
+                    .build();
+        }
+
+        private void assertDecisionLogged(boolean expected) {
+            var workerLogs = assertThat(appender.list)
+                    .extracting(ILoggingEvent::getFormattedMessage)
+                    .filteredOn(message -> message.startsWith("Skipping CPR service and probation-status update"));
+            if (expected) {
+                workerLogs.containsExactly("Skipping CPR service and probation-status update for caseId case-id at court B03DE; enrichment worker endpoint is not yet implemented");
+            } else {
+                workerLogs.isEmpty();
+            }
+            assertThat(appender.list)
+                    .extracting(ILoggingEvent::getFormattedMessage)
+                    .noneMatch(message -> message.startsWith("Enrichment worker would be called:"));
+        }
     }
 
     @Nested
