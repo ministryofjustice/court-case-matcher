@@ -190,6 +190,7 @@ jobs:
     with:
       environment: 'dev'
       app_version: '${{ needs.build.outputs.app_version }}'
+      helm_timeout: '10m'
   deploy_preprod:
     name: Deploy to the preprod environment
     needs:
@@ -201,6 +202,7 @@ jobs:
     with:
       environment: 'preprod'
       app_version: '${{ needs.build.outputs.app_version }}'
+      helm_timeout: '10m'
   deploy_prod:
     name: Deploy to the prod environment
     needs:
@@ -212,3 +214,4 @@ jobs:
     with:
       environment: 'prod'
       app_version: '${{ needs.build.outputs.app_version }}'
+      helm_timeout: '10m'
