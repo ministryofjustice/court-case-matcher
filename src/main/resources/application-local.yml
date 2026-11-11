@@ -31,6 +31,9 @@ nomis-oauth:
 person-record-service:
   base-url: http://localhost:8083/
 
+enrichment-worker:
+  base-url: http://localhost:8084/
+
 hmpps.sqs:
   enabled: true
   provider: localstack

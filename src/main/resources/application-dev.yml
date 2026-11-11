@@ -19,6 +19,9 @@ offender-search:
 person-record-service:
   base-url: https://hmpps-person-record-dev.hmpps.service.justice.gov.uk
 
+enrichment-worker:
+  base-url: https://court-case-enrichment-worker-dev.hmpps.service.justice.gov.uk
+
 nomis-oauth:
   base-url: https://sign-in-dev.hmpps.service.justice.gov.uk
 

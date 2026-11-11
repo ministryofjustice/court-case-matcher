@@ -49,6 +49,13 @@ spring:
             client-authentication-method: client_secret_basic
             authorization-grant-type: client_credentials
             provider: nomis-oauth-service
+          enrichment-worker-client:
+            client-name: enrichment-worker-client
+            client-id: ${enrichment-worker-client-id:enrichment-worker-client}
+            client-secret: ${enrichment-worker-client-secret:clientsecret}
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: client_credentials
+            provider: nomis-oauth-service
         provider:
           nomis-oauth-service:
             token-uri: ${nomis-oauth.base-url:http://oauth:8095}/auth/oauth/token
@@ -78,6 +85,9 @@ offender-search:
 person-record-service:
  person-search-url: /person/search
  create-person-url: /person
+
+enrichment-worker:
+  base-url: ${ENRICHMENT_WORKER_BASE_URL:http://localhost:8084}
 
 
 feature:

@@ -39,6 +39,10 @@ cpr-service:
   base-url: http://localhost:8090
   disable-authentication: true
 
+enrichment-worker:
+  base-url: http://localhost:8090
+  disable-authentication: true
+
 ou-code-length: 5
 
 # Localstack settings

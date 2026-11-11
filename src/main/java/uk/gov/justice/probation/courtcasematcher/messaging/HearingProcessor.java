@@ -15,6 +15,7 @@ import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.CprService;
+import uk.gov.justice.probation.courtcasematcher.service.EnrichmentWorkerService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Objects;
@@ -43,6 +44,9 @@ public class HearingProcessor {
 
     @NonNull
     private final CprService cprService;
+
+    @NonNull
+    private final EnrichmentWorkerService enrichmentWorkerService;
 
     private final FeatureFlags featureFlags;
 
@@ -86,8 +90,9 @@ public class HearingProcessor {
 
     private void applyMatchesAndSave(final Hearing hearing) {
         if (shouldUseEnrichmentWorker(hearing)) {
-            log.info("Skipping CPR service and probation-status update for caseId {} at court {}; enrichment worker endpoint is not yet implemented",
+            log.info("Using enrichment worker for caseId {} at court {}",
                     hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
+            enrichmentWorkerService.updateDefendants(hearing.getDefendants(), hearing.getSource());
         } else {
             cprService.updateDefendants(hearing.getDefendants());
         }
@@ -97,8 +102,9 @@ public class HearingProcessor {
     private void updateAndSave(final Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
         if (shouldUseEnrichmentWorker(hearing)) {
-            log.info("Skipping CPR service and probation-status update for caseId {} at court {}; enrichment worker endpoint is not yet implemented",
+            log.info("Using enrichment worker for caseId {} at court {}",
                     hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
+            enrichmentWorkerService.updateDefendants(hearing.getDefendants(), hearing.getSource());
             courtCaseService.saveHearing(hearing);
         } else {
             cprService.updateDefendants(hearing.getDefendants());
