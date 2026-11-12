@@ -1,6 +1,7 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Address;
@@ -26,11 +27,13 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor(onConstructor_ = @Autowired)
+@Slf4j
 public class EnrichmentWorkerService {
     private final EnrichmentWorkerClient enrichmentWorkerClient;
 
     public void updateDefendants(List<Defendant> defendants, DataSource source) {
-        if (defendants == null) {
+        if (defendants == null || defendants.isEmpty()) {
+            log.warn("Skipping enrichment worker: hearing has no defendants");
             return;
         }
         if (source == null) {
@@ -40,6 +43,8 @@ public class EnrichmentWorkerService {
             String targetId = targetId(defendant, source);
             if (targetId != null) {
                 updateDefendant(defendant, source, targetId);
+            } else {
+                log.warn("Skipping enrichment worker for defendant with no target identifier, source={}", source);
             }
         }
     }
@@ -47,6 +52,7 @@ public class EnrichmentWorkerService {
     private void updateDefendant(Defendant defendant, DataSource source, String targetId) {
         EnrichmentSourceType expectedSource = source == DataSource.LIBRA
                 ? EnrichmentSourceType.LIBRA : EnrichmentSourceType.COMMON_PLATFORM;
+        log.info("Calling enrichment worker for defendant, source={}", source);
         EnrichmentWorkerResponse result = (source == DataSource.LIBRA
                 ? enrichmentWorkerClient.getLibraEnrichment(targetId)
                 : enrichmentWorkerClient.getCommonPlatformEnrichment(targetId)).block();
@@ -58,6 +64,7 @@ public class EnrichmentWorkerService {
             throw new IllegalStateException("Enrichment worker returned a result for a different target");
         }
         if (result.status() == EnrichmentStatus.NO_MATCH) {
+            log.info("Enrichment worker completed for defendant, source={} status={}", source, result.status());
             return;
         }
         if (result.status() != EnrichmentStatus.ENRICHED && result.status() != EnrichmentStatus.NEEDS_REVIEW) {
@@ -84,6 +91,7 @@ public class EnrichmentWorkerService {
             defendant.setPreSentenceActivity(Boolean.TRUE.equals(probation.preSentenceActivity()));
         });
         defendant.setGroupedOffenderMatches(mapGroupedMatches(result));
+        log.info("Enrichment worker completed for defendant, source={} status={}", source, result.status());
     }
 
     private void applyDefendantDetails(Defendant defendant, EnrichedDefendant enrichedDefendant) {
