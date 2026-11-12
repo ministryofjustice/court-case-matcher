@@ -1,10 +1,15 @@
 package uk.gov.justice.probation.courtcasematcher.service;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
@@ -30,6 +35,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,10 +44,20 @@ class EnrichmentWorkerServiceTest {
     private EnrichmentWorkerClient enrichmentWorkerClient;
 
     private EnrichmentWorkerService enrichmentWorkerService;
+    private final Logger logger = (Logger) LoggerFactory.getLogger(EnrichmentWorkerService.class);
+    private final ListAppender<ILoggingEvent> appender = new ListAppender<>();
 
     @BeforeEach
     void setUp() {
         enrichmentWorkerService = new EnrichmentWorkerService(enrichmentWorkerClient);
+        appender.start();
+        logger.addAppender(appender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        logger.detachAppender(appender);
+        appender.stop();
     }
 
     @Test
@@ -65,6 +81,9 @@ class EnrichmentWorkerServiceTest {
         assertThat(defendant.getGroupedOffenderMatches().getMatches()).hasSize(1);
         assertThat(defendant.getGroupedOffenderMatches().getMatches().getFirst().getMatchIdentifiers()
                 .getAliases().getFirst().getMiddleNames()).containsExactly("M");
+        assertThat(messages()).containsExactly(
+                "Calling enrichment worker for defendant, source=COMMON_PLATFORM",
+                "Enrichment worker completed for defendant, source=COMMON_PLATFORM status=ENRICHED");
     }
 
     @Test
@@ -90,6 +109,8 @@ class EnrichmentWorkerServiceTest {
 
         assertThat(defendant.getCrn()).isEqualTo("existing-crn");
         assertThat(defendant.getCprUUID()).isNull();
+        assertThat(messages()).contains(
+                "Enrichment worker completed for defendant, source=COMMON_PLATFORM status=NO_MATCH");
     }
 
     @Test
@@ -102,6 +123,31 @@ class EnrichmentWorkerServiceTest {
         assertThrows(IllegalStateException.class,
                 () -> enrichmentWorkerService.updateDefendants(List.of(defendant), DataSource.COMMON_PLATFORM));
         assertThat(defendant.getCprUUID()).isNull();
+        assertThat(messages()).containsExactly("Calling enrichment worker for defendant, source=COMMON_PLATFORM");
+    }
+
+    @Test
+    void logsWhenNoTargetIdentifierIsAvailable() {
+        enrichmentWorkerService.updateDefendants(List.of(Defendant.builder().build()), DataSource.LIBRA);
+
+        verifyNoInteractions(enrichmentWorkerClient);
+        assertThat(messages()).containsExactly(
+                "Skipping enrichment worker for defendant with no target identifier, source=LIBRA");
+    }
+
+    @Test
+    void logsWhenThereAreNoDefendants() {
+        enrichmentWorkerService.updateDefendants(null, DataSource.LIBRA);
+        enrichmentWorkerService.updateDefendants(List.of(), DataSource.LIBRA);
+
+        verifyNoInteractions(enrichmentWorkerClient);
+        assertThat(messages()).containsExactly(
+                "Skipping enrichment worker: hearing has no defendants",
+                "Skipping enrichment worker: hearing has no defendants");
+    }
+
+    private List<String> messages() {
+        return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
     }
 
     private EnrichmentWorkerResponse enrichedResult(EnrichmentSourceType sourceType, String targetId) {
