@@ -46,6 +46,8 @@ generic-service:
       OFFENDER_SEARCH_CLIENT_SECRET: nomis-oauth-client-secret
       PERSON_RECORD_SEARCH_CLIENT_ID: nomis-oauth-client-id
       PERSON_RECORD_SEARCH_CLIENT_SECRET: nomis-oauth-client-secret
+      ENRICHMENT_WORKER_CLIENT_ID: nomis-oauth-client-id
+      ENRICHMENT_WORKER_CLIENT_SECRET: nomis-oauth-client-secret
       APPINSIGHTS_INSTRUMENTATIONKEY: APPINSIGHTS_INSTRUMENTATIONKEY
     cpr-court-cases-queue-credentials:
       HMPPS_SQS_QUEUES_COURTCASESQUEUE_QUEUE_NAME: sqs_name

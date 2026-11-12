@@ -31,6 +31,9 @@ public class WebConfig {
     @Value("${person-record-service.base-url}")
     private String personRecordServiceBaseUrl;
 
+    @Value("${enrichment-worker.base-url}")
+    private String enrichmentWorkerBaseUrl;
+
     @Value("${web.client.connect-timeout-ms}")
     private int connectTimeoutMs;
 
@@ -81,6 +84,17 @@ public class WebConfig {
         return defaultWebClientBuilder()
                 .baseUrl(this.personRecordServiceBaseUrl)
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.create().followRedirect(true)))
+                .filter(oauth2Client)
+                .build();
+    }
+
+    @Bean
+    public WebClient enrichmentWorkerWebClient(OAuth2AuthorizedClientManager authorizedClientManager)
+    {
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
+                new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        return defaultWebClientBuilder()
+                .baseUrl(this.enrichmentWorkerBaseUrl)
                 .filter(oauth2Client)
                 .build();
     }

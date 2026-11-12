@@ -11,6 +11,9 @@ nomis-oauth:
 person-record-service:
   base-url: https://hmpps-person-record.hmpps.service.justice.gov.uk
 
+enrichment-worker:
+  base-url: https://court-case-enrichment-worker.hmpps.service.justice.gov.uk
+
 feature:
   flags:
     use-offender-search-for-probation-status: true

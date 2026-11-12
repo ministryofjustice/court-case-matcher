@@ -17,12 +17,14 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
+import uk.gov.justice.probation.courtcasematcher.model.domain.DataSource;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Defendant;
 import uk.gov.justice.probation.courtcasematcher.model.domain.Hearing;
 import uk.gov.justice.probation.courtcasematcher.model.domain.HearingDay;
 import uk.gov.justice.probation.courtcasematcher.model.mapper.HearingMapper;
 import uk.gov.justice.probation.courtcasematcher.service.CourtCaseService;
 import uk.gov.justice.probation.courtcasematcher.service.CprService;
+import uk.gov.justice.probation.courtcasematcher.service.EnrichmentWorkerService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
@@ -60,6 +62,9 @@ class HearingProcessorTest {
     @Mock
     private CprService cprService;
 
+    @Mock
+    private EnrichmentWorkerService enrichmentWorkerService;
+
     private HearingProcessor hearingProcessor;
 
     @BeforeEach
@@ -67,6 +72,7 @@ class HearingProcessorTest {
         hearingProcessor = new HearingProcessor(telemetryService,
                 courtCaseService,
                 cprService,
+                enrichmentWorkerService,
                 featureFlags
         );
 
@@ -107,8 +113,10 @@ class HearingProcessorTest {
             assertDecisionLogged(expected);
             if (expected) {
                 verifyNoMoreInteractions(cprService);
+                verify(enrichmentWorkerService).updateDefendants(hearing.getDefendants(), hearing.getSource());
             } else {
                 verify(cprService).updateDefendants(hearing.getDefendants());
+                verify(enrichmentWorkerService, never()).updateDefendants(any(), any());
             }
             verify(courtCaseService).saveHearing(hearing);
             verify(courtCaseService, never()).updateProbationStatusDetail(any());
@@ -126,6 +134,7 @@ class HearingProcessorTest {
 
             assertDecisionLogged(true);
             verifyNoMoreInteractions(cprService);
+            verify(enrichmentWorkerService).updateDefendants(hearing.getDefendants(), hearing.getSource());
             verify(courtCaseService).saveHearing(hearing);
         }
 
@@ -152,9 +161,11 @@ class HearingProcessorTest {
             assertDecisionLogged(expected);
             if (expected) {
                 verifyNoMoreInteractions(cprService);
+                verify(enrichmentWorkerService).updateDefendants(mergedHearing.getDefendants(), mergedHearing.getSource());
                 verify(courtCaseService, never()).updateProbationStatusDetail(any());
             } else {
                 verify(cprService).updateDefendants(mergedHearing.getDefendants());
+                verify(enrichmentWorkerService, never()).updateDefendants(any(), any());
                 verify(courtCaseService).updateProbationStatusDetail(mergedHearing);
             }
             verify(courtCaseService).saveHearing(mergedHearing);
@@ -174,6 +185,7 @@ class HearingProcessorTest {
 
             assertDecisionLogged(true);
             verifyNoMoreInteractions(cprService);
+            verify(enrichmentWorkerService).updateDefendants(mergedHearing.getDefendants(), mergedHearing.getSource());
             verify(courtCaseService, never()).updateProbationStatusDetail(any());
             verify(courtCaseService).saveHearing(mergedHearing);
         }
@@ -186,7 +198,7 @@ class HearingProcessorTest {
             hearingProcessor.process(hearing, MESSAGE_ID);
 
             assertThat(appender.list).isEmpty();
-            verifyNoMoreInteractions(cprService, featureFlags);
+            verifyNoMoreInteractions(cprService, enrichmentWorkerService, featureFlags);
         }
 
         @ParameterizedTest
@@ -200,6 +212,7 @@ class HearingProcessorTest {
 
             assertDecisionLogged(false);
             verify(cprService).updateDefendants(hearing.getDefendants());
+            verify(enrichmentWorkerService, never()).updateDefendants(any(), any());
             verify(courtCaseService).saveHearing(hearing);
         }
 
@@ -210,6 +223,7 @@ class HearingProcessorTest {
         private Hearing hearingAtCourt(String courtCode) {
             return Hearing.builder()
                     .caseId("case-id")
+                    .source(DataSource.COMMON_PLATFORM)
                     .hearingDays(Collections.singletonList(HearingDay.builder().courtCode(courtCode).build()))
                     .defendants(Collections.singletonList(Defendant.builder().type(PERSON).build()))
                     .build();
@@ -218,15 +232,12 @@ class HearingProcessorTest {
         private void assertDecisionLogged(boolean expected) {
             var workerLogs = assertThat(appender.list)
                     .extracting(ILoggingEvent::getFormattedMessage)
-                    .filteredOn(message -> message.startsWith("Skipping CPR service and probation-status update"));
+                    .filteredOn(message -> message.startsWith("Using enrichment worker"));
             if (expected) {
-                workerLogs.containsExactly("Skipping CPR service and probation-status update for caseId case-id at court B03DE; enrichment worker endpoint is not yet implemented");
+                workerLogs.containsExactly("Using enrichment worker for caseId case-id at court B03DE");
             } else {
                 workerLogs.isEmpty();
             }
-            assertThat(appender.list)
-                    .extracting(ILoggingEvent::getFormattedMessage)
-                    .noneMatch(message -> message.startsWith("Enrichment worker would be called:"));
         }
     }
 
