@@ -14,6 +14,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
@@ -29,6 +32,7 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -68,12 +72,19 @@ class HearingProcessorTest {
     private HearingProcessor hearingProcessor;
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws Exception {
         hearingProcessor = new HearingProcessor(telemetryService,
                 courtCaseService,
                 cprService,
                 enrichmentWorkerService,
                 featureFlags
+        );
+        var testProperties = new YamlPropertySourceLoader()
+                .load("test", new ClassPathResource("application-test.yml"))
+                .getFirst();
+        var courtCodes = Objects.requireNonNull(testProperties.getProperty("enrichment-worker.court-codes")).toString();
+        hearingProcessor.setEnrichmentWorkerCourtCodes(
+                List.of(StringUtils.commaDelimitedListToStringArray(courtCodes))
         );
 
     }
@@ -98,8 +109,10 @@ class HearingProcessorTest {
         @ParameterizedTest
         @CsvSource({
                 "true, B03DE, true",
+                "true, B43KB, true",
                 "true, SHF, false",
                 "false, B03DE, false",
+                "false, B43KB, false",
                 "false, SHF, false",
                 "true, , false"
         })
@@ -110,7 +123,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(expected);
+            assertDecisionLogged(expected, expected ? courtCode : null);
             if (expected) {
                 verifyNoMoreInteractions(cprService);
                 verify(enrichmentWorkerService).updateDefendants(hearing.getDefendants(), hearing.getSource());
@@ -132,7 +145,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(true);
+            assertDecisionLogged(true, "B03DE");
             verifyNoMoreInteractions(cprService);
             verify(enrichmentWorkerService).updateDefendants(hearing.getDefendants(), hearing.getSource());
             verify(courtCaseService).saveHearing(hearing);
@@ -141,8 +154,10 @@ class HearingProcessorTest {
         @ParameterizedTest
         @CsvSource({
                 "true, B03DE, true",
+                "true, B43KB, true",
                 "true, SHF, false",
                 "false, B03DE, false",
+                "false, B43KB, false",
                 "false, SHF, false",
                 "true, , false"
         })
@@ -158,7 +173,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(expected);
+            assertDecisionLogged(expected, expected ? courtCode : null);
             if (expected) {
                 verifyNoMoreInteractions(cprService);
                 verify(enrichmentWorkerService).updateDefendants(mergedHearing.getDefendants(), mergedHearing.getSource());
@@ -183,7 +198,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(true);
+            assertDecisionLogged(true, "B03DE");
             verifyNoMoreInteractions(cprService);
             verify(enrichmentWorkerService).updateDefendants(mergedHearing.getDefendants(), mergedHearing.getSource());
             verify(courtCaseService, never()).updateProbationStatusDetail(any());
@@ -210,7 +225,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(false);
+            assertDecisionLogged(false, null);
             verify(cprService).updateDefendants(hearing.getDefendants());
             verify(enrichmentWorkerService, never()).updateDefendants(any(), any());
             verify(courtCaseService).saveHearing(hearing);
@@ -229,12 +244,12 @@ class HearingProcessorTest {
                     .build();
         }
 
-        private void assertDecisionLogged(boolean expected) {
+        private void assertDecisionLogged(boolean expected, String courtCode) {
             var workerLogs = assertThat(appender.list)
                     .extracting(ILoggingEvent::getFormattedMessage)
                     .filteredOn(message -> message.startsWith("Using enrichment worker"));
             if (expected) {
-                workerLogs.containsExactly("Using enrichment worker for caseId case-id at court B03DE");
+                workerLogs.containsExactly("Using enrichment worker for caseId case-id at court " + courtCode);
             } else {
                 workerLogs.isEmpty();
             }

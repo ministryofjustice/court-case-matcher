@@ -42,6 +42,7 @@ cpr-service:
 enrichment-worker:
   base-url: http://localhost:8090
   disable-authentication: true
+  court-codes: B03DE,B43KB
 
 ou-code-length: 5
 
