@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
@@ -75,6 +76,7 @@ class HearingProcessorTest {
                 enrichmentWorkerService,
                 featureFlags
         );
+        ReflectionTestUtils.setField(hearingProcessor, "enrichmentWorkerCourtCodes", List.of("B03DE", "B43KB"));
 
     }
 
@@ -98,8 +100,10 @@ class HearingProcessorTest {
         @ParameterizedTest
         @CsvSource({
                 "true, B03DE, true",
+                "true, B43KB, true",
                 "true, SHF, false",
                 "false, B03DE, false",
+                "false, B43KB, false",
                 "false, SHF, false",
                 "true, , false"
         })
@@ -110,7 +114,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(expected);
+            assertDecisionLogged(expected, expected ? courtCode : null);
             if (expected) {
                 verifyNoMoreInteractions(cprService);
                 verify(enrichmentWorkerService).updateDefendants(hearing.getDefendants(), hearing.getSource());
@@ -132,7 +136,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(true);
+            assertDecisionLogged(true, "B03DE");
             verifyNoMoreInteractions(cprService);
             verify(enrichmentWorkerService).updateDefendants(hearing.getDefendants(), hearing.getSource());
             verify(courtCaseService).saveHearing(hearing);
@@ -141,8 +145,10 @@ class HearingProcessorTest {
         @ParameterizedTest
         @CsvSource({
                 "true, B03DE, true",
+                "true, B43KB, true",
                 "true, SHF, false",
                 "false, B03DE, false",
+                "false, B43KB, false",
                 "false, SHF, false",
                 "true, , false"
         })
@@ -158,7 +164,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(expected);
+            assertDecisionLogged(expected, expected ? courtCode : null);
             if (expected) {
                 verifyNoMoreInteractions(cprService);
                 verify(enrichmentWorkerService).updateDefendants(mergedHearing.getDefendants(), mergedHearing.getSource());
@@ -183,7 +189,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(true);
+            assertDecisionLogged(true, "B03DE");
             verifyNoMoreInteractions(cprService);
             verify(enrichmentWorkerService).updateDefendants(mergedHearing.getDefendants(), mergedHearing.getSource());
             verify(courtCaseService, never()).updateProbationStatusDetail(any());
@@ -210,7 +216,7 @@ class HearingProcessorTest {
 
             hearingProcessor.process(hearing, MESSAGE_ID);
 
-            assertDecisionLogged(false);
+            assertDecisionLogged(false, null);
             verify(cprService).updateDefendants(hearing.getDefendants());
             verify(enrichmentWorkerService, never()).updateDefendants(any(), any());
             verify(courtCaseService).saveHearing(hearing);
@@ -229,12 +235,12 @@ class HearingProcessorTest {
                     .build();
         }
 
-        private void assertDecisionLogged(boolean expected) {
+        private void assertDecisionLogged(boolean expected, String courtCode) {
             var workerLogs = assertThat(appender.list)
                     .extracting(ILoggingEvent::getFormattedMessage)
                     .filteredOn(message -> message.startsWith("Using enrichment worker"));
             if (expected) {
-                workerLogs.containsExactly("Using enrichment worker for caseId case-id at court B03DE");
+                workerLogs.containsExactly("Using enrichment worker for caseId case-id at court " + courtCode);
             } else {
                 workerLogs.isEmpty();
             }

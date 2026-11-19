@@ -1,12 +1,12 @@
 package uk.gov.justice.probation.courtcasematcher.messaging;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
@@ -18,6 +18,7 @@ import uk.gov.justice.probation.courtcasematcher.service.CprService;
 import uk.gov.justice.probation.courtcasematcher.service.EnrichmentWorkerService;
 import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearingComparator.hasCourtHearingChanged;
 
-@AllArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Service
 @Qualifier("caseMessageProcessor")
@@ -33,7 +33,6 @@ import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearin
 public class HearingProcessor {
 
     private static final String ENRICHMENT_WORKER_FLAG = "enrichment_worker";
-    private static final String ENRICHMENT_WORKER_COURT_CODE = "B03DE";
 
     @NonNull
     private final TelemetryService telemetryService;
@@ -49,6 +48,22 @@ public class HearingProcessor {
     private final EnrichmentWorkerService enrichmentWorkerService;
 
     private final FeatureFlags featureFlags;
+
+    @Value("${enrichment-worker.court-codes}")
+    private List<String> enrichmentWorkerCourtCodes;
+
+    @Autowired
+    public HearingProcessor(TelemetryService telemetryService,
+                            CourtCaseService courtCaseService,
+                            CprService cprService,
+                            EnrichmentWorkerService enrichmentWorkerService,
+                            FeatureFlags featureFlags) {
+        this.telemetryService = telemetryService;
+        this.courtCaseService = courtCaseService;
+        this.cprService = cprService;
+        this.enrichmentWorkerService = enrichmentWorkerService;
+        this.featureFlags = featureFlags;
+    }
 
     public void process(Hearing receivedHearing, String messageId) {
         try {
@@ -91,7 +106,7 @@ public class HearingProcessor {
     private void applyMatchesAndSave(final Hearing hearing) {
         if (shouldUseEnrichmentWorker(hearing)) {
             log.info("Using enrichment worker for caseId {} at court {}",
-                    hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
+                    hearing.getCaseId(), getEnrichmentWorkerCourtCode(hearing).orElseThrow());
             enrichmentWorkerService.updateDefendants(hearing.getDefendants(), hearing.getSource());
         } else {
             cprService.updateDefendants(hearing.getDefendants());
@@ -103,7 +118,7 @@ public class HearingProcessor {
         log.info("Upsert caseId {}", hearing.getCaseId());
         if (shouldUseEnrichmentWorker(hearing)) {
             log.info("Using enrichment worker for caseId {} at court {}",
-                    hearing.getCaseId(), ENRICHMENT_WORKER_COURT_CODE);
+                    hearing.getCaseId(), getEnrichmentWorkerCourtCode(hearing).orElseThrow());
             enrichmentWorkerService.updateDefendants(hearing.getDefendants(), hearing.getSource());
             courtCaseService.saveHearing(hearing);
         } else {
@@ -116,13 +131,19 @@ public class HearingProcessor {
     }
 
     private boolean shouldUseEnrichmentWorker(final Hearing hearing) {
-        boolean hasEnrichmentWorkerCourtDay = Optional.ofNullable(hearing)
+        return featureFlags.getFlag(ENRICHMENT_WORKER_FLAG) && getEnrichmentWorkerCourtCode(hearing).isPresent();
+    }
+
+    private Optional<String> getEnrichmentWorkerCourtCode(final Hearing hearing) {
+        return Optional.ofNullable(hearing)
                 .map(Hearing::getHearingDays)
-                .map(days -> days.stream()
-                        .filter(Objects::nonNull)
-                        .anyMatch(day -> ENRICHMENT_WORKER_COURT_CODE.equals(day.getCourtCode())))
-                .orElse(false);
-        return featureFlags.getFlag(ENRICHMENT_WORKER_FLAG) && hasEnrichmentWorkerCourtDay;
+                .orElseGet(List::of)
+                .stream()
+                .filter(Objects::nonNull)
+                .map(day -> day.getCourtCode())
+                .filter(Objects::nonNull)
+                .filter(enrichmentWorkerCourtCodes::contains)
+                .findFirst();
     }
 
     Hearing assignUuids(Hearing hearing) {
