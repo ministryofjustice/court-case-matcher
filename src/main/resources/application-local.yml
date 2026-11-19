@@ -33,6 +33,7 @@ person-record-service:
 
 enrichment-worker:
   base-url: http://localhost:8084/
+  court-codes: B03DE
 
 hmpps.sqs:
   enabled: true

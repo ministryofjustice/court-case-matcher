@@ -14,7 +14,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.probation.courtcasematcher.application.FeatureFlags;
 import uk.gov.justice.probation.courtcasematcher.model.domain.CaseMarker;
@@ -30,6 +32,7 @@ import uk.gov.justice.probation.courtcasematcher.service.TelemetryService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -69,14 +72,20 @@ class HearingProcessorTest {
     private HearingProcessor hearingProcessor;
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws Exception {
         hearingProcessor = new HearingProcessor(telemetryService,
                 courtCaseService,
                 cprService,
                 enrichmentWorkerService,
                 featureFlags
         );
-        ReflectionTestUtils.setField(hearingProcessor, "enrichmentWorkerCourtCodes", List.of("B03DE", "B43KB"));
+        var testProperties = new YamlPropertySourceLoader()
+                .load("test", new ClassPathResource("application-test.yml"))
+                .getFirst();
+        var courtCodes = Objects.requireNonNull(testProperties.getProperty("enrichment-worker.court-codes")).toString();
+        hearingProcessor.setEnrichmentWorkerCourtCodes(
+                List.of(StringUtils.commaDelimitedListToStringArray(courtCodes))
+        );
 
     }
 

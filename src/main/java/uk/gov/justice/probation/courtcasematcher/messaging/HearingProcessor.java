@@ -3,6 +3,7 @@ package uk.gov.justice.probation.courtcasematcher.messaging;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static uk.gov.justice.probation.courtcasematcher.messaging.IncomingHearingComparator.hasCourtHearingChanged;
 
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
 @Service
 @Qualifier("caseMessageProcessor")
@@ -49,20 +51,11 @@ public class HearingProcessor {
 
     private final FeatureFlags featureFlags;
 
-    @Value("${enrichment-worker.court-codes}")
     private List<String> enrichmentWorkerCourtCodes;
 
-    @Autowired
-    public HearingProcessor(TelemetryService telemetryService,
-                            CourtCaseService courtCaseService,
-                            CprService cprService,
-                            EnrichmentWorkerService enrichmentWorkerService,
-                            FeatureFlags featureFlags) {
-        this.telemetryService = telemetryService;
-        this.courtCaseService = courtCaseService;
-        this.cprService = cprService;
-        this.enrichmentWorkerService = enrichmentWorkerService;
-        this.featureFlags = featureFlags;
+    @Value("${enrichment-worker.court-codes}")
+    void setEnrichmentWorkerCourtCodes(List<String> enrichmentWorkerCourtCodes) {
+        this.enrichmentWorkerCourtCodes = enrichmentWorkerCourtCodes;
     }
 
     public void process(Hearing receivedHearing, String messageId) {
