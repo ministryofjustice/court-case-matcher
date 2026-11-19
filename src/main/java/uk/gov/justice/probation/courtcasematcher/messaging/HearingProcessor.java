@@ -98,8 +98,9 @@ public class HearingProcessor {
 
     private void applyMatchesAndSave(final Hearing hearing) {
         if (shouldUseEnrichmentWorker(hearing)) {
-            log.info("Using enrichment worker for caseId {} at court {}",
-                    hearing.getCaseId(), getEnrichmentWorkerCourtCode(hearing).orElseThrow());
+            getEnrichmentWorkerCourtCode(hearing)
+                    .ifPresent(courtCode -> log.info("Using enrichment worker for caseId {} at court {}",
+                            hearing.getCaseId(), courtCode));
             enrichmentWorkerService.updateDefendants(hearing.getDefendants(), hearing.getSource());
         } else {
             cprService.updateDefendants(hearing.getDefendants());
@@ -110,8 +111,9 @@ public class HearingProcessor {
     private void updateAndSave(final Hearing hearing) {
         log.info("Upsert caseId {}", hearing.getCaseId());
         if (shouldUseEnrichmentWorker(hearing)) {
-            log.info("Using enrichment worker for caseId {} at court {}",
-                    hearing.getCaseId(), getEnrichmentWorkerCourtCode(hearing).orElseThrow());
+            getEnrichmentWorkerCourtCode(hearing)
+                    .ifPresent(courtCode -> log.info("Using enrichment worker for caseId {} at court {}",
+                            hearing.getCaseId(), courtCode));
             enrichmentWorkerService.updateDefendants(hearing.getDefendants(), hearing.getSource());
             courtCaseService.saveHearing(hearing);
         } else {
