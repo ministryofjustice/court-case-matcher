@@ -13,7 +13,7 @@ person-record-service:
 
 enrichment-worker:
   base-url: https://court-case-enrichment-worker.hmpps.service.justice.gov.uk
-  court-codes: B03DE
+  court-codes: C20WO
 
 feature:
   flags:
